@@ -1,0 +1,269 @@
+syntax = "proto3";
+
+package scalekit.v1.environments;
+
+import "buf/validate/validate.proto";
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/any.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "scalekit/v1/commons/commons.proto";
+import "scalekit/v1/options/options.proto";
+
+option go_package = "github.com/scalekit-inc/scalekit/pkg/grpc/environments";
+
+service EnvironmentService {
+  rpc CreateEnvironment(CreateEnvironmentRequest) returns (CreateEnvironmentResponse) {
+    option (scalekit.v1.options.auth_option) = {
+      // special permission for SK default env
+      authentication_type: WORKSPACE_SESSION_CLIENT
+    };
+    option (google.api.http) = {
+      post: "/api/v1/environments"
+      body: "environment"
+    };
+  }
+  rpc UpdateEnvironment(UpdateEnvironmentRequest) returns (UpdateEnvironmentResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: WORKSPACE_SESSION};
+
+    option (google.api.http) = {
+      patch: "/api/v1/environments/{id}"
+      body: "environment"
+    };
+  }
+
+  rpc UpdateEnvironmentDomain(UpdateEnvironmentDomainRequest) returns (UpdateEnvironmentResponse) {
+    option (scalekit.v1.options.auth_option) = {
+      // special permission for SK default env
+      authentication_type: WORKSPACE
+    };
+
+    option (google.api.http) = {
+      patch: "/api/v1/environments/{id}:update"
+      body: "environment"
+    };
+  }
+
+  rpc GetEnvironment(GetEnvironmentRequest) returns (GetEnvironmentResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: WORKSPACE_SESSION};
+    option (google.api.http) = {get: "/api/v1/environments/{id}"};
+  }
+
+  rpc ListEnvironment(ListEnvironmentsRequest) returns (ListEnvironmentsResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: WORKSPACE_SESSION};
+    option (google.api.http) = {get: "/api/v1/environments"};
+  }
+
+  rpc DeleteEnvironment(DeleteEnvironmentRequest) returns (google.protobuf.Empty) {
+    option (scalekit.v1.options.auth_option) = {
+      // special permission for SK default env
+      authentication_type: BLOCKED
+    };
+
+    option (google.api.http) = {delete: "/api/v1/environments/{id}"};
+  }
+
+  rpc GetRequiredDNSRecords(GetDNSRecordsRequest) returns (GetDNSRecordsResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: SESSION_CLIENT};
+    option (google.api.http) = {
+      post: "/api/v1/environments/{id}/dns",
+      body: "*"
+    };
+  }
+
+  rpc VerifyDNSRecords(GetDNSRecordsRequest) returns (google.protobuf.Empty) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: SESSION_CLIENT};
+    option (google.api.http) = {
+      post: "/api/v1/environments/{id}/dns:verify",
+      body: "*"
+    };
+  }
+
+  rpc CreateCustomDomain(CreateCustomDomainRequest) returns (CreateCustomDomainResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: SESSION_CLIENT};
+    option (google.api.http) = {
+      post: "/api/v1/environments/{id}/custom-domains",
+      body: "*"
+    };
+  }
+
+  rpc CheckCustomDomainStatus(GetEnvironmentRequest) returns (GetEnvironmentResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: SESSION_CLIENT};
+    option (google.api.http) = {
+      post: "/api/v1/environments/{id}/custom-domains:check",
+      body: "*"
+    };
+  }
+}
+
+message CreateCustomDomainRequest {
+  string id = 1 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 32,
+    prefix: "env"
+  }];
+  string custom_domain = 2 [
+    (buf.validate.field).string = {
+      min_len: 1,
+      max_len: 250
+    },
+    (buf.validate.field).required = true
+  ];
+}
+
+message CreateCustomDomainResponse {
+  Environment environment = 1;
+}
+
+message GetDNSRecordsRequest {
+  string id = 1 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 32,
+    prefix: "env"
+  }];
+  string custom_domain = 2 [
+    (buf.validate.field).string = {
+      min_len: 1,
+      max_len: 250
+    },
+    (buf.validate.field).required = true
+  ];
+}
+
+message GetDNSRecordsResponse {
+  repeated DNSRecords dns_records = 1;
+}
+
+message DNSRecords {
+  string host_name = 1 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 250
+  }];
+  string type = 2 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 250
+  }];
+  string value = 3 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 250
+  }];
+}
+
+message Environment {
+  string id = 1 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 32,
+    prefix: "env"
+  }];
+  google.protobuf.Timestamp create_time = 2;
+  google.protobuf.Timestamp update_time = 3;
+  string display_name = 4 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 200
+  }];
+  string domain = 5 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 250
+  }];
+  scalekit.v1.commons.RegionCode region_code = 6;
+  scalekit.v1.commons.EnvironmentType type = 7;
+  optional string custom_domain = 8;
+  CustomDomainStatus custom_domain_status = 9;
+} // workspace_id is not included here, It should derived from the token or domain via ctx.
+
+enum CustomDomainStatus {
+  UNSPECIFIED = 0;
+  PENDING = 1;
+  ACTIVE = 2;
+  FAILED = 3;
+}
+
+message CreateEnvironment {
+  string display_name = 4 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 200
+  }];
+  reserved 5; // domain is not updatable here.
+  optional scalekit.v1.commons.RegionCode region_code = 6;
+  optional scalekit.v1.commons.EnvironmentType type = 7;
+} // workspace_id is not included here, It should derived from the token or domain via ctx.
+
+message UpdateEnvironment {
+  optional string display_name = 4 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 2000
+  }];
+  reserved 5; // domain is not updatable here.
+  reserved 6; // region is not updatable here.
+  reserved 7; // type is not updatable here.
+}
+
+message UpdateEnvironmentDomain {
+  reserved 4; // display_name is not updatable here.
+  optional string domain = 5 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 250
+  }];
+}
+message CreateEnvironmentRequest {
+  CreateEnvironment environment = 1 [(buf.validate.field).required = true];
+}
+
+message CreateEnvironmentResponse {
+  Environment environment = 1;
+}
+
+message UpdateEnvironmentRequest {
+  string id = 1 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 32,
+    prefix: "env"
+  }];
+  UpdateEnvironment environment = 2 [(buf.validate.field).required = true];
+}
+
+message UpdateEnvironmentDomainRequest {
+  string id = 1 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 32,
+    prefix: "env"
+  }];
+  UpdateEnvironmentDomain environment = 2 [(buf.validate.field).required = true];
+}
+
+message UpdateEnvironmentResponse {
+  Environment environment = 1;
+}
+
+message GetEnvironmentRequest {
+  string id = 1 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 32,
+    prefix: "env"
+  }];
+}
+
+message GetEnvironmentResponse {
+  Environment environment = 1;
+}
+
+message ListEnvironmentsRequest {
+  uint32 page_size = 1;
+  string page_token = 2;
+}
+
+message ListEnvironmentsResponse {
+  string next_page_token = 1;
+  uint32 total_size = 2;
+  repeated Environment environments = 3;
+}
+
+message DeleteEnvironmentRequest {
+  string id = 1 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 32,
+    prefix: "env"
+  }];
+}

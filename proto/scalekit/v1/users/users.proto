@@ -1,0 +1,191 @@
+syntax = "proto3";
+
+package scalekit.v1.users;
+
+import "buf/validate/validate.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "scalekit/v1/commons/commons.proto";
+import "scalekit/v1/options/options.proto";
+
+option go_package = "github.com/scalekit-inc/scalekit/pkg/grpc/users";
+
+service UserService {
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: BLOCKED};
+    option (google.api.http) = {
+      post: "/api/v1/organizations/{organization_id}/users"
+      body: "user"
+      additional_bindings: [
+        {
+          post: "/api/v1/organizations/-/users"
+          body: "user"
+        }
+      ]
+    };
+  }
+  rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: BLOCKED};
+    option (google.api.http) = {
+      patch: "/api/v1/organizations/{organization_id}/users/{id}"
+      body: "user"
+      additional_bindings: [
+        {
+          patch: "/api/v1/organizations/-/users"
+          body: "user"
+        }
+      ]
+    };
+  }
+
+  rpc GetUser(GetUserRequest) returns (GetUserResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: BLOCKED};
+    option (google.api.http) = {
+      get: "/api/v1/organizations/{organization_id}/users/{id}"
+      additional_bindings: [
+        {get: "/api/v1/organizations/-/users/{id}"},
+        {get: "/api/v1/organizations/-/users/-"}]
+    };
+  }
+
+  rpc ListUsers(ListUserRequest) returns (ListUserResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: BLOCKED};
+    option (google.api.http) = {
+      get: "/api/v1/organizations/{organization_id}/users"
+      additional_bindings: [
+        {get: "/api/v1/organizations/-/users"}]
+    };
+  }
+
+  rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: BLOCKED};
+    option (google.api.http) = {
+      delete: "/api/v1/organizations/{organization_id}/users/{id}"
+      additional_bindings: [
+        {delete: "/api/v1/organizations/-/users/-"}]
+    };
+  }
+}
+
+message User {
+  string id = 1;
+  google.protobuf.Timestamp create_time = 2;
+  google.protobuf.Timestamp update_time = 3;
+  string first_name = 4 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 200
+  }];
+  string last_name = 5 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 200
+  }];
+  string email = 6 [(buf.validate.field).string.email = true];
+  optional string external_id = 7;
+  map<string, string> metadata = 8 [(buf.validate.field).map = {
+    max_pairs: 10,
+    keys: {
+      string: {
+        min_len: 3
+        max_len: 25
+      }
+    }
+    values: {
+      string: {
+        min_len: 1
+        max_len: 256
+      }
+    }
+  }];
+}
+
+message CreateUserRequest {
+  string organization_id = 1;
+  User user = 2 [(buf.validate.field).required = true];
+}
+
+message CreateUserResponse {
+  User user = 1;
+}
+
+message UpdateUser {
+  string first_name = 4 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 200
+  }];
+  string last_name = 5 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 200
+  }];
+  reserved 6;
+  optional string external_id = 7;
+  map<string, string> metadata = 8 [(buf.validate.field).map = {
+    max_pairs: 10,
+    keys: {
+      string: {
+        min_len: 3
+        max_len: 25
+      }
+    }
+    values: {
+      string: {
+        min_len: 1
+        max_len: 256
+      }
+    }
+  }];
+}
+
+message UpdateUserRequest {
+  string organization_id = 1;
+  oneof identities {
+    string id = 2 [(buf.validate.field).string = {
+      min_len: 19,
+      max_len: 25
+    }];
+    string external_id = 3;
+  }
+  UpdateUser user = 4 [(buf.validate.field).required = true];
+}
+
+message UpdateUserResponse {
+  User user = 1;
+}
+
+message GetUserRequest {
+  string organization_id = 1; // validate the presence
+  oneof identities {
+    string id = 2 [(buf.validate.field).string = {
+      min_len: 19,
+      max_len: 25
+    }];
+    string external_id = 3;
+  }
+}
+
+message GetUserResponse {
+  User user = 1;
+}
+
+message ListUserRequest {
+  string organization_id = 1;
+  uint32 page_size = 2;
+  string page_token = 3;
+}
+
+message ListUserResponse {
+  string next_page_token = 1;
+  uint32 total_size = 2;
+  repeated User user = 3;
+}
+
+message DeleteUserRequest {
+  string organization_id = 1;
+  oneof identities {
+    string id = 2 [(buf.validate.field).string = {
+      min_len: 19,
+      max_len: 25
+    }];
+    string external_id = 3;
+  }
+}

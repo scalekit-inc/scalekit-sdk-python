@@ -1,0 +1,199 @@
+syntax = "proto3";
+
+package scalekit.v1.domains;
+
+import "buf/validate/validate.proto";
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+import "scalekit/v1/options/options.proto";
+
+option go_package = "github.com/scalekit-inc/scalekit/pkg/grpc/domains";
+
+service DomainService {
+  rpc CreateDomain(CreateDomainRequest) returns (CreateDomainResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: SESSION_CLIENT};
+
+    option (google.api.http) = {
+      post: "/api/v1/organizations/{organization_id}/domains",
+      body: "domain",
+      additional_bindings: [
+        {
+          post: "/api/v1/organizations/-/domains",
+          body: "domain"
+        }
+      ]
+    };
+  }
+
+  rpc UpdateDomain(UpdateDomainRequest) returns (UpdateDomainResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: SESSION_CLIENT};
+    option (google.api.http) = {
+      patch: "/api/v1/organizations/{organization_id}/domains/{id}",
+      body: "domain",
+      additional_bindings: [
+        {
+          patch: "/api/v1/organizations/-/domains",
+          body: "domain"
+        }
+      ]
+    };
+  }
+
+  rpc GetDomain(GetDomainRequest) returns (GetDomainResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: SESSION_CLIENT};
+    option (google.api.http) = {
+      get: "/api/v1/organizations/{organization_id}/domains/{id}",
+      additional_bindings: [
+        {get: "/api/v1/organizations/-/domains/{id}"}]
+    };
+  }
+
+  rpc DeleteDomain(DeleteDomainRequest) returns (google.protobuf.Empty) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: SESSION_CLIENT};
+    option (google.api.http) = {
+      delete: "/api/v1/organizations/{organization_id}/domains/{id}",
+      additional_bindings: [
+        {delete: "/api/v1/organizations/-/domains/{id}"}]
+    };
+  }
+
+  rpc ListDomains(ListDomainRequest) returns (ListDomainResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: SESSION_CLIENT};
+    option (google.api.http) = {
+      get: "/api/v1/organizations/{organization_id}/domains",
+      additional_bindings: [
+        {get: "/api/v1/organizations/-/domains"}]
+    };
+  }
+}
+
+message CreateDomainRequest {
+  oneof identities {
+    string organization_id = 1 [(buf.validate.field).string = {
+      min_len: 1,
+      max_len: 32
+    }];
+    string external_id = 2 [(buf.validate.field).string = {
+      min_len: 1,
+      max_len: 32
+    }];
+  }
+  optional string connection_id = 3;
+  CreateDomain domain = 4;
+}
+
+message CreateDomainResponse {
+  Domain domain = 1;
+}
+
+message CreateDomain {
+  string domain = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string = {
+      min_len: 4,
+      max_len: 255
+    }
+  ];
+}
+
+message UpdateDomainRequest {
+  oneof identities {
+    string organization_id = 1 [(buf.validate.field).string = {
+      min_len: 1,
+      max_len: 32
+    }];
+    string external_id = 2 [(buf.validate.field).string = {
+      min_len: 1,
+      max_len: 32
+    }];
+  }
+  optional string connection_id = 3;
+  string id = 4;
+  UpdateDomain domain = 5;
+}
+
+message UpdateDomain {}
+
+message UpdateDomainResponse {
+  Domain domain = 1;
+}
+
+message GetDomainRequest {
+  oneof identities {
+    string organization_id = 1 [(buf.validate.field).string = {
+      min_len: 1,
+      max_len: 32
+    }];
+    string external_id = 2 [(buf.validate.field).string = {
+      min_len: 1,
+      max_len: 32
+    }];
+  }
+  string id = 3;
+}
+
+message GetDomainResponse {
+  Domain domain = 1;
+}
+
+message DeleteDomainRequest {
+  string id = 1;
+  oneof identities {
+    string organization_id = 2 [(buf.validate.field).string = {
+      min_len: 1,
+      max_len: 32
+    }];
+    string external_id = 3 [(buf.validate.field).string = {
+      min_len: 1,
+      max_len: 32
+    }];
+  }
+  optional string connection_id = 4;
+}
+
+message ListDomainRequest {
+  oneof identities {
+    string organization_id = 1 [(buf.validate.field).string = {
+      min_len: 1,
+      max_len: 32
+    }];
+    string external_id = 2 [(buf.validate.field).string = {
+      min_len: 1,
+      max_len: 32
+    }];
+  }
+  optional string connection_id = 3;
+  optional string include = 4;
+  google.protobuf.Int32Value page_size = 5;
+  google.protobuf.Int32Value page_number = 6;
+}
+
+message ListDomainResponse {
+  int32 page_size = 1;
+  int32 page_number = 2;
+  repeated Domain domains = 3;
+}
+
+message Domain {
+  string id = 1;
+  string domain = 2;
+  string environment_id = 3;
+  string organization_id = 4;
+  string connection_id = 5;
+  string txt_record_key = 6;
+  string txt_record_secret = 7;
+  VerificationStatus verification_status = 8;
+  google.protobuf.Timestamp create_time = 9;
+  google.protobuf.Timestamp update_time = 10;
+  optional string created_by = 11;
+}
+
+enum VerificationStatus {
+  VERIFICATION_STATUS_UNSPECIFIED = 0;
+  PENDING = 1;
+  VERIFIED = 2;
+  FAILED = 3;
+}

@@ -1,0 +1,515 @@
+syntax = "proto3";
+
+package scalekit.v1.connections;
+
+import "buf/validate/validate.proto";
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+import "scalekit/v1/commons/commons.proto";
+import "scalekit/v1/options/options.proto";
+
+option go_package = "github.com/scalekit-inc/scalekit/pkg/grpc/connections";
+
+service ConnectionService {
+  rpc CreateConnection(CreateConnectionRequest) returns (CreateConnectionResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: CUSTOMER_PORTAL_SESSION_CLIENT};
+
+    option (google.api.http) = {
+      post: "/api/v1/organizations/{organization_id}/connections",
+      body: "connection",
+      additional_bindings: [
+        {
+          post: "/api/v1/organizations/-/connections",
+          body: "connection"
+        }
+      ]
+    };
+  }
+
+  rpc GetConnection(GetConnectionRequest) returns (GetConnectionResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: CUSTOMER_PORTAL_SESSION_CLIENT};
+
+    option (google.api.http) = {
+      get: "/api/v1/organizations/{organization_id}/connections/{id}",
+      additional_bindings: [
+        {get: "/api/v1/organizations/-/connections/{id}"}]
+    };
+  }
+
+  rpc ListConnections(ListConnectionsRequest) returns (ListConnectionsResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: CUSTOMER_PORTAL_SESSION_CLIENT};
+
+    option (google.api.http) = {
+      get: "/api/v1/organizations/{organization_id}/connections",
+      additional_bindings: [
+        {get: "/api/v1/organizations/-/connections"}]
+    };
+  }
+
+  rpc UpdateConnection(UpdateConnectionRequest) returns (UpdateConnectionResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: CUSTOMER_PORTAL_SESSION_CLIENT};
+
+    option (google.api.http) = {
+      patch: "/api/v1/organizations/{organization_id}/connections/{id}",
+      body: "connection",
+      additional_bindings: [
+        {
+          patch: "/api/v1/organizations/-/connections/{id}",
+          body: "connection"
+        }
+      ]
+    };
+  }
+
+  rpc DeleteConnection(DeleteConnectionRequest) returns (google.protobuf.Empty) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: CUSTOMER_PORTAL_SESSION_CLIENT};
+
+    option (google.api.http) = {
+      delete: "/api/v1/organizations/{organization_id}/connections/{id}",
+      additional_bindings: [
+        {delete: "/api/v1/organizations/-/connections/{id}"}]
+    };
+  }
+
+  rpc GetConnectionByDomain(GetConnectionByDomainRequest) returns (GetConnectionByDomainResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: CUSTOMER_PORTAL_SESSION_CLIENT};
+    option (google.api.http) = {get: "/api/v1/organizations/-/connections:search"};
+  }
+
+  rpc EnableConnection(EnableConnectionRequest) returns (ToggleConnectionResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: CUSTOMER_PORTAL_SESSION_CLIENT};
+    option (google.api.http) = {
+      patch: "/api/v1/organizations/{organization_id}/connections/{id}:enable",
+      additional_bindings: [
+        {patch: "/api/v1/organizations/-/connections/{id}:enable"}]
+    };
+  }
+
+  rpc DisableConnection(DisableConnectionRequest) returns (ToggleConnectionResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: CUSTOMER_PORTAL_SESSION_CLIENT};
+    option (google.api.http) = {
+      patch: "/api/v1/organizations/{organization_id}/connections/{id}:disable",
+      additional_bindings: [
+        {patch: "/api/v1/organizations/-/connections/{id}:disable"}]
+    };
+  }
+}
+
+message CreateConnectionRequest {
+  oneof identities {
+    string organization_id = 1 [(buf.validate.field).string = {
+      min_len: 1,
+      max_len: 32
+    }];
+    string external_id = 2 [(buf.validate.field).string = {
+      min_len: 1,
+      max_len: 32
+    }];
+  }
+  CreateConnection connection = 3 [(buf.validate.field).required = true];
+}
+
+message CreateConnection {
+  ConnectionProvider provider = 1 [(buf.validate.field).enum.defined_only = true];
+  ConnectionType type = 2 [(buf.validate.field).enum.defined_only = true];
+}
+
+message Connection {
+  string id = 1;
+  ConnectionProvider provider = 2;
+  ConnectionType type = 3;
+  ConnectionStatus status = 4;
+  bool enabled = 5;
+  bool debug_enabled = 6;
+  string organization_id = 7;
+  string ui_button_title = 8;
+  string login_initiation_uri = 9;
+  string logout_uri = 10;
+  ConfigurationType configuration_type = 11;
+  string test_connection_uri = 12;
+  oneof settings {
+    OIDCConnectionConfig oidc_config = 13;
+    SAMLConnectionConfigResponse saml_config = 14;
+  }
+  map<string, string> attribute_mapping = 15 [(buf.validate.field).map = {
+    max_pairs: 10,
+    keys: {
+      string: {
+        min_len: 1
+        max_len: 25
+      }
+    }
+    values: {
+      string: {
+        min_len: 1
+        max_len: 256
+      }
+    }
+  }];
+}
+
+message CreateConnectionResponse {
+  Connection connection = 1;
+}
+
+message UpdateConnectionRequest {
+  oneof identities {
+    string organization_id = 1 [(buf.validate.field).string = {
+      min_len: 1,
+      max_len: 32
+    }];
+    string external_id = 2 [(buf.validate.field).string = {
+      min_len: 1,
+      max_len: 32
+    }];
+  }
+  string id = 3 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 32
+  }];
+  UpdateConnection connection = 4 [(buf.validate.field).required = true];
+}
+
+message UpdateConnection {
+  ConnectionProvider provider = 1 [(buf.validate.field).enum.defined_only = true];
+  ConnectionType type = 2 [(buf.validate.field).enum.defined_only = true];
+  google.protobuf.BoolValue debug_enabled = 3;
+  google.protobuf.StringValue ui_button_title = 4;
+  google.protobuf.StringValue logout_uri = 5;
+  ConfigurationType configuration_type = 6 [(buf.validate.field).enum.defined_only = true];
+  oneof settings {
+    OIDCConnectionConfig oidc_config = 7;
+    SAMLConnectionConfigRequest saml_config = 8;
+  }
+  map<string, string> attribute_mapping = 9 [(buf.validate.field).map = {
+    max_pairs: 10,
+    keys: {
+      string: {
+        min_len: 1
+        max_len: 25
+      }
+    }
+    values: {
+      string: {
+        min_len: 1
+        max_len: 256
+      }
+    }
+  }];
+}
+
+message UpdateConnectionResponse {
+  Connection connection = 1;
+}
+
+message DeleteConnectionRequest {
+  oneof identities {
+    string organization_id = 1 [(buf.validate.field).string = {
+      min_len: 1,
+      max_len: 32
+    }];
+    string external_id = 2 [(buf.validate.field).string = {
+      min_len: 1,
+      max_len: 32
+    }];
+  }
+  string id = 3 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 32
+  }];
+}
+
+message GetConnectionRequest {
+  oneof identities {
+    string organization_id = 1 [(buf.validate.field).string = {
+      min_len: 1,
+      max_len: 32
+    }];
+    string external_id = 2 [(buf.validate.field).string = {
+      min_len: 1,
+      max_len: 32
+    }];
+  }
+  string id = 3 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 32
+  }];
+}
+
+message GetConnectionResponse {
+  Connection connection = 1;
+}
+
+message ListConnectionsRequest {
+  oneof identities {
+    string organization_id = 1 [(buf.validate.field).string = {
+      min_len: 1,
+      max_len: 32
+    }];
+    string external_id = 2 [(buf.validate.field).string = {
+      min_len: 1,
+      max_len: 32
+    }];
+  }
+  optional string include = 3;
+}
+
+message ListConnectionsResponse {
+  repeated ListConnection connections = 1;
+}
+
+message ListConnection {
+  string id = 1;
+  ConnectionProvider provider = 2;
+  ConnectionType type = 3;
+  ConnectionStatus status = 4;
+  bool enabled = 5;
+  string organization_id = 6;
+  string ui_button_title = 7;
+}
+
+message EnableConnectionRequest {
+  oneof identities {
+    string organization_id = 1 [(buf.validate.field).string = {
+      min_len: 1,
+      max_len: 32
+    }];
+    string external_id = 2 [(buf.validate.field).string = {
+      min_len: 1,
+      max_len: 32
+    }];
+  }
+  string id = 3 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 32
+  }];
+}
+
+message DisableConnectionRequest {
+  oneof identities {
+    string organization_id = 1 [(buf.validate.field).string = {
+      min_len: 1,
+      max_len: 32
+    }];
+    string external_id = 2 [(buf.validate.field).string = {
+      min_len: 1,
+      max_len: 32
+    }];
+  }
+  string id = 3 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 32
+  }];
+}
+
+message ToggleConnectionResponse {
+  bool enabled = 1;
+  optional string error_message = 2;
+}
+
+message OIDCConnectionConfig {
+  google.protobuf.StringValue issuer = 1;
+  google.protobuf.StringValue discovery_endpoint = 2;
+  google.protobuf.StringValue authorize_uri = 3;
+  google.protobuf.StringValue token_uri = 4;
+  google.protobuf.StringValue user_info_uri = 5;
+  google.protobuf.StringValue jwks_uri = 6;
+  google.protobuf.StringValue client_id = 8;
+  google.protobuf.StringValue client_secret = 9;
+  repeated OIDCScope scopes = 10;
+  TokenAuthType token_auth_type = 11;
+  string redirect_uri = 12;
+  google.protobuf.BoolValue pkce_enabled = 13;
+}
+
+message SAMLConnectionConfigRequest {
+  google.protobuf.StringValue idp_metadata_url = 1;
+  google.protobuf.StringValue idp_entity_id = 2;
+  google.protobuf.StringValue idp_sso_url = 3;
+  google.protobuf.StringValue idp_certificate = 4;
+  google.protobuf.StringValue idp_slo_url = 5;
+  google.protobuf.StringValue ui_button_title = 6;
+  NameIdFormat idp_name_id_format = 7;
+  RequestBinding sso_request_binding = 8;
+  RequestBinding slo_request_binding = 9;
+  SAMLSigningOptions saml_signing_option = 10;
+  google.protobuf.BoolValue allow_idp_initiated_login = 11;
+  google.protobuf.BoolValue force_authn = 12;
+  google.protobuf.StringValue default_redirect_uri = 13;
+  google.protobuf.BoolValue assertion_encrypted = 14;
+  google.protobuf.BoolValue want_request_signed = 15;
+}
+
+message SAMLConnectionConfigResponse {
+  string sp_entity_id = 1;
+  string sp_assertion_url = 2;
+  string sp_metadata_url = 3;
+  google.protobuf.StringValue idp_metadata_url = 4;
+  google.protobuf.StringValue idp_entity_id = 5;
+  google.protobuf.StringValue idp_sso_url = 6;
+  repeated IDPCertificate idp_certificates = 7;
+  google.protobuf.StringValue idp_slo_url = 8;
+  google.protobuf.StringValue ui_button_title = 9;
+  NameIdFormat idp_name_id_format = 10;
+  RequestBinding idp_sso_request_binding = 11;
+  RequestBinding idp_slo_request_binding = 12;
+  SAMLSigningOptions saml_signing_option = 13;
+  google.protobuf.BoolValue allow_idp_initiated_login = 14;
+  google.protobuf.BoolValue force_authn = 15;
+  google.protobuf.StringValue default_redirect_uri = 16;
+  google.protobuf.BoolValue assertion_encrypted = 17;
+  google.protobuf.BoolValue want_request_signed = 18;
+}
+
+message IDPCertificate {
+  string certificate = 1;
+  google.protobuf.Timestamp create_time = 2;
+  google.protobuf.Timestamp expiry_time = 3;
+  string id = 4;
+  string issuer = 5;
+}
+
+enum ConfigurationType {
+  CONFIGURATION_TYPE_UNSPECIFIED = 0;
+  DISCOVERY = 1;
+  MANUAL = 2;
+}
+
+enum NameIdFormat {
+  NAME_ID_FORMAT_NIL = 0;
+  UNSPECIFIED = 1;
+  EMAIL = 2;
+  TRANSIENT = 3;
+  PERSISTENT = 4;
+}
+
+message GetConnectionByDomainRequest {
+  string domain = 1 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 32
+  }];
+}
+
+message GetConnectionByDomainResponse {
+  string connection_id = 1;
+  ConnectionStatus status = 2;
+  ConnectionType type = 3;
+  string ui_button_title = 4;
+}
+
+message GetOIDCMetadataRequest {
+  OIDCMetadataRequest metadata = 1;
+}
+
+message OIDCMetadataRequest {
+  string issuer = 1 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 200
+  }];
+}
+
+message GetOIDCMetadataResponse {
+  string issuer = 1;
+  string authorization_endpoint = 2;
+  string token_endpoint = 3;
+  string userinfo_endpoint = 4;
+  string jwks_uri = 5;
+}
+
+message GetSAMLMetadataRequest {
+  SAMLMetadataRequest metadata = 1;
+}
+
+message SAMLMetadataRequest {
+  string metadata_url = 1 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 200
+  }];
+}
+
+message GetSAMLMetadataResponse {
+  string idp_entity_id = 1;
+  string idp_sso_url = 2;
+  string idp_slo_url = 3;
+  repeated string idp_certificates = 4;
+  string idp_name_id_format = 5;
+  string request_binding = 6;
+  bool want_assertions_signed = 7;
+}
+
+message GetSAMLCertificateDetailsRequest {
+  SAMLCertificateRequest certificate = 1;
+}
+
+message SAMLCertificateRequest {
+  string text = 1 [(buf.validate.field).string = {min_len: 1}];
+}
+
+message GetSAMLCertificateDetailsResponse {
+  string text = 1;
+  int64 not_after = 2;
+  int64 not_before = 3;
+  string subject = 4;
+  string issuer = 5;
+}
+
+// enums all
+enum SAMLSigningOptions {
+  SAML_SIGNING_OPTIONS_UNSPECIFIED = 0;
+  NO_SIGNING = 1;
+  SAML_ONLY_RESPONSE_SIGNING = 2;
+  SAML_ONLY_ASSERTION_SIGNING = 3;
+  SAML_RESPONSE_ASSERTION_SIGNING = 4;
+}
+
+enum RequestBinding {
+  REQUEST_BINDING_UNSPECIFIED = 0;
+  HTTP_POST = 1;
+  HTTP_REDIRECT = 2;
+}
+
+enum TokenAuthType {
+  TOKEN_AUTH_TYPE_UNSPECIFIED = 0;
+  URL_PARAMS = 1;
+  BASIC_AUTH = 2;
+}
+
+enum OIDCScope {
+  OIDC_SCOPE_UNSPECIFIED = 0;
+  openid = 1;
+  profile = 2;
+  email = 3;
+  address = 4;
+  phone = 5;
+}
+
+message PasswordConnectionConfig {}
+
+enum ConnectionType {
+  INVALID = 0;
+  OIDC = 1;
+  SAML = 2;
+  PASSWORD = 3;
+}
+
+enum ConnectionStatus {
+  CONNECTION_STATUS_UNSPECIFIED = 0;
+  DRAFT = 1;
+  IN_PROGRESS = 2;
+  COMPLETED = 3;
+}
+
+enum ConnectionProvider {
+  CONNECTION_PROVIDER_UNSPECIFIED = 0;
+  OKTA = 1;
+  GOOGLE = 2;
+  MICROSOFT_AD = 3;
+  AUTH0 = 4;
+  ONELOGIN = 5;
+  PING_IDENTITY = 6;
+  JUMPCLOUD = 7;
+  CUSTOM = 8;
+}
