@@ -32,11 +32,7 @@ pip install scalekit-sdk-python
 ```javascript
 from scalekit_client import Scalekit
 
-scale_kit = Scalekit(
-  os.environ['SCALEKIT_ENV_URL'],
-  os.environ['SCALEKIT_CLIENT_ID'],
-  os.environ['SCALEKIT_CLIENT_SECRET']
-)
+scale_kit = Scalekit(env_url, client_id, client_secret)
 ```
 
 ## API Reference
