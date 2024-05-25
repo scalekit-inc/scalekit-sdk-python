@@ -1,8 +1,8 @@
 import grpc
 
 from core import CoreClient
-from scalekit.v1.domains.domains_pb2_grpc import DomainServiceStub
-from scalekit.v1.domains.domains_pb2 import *
+from pkg.scalekit.v1.domains.domains_pb2_grpc import DomainServiceStub
+from pkg.scalekit.v1.domains.domains_pb2 import *
 
 
 class DomainClient:
