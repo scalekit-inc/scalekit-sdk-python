@@ -99,7 +99,6 @@ class CoreClient:
             return val
         except grpc.RpcError as exp:
             if retry > 0:
-                print('Trial:' + str(retry))
                 return CoreClient.grpc_exec(func, data, retry - 1)
             else:
                 status_code = exp.code()
@@ -116,3 +115,5 @@ class CoreClient:
                                     messages.append(f'{fv.field}: {fv.description}')
 
                 raise Exception('\n'.join(messages))
+        except Exception as exp:
+            raise exp
