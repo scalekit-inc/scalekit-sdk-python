@@ -12,8 +12,8 @@ from google.protobuf.internal import builder as _builder
 _sym_db = _symbol_database.Default()
 
 
-from pkg.buf.validate import expression_pb2 as buf_dot_validate_dot_expression__pb2
-from pkg.buf.validate.priv import private_pb2 as buf_dot_validate_dot_priv_dot_private__pb2
+from buf.validate import expression_pb2 as buf_dot_validate_dot_expression__pb2
+from buf.validate.priv import private_pb2 as buf_dot_validate_dot_priv_dot_private__pb2
 from google.protobuf import descriptor_pb2 as google_dot_protobuf_dot_descriptor__pb2
 from google.protobuf import duration_pb2 as google_dot_protobuf_dot_duration__pb2
 from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2

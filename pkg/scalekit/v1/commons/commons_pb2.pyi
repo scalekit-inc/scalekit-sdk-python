@@ -1,6 +1,6 @@
-from pkg.buf.validate import validate_pb2 as _validate_pb2
-from pkg.google.api import annotations_pb2 as _annotations_pb2
-from pkg.google.api import field_behavior_pb2 as _field_behavior_pb2
+from buf.validate import validate_pb2 as _validate_pb2
+from google.api import annotations_pb2 as _annotations_pb2
+from google.api import field_behavior_pb2 as _field_behavior_pb2
 from google.protobuf import any_pb2 as _any_pb2
 from google.protobuf import duration_pb2 as _duration_pb2
 from google.protobuf import empty_pb2 as _empty_pb2

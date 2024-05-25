@@ -1,5 +1,5 @@
-from pkg.buf.validate import expression_pb2 as _expression_pb2
-from pkg.buf.validate.priv import private_pb2 as _private_pb2
+from buf.validate import expression_pb2 as _expression_pb2
+from buf.validate.priv import private_pb2 as _private_pb2
 from google.protobuf import descriptor_pb2 as _descriptor_pb2
 from google.protobuf import duration_pb2 as _duration_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2

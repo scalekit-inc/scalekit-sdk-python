@@ -13,7 +13,7 @@ import "google/protobuf/timestamp.proto";
 import "scalekit/v1/commons/commons.proto";
 import "scalekit/v1/options/options.proto";
 
-option go_package = "github.com/scalekit-inc/scalekit/pkg/grpc/clients";
+option go_package = "github.com/scalekit_sdk-inc/scalekit_sdk/pkg/grpc/clients";
 
 service ClientService {
   rpc ListClient(ListClientsRequest) returns (ListClientsResponse) {

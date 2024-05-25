@@ -10,7 +10,7 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 import "scalekit/v1/options/options.proto";
 
-option go_package = "github.com/scalekit-inc/scalekit/pkg/grpc/domains";
+option go_package = "github.com/scalekit_sdk-inc/scalekit_sdk/pkg/grpc/domains";
 
 service DomainService {
   rpc CreateDomain(CreateDomainRequest) returns (CreateDomainResponse) {

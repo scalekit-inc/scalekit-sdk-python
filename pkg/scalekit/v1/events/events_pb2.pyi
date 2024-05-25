@@ -1,4 +1,4 @@
-from pkg.buf.validate import validate_pb2 as _validate_pb2
+from buf.validate import validate_pb2 as _validate_pb2
 from google.protobuf import any_pb2 as _any_pb2
 from google.protobuf import duration_pb2 as _duration_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2

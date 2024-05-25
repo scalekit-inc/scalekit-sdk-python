@@ -3,8 +3,7 @@ syntax = "proto3";
 package scalekit.v1.errdetails;
 
 import "google/protobuf/duration.proto";
-
-option go_package = "github.com/scalekit-inc/scalekit/pkg/grpc/errdetails";
+option go_package = "github.com/scalekit_sdk-inc/scalekit_sdk/pkg/grpc/errdetails";
 
 message ErrorInfo {
   string code_id = 3;

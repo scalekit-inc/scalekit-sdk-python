@@ -10,7 +10,7 @@ import "google/protobuf/duration.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/scalekit-inc/scalekit/pkg/grpc/commons";
+option go_package = "github.com/scalekit_sdk-inc/scalekit_sdk/pkg/grpc/commons";
 
 enum RegionCode {
   /*

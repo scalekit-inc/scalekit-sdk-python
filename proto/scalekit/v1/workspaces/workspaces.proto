@@ -12,7 +12,7 @@ import "google/protobuf/timestamp.proto";
 import "scalekit/v1/commons/commons.proto";
 import "scalekit/v1/options/options.proto";
 
-option go_package = "github.com/scalekit-inc/scalekit/pkg/grpc/workspaces";
+option go_package = "github.com/scalekit_sdk-inc/scalekit_sdk/pkg/grpc/workspaces";
 
 service WorkspaceService {
   rpc CreateWorkspace(CreateWorkspaceRequest) returns (CreateWorkspaceResponse) {

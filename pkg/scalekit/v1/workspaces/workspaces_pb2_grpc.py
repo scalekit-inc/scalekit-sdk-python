@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-from pkg.scalekit.v1.workspaces import workspaces_pb2 as scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2
+from scalekit.v1.workspaces import workspaces_pb2 as scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2
 
 
 class WorkspaceServiceStub(object):

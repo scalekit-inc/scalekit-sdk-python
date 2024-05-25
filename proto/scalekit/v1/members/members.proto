@@ -9,7 +9,7 @@ import "google/protobuf/timestamp.proto";
 import "scalekit/v1/commons/commons.proto";
 import "scalekit/v1/options/options.proto";
 
-option go_package = "github.com/scalekit-inc/scalekit/pkg/grpc/members";
+option go_package = "github.com/scalekit_sdk-inc/scalekit_sdk/pkg/grpc/members";
 
 service MembersService {
   // For the first closed beta build, we are not exposing the ability to create members. So, most of the APIs will have

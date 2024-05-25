@@ -1,11 +1,11 @@
-from pkg.buf.validate import validate_pb2 as _validate_pb2
-from pkg.google.api import annotations_pb2 as _annotations_pb2
-from pkg.google.api import field_behavior_pb2 as _field_behavior_pb2
+from buf.validate import validate_pb2 as _validate_pb2
+from google.api import annotations_pb2 as _annotations_pb2
+from google.api import field_behavior_pb2 as _field_behavior_pb2
 from google.protobuf import empty_pb2 as _empty_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
 from google.protobuf import wrappers_pb2 as _wrappers_pb2
-from pkg.scalekit.v1.commons import commons_pb2 as _commons_pb2
-from pkg.scalekit.v1.options import options_pb2 as _options_pb2
+from scalekit.v1.commons import commons_pb2 as _commons_pb2
+from scalekit.v1.options import options_pb2 as _options_pb2
 from google.protobuf.internal import containers as _containers
 from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
 from google.protobuf import descriptor as _descriptor

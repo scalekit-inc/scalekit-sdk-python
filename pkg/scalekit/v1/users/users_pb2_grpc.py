@@ -3,7 +3,7 @@
 import grpc
 
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
-from pkg.scalekit.v1.users import users_pb2 as scalekit_dot_v1_dot_users_dot_users__pb2
+from scalekit.v1.users import users_pb2 as scalekit_dot_v1_dot_users_dot_users__pb2
 
 
 class UserServiceStub(object):

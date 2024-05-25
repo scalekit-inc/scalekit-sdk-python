@@ -2,7 +2,6 @@ import json
 from urllib.parse import urlencode
 
 import jwt
-
 from constants.user import *
 from core import CoreClient
 from domain import DomainClient
@@ -33,7 +32,7 @@ class Scalekit:
 
     def get_authorization_url(self, redirect_uri: str, options: AuthorizationUrlOptions | None):
         """
-        Method to get authoorization URL
+        Method to get authorization URL
         
         :param redirect_uri : ``` str```
         :param options      : ``` Auth URL options ```

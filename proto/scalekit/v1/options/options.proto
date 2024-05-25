@@ -4,7 +4,7 @@ package scalekit.v1.options;
 
 import "google/protobuf/descriptor.proto";
 
-option go_package = "github.com/scalekit-inc/scalekit/pkg/grpc/authoption";
+option go_package = "github.com/scalekit_sdk-inc/scalekit_sdk/pkg/grpc/authoption";
 
 extend google.protobuf.MethodOptions {
   AuthOption auth_option = 50000;

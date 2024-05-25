@@ -3,7 +3,7 @@
 import grpc
 
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
-from pkg.scalekit.v1.environments import environments_pb2 as scalekit_dot_v1_dot_environments_dot_environments__pb2
+from scalekit.v1.environments import environments_pb2 as scalekit_dot_v1_dot_environments_dot_environments__pb2
 
 
 class EnvironmentServiceStub(object):

@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='scalekitSDKPython',
+    name='scalekit-sdk-python',
     version='0.1',
     packages=find_packages(),
     install_requires=[
@@ -14,9 +14,9 @@ setup(
         'setuptools==69.2.0'
     ],
     url='https://github.com/scalekit-inc/scalekit-sdk-python',
-    license='',
+    license='MIT',
     author='Scalekit-Inc',
-    author_email='support@scalekit.com',
+    author_email='support@scalekit_sdk.com',
     description='',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',

@@ -3,7 +3,7 @@
 import grpc
 
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
-from pkg.scalekit.v1.clients import clients_pb2 as scalekit_dot_v1_dot_clients_dot_clients__pb2
+from scalekit.v1.clients import clients_pb2 as scalekit_dot_v1_dot_clients_dot_clients__pb2
 
 
 class ClientServiceStub(object):
