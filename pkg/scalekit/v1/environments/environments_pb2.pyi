@@ -5,6 +5,7 @@ from google.protobuf import any_pb2 as _any_pb2
 from google.protobuf import duration_pb2 as _duration_pb2
 from google.protobuf import empty_pb2 as _empty_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
+from google.protobuf import struct_pb2 as _struct_pb2
 from scalekit.v1.commons import commons_pb2 as _commons_pb2
 from scalekit.v1.options import options_pb2 as _options_pb2
 from google.protobuf.internal import containers as _containers
@@ -21,10 +22,17 @@ class CustomDomainStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     PENDING: _ClassVar[CustomDomainStatus]
     ACTIVE: _ClassVar[CustomDomainStatus]
     FAILED: _ClassVar[CustomDomainStatus]
+
+class AssetCategory(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    ASSET_CATEGORY_UNSPECIFIED: _ClassVar[AssetCategory]
+    PORTAL_CUSTOMIZATION_IMAGE: _ClassVar[AssetCategory]
 UNSPECIFIED: CustomDomainStatus
 PENDING: CustomDomainStatus
 ACTIVE: CustomDomainStatus
 FAILED: CustomDomainStatus
+ASSET_CATEGORY_UNSPECIFIED: AssetCategory
+PORTAL_CUSTOMIZATION_IMAGE: AssetCategory
 
 class CreateCustomDomainRequest(_message.Message):
     __slots__ = ("id", "custom_domain")
@@ -177,3 +185,57 @@ class DeleteEnvironmentRequest(_message.Message):
     ID_FIELD_NUMBER: _ClassVar[int]
     id: str
     def __init__(self, id: _Optional[str] = ...) -> None: ...
+
+class UpdatePortalCustomizationResponse(_message.Message):
+    __slots__ = ("environmentId", "customization_settings")
+    ENVIRONMENTID_FIELD_NUMBER: _ClassVar[int]
+    CUSTOMIZATION_SETTINGS_FIELD_NUMBER: _ClassVar[int]
+    environmentId: str
+    customization_settings: _struct_pb2.Struct
+    def __init__(self, environmentId: _Optional[str] = ..., customization_settings: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
+
+class UpdatePortalCustomizationRequest(_message.Message):
+    __slots__ = ("id", "customization_settings")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    CUSTOMIZATION_SETTINGS_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    customization_settings: _struct_pb2.Struct
+    def __init__(self, id: _Optional[str] = ..., customization_settings: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
+
+class GetPortalCustomizationRequest(_message.Message):
+    __slots__ = ("id",)
+    ID_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    def __init__(self, id: _Optional[str] = ...) -> None: ...
+
+class GetPortalCustomizationResponse(_message.Message):
+    __slots__ = ("environmentId", "customization_settings")
+    ENVIRONMENTID_FIELD_NUMBER: _ClassVar[int]
+    CUSTOMIZATION_SETTINGS_FIELD_NUMBER: _ClassVar[int]
+    environmentId: str
+    customization_settings: _struct_pb2.Struct
+    def __init__(self, environmentId: _Optional[str] = ..., customization_settings: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
+
+class CreateAssetUploadUrlResponse(_message.Message):
+    __slots__ = ("upload_url", "fetch_url")
+    UPLOAD_URL_FIELD_NUMBER: _ClassVar[int]
+    FETCH_URL_FIELD_NUMBER: _ClassVar[int]
+    upload_url: str
+    fetch_url: str
+    def __init__(self, upload_url: _Optional[str] = ..., fetch_url: _Optional[str] = ...) -> None: ...
+
+class CreateAssetUploadUrlRequest(_message.Message):
+    __slots__ = ("id", "asset_settings")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    ASSET_SETTINGS_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    asset_settings: AssetSettings
+    def __init__(self, id: _Optional[str] = ..., asset_settings: _Optional[_Union[AssetSettings, _Mapping]] = ...) -> None: ...
+
+class AssetSettings(_message.Message):
+    __slots__ = ("category", "extension")
+    CATEGORY_FIELD_NUMBER: _ClassVar[int]
+    EXTENSION_FIELD_NUMBER: _ClassVar[int]
+    category: AssetCategory
+    extension: str
+    def __init__(self, category: _Optional[_Union[AssetCategory, str]] = ..., extension: _Optional[str] = ...) -> None: ...

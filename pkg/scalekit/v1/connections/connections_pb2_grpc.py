@@ -40,19 +40,14 @@ class ConnectionServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.DeleteConnectionRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
-        self.GetConnectionByDomain = channel.unary_unary(
-                '/scalekit.v1.connections.ConnectionService/GetConnectionByDomain',
-                request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.GetConnectionByDomainRequest.SerializeToString,
-                response_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.GetConnectionByDomainResponse.FromString,
-                )
         self.EnableConnection = channel.unary_unary(
                 '/scalekit.v1.connections.ConnectionService/EnableConnection',
-                request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.EnableConnectionRequest.SerializeToString,
+                request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleConnectionRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleConnectionResponse.FromString,
                 )
         self.DisableConnection = channel.unary_unary(
                 '/scalekit.v1.connections.ConnectionService/DisableConnection',
-                request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.DisableConnectionRequest.SerializeToString,
+                request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleConnectionRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleConnectionResponse.FromString,
                 )
 
@@ -85,12 +80,6 @@ class ConnectionServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def DeleteConnection(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def GetConnectionByDomain(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -136,19 +125,14 @@ def add_ConnectionServiceServicer_to_server(servicer, server):
                     request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.DeleteConnectionRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
-            'GetConnectionByDomain': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetConnectionByDomain,
-                    request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.GetConnectionByDomainRequest.FromString,
-                    response_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.GetConnectionByDomainResponse.SerializeToString,
-            ),
             'EnableConnection': grpc.unary_unary_rpc_method_handler(
                     servicer.EnableConnection,
-                    request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.EnableConnectionRequest.FromString,
+                    request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleConnectionRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleConnectionResponse.SerializeToString,
             ),
             'DisableConnection': grpc.unary_unary_rpc_method_handler(
                     servicer.DisableConnection,
-                    request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.DisableConnectionRequest.FromString,
+                    request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleConnectionRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleConnectionResponse.SerializeToString,
             ),
     }
@@ -247,23 +231,6 @@ class ConnectionService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def GetConnectionByDomain(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connections.ConnectionService/GetConnectionByDomain',
-            scalekit_dot_v1_dot_connections_dot_connections__pb2.GetConnectionByDomainRequest.SerializeToString,
-            scalekit_dot_v1_dot_connections_dot_connections__pb2.GetConnectionByDomainResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
     def EnableConnection(request,
             target,
             options=(),
@@ -275,7 +242,7 @@ class ConnectionService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connections.ConnectionService/EnableConnection',
-            scalekit_dot_v1_dot_connections_dot_connections__pb2.EnableConnectionRequest.SerializeToString,
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleConnectionRequest.SerializeToString,
             scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleConnectionResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
@@ -292,7 +259,7 @@ class ConnectionService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connections.ConnectionService/DisableConnection',
-            scalekit_dot_v1_dot_connections_dot_connections__pb2.DisableConnectionRequest.SerializeToString,
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleConnectionRequest.SerializeToString,
             scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleConnectionResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

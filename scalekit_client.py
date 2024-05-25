@@ -25,10 +25,16 @@ class Scalekit:
         :returns
             None
         """
-        self.core_client = CoreClient(env_url=env_url, client_id=client_id, client_secret=client_secret)
-        self.domain_client = DomainClient(env_url=env_url, client_id=client_id, client_secret=client_secret)
-        self.connection_client = ConnectionClient(env_url=env_url, client_id=client_id, client_secret=client_secret)
-        self.organization_client = OrganizationClient(env_url=env_url, client_id=client_id, client_secret=client_secret)
+        try:
+            self.core_client = CoreClient(env_url=env_url, client_id=client_id, client_secret=client_secret)
+            self.domain_client = DomainClient(
+                env_url=env_url, client_id=client_id, client_secret=client_secret)
+            self.connection_client = ConnectionClient(
+                env_url=env_url, client_id=client_id, client_secret=client_secret)
+            self.organization_client = OrganizationClient(
+                env_url=env_url, client_id=client_id, client_secret=client_secret)
+        except Exception as exp:
+            raise exp
 
     def get_authorization_url(self, redirect_uri: str, options: AuthorizationUrlOptions | None):
         """
@@ -39,21 +45,24 @@ class Scalekit:
         :returns
             Authorization URL 
         """
-        scopes = options.scopes if options.scopes else ["openid", "profile"]
-        query_string = urlencode({
-            'response_type': 'code',
-            'client_id': self.core_client.client_id,
-            'redirect_uri': redirect_uri,
-            'scope': " ".join(scopes),
-            'state': options.state,
-            'nonce': options.nonce,
-            'login_hint': options.login_hint,
-            'domain_hint': options.domain_hint,
-            'connection_id': options.connection_id,
-            'organization_id': options.organization_id
-        })
+        try:
+            scopes = options.scopes if options.scopes else ["openid", "profile"]
+            query_string = urlencode({
+                'response_type': 'code',
+                'client_id': self.core_client.client_id,
+                'redirect_uri': redirect_uri,
+                'scope': " ".join(scopes),
+                'state': options.state,
+                'nonce': options.nonce,
+                'login_hint': options.login_hint,
+                'domain_hint': options.domain_hint,
+                'connection_id': options.connection_id,
+                'organization_id': options.organization_id
+            })
 
-        return f'{self.core_client.env_url}/{AUTHORIZE_ENDPOINT}?{query_string}'
+            return f'{self.core_client.env_url}/{AUTHORIZE_ENDPOINT}?{query_string}'
+        except Exception as exp:
+            raise exp
 
     def authenticate_with_code(self, options: CodeAuthenticationOptions):
         """
@@ -63,29 +72,33 @@ class Scalekit:
         :returns:
             dict with user and id/access token 
         """
-        response = self.core_client.authenticate(json.dumps({
-            'code': options.code,
-            'redirect_uri': options.redirect_uri,
-            'grant_type': GrantType.AuthorizationCode.value,
-            'client_id': self.core_client.client_id,
-            'client_secret': self.core_client.client_secret,
-            'code_verifier': options.code_verifier,
-        }))
-        response = json.loads(response.content)
-        id_token = response['id_token']
-        access_token = response['access_token']
+        try:
+            response = self.core_client.authenticate(json.dumps({
+                'code': options.code,
+                'redirect_uri': options.redirect_uri,
+                'grant_type': GrantType.AuthorizationCode.value,
+                'client_id': self.core_client.client_id,
+                'client_secret': self.core_client.client_secret,
+                'code_verifier': options.code_verifier,
+            }))
+            response = json.loads(response.content)
+            id_token = response['id_token']
+            access_token = response['access_token']
 
-        self.core_client.get_jwks()
-        kid = jwt.get_unverified_header(id_token)['kid']
-        key = self.core_client.public_keys[kid]
+            self.core_client.get_jwks()
+            kid = jwt.get_unverified_header(id_token)['kid']
+            key = self.core_client.public_keys[kid]
 
-        claims = jwt.decode(id_token, key=key, options={'verify_aud': False})
-        user = {}
-        for k, v in claims.items():
-            if id_token_claim_to_user_map.get(k, None):
-                user[id_token_claim_to_user_map[k]] = v
+            claims = jwt.decode(id_token, key=key, options={'verify_aud': False})
+            user = {}
+            for k, v in claims.items():
+                if id_token_claim_to_user_map.get(k, None):
+                    user[id_token_claim_to_user_map[k]] = v
 
-        return {'user': user, 'id_token': id_token, 'access_token': access_token}
+            return {'user': user, 'id_token': id_token, 'access_token': access_token}
+
+        except Exception as exp:
+            raise exp
 
     def validate_access_token(self, token: str) -> bool:
         """
@@ -95,11 +108,15 @@ class Scalekit:
         :returns
             None
         """
-        self.core_client.get_jwks()
-
         try:
-            claims = jwt.decode(token, self.core_client.keys)
-            return True
-        except jwt.exceptions.InvalidTokenError:
-            print('token verification failed!')
-            return False
+            self.core_client.get_jwks()
+
+            try:
+                claims = jwt.decode(token, self.core_client.keys)
+                return True
+            except jwt.exceptions.InvalidTokenError:
+                print('token verification failed!')
+                return False
+
+        except Exception as exp:
+            raise exp

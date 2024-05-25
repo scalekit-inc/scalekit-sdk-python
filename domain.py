@@ -6,29 +6,85 @@ from pkg.scalekit.v1.domains.domains_pb2 import *
 
 
 class DomainClient:
-    """ """
-    def __init__(self, env_url, client_id, client_secret):
-        """ """
-        self.host = env_url.split('//')[1]
-        self.core_client = CoreClient(env_url, client_id, client_secret)
-        self.domain_service = DomainServiceStub(
-            grpc.secure_channel(
-                self.host, credentials=grpc.compute_engine_channel_credentials(
-                    grpc.access_token_call_credentials(self.core_client.authenticate_client())
+    """ Class definition for Domain Client """
+    def __init__(self, env_url, client_id, client_secret, custom_headers=None):
+        """
+        Initializer for Domain Client
+
+        :param env_url        : Environment URL
+        :type                 : ``` str ```
+        :param client_id      : Client ID
+        :type                 : ``` str ```
+        :param client_secret  : Client Secret
+        :type                 : ``` str ```
+        :returns
+            None
+        """
+        try:
+            self.custom_headers = custom_headers
+            self.host = env_url.split('//')[1]
+            self.core_client = CoreClient(env_url, client_id, client_secret)
+            self.domain_service = DomainServiceStub(
+                grpc.secure_channel(
+                    self.host, credentials=grpc.compute_engine_channel_credentials(
+                        grpc.access_token_call_credentials(self.core_client.authenticate_client())
+                    )
                 )
             )
-        )
+        except Exception as exp:
+            raise exp
 
-    async def create_domain(self, organization_id: str, domain_name: str) -> GetDomainResponse:
-        """ """
-        return await self.domain_service.CreateDomain(
-            CreateDomainRequest(organization_id=organization_id, domain=CreateDomain(domain=domain_name))
-        )
+    def create_domain(self, organization_id: str, domain_name: str) -> CreateDomainResponse:
+        """
+        Method to create domain
 
-    async def list_domains(self, organization_id: str) -> GetDomainResponse:
-        """ """
-        return await self.domain_service.ListDomains(ListDomainRequest(organization_id=organization_id))
+        :param organization_id  : Organization id to create domain for
+        :type                   : ``` str ```
+        :param domain_name      : Domain name for new creation
+        :type                   : ``` str ```
+        :returns
+            Domain Response
+        """
+        try:
+            return CoreClient.grpc_exec(
+                self.domain_service.CreateDomain,
+                CreateDomainRequest(organization_id=organization_id, domain=CreateDomain(domain=domain_name))
+            )
+        except Exception as exp:
+            raise exp
 
-    async def get_domain(self, organization_id: str, domain_id: str) -> GetDomainResponse:
-        """ """
-        return await self.domain_service.GetDomain(GetDomainRequest(organization_id=organization_id, id=domain_id))
+    def list_domains(self, organization_id: str) -> ListDomainResponse:
+        """
+        Method to list existing domains
+
+        :param organization_id  : Organization id to list domains for
+        :type                   : ``` str ```
+        :returns
+            List Domain Response
+        """
+        try:
+            return CoreClient.grpc_exec(
+                self.domain_service.ListDomains,
+                ListDomainRequest(organization_id=organization_id)
+            )
+        except Exception as exp:
+            raise exp
+
+    def get_domain(self, organization_id: str, domain_id: str) -> GetDomainResponse:
+        """
+        Method to list existing domains
+
+        :param organization_id  : Organization id to list domains for
+        :type                   : ``` str ```
+        :param domain_id        : Domain name for new creation
+        :type                   : ``` str ```
+        :returns
+            Get Domain Response
+        """
+        try:
+            return CoreClient.grpc_exec(
+                self.domain_service.GetDomain,
+                GetDomainRequest(organization_id=organization_id, id=domain_id)
+            )
+        except Exception as exp:
+            raise exp

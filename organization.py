@@ -7,7 +7,7 @@ from pkg.scalekit.v1.organizations.organizations_pb2 import *
 
 class OrganizationClient:
     """ Class definition for Organization Client """
-    def __init__(self, env_url, client_id, client_secret):
+    def __init__(self, env_url, client_id, client_secret, custom_headers=None):
         """
         Initializer for Organization Client
 
@@ -20,19 +20,23 @@ class OrganizationClient:
         :returns
             None
         """
-        self.host = env_url.split('//')[1]
-        self.core_client = CoreClient(env_url, client_id, client_secret)
-        self.organization_service = OrganizationServiceStub(
-            grpc.secure_channel(
-                self.host, credentials=grpc.compute_engine_channel_credentials(
-                    grpc.access_token_call_credentials(self.core_client.authenticate_client())
+        try:
+            self.custom_headers = custom_headers
+            self.host = env_url.split('//')[1]
+            self.core_client = CoreClient(env_url, client_id, client_secret)
+            self.organization_service = OrganizationServiceStub(
+                grpc.secure_channel(
+                    self.host, credentials=grpc.compute_engine_channel_credentials(
+                        grpc.access_token_call_credentials(self.core_client.authenticate_client())
+                    )
                 )
             )
-        )
+        except Exception as exp:
+            raise exp
 
-    async def list_organizations(self, page_size: int, page_token: str) -> CreateOrganizationResponse:
+    def list_organizations(self, page_size: int, page_token: str = None) -> CreateOrganizationResponse:
         """
-        Method to list orgqnizations 
+        Method to list organizations
 
         :param page_size  : page size for org list fetch
         :type             : ``` int ```
@@ -41,11 +45,15 @@ class OrganizationClient:
         :returns:
              list of organizations
         """
-        return await self.organization_service.ListOrganization(
-            ListOrganizationsRequest(page_size=page_size, page_token=page_token)
-        )
+        try:
+            return CoreClient.grpc_exec(
+                self.organization_service.ListOrganization,
+                ListOrganizationsRequest(page_size=page_size, page_token=page_token)
+            )
+        except Exception as exp:
+            raise exp
 
-    async def create_organization(self, organization: dict) -> CreateOrganizationResponse:
+    def create_organization(self, organization: dict) -> CreateOrganizationResponse:
         """
         Method to create organization based on given data
          
@@ -54,13 +62,11 @@ class OrganizationClient:
         :returns:
             Create Organization Response 
         """
-        return await self.organization_service.CreateOrganization(
-            CreateOrganizationRequest(
-                organization=organization
-            )
+        return CoreClient.grpc_exec(
+            self.organization_service.CreateOrganization, CreateOrganizationRequest(organization=organization)
         )
 
-    async def update_organization(self, org_id: str, organization: UpdateOrganization.MetadataEntry | None) -> (
+    def update_organization(self, org_id: str, organization: UpdateOrganization.MetadataEntry | None) -> (
             UpdateOrganizationResponse):
         """
         Method to update organization based on given data
@@ -72,11 +78,15 @@ class OrganizationClient:
         :returns:
             Update Organization Response 
         """
-        return await self.organization_service.UpdateOrganization(
-            UpdateOrganizationRequest(id=org_id, organization=organization)
-        )
+        try:
+            return CoreClient.grpc_exec(
+                self.organization_service.UpdateOrganization,
+                UpdateOrganizationRequest(id=org_id, organization=organization)
+            )
+        except Exception as exp:
+            raise exp
 
-    async def update_organization_by_external_id(self, external_id: str) -> UpdateOrganizationResponse:
+    def update_organization_by_external_id(self, external_id: str) -> UpdateOrganizationResponse:
         """
         Method to update organization based on external id
          
@@ -85,9 +95,15 @@ class OrganizationClient:
         :returns:
             Update Organization Response  
         """
-        return await self.organization_service.UpdateOrganization(UpdateOrganizationRequest(external_id=external_id))
+        try:
+            return CoreClient.grpc_exec(
+                self.organization_service.UpdateOrganization,
+                UpdateOrganizationRequest(external_id=external_id)
+            )
+        except Exception as exp:
+            raise exp
 
-    async def get_organization(self, org_id: str) -> GetOrganizationResponse:
+    def get_organization(self, org_id: str) -> GetOrganizationResponse:
         """
         Method to get organization based on given org id
          
@@ -96,9 +112,15 @@ class OrganizationClient:
         :returns:
             Get Organization Response 
         """
-        return await self.organization_service.GetOrganization(GetOrganizationRequest(id=org_id))
+        try:
+            return CoreClient.grpc_exec(
+                self.organization_service.GetOrganization,
+                GetOrganizationRequest(id=org_id)
+            )
+        except Exception as exp:
+            raise exp
 
-    async def get_organization_by_external_id(self, external_id: str):
+    def get_organization_by_external_id(self, external_id: str):
         """
         Method to get organization based on given org id
          
@@ -107,14 +129,26 @@ class OrganizationClient:
         :returns:
             Get Organization Response 
         """
-        return await self.organization_service.GetOrganization(GetOrganizationRequest(external_id=external_id))
+        try:
+            return CoreClient.grpc_exec(
+                self.organization_service.GetOrganization,
+                GetOrganizationRequest(external_id=external_id)
+            )
+        except Exception as exp:
+            raise exp
 
-    async def generate_customer_portal_link(self, org_id: str) -> CustomerPortalLinksResponse:
+    def generate_portal_link(self, org_id: str) -> GeneratePortalLinkResponse:
         """
-        Method to generate customoer portal link
-        
+        Method to generate customer portal link
+
         :param org_id       : Organization id to fetch portal link for
-        :type               : ``` str ``` 
-        :return: 
+        :type               : ``` str ```
+        :return:
         """
-        return await self.organization_service.GetCustomerPortalLink(CustomerPortalLinkRequest(id=org_id))
+        try:
+            return CoreClient.grpc_exec(
+                self.organization_service.GeneratePortalLink,
+                GeneratePortalLinkRequest(id=org_id)
+            )
+        except Exception as exp:
+            raise exp

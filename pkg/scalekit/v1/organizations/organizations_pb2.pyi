@@ -1,12 +1,14 @@
 from buf.validate import validate_pb2 as _validate_pb2
 from google.api import annotations_pb2 as _annotations_pb2
 from google.api import field_behavior_pb2 as _field_behavior_pb2
+from google.api import visibility_pb2 as _visibility_pb2
 from google.protobuf import any_pb2 as _any_pb2
 from google.protobuf import duration_pb2 as _duration_pb2
 from google.protobuf import empty_pb2 as _empty_pb2
 from google.protobuf import field_mask_pb2 as _field_mask_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
 from google.protobuf import wrappers_pb2 as _wrappers_pb2
+from protoc_gen_openapiv2.options import annotations_pb2 as _annotations_pb2_1
 from scalekit.v1.commons import commons_pb2 as _commons_pb2
 from scalekit.v1.options import options_pb2 as _options_pb2
 from google.protobuf.internal import containers as _containers
@@ -147,7 +149,19 @@ class DeleteOrganizationRequest(_message.Message):
     external_id: str
     def __init__(self, id: _Optional[str] = ..., external_id: _Optional[str] = ...) -> None: ...
 
-class CustomerPortalLinkRequest(_message.Message):
+class GeneratePortalLinkRequest(_message.Message):
+    __slots__ = ("id",)
+    ID_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    def __init__(self, id: _Optional[str] = ...) -> None: ...
+
+class GetPortalLinkRequest(_message.Message):
+    __slots__ = ("id",)
+    ID_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    def __init__(self, id: _Optional[str] = ...) -> None: ...
+
+class DeletePortalLinkRequest(_message.Message):
     __slots__ = ("id",)
     ID_FIELD_NUMBER: _ClassVar[int]
     id: str
@@ -163,7 +177,13 @@ class Link(_message.Message):
     expire_time: _timestamp_pb2.Timestamp
     def __init__(self, id: _Optional[str] = ..., location: _Optional[str] = ..., expire_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
-class CustomerPortalLinksResponse(_message.Message):
+class GeneratePortalLinkResponse(_message.Message):
+    __slots__ = ("link",)
+    LINK_FIELD_NUMBER: _ClassVar[int]
+    link: Link
+    def __init__(self, link: _Optional[_Union[Link, _Mapping]] = ...) -> None: ...
+
+class GetPortalLinksResponse(_message.Message):
     __slots__ = ("links",)
     LINKS_FIELD_NUMBER: _ClassVar[int]
     links: _containers.RepeatedCompositeFieldContainer[Link]

@@ -1,9 +1,11 @@
 from buf.validate import validate_pb2 as _validate_pb2
 from google.api import annotations_pb2 as _annotations_pb2
 from google.api import field_behavior_pb2 as _field_behavior_pb2
+from google.api import visibility_pb2 as _visibility_pb2
 from google.protobuf import empty_pb2 as _empty_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
 from google.protobuf import wrappers_pb2 as _wrappers_pb2
+from protoc_gen_openapiv2.options import annotations_pb2 as _annotations_pb2_1
 from scalekit.v1.commons import commons_pb2 as _commons_pb2
 from scalekit.v1.options import options_pb2 as _options_pb2
 from google.protobuf.internal import containers as _containers
@@ -144,7 +146,7 @@ class CreateConnection(_message.Message):
     def __init__(self, provider: _Optional[_Union[ConnectionProvider, str]] = ..., type: _Optional[_Union[ConnectionType, str]] = ...) -> None: ...
 
 class Connection(_message.Message):
-    __slots__ = ("id", "provider", "type", "status", "enabled", "debug_enabled", "organization_id", "ui_button_title", "login_initiation_uri", "logout_uri", "configuration_type", "test_connection_uri", "oidc_config", "saml_config", "attribute_mapping")
+    __slots__ = ("id", "provider", "type", "status", "enabled", "debug_enabled", "organization_id", "ui_button_title", "login_initiation_uri", "logout_uri", "configuration_type", "test_connection_uri", "oidc_config", "saml_config", "attribute_mapping", "create_time", "update_time")
     class AttributeMappingEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -167,6 +169,8 @@ class Connection(_message.Message):
     OIDC_CONFIG_FIELD_NUMBER: _ClassVar[int]
     SAML_CONFIG_FIELD_NUMBER: _ClassVar[int]
     ATTRIBUTE_MAPPING_FIELD_NUMBER: _ClassVar[int]
+    CREATE_TIME_FIELD_NUMBER: _ClassVar[int]
+    UPDATE_TIME_FIELD_NUMBER: _ClassVar[int]
     id: str
     provider: ConnectionProvider
     type: ConnectionType
@@ -182,7 +186,9 @@ class Connection(_message.Message):
     oidc_config: OIDCConnectionConfig
     saml_config: SAMLConnectionConfigResponse
     attribute_mapping: _containers.ScalarMap[str, str]
-    def __init__(self, id: _Optional[str] = ..., provider: _Optional[_Union[ConnectionProvider, str]] = ..., type: _Optional[_Union[ConnectionType, str]] = ..., status: _Optional[_Union[ConnectionStatus, str]] = ..., enabled: bool = ..., debug_enabled: bool = ..., organization_id: _Optional[str] = ..., ui_button_title: _Optional[str] = ..., login_initiation_uri: _Optional[str] = ..., logout_uri: _Optional[str] = ..., configuration_type: _Optional[_Union[ConfigurationType, str]] = ..., test_connection_uri: _Optional[str] = ..., oidc_config: _Optional[_Union[OIDCConnectionConfig, _Mapping]] = ..., saml_config: _Optional[_Union[SAMLConnectionConfigResponse, _Mapping]] = ..., attribute_mapping: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    create_time: _timestamp_pb2.Timestamp
+    update_time: _timestamp_pb2.Timestamp
+    def __init__(self, id: _Optional[str] = ..., provider: _Optional[_Union[ConnectionProvider, str]] = ..., type: _Optional[_Union[ConnectionType, str]] = ..., status: _Optional[_Union[ConnectionStatus, str]] = ..., enabled: bool = ..., debug_enabled: bool = ..., organization_id: _Optional[str] = ..., ui_button_title: _Optional[str] = ..., login_initiation_uri: _Optional[str] = ..., logout_uri: _Optional[str] = ..., configuration_type: _Optional[_Union[ConfigurationType, str]] = ..., test_connection_uri: _Optional[str] = ..., oidc_config: _Optional[_Union[OIDCConnectionConfig, _Mapping]] = ..., saml_config: _Optional[_Union[SAMLConnectionConfigResponse, _Mapping]] = ..., attribute_mapping: _Optional[_Mapping[str, str]] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
 class CreateConnectionResponse(_message.Message):
     __slots__ = ("connection",)
@@ -264,14 +270,16 @@ class GetConnectionResponse(_message.Message):
     def __init__(self, connection: _Optional[_Union[Connection, _Mapping]] = ...) -> None: ...
 
 class ListConnectionsRequest(_message.Message):
-    __slots__ = ("organization_id", "external_id", "include")
+    __slots__ = ("organization_id", "external_id", "domain", "include")
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     EXTERNAL_ID_FIELD_NUMBER: _ClassVar[int]
+    DOMAIN_FIELD_NUMBER: _ClassVar[int]
     INCLUDE_FIELD_NUMBER: _ClassVar[int]
     organization_id: str
     external_id: str
+    domain: str
     include: str
-    def __init__(self, organization_id: _Optional[str] = ..., external_id: _Optional[str] = ..., include: _Optional[str] = ...) -> None: ...
+    def __init__(self, organization_id: _Optional[str] = ..., external_id: _Optional[str] = ..., domain: _Optional[str] = ..., include: _Optional[str] = ...) -> None: ...
 
 class ListConnectionsResponse(_message.Message):
     __slots__ = ("connections",)
@@ -297,17 +305,7 @@ class ListConnection(_message.Message):
     ui_button_title: str
     def __init__(self, id: _Optional[str] = ..., provider: _Optional[_Union[ConnectionProvider, str]] = ..., type: _Optional[_Union[ConnectionType, str]] = ..., status: _Optional[_Union[ConnectionStatus, str]] = ..., enabled: bool = ..., organization_id: _Optional[str] = ..., ui_button_title: _Optional[str] = ...) -> None: ...
 
-class EnableConnectionRequest(_message.Message):
-    __slots__ = ("organization_id", "external_id", "id")
-    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
-    EXTERNAL_ID_FIELD_NUMBER: _ClassVar[int]
-    ID_FIELD_NUMBER: _ClassVar[int]
-    organization_id: str
-    external_id: str
-    id: str
-    def __init__(self, organization_id: _Optional[str] = ..., external_id: _Optional[str] = ..., id: _Optional[str] = ...) -> None: ...
-
-class DisableConnectionRequest(_message.Message):
+class ToggleConnectionRequest(_message.Message):
     __slots__ = ("organization_id", "external_id", "id")
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     EXTERNAL_ID_FIELD_NUMBER: _ClassVar[int]
@@ -354,7 +352,7 @@ class OIDCConnectionConfig(_message.Message):
     def __init__(self, issuer: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., discovery_endpoint: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., authorize_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., token_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., user_info_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., jwks_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_id: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_secret: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., scopes: _Optional[_Iterable[_Union[OIDCScope, str]]] = ..., token_auth_type: _Optional[_Union[TokenAuthType, str]] = ..., redirect_uri: _Optional[str] = ..., pkce_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ...) -> None: ...
 
 class SAMLConnectionConfigRequest(_message.Message):
-    __slots__ = ("idp_metadata_url", "idp_entity_id", "idp_sso_url", "idp_certificate", "idp_slo_url", "ui_button_title", "idp_name_id_format", "sso_request_binding", "slo_request_binding", "saml_signing_option", "allow_idp_initiated_login", "force_authn", "default_redirect_uri", "assertion_encrypted", "want_request_signed")
+    __slots__ = ("idp_metadata_url", "idp_entity_id", "idp_sso_url", "idp_certificate", "idp_slo_url", "ui_button_title", "idp_name_id_format", "idp_sso_request_binding", "idp_slo_request_binding", "saml_signing_option", "allow_idp_initiated_login", "force_authn", "default_redirect_uri", "assertion_encrypted", "want_request_signed")
     IDP_METADATA_URL_FIELD_NUMBER: _ClassVar[int]
     IDP_ENTITY_ID_FIELD_NUMBER: _ClassVar[int]
     IDP_SSO_URL_FIELD_NUMBER: _ClassVar[int]
@@ -362,8 +360,8 @@ class SAMLConnectionConfigRequest(_message.Message):
     IDP_SLO_URL_FIELD_NUMBER: _ClassVar[int]
     UI_BUTTON_TITLE_FIELD_NUMBER: _ClassVar[int]
     IDP_NAME_ID_FORMAT_FIELD_NUMBER: _ClassVar[int]
-    SSO_REQUEST_BINDING_FIELD_NUMBER: _ClassVar[int]
-    SLO_REQUEST_BINDING_FIELD_NUMBER: _ClassVar[int]
+    IDP_SSO_REQUEST_BINDING_FIELD_NUMBER: _ClassVar[int]
+    IDP_SLO_REQUEST_BINDING_FIELD_NUMBER: _ClassVar[int]
     SAML_SIGNING_OPTION_FIELD_NUMBER: _ClassVar[int]
     ALLOW_IDP_INITIATED_LOGIN_FIELD_NUMBER: _ClassVar[int]
     FORCE_AUTHN_FIELD_NUMBER: _ClassVar[int]
@@ -377,15 +375,15 @@ class SAMLConnectionConfigRequest(_message.Message):
     idp_slo_url: _wrappers_pb2.StringValue
     ui_button_title: _wrappers_pb2.StringValue
     idp_name_id_format: NameIdFormat
-    sso_request_binding: RequestBinding
-    slo_request_binding: RequestBinding
+    idp_sso_request_binding: RequestBinding
+    idp_slo_request_binding: RequestBinding
     saml_signing_option: SAMLSigningOptions
     allow_idp_initiated_login: _wrappers_pb2.BoolValue
     force_authn: _wrappers_pb2.BoolValue
     default_redirect_uri: _wrappers_pb2.StringValue
     assertion_encrypted: _wrappers_pb2.BoolValue
     want_request_signed: _wrappers_pb2.BoolValue
-    def __init__(self, idp_metadata_url: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., idp_entity_id: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., idp_sso_url: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., idp_certificate: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., idp_slo_url: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., ui_button_title: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., idp_name_id_format: _Optional[_Union[NameIdFormat, str]] = ..., sso_request_binding: _Optional[_Union[RequestBinding, str]] = ..., slo_request_binding: _Optional[_Union[RequestBinding, str]] = ..., saml_signing_option: _Optional[_Union[SAMLSigningOptions, str]] = ..., allow_idp_initiated_login: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., force_authn: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., default_redirect_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., assertion_encrypted: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., want_request_signed: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ...) -> None: ...
+    def __init__(self, idp_metadata_url: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., idp_entity_id: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., idp_sso_url: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., idp_certificate: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., idp_slo_url: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., ui_button_title: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., idp_name_id_format: _Optional[_Union[NameIdFormat, str]] = ..., idp_sso_request_binding: _Optional[_Union[RequestBinding, str]] = ..., idp_slo_request_binding: _Optional[_Union[RequestBinding, str]] = ..., saml_signing_option: _Optional[_Union[SAMLSigningOptions, str]] = ..., allow_idp_initiated_login: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., force_authn: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., default_redirect_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., assertion_encrypted: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., want_request_signed: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ...) -> None: ...
 
 class SAMLConnectionConfigResponse(_message.Message):
     __slots__ = ("sp_entity_id", "sp_assertion_url", "sp_metadata_url", "idp_metadata_url", "idp_entity_id", "idp_sso_url", "idp_certificates", "idp_slo_url", "ui_button_title", "idp_name_id_format", "idp_sso_request_binding", "idp_slo_request_binding", "saml_signing_option", "allow_idp_initiated_login", "force_authn", "default_redirect_uri", "assertion_encrypted", "want_request_signed")
@@ -440,24 +438,6 @@ class IDPCertificate(_message.Message):
     id: str
     issuer: str
     def __init__(self, certificate: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., expiry_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., id: _Optional[str] = ..., issuer: _Optional[str] = ...) -> None: ...
-
-class GetConnectionByDomainRequest(_message.Message):
-    __slots__ = ("domain",)
-    DOMAIN_FIELD_NUMBER: _ClassVar[int]
-    domain: str
-    def __init__(self, domain: _Optional[str] = ...) -> None: ...
-
-class GetConnectionByDomainResponse(_message.Message):
-    __slots__ = ("connection_id", "status", "type", "ui_button_title")
-    CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
-    STATUS_FIELD_NUMBER: _ClassVar[int]
-    TYPE_FIELD_NUMBER: _ClassVar[int]
-    UI_BUTTON_TITLE_FIELD_NUMBER: _ClassVar[int]
-    connection_id: str
-    status: ConnectionStatus
-    type: ConnectionType
-    ui_button_title: str
-    def __init__(self, connection_id: _Optional[str] = ..., status: _Optional[_Union[ConnectionStatus, str]] = ..., type: _Optional[_Union[ConnectionType, str]] = ..., ui_button_title: _Optional[str] = ...) -> None: ...
 
 class GetOIDCMetadataRequest(_message.Message):
     __slots__ = ("metadata",)
