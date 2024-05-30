@@ -30,9 +30,9 @@ pip install scale-sdk-python
 ## Usage
 
 ```javascript
-from scalekit import Scalekit
+from scalekit import ScalekitClient
 
-scale_kit = Scalekit(env_url, client_id, client_secret)
+scalekit_client = Scalekit(env_url, client_id, client_secret)
 ```
 
 ## API Reference
