@@ -34,16 +34,13 @@ class DomainClient:
         :returns
             Domain Response
         """
-        try:
-            return self.core_client.grpc_exec(
-                self.domain_service.CreateDomain.with_call,
-                CreateDomainRequest(
-                    organization_id=organization_id,
-                    domain=CreateDomain(domain=domain_name),
-                ),
-            )
-        except Exception as exp:
-            raise exp
+        return self.core_client.grpc_exec(
+            self.domain_service.CreateDomain.with_call,
+            CreateDomainRequest(
+                organization_id=organization_id,
+                domain=CreateDomain(domain=domain_name),
+            ),
+        )
 
     def list_domains(self, organization_id: str) -> ListDomainResponse:
         """
@@ -54,10 +51,23 @@ class DomainClient:
         :returns
             List Domain Response
         """
-        try:
-            return self.core_client.grpc_exec(
-                self.domain_service.ListDomains.with_call,
-                ListDomainRequest(organization_id=organization_id),
+        return self.core_client.grpc_exec(
+            self.domain_service.ListDomains.with_call,
+            ListDomainRequest(organization_id=organization_id),
             )
-        except Exception as exp:
-            raise exp
+
+    def get_domain(self, organization_id: str, domain_id: str) -> GetDomainResponse:
+        """
+        Method to list existing domains
+
+        :param organization_id  : Organization id to list domains for
+        :type                   : ``` str ```
+        :param domain_id        : Domain name for new creation
+        :type                   : ``` str ```
+        :returns
+            Get Domain Response
+        """
+        return self.core_client.grpc_exec(
+            self.domain_service.GetDomain.with_call,
+            GetDomainRequest(organization_id=organization_id, id=domain_id),
+        )

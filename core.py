@@ -42,21 +42,25 @@ class CoreClient:
         :returns
             None
         """
-        try:
-            parsed_url = urlparse(env_url)
-            self.host = parsed_url.netloc
-            self.env_url = env_url
-            self.client_id = client_id
-            self.client_secret = client_secret
-            self.keys = None
-            self.access_token = None
-            self.grpc_secure_channel = None
-            self.__authenticate_client()
-            self.__grpc_secure_channel()
-        except Exception as exp:
-            raise exp
+        parsed_url = urlparse(env_url)
+        self.host = parsed_url.netloc
+        self.env_url = env_url
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.keys = None
+        self.access_token = None
+        self.grpc_secure_channel = None
+        self.__authenticate_client()
+        self.__grpc_secure_channel()
 
     def __grpc_secure_channel(self):
+        """
+        Method to authenticate grpc and create secure grpc channel
+        :params
+            None
+        :returns
+            None
+        """
         channel_credentials = grpc.ssl_channel_credentials()
         call_credentials = grpc.access_token_call_credentials(self.access_token)
         composite_credentials = grpc.composite_channel_credentials(
@@ -99,7 +103,7 @@ class CoreClient:
         return response
 
     def get_jwks(self):
-        """Method to get JWT Keys"""
+        """ Method to get JWT Keys """
         if self.keys and len(self.keys) > 0:
             return
         response = requests.get(
@@ -145,7 +149,14 @@ class CoreClient:
             raise exp
 
     def get_headers(self, headers: Optional[dict] = None) -> dict:
-        """ """
+        """
+        Method to get user defined headers and returns collated header params
+
+        :param headers : User defined header dictionary
+        :type          : ``` dict ```
+        :returns
+            dict
+        """
         default_headers = {
             "user-agent": f"{self.user_agent}",
             "x-api-version": f"{self.api_version}",

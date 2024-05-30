@@ -19,9 +19,7 @@ class ConnectionClient:
             self.core_client.grpc_secure_channel
         )
 
-    def get_connection(
-        self, organization_id: str, conn_id: str
-    ) -> GetConnectionResponse:
+    def get_connection(self, organization_id: str, conn_id: str) -> GetConnectionResponse:
         """
         Method to get connection object
 

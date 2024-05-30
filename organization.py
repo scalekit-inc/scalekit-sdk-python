@@ -1,3 +1,5 @@
+from typing import Optional
+
 from core import CoreClient
 from pkg.scalekit.v1.organizations.organizations_pb2_grpc import OrganizationServiceStub
 from pkg.scalekit.v1.organizations.organizations_pb2 import *
@@ -16,13 +18,9 @@ class OrganizationClient:
             None
         """
         self.core_client = core_client
-        self.organization_service = OrganizationServiceStub(
-            self.core_client.grpc_secure_channel
-        )
+        self.organization_service = OrganizationServiceStub(self.core_client.grpc_secure_channel)
 
-    def list_organizations(
-        self, page_size: int, page_token: str = None
-    ) -> CreateOrganizationResponse:
+    def list_organizations(self, page_size: int, page_token: Optional[str] = None) -> CreateOrganizationResponse:
         """
         Method to list organizations
 
@@ -33,13 +31,10 @@ class OrganizationClient:
         :returns:
              list of organizations
         """
-        try:
-            return self.core_client.grpc_exec(
-                self.organization_service.ListOrganization.with_call,
-                ListOrganizationsRequest(page_size=page_size, page_token=page_token),
-            )
-        except Exception as exp:
-            raise exp
+        return self.core_client.grpc_exec(
+            self.organization_service.ListOrganization.with_call,
+            ListOrganizationsRequest(page_size=page_size, page_token=page_token),
+        )
 
     def create_organization(self, organization: dict) -> CreateOrganizationResponse:
         """
@@ -68,17 +63,12 @@ class OrganizationClient:
         :returns:
             Update Organization Response
         """
-        try:
-            return self.core_client.grpc_exec(
-                self.organization_service.UpdateOrganization.with_call,
-                UpdateOrganizationRequest(id=org_id, organization=organization),
-            )
-        except Exception as exp:
-            raise exp
+        return self.core_client.grpc_exec(
+            self.organization_service.UpdateOrganization.with_call,
+            UpdateOrganizationRequest(id=org_id, organization=organization),
+        )
 
-    def update_organization_by_external_id(
-        self, external_id: str
-    ) -> UpdateOrganizationResponse:
+    def update_organization_by_external_id(self, external_id: str) -> UpdateOrganizationResponse:
         """
         Method to update organization based on external id
 
@@ -87,13 +77,10 @@ class OrganizationClient:
         :returns:
             Update Organization Response
         """
-        try:
-            return self.core_client.grpc_exec(
-                self.organization_service.UpdateOrganization.with_call,
-                UpdateOrganizationRequest(external_id=external_id),
-            )
-        except Exception as exp:
-            raise exp
+        return self.core_client.grpc_exec(
+            self.organization_service.UpdateOrganization.with_call,
+            UpdateOrganizationRequest(external_id=external_id),
+        )
 
     def get_organization(self, org_id: str) -> GetOrganizationResponse:
         """
@@ -104,13 +91,10 @@ class OrganizationClient:
         :returns:
             Get Organization Response
         """
-        try:
-            return self.core_client.grpc_exec(
-                self.organization_service.GetOrganization.with_call,
-                GetOrganizationRequest(id=org_id),
-            )
-        except Exception as exp:
-            raise exp
+        return self.core_client.grpc_exec(
+            self.organization_service.GetOrganization.with_call,
+            GetOrganizationRequest(id=org_id),
+        )
 
     def get_organization_by_external_id(self, external_id: str):
         """
@@ -121,13 +105,10 @@ class OrganizationClient:
         :returns:
             Get Organization Response
         """
-        try:
-            return self.core_client.grpc_exec(
-                self.organization_service.GetOrganization.with_call,
-                GetOrganizationRequest(external_id=external_id),
-            )
-        except Exception as exp:
-            raise exp
+        return self.core_client.grpc_exec(
+            self.organization_service.GetOrganization.with_call,
+            GetOrganizationRequest(external_id=external_id),
+        )
 
     def generate_portal_link(self, org_id: str) -> GeneratePortalLinkResponse:
         """
@@ -137,13 +118,13 @@ class OrganizationClient:
         :type               : ``` str ```
         :return:
         """
-        try:
-            return self.core_client.grpc_exec(
-                self.organization_service.GeneratePortalLink.with_call,
-                GeneratePortalLinkRequest(id=org_id),
-            )
-        except Exception as exp:
-            raise exp
+        response = self.core_client.grpc_exec(
+            self.organization_service.GeneratePortalLink.with_call,
+            GeneratePortalLinkRequest(id=org_id),
+        )
+        if not response.link:
+            raise Exception('Error generating portal link')
+        return response.link
 
     def get_portal_links(self, org_id: str) -> GetPortalLinksResponse:
         """
@@ -153,7 +134,22 @@ class OrganizationClient:
         :type               : ``` str ```
         :return:
         """
-        return self.core_client.grpc_exec(
+        response = self.core_client.grpc_exec(
             self.organization_service.GetPortalLinks.with_call,
             GetPortalLinkRequest(id=org_id),
+        )
+        return response.links
+
+    def delete_portal_link(self, org_id: str) -> None:
+        """
+        Method to delete customer portal link
+
+        :param org_id       : Organization id to delete portal link for
+        :type               : ``` str ```
+        :returns:
+            None
+        """
+        self.core_client.grpc_exec(
+            self.organization_service.DeletePortalLink.with_call,
+            DeletePortalLinkRequest(id=org_id),
         )
