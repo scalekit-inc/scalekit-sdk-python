@@ -2,12 +2,11 @@ import json
 from urllib.parse import urlencode
 
 import jwt
-from constants.user import *
-from core import CoreClient
-from domain import DomainClient
-from connection import ConnectionClient
-from organization import OrganizationClient
-from common.scalekit import (
+from scalekit_sdk.core import CoreClient
+from scalekit_sdk.domain import DomainClient
+from scalekit_sdk.connection import ConnectionClient
+from scalekit_sdk.organization import OrganizationClient
+from scalekit_sdk.common.scalekit import (
     AuthorizationUrlOptions,
     CodeAuthenticationOptions,
     GrantType,

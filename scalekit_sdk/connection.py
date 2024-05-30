@@ -1,7 +1,8 @@
 
-from core import CoreClient
+from scalekit_sdk.core import CoreClient
 from pkg.scalekit.v1.connections.connections_pb2_grpc import ConnectionServiceStub
 from pkg.scalekit.v1.connections.connections_pb2 import *
+
 
 class ConnectionClient:
     """Class definition for Connection Client"""
