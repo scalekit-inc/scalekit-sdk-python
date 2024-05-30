@@ -3,7 +3,6 @@ from core import CoreClient
 from pkg.scalekit.v1.connections.connections_pb2_grpc import ConnectionServiceStub
 from pkg.scalekit.v1.connections.connections_pb2 import *
 
-
 class ConnectionClient:
     """Class definition for Connection Client"""
     def __init__(self, core_client: CoreClient):
@@ -64,4 +63,40 @@ class ConnectionClient:
         return self.core_client.grpc_exec(
             self.connection_service.ListConnections.with_call,
             ListConnectionsRequest(organization_id=organization_id),
+        )
+    
+    def enable_connection(
+        self, organization_id: str, conn_id: str
+    ) -> ToggleConnectionResponse:
+        """
+        Method to enable connection
+
+        :param organization_id  : Client organization id to enable connection
+        :type                   : ``` str ```
+        :param conn_id          : Client connection id to enable connection
+        :type                   : ``` str ```
+        :returns
+            Enable Connection Response
+        """
+        return self.core_client.grpc_exec(
+            self.connection_service.EnableConnection.with_call,
+            ToggleConnectionResponse(organization_id=organization_id, id=conn_id),
+        )
+    
+    def disable_connection(
+        self, organization_id: str, conn_id: str
+    ) -> ToggleConnectionResponse:
+        """
+        Method to disable connection
+
+        :param organization_id  : Client organization id to disable connection
+        :type                   : ``` str ```
+        :param conn_id          : Client connection id to disable connection
+        :type                   : ``` str ```
+        :returns
+            Disable Connection Response
+        """
+        return self.core_client.grpc_exec(
+            self.connection_service.DisableConnection.with_call,
+            ToggleConnectionResponse(organization_id=organization_id, id=conn_id),
         )

@@ -1,4 +1,3 @@
-
 from core import CoreClient
 from pkg.scalekit.v1.organizations.organizations_pb2_grpc import OrganizationServiceStub
 from pkg.scalekit.v1.organizations.organizations_pb2 import *
@@ -17,7 +16,9 @@ class OrganizationClient:
             None
         """
         self.core_client = core_client
-        self.organization_service = OrganizationServiceStub(self.core_client.grpc_secure_channel)
+        self.organization_service = OrganizationServiceStub(
+            self.core_client.grpc_secure_channel
+        )
 
     def list_organizations(
         self, page_size: int, page_token: str = None
@@ -143,3 +144,16 @@ class OrganizationClient:
             )
         except Exception as exp:
             raise exp
+
+    def get_portal_links(self, org_id: str) -> GetPortalLinksResponse:
+        """
+        Method to get customer portal links
+
+        :param org_id       : Organization id to fetch portal link for
+        :type               : ``` str ```
+        :return:
+        """
+        return self.core_client.grpc_exec(
+            self.organization_service.GetPortalLinks.with_call,
+            GetPortalLinkRequest(id=org_id),
+        )

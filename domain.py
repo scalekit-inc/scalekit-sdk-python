@@ -61,22 +61,3 @@ class DomainClient:
             )
         except Exception as exp:
             raise exp
-
-    def get_domain(self, organization_id: str, domain_id: str) -> GetDomainResponse:
-        """
-        Method to list existing domains
-
-        :param organization_id  : Organization id to list domains for
-        :type                   : ``` str ```
-        :param domain_id        : Domain name for new creation
-        :type                   : ``` str ```
-        :returns
-            Get Domain Response
-        """
-        try:
-            return self.core_client.grpc_exec(
-                self.domain_service.GetDomain.with_call,
-                GetDomainRequest(organization_id=organization_id, id=domain_id),
-            )
-        except Exception as exp:
-            raise exp
