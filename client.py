@@ -48,8 +48,10 @@ class ScalekitClient:
         """
         Method to get authorization URL
 
-        :param redirect_uri : ``` str```
-        :param options      : ``` Auth URL options ```
+        :param redirect_uri   : Redirect URI for SAML SSO
+        :type                 : ``` str ```
+        :param options        : ``` Auth URL options object```
+        :type                 : ``` obj ```
         :returns
             Authorization URL
         """
@@ -78,9 +80,10 @@ class ScalekitClient:
         """
         Method to authenticate with code options
 
-        :param options: ``` CodeAuthenticationOptions ```
+        :param options: ``` CodeAuthenticationOptions Object ```
+        :type                 : ``` obj ```
         :returns:
-            dict with user and id/access token
+            dict with user, id token & access token
         """
         try:
             response = self.core_client.authenticate(
@@ -118,9 +121,10 @@ class ScalekitClient:
         """
         Method to validate access token
 
-        :param token : ``` str ```
+        :param token : access token
+        :type        : ``` str ```
         :returns
-            None
+            bool
         """
         try:
             self.core_client.get_jwks()
