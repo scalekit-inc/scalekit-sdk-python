@@ -2,8 +2,8 @@ version: v1
 
 plugins:
   - plugin: buf.build/grpc/python:v1.62.1
-    out : scalekit_sdk/pkg
+    out : .
   - plugin: buf.build/protocolbuffers/pyi:v26.1
-    out : scalekit_sdk/pkg
+    out : .
   - plugin: buf.build/protocolbuffers/python:v26.1
-    out: scalekit_sdk/pkg
+    out: .

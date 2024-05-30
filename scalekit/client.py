@@ -2,15 +2,16 @@ import json
 from urllib.parse import urlencode
 
 import jwt
-from scalekit_sdk.core import CoreClient
-from scalekit_sdk.domain import DomainClient
-from scalekit_sdk.connection import ConnectionClient
-from scalekit_sdk.organization import OrganizationClient
-from scalekit_sdk.common.scalekit import (
+from scalekit.core import CoreClient
+from scalekit.domain import DomainClient
+from scalekit.connection import ConnectionClient
+from scalekit.organization import OrganizationClient
+from scalekit.common.scalekit import (
     AuthorizationUrlOptions,
     CodeAuthenticationOptions,
     GrantType,
 )
+from scalekit.constants.user import id_token_claim_to_user_map
 
 AUTHORIZE_ENDPOINT = "oauth/authorize"
 

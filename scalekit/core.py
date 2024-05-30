@@ -7,8 +7,8 @@ import requests
 import platform
 from urllib.parse import urlparse
 from grpc_status import rpc_status
-from scalekit_sdk.common.scalekit import GrantType
-from scalekit_sdk.pkg.scalekit.v1.errdetails.errdetails_pb2 import ErrorInfo
+from scalekit.common.scalekit import GrantType
+from scalekit.v1.errdetails.errdetails_pb2 import ErrorInfo
 
 TRequest = TypeVar("TRequest")
 TResponse = TypeVar("TResponse")
@@ -47,7 +47,7 @@ class CoreClient:
         self.env_url = env_url
         self.client_id = client_id
         self.client_secret = client_secret
-        self.keys = None
+        self.keys = {}
         self.access_token = None
         self.grpc_secure_channel = None
         self.__authenticate_client()

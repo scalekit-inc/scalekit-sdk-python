@@ -1,8 +1,8 @@
 from typing import Optional
 
-from scalekit_sdk.core import CoreClient
-from scalekit_sdk.pkg.scalekit.v1.organizations.organizations_pb2 import *
-from scalekit_sdk.pkg.scalekit.v1.organizations.organizations_pb2_grpc import OrganizationServiceStub
+from scalekit.core import CoreClient
+from scalekit.v1.organizations.organizations_pb2 import *
+from scalekit.v1.organizations.organizations_pb2_grpc import OrganizationServiceStub
 
 
 class OrganizationClient:
