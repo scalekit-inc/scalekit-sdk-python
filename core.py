@@ -7,7 +7,7 @@ import requests
 import platform
 from urllib.parse import urlparse
 from grpc_status import rpc_status
-from options.scalekit import GrantType
+from common.scalekit import GrantType
 from pkg.scalekit.v1.errdetails.errdetails_pb2 import ErrorInfo
 
 TRequest = TypeVar("TRequest")
