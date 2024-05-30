@@ -23,9 +23,12 @@ class ScalekitClient:
         """
         Initializer for Scalekit base class
 
-        :param env_url        : ``` str ```
-        :param client_id      : ``` str ```
-        :param client_secret  : ``` str ```
+        :param env_url        : Environment URL
+        :type                 : ``` str ```
+        :param client_id      : Client ID
+        :type                 : ``` str ```
+        :param client_secret  : Client Secret
+        :type                 : ``` str ```
         :returns
             None
         """
