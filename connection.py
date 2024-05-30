@@ -1,4 +1,3 @@
-import grpc
 
 from core import CoreClient
 from pkg.scalekit.v1.connections.connections_pb2_grpc import ConnectionServiceStub

@@ -1,4 +1,4 @@
-from typing import TypeVar, Callable, Optional, Protocol
+from typing import TypeVar, Optional, Protocol
 
 import grpc
 import jwt
