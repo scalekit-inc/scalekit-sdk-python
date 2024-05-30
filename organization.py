@@ -39,7 +39,7 @@ class OrganizationClient:
         """
         try:
             return self.core_client.grpc_exec(
-                self.organization_service.ListOrganization,
+                self.organization_service.ListOrganization.with_call,
                 ListOrganizationsRequest(page_size=page_size, page_token=page_token),
             )
         except Exception as exp:
@@ -74,7 +74,7 @@ class OrganizationClient:
         """
         try:
             return self.core_client.grpc_exec(
-                self.organization_service.UpdateOrganization,
+                self.organization_service.UpdateOrganization.with_call,
                 UpdateOrganizationRequest(id=org_id, organization=organization),
             )
         except Exception as exp:
@@ -93,7 +93,7 @@ class OrganizationClient:
         """
         try:
             return self.core_client.grpc_exec(
-                self.organization_service.UpdateOrganization,
+                self.organization_service.UpdateOrganization.with_call,
                 UpdateOrganizationRequest(external_id=external_id),
             )
         except Exception as exp:
@@ -110,7 +110,7 @@ class OrganizationClient:
         """
         try:
             return self.core_client.grpc_exec(
-                self.organization_service.GetOrganization,
+                self.organization_service.GetOrganization.with_call,
                 GetOrganizationRequest(id=org_id),
             )
         except Exception as exp:
@@ -127,7 +127,7 @@ class OrganizationClient:
         """
         try:
             return self.core_client.grpc_exec(
-                self.organization_service.GetOrganization,
+                self.organization_service.GetOrganization.with_call,
                 GetOrganizationRequest(external_id=external_id),
             )
         except Exception as exp:
@@ -143,7 +143,7 @@ class OrganizationClient:
         """
         try:
             return self.core_client.grpc_exec(
-                self.organization_service.GeneratePortalLink,
+                self.organization_service.GeneratePortalLink.with_call,
                 GeneratePortalLinkRequest(id=org_id),
             )
         except Exception as exp:

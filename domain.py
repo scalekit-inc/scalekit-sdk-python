@@ -41,7 +41,7 @@ class DomainClient:
         """
         try:
             return self.core_client.grpc_exec(
-                self.domain_service.CreateDomain,
+                self.domain_service.CreateDomain.with_call,
                 CreateDomainRequest(
                     organization_id=organization_id,
                     domain=CreateDomain(domain=domain_name),
@@ -61,7 +61,7 @@ class DomainClient:
         """
         try:
             return self.core_client.grpc_exec(
-                self.domain_service.ListDomains,
+                self.domain_service.ListDomains.with_call,
                 ListDomainRequest(organization_id=organization_id),
             )
         except Exception as exp:
@@ -80,7 +80,7 @@ class DomainClient:
         """
         try:
             return self.core_client.grpc_exec(
-                self.domain_service.GetDomain,
+                self.domain_service.GetDomain.with_call,
                 GetDomainRequest(organization_id=organization_id, id=domain_id),
             )
         except Exception as exp:

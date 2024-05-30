@@ -39,7 +39,7 @@ class ConnectionClient:
             Connection Response
         """
         return self.core_client.grpc_exec(
-            self.connection_service.GetConnection,
+            self.connection_service.GetConnection.with_call,
             GetConnectionRequest(organization_id=organization_id, id=conn_id),
         )
 
@@ -53,7 +53,7 @@ class ConnectionClient:
             List Connections Response
         """
         return self.core_client.grpc_exec(
-            self.connection_service.ListConnections,
+            self.connection_service.ListConnections.with_call,
             ListConnectionsRequest(domain=domain),
         )
 
@@ -67,6 +67,6 @@ class ConnectionClient:
             List Connections Response
         """
         return self.core_client.grpc_exec(
-            self.connection_service.ListConnections,
+            self.connection_service.ListConnections.with_call,
             ListConnectionsRequest(organization_id=organization_id),
         )
