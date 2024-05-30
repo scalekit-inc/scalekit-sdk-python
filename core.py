@@ -1,4 +1,4 @@
-from typing import TypeVar, Callable, Optional
+from typing import TypeVar, Callable, Optional, Protocol
 
 import grpc
 import jwt
@@ -17,6 +17,11 @@ TMetadata = TypeVar("TMetadata")
 
 TOKEN_ENDPOINT = "/oauth/token"
 JWKS_ENDPOINT = "/keys"
+
+
+class WithCall(Protocol):
+    def __call__(self, request: TRequest, metadata: TMetadata) -> TResponse:
+        ...
 
 
 class CoreClient:
@@ -90,7 +95,7 @@ class CoreClient:
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
         response = requests.post(
             self.env_url + TOKEN_ENDPOINT,
-            headers=headers,
+            headers=self.get_headers(headers=headers),
             data=json.loads(data),
             verify=True,
         )
@@ -100,7 +105,7 @@ class CoreClient:
         """Method to get JWT Keys"""
         if self.keys:
             return
-        response = requests.get(self.env_url + JWKS_ENDPOINT)
+        response = requests.get(self.env_url + JWKS_ENDPOINT, headers=self.get_headers())
         response = json.loads(response.content)
         self.keys = response["keys"]
 
@@ -112,19 +117,14 @@ class CoreClient:
 
     def grpc_exec(
         self,
-        func: Callable[[TRequest, Optional[TMetadata]], TResponse],
+        func: WithCall,
         data: TRequest,
         retry=1,
     ) -> TResponse:
         try:
             resp = func(
                 data,
-                metadata=(
-                    ("Authorization", f"Bearer {self.access_token}"),
-                    ("User-Agent", self.user_agent),
-                    ("X-Api-Version", self.api_version),
-                    ("X-Sdk-Version", self.sdk_version),
-                ),
+                metadata=tuple(self.get_headers().items()),
             )
             return resp
         except grpc.RpcError as exp:
@@ -146,3 +146,16 @@ class CoreClient:
                 raise Exception("\n".join(messages))
         except Exception as exp:
             raise exp
+
+    def get_headers(self, headers: Optional[dict] = None) -> dict:
+        """ """
+        default_headers = {
+            "user-agent": f"{self.user_agent}",
+            "x-api-version": f"{self.api_version}",
+            "x-sdk-version": f"{self.sdk_version}"
+        }
+        if self.access_token:
+            default_headers.update({"authorization": f"Bearer {self.access_token}"})
+        if headers:
+            return {**default_headers, **headers}
+        return default_headers

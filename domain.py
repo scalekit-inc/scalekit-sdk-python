@@ -8,7 +8,7 @@ from pkg.scalekit.v1.domains.domains_pb2 import *
 class DomainClient:
     """Class definition for Domain Client"""
 
-    def __init__(self, coreClient: CoreClient):
+    def __init__(self, core_client: CoreClient):
         """
         Initializer for Domain Client
 
@@ -21,8 +21,8 @@ class DomainClient:
         :returns
             None
         """
-        self.core_client = coreClient
-        self.organization_service = DomainServiceStub(
+        self.core_client = core_client
+        self.domain_service = DomainServiceStub(
             self.core_client.grpc_secure_channel
         )
 

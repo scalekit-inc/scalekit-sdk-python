@@ -5,9 +5,9 @@ from pkg.scalekit.v1.connections.connections_pb2_grpc import ConnectionServiceSt
 from pkg.scalekit.v1.connections.connections_pb2 import *
 
 
-class ConnectionClient(CoreClient):
+class ConnectionClient:
     """Class definition for Connection Client"""
-    def __init__(self, coreClient: CoreClient):
+    def __init__(self, core_client: CoreClient):
         """
         Initializer for connection client
 
@@ -20,8 +20,8 @@ class ConnectionClient(CoreClient):
         :returns
             None
         """
-        self.core_client = coreClient
-        self.organization_service = ConnectionServiceStub(
+        self.core_client = core_client
+        self.connection_service = ConnectionServiceStub(
             self.core_client.grpc_secure_channel
         )
 

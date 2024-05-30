@@ -8,7 +8,7 @@ from pkg.scalekit.v1.organizations.organizations_pb2 import *
 class OrganizationClient:
     """Class definition for Organization Client"""
 
-    def __init__(self, coreClient: CoreClient):
+    def __init__(self, core_client: CoreClient):
         """
         Initializer for Organization Client
 
@@ -21,7 +21,7 @@ class OrganizationClient:
         :returns
             None
         """
-        self.core_client = coreClient
+        self.core_client = core_client
         self.organization_service = OrganizationServiceStub(self.core_client.grpc_secure_channel)
 
     def list_organizations(
@@ -55,7 +55,7 @@ class OrganizationClient:
             Create Organization Response
         """
         return self.core_client.grpc_exec(
-            self.organization_service.CreateOrganization,
+            self.organization_service.CreateOrganization.with_call,
             CreateOrganizationRequest(organization=organization),
         )
 
