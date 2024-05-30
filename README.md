@@ -24,7 +24,7 @@ This Python SDK is a wrapper around Scalekit's REST API to help you integrate Sc
 ## Installation
 
 ```sh
-pip install scalekit-sdk-python
+pip install scale-sdk-python
 ```
 
 ## Usage
