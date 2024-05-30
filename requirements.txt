@@ -1,4 +1,4 @@
 json
 python-jose
 google~=3.0.0
-requests~=2.31.0
+requests~=2.32.2
