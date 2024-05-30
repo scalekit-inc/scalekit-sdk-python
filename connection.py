@@ -10,12 +10,8 @@ class ConnectionClient:
         """
         Initializer for connection client
 
-        :param env_url        : Environment URL
-        :type                 : ``` str ```
-        :param client_id      : Client ID
-        :type                 : ``` str ```
-        :param client_secret  : Client Secret
-        :type                 : ``` str ```
+        :param core_client    : CoreClient Object
+        :type                 : ``` obj ```
         :returns
             None
         """

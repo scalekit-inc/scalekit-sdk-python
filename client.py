@@ -23,9 +23,12 @@ class ScalekitClient:
         """
         Initializer for Scalekit base class
 
-        :param env_url        : ``` str ```
-        :param client_id      : ``` str ```
-        :param client_secret  : ``` str ```
+        :param env_url        : Environment URL
+        :type                 : ``` str ```
+        :param client_id      : Client ID
+        :type                 : ``` str ```
+        :param client_secret  : Client Secret
+        :type                 : ``` str ```
         :returns
             None
         """
@@ -45,8 +48,10 @@ class ScalekitClient:
         """
         Method to get authorization URL
 
-        :param redirect_uri : ``` str```
-        :param options      : ``` Auth URL options ```
+        :param redirect_uri   : Redirect URI for SAML SSO
+        :type                 : ``` str ```
+        :param options        : ``` Auth URL options object```
+        :type                 : ``` obj ```
         :returns
             Authorization URL
         """
@@ -75,9 +80,10 @@ class ScalekitClient:
         """
         Method to authenticate with code options
 
-        :param options: ``` CodeAuthenticationOptions ```
+        :param options: ``` CodeAuthenticationOptions Object ```
+        :type                 : ``` obj ```
         :returns:
-            dict with user and id/access token
+            dict with user, id token & access token
         """
         try:
             response = self.core_client.authenticate(
@@ -114,9 +120,10 @@ class ScalekitClient:
         """
         Method to validate access token
 
-        :param token : ``` str ```
+        :param token : access token
+        :type        : ``` str ```
         :returns
-            None
+            bool
         """
         self.core_client.get_jwks()
         try:
