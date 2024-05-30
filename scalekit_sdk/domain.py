@@ -1,7 +1,7 @@
 
 from scalekit_sdk.core import CoreClient
-from pkg.scalekit.v1.domains.domains_pb2_grpc import DomainServiceStub
-from pkg.scalekit.v1.domains.domains_pb2 import *
+from scalekit_sdk.pkg.scalekit.v1.domains.domains_pb2 import *
+from scalekit_sdk.pkg.scalekit.v1.domains.domains_pb2_grpc import DomainServiceStub
 
 
 class DomainClient:

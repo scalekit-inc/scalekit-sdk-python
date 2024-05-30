@@ -8,7 +8,7 @@ import platform
 from urllib.parse import urlparse
 from grpc_status import rpc_status
 from scalekit_sdk.common.scalekit import GrantType
-from pkg.scalekit.v1.errdetails.errdetails_pb2 import ErrorInfo
+from scalekit_sdk.pkg.scalekit.v1.errdetails.errdetails_pb2 import ErrorInfo
 
 TRequest = TypeVar("TRequest")
 TResponse = TypeVar("TResponse")
