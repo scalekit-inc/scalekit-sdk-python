@@ -6,8 +6,9 @@ from pkg.scalekit.v1.domains.domains_pb2 import *
 
 
 class DomainClient:
-    """ Class definition for Domain Client """
-    def __init__(self, env_url, client_id, client_secret, custom_headers=None):
+    """Class definition for Domain Client"""
+
+    def __init__(self, coreClient: CoreClient):
         """
         Initializer for Domain Client
 
@@ -20,21 +21,14 @@ class DomainClient:
         :returns
             None
         """
-        try:
-            self.custom_headers = custom_headers
-            self.host = env_url.split('//')[1]
-            self.core_client = CoreClient(env_url, client_id, client_secret)
-            self.domain_service = DomainServiceStub(
-                grpc.secure_channel(
-                    self.host, credentials=grpc.compute_engine_channel_credentials(
-                        grpc.access_token_call_credentials(self.core_client.authenticate_client())
-                    )
-                )
-            )
-        except Exception as exp:
-            raise exp
+        self.core_client = coreClient
+        self.organization_service = DomainServiceStub(
+            self.core_client.grpc_secure_channel
+        )
 
-    def create_domain(self, organization_id: str, domain_name: str) -> CreateDomainResponse:
+    def create_domain(
+        self, organization_id: str, domain_name: str
+    ) -> CreateDomainResponse:
         """
         Method to create domain
 
@@ -46,9 +40,12 @@ class DomainClient:
             Domain Response
         """
         try:
-            return CoreClient.grpc_exec(
+            return self.core_client.grpc_exec(
                 self.domain_service.CreateDomain,
-                CreateDomainRequest(organization_id=organization_id, domain=CreateDomain(domain=domain_name))
+                CreateDomainRequest(
+                    organization_id=organization_id,
+                    domain=CreateDomain(domain=domain_name),
+                ),
             )
         except Exception as exp:
             raise exp
@@ -63,9 +60,9 @@ class DomainClient:
             List Domain Response
         """
         try:
-            return CoreClient.grpc_exec(
+            return self.core_client.grpc_exec(
                 self.domain_service.ListDomains,
-                ListDomainRequest(organization_id=organization_id)
+                ListDomainRequest(organization_id=organization_id),
             )
         except Exception as exp:
             raise exp
@@ -82,9 +79,9 @@ class DomainClient:
             Get Domain Response
         """
         try:
-            return CoreClient.grpc_exec(
+            return self.core_client.grpc_exec(
                 self.domain_service.GetDomain,
-                GetDomainRequest(organization_id=organization_id, id=domain_id)
+                GetDomainRequest(organization_id=organization_id, id=domain_id),
             )
         except Exception as exp:
             raise exp

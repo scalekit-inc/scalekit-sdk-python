@@ -5,12 +5,12 @@ from pkg.scalekit.v1.connections.connections_pb2_grpc import ConnectionServiceSt
 from pkg.scalekit.v1.connections.connections_pb2 import *
 
 
-class ConnectionClient:
-    """ Class definition for Connection Client """
-    def __init__(self, env_url, client_id, client_secret, custom_headers=None):
+class ConnectionClient(CoreClient):
+    """Class definition for Connection Client"""
+    def __init__(self, coreClient: CoreClient):
         """
         Initializer for connection client
-        
+
         :param env_url        : Environment URL
         :type                 : ``` str ```
         :param client_id      : Client ID
@@ -20,24 +20,17 @@ class ConnectionClient:
         :returns
             None
         """
-        try:
-            self.custom_headers = custom_headers
-            self.host = env_url.split('//')[1]
-            self.core_client = CoreClient(env_url, client_id, client_secret)
-            self.connection_service = ConnectionServiceStub(
-                grpc.secure_channel(
-                    self.host, credentials=grpc.compute_engine_channel_credentials(
-                        grpc.access_token_call_credentials(self.core_client.authenticate_client())
-                    )
-                )
-            )
-        except Exception as exp:
-            raise exp
+        self.core_client = coreClient
+        self.organization_service = ConnectionServiceStub(
+            self.core_client.grpc_secure_channel
+        )
 
-    def get_connection(self, organization_id: str, conn_id: str) -> GetConnectionResponse:
+    def get_connection(
+        self, organization_id: str, conn_id: str
+    ) -> GetConnectionResponse:
         """
         Method to get connection object
-        
+
         :param organization_id  : Client organization id to get connection
         :type                   : ``` str ```
         :param conn_id          : Client connection id to get connection
@@ -45,9 +38,9 @@ class ConnectionClient:
         :returns
             Connection Response
         """
-        return CoreClient.grpc_exec(
+        return self.core_client.grpc_exec(
             self.connection_service.GetConnection,
-            GetConnectionRequest(organization_id=organization_id, id=conn_id)
+            GetConnectionRequest(organization_id=organization_id, id=conn_id),
         )
 
     def list_connections_by_domain(self, domain: str) -> ListConnectionsResponse:
@@ -59,21 +52,21 @@ class ConnectionClient:
         :returns
             List Connections Response
         """
-        return CoreClient.grpc_exec(
+        return self.core_client.grpc_exec(
             self.connection_service.ListConnections,
-            ListConnectionsRequest(domain=domain)
+            ListConnectionsRequest(domain=domain),
         )
 
     def list_connections(self, organization_id: str) -> ListConnectionsResponse:
         """
         Method to list connections
-        
+
         :param organization_id : Client organization id to get connection
         :type                  : ``` str ```
         :returns:
             List Connections Response
         """
-        return CoreClient.grpc_exec(
+        return self.core_client.grpc_exec(
             self.connection_service.ListConnections,
-            ListConnectionsRequest(organization_id=organization_id)
+            ListConnectionsRequest(organization_id=organization_id),
         )
