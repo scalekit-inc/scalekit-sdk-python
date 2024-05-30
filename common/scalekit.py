@@ -44,4 +44,4 @@ class AuthenticationOptions:
     """ Class definition for Authentication option params """
     def __init__(self):
         """ """
-        self.refreshToken: Optional[str] = None
+        self.refresh_token: Optional[str] = None

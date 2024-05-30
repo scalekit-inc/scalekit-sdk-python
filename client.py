@@ -98,8 +98,7 @@ class ScalekitClient:
 
             self.core_client.get_jwks()
             kid = jwt.get_unverified_header(id_token)["kid"]
-            key = self.core_client.public_keys[kid]
-
+            key = self.core_client.keys[kid]
             claims = jwt.decode(id_token, key=key, options={"verify_aud": False})
             user = {}
             for k, v in claims.items():
@@ -119,15 +118,9 @@ class ScalekitClient:
         :returns
             None
         """
+        self.core_client.get_jwks()
         try:
-            self.core_client.get_jwks()
-
-            try:
-                claims = jwt.decode(token, self.core_client.keys)
-                return True
-            except jwt.exceptions.InvalidTokenError:
-                print("token verification failed!")
-                return False
-
-        except Exception as exp:
-            raise exp
+            jwt.decode(token, self.core_client.keys)
+            return True
+        except jwt.exceptions.InvalidTokenError:
+            return False

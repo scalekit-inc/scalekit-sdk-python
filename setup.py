@@ -10,7 +10,6 @@ setup(
         "google==3.0.0",
         "requests==2.32.2",
         "PyJWT==1.7.1",
-        "authlib==1.3.0",
         "setuptools==69.2.0",
         "grpcio-status==1.64.0",
         "protoc-gen-openapiv2==0.0.1",

@@ -4,7 +4,6 @@ import grpc
 import jwt
 import json
 import requests
-from authlib.jose import JsonWebKey
 import platform
 from urllib.parse import urlparse
 from grpc_status import rpc_status
@@ -20,8 +19,7 @@ JWKS_ENDPOINT = "/keys"
 
 
 class WithCall(Protocol):
-    def __call__(self, request: TRequest, metadata: TMetadata) -> TResponse:
-        ...
+    def __call__(self, request: TRequest, metadata: TMetadata) -> TResponse: ...
 
 
 class CoreClient:
@@ -50,8 +48,7 @@ class CoreClient:
             self.env_url = env_url
             self.client_id = client_id
             self.client_secret = client_secret
-            self.keys: JsonWebKey = []
-            self.public_keys = {}
+            self.keys = None
             self.access_token = None
             self.grpc_secure_channel = None
             self.__authenticate_client()
@@ -103,17 +100,17 @@ class CoreClient:
 
     def get_jwks(self):
         """Method to get JWT Keys"""
-        if self.keys:
+        if self.keys and len(self.keys) > 0:
             return
-        response = requests.get(self.env_url + JWKS_ENDPOINT, headers=self.get_headers())
+        response = requests.get(
+            self.env_url + JWKS_ENDPOINT, headers=self.get_headers()
+        )
         response = json.loads(response.content)
-        self.keys = response["keys"]
+        keys = response["keys"]
 
-        for jwk in self.keys:
-            kid = jwk["kid"]
-            self.public_keys[kid] = jwt.algorithms.RSAAlgorithm.from_jwk(
-                json.dumps(jwk)
-            )
+        for key in keys:
+            kid = key["kid"]
+            self.keys[kid] = jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(key))
 
     def grpc_exec(
         self,
@@ -152,7 +149,7 @@ class CoreClient:
         default_headers = {
             "user-agent": f"{self.user_agent}",
             "x-api-version": f"{self.api_version}",
-            "x-sdk-version": f"{self.sdk_version}"
+            "x-sdk-version": f"{self.sdk_version}",
         }
         if self.access_token:
             default_headers.update({"authorization": f"Bearer {self.access_token}"})
