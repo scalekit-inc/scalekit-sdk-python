@@ -33,7 +33,7 @@ class CoreClient:
     async def authenticate(self, data: str):
         """ """
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        response = requests.post(self.env_url + TOKEN_ENDPOINT, headers=headers, data=json.loads(data))
+        response = requests.post(self.env_url + TOKEN_ENDPOINT, headers=headers, data=json.loads(data), verify=True)
         return response
 
     async def get_jwks(self):
