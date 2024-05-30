@@ -3,7 +3,7 @@ from typing import Optional
 
 class User:
     def __init__(self):
-        """ Class definition for user params """
+        """Class definition for user params"""
         self.id: str
         self.username: Optional[str] = None
         self.name: Optional[str] = None
@@ -25,7 +25,8 @@ class User:
 
 
 class Identity:
-    """ Class definition for identity params """
+    """Class definition for identity params"""
+
     def __init__(self):
         """ """
         self.connection_id = str
@@ -37,7 +38,8 @@ class Identity:
 
 
 class IdTokenClaimIdentity:
-    """ Class definition for ID token claim identity params """
+    """Class definition for ID token claim identity params"""
+
     def __init__(self):
         """ """
         self.connection_id = str
@@ -50,8 +52,9 @@ class IdTokenClaimIdentity:
 
 class IdTokenClaim:
     """ """
+
     def __init__(self):
-        """ Class definition for ID token claim params """
+        """Class definition for ID token claim params"""
         self.sub = str
         self.name = str
         self.preferred_username: Optional[str] = None
@@ -68,5 +71,5 @@ class IdTokenClaim:
         self.zone_info: Optional[str] = None
         self.locale: Optional[str] = None
         self.updated_at: Optional[str] = None
-        self.identities: IdTokenClaimIdentity()
+        self.identities: IdTokenClaimIdentity = None
         self.metadata: Optional[str] = None

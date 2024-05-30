@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="scalekit-sdk-python",
-    version="0.1",
+    version="1.0.0",
     packages=find_packages(),
     install_requires=[
         "grpcio==1.64.0",
@@ -13,13 +13,13 @@ setup(
         "setuptools==69.2.0",
         "grpcio-status==1.64.0",
         "protoc-gen-openapiv2==0.0.1",
-        "googleapis-common-protos",
+        "googleapis-common-protos==1.63.0",
     ],
     url="https://github.com/scalekit-inc/scalekit-sdk-python",
     license="MIT",
-    author="Scalekit-Inc",
-    author_email="support@scalekit_sdk.com",
-    description="",
+    author="Team Scalekit",
+    author_email="support@scalekit.com",
+    description="Scalekit official Python SDK",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     classifiers=[
