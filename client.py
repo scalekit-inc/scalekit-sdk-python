@@ -7,7 +7,7 @@ from core import CoreClient
 from domain import DomainClient
 from connection import ConnectionClient
 from organization import OrganizationClient
-from options.scalekit import (
+from common.scalekit import (
     AuthorizationUrlOptions,
     CodeAuthenticationOptions,
     GrantType,
