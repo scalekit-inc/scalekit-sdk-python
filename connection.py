@@ -63,9 +63,7 @@ class ConnectionClient:
             ListConnectionsRequest(organization_id=organization_id),
         )
     
-    def enable_connection(
-        self, organization_id: str, conn_id: str
-    ) -> ToggleConnectionResponse:
+    def enable_connection(self, organization_id: str, conn_id: str) -> ToggleConnectionResponse:
         """
         Method to enable connection
 
@@ -78,12 +76,10 @@ class ConnectionClient:
         """
         return self.core_client.grpc_exec(
             self.connection_service.EnableConnection.with_call,
-            ToggleConnectionResponse(organization_id=organization_id, id=conn_id),
+            ToggleConnectionRequest(organization_id=organization_id, id=conn_id),
         )
     
-    def disable_connection(
-        self, organization_id: str, conn_id: str
-    ) -> ToggleConnectionResponse:
+    def disable_connection(self, organization_id: str, conn_id: str) -> ToggleConnectionResponse:
         """
         Method to disable connection
 
@@ -96,5 +92,5 @@ class ConnectionClient:
         """
         return self.core_client.grpc_exec(
             self.connection_service.DisableConnection.with_call,
-            ToggleConnectionResponse(organization_id=organization_id, id=conn_id),
+            ToggleConnectionRequest(organization_id=organization_id, id=conn_id),
         )
