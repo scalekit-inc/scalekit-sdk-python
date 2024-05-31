@@ -76,11 +76,15 @@ class ScalekitClient:
         except Exception as exp:
             raise exp
 
-    def authenticate_with_code(self, options: CodeAuthenticationOptions):
+    def authenticate_with_code(self, code, redirect_uri, options: CodeAuthenticationOptions):
         """
         Method to authenticate with code options
 
-        :param options: ``` CodeAuthenticationOptions Object ```
+        :param code           : authorization_code
+        :type                 : ``` str ```
+        :param redirect_uri   : Redirect URI
+        :type                 : ``` str ```
+        :param options        : ``` CodeAuthenticationOptions Object ```
         :type                 : ``` obj ```
         :returns:
             dict with user, id token & access token
@@ -89,8 +93,8 @@ class ScalekitClient:
             response = self.core_client.authenticate(
                 json.dumps(
                     {
-                        "code": options.code,
-                        "redirect_uri": options.redirect_uri,
+                        "code": code,
+                        "redirect_uri": redirect_uri,
                         "grant_type": GrantType.AuthorizationCode.value,
                         "client_id": self.core_client.client_id,
                         "client_secret": self.core_client.client_secret,

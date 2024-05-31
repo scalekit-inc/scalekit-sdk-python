@@ -29,8 +29,6 @@ class CodeAuthenticationOptions:
 
     def __init__(self):
         """ """
-        self.code: Optional[str] = None
-        self.redirect_uri: Optional[str] = None
         self.code_verifier: Optional[str] = None
 
 
