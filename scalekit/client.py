@@ -109,7 +109,7 @@ class ScalekitClient:
             self.core_client.get_jwks()
             kid = jwt.get_unverified_header(id_token)["kid"]
             key = self.core_client.keys[kid]
-            claims = jwt.decode(id_token, key=key, options={"verify_aud": False})
+            claims = jwt.decode(id_token, key=key, algorithms='RS256', options={"verify_aud": False})
             user = {}
             for k, v in claims.items():
                 if id_token_claim_to_user_map.get(k, None):
