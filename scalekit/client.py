@@ -36,9 +36,9 @@ class ScalekitClient:
             self.core_client = CoreClient(
                 env_url=env_url, client_id=client_id, client_secret=client_secret
             )
-            self.domain_client = DomainClient(self.core_client)
-            self.connection_client = ConnectionClient(self.core_client)
-            self.organization_client = OrganizationClient(self.core_client)
+            self.domain = DomainClient(self.core_client)
+            self.connection = ConnectionClient(self.core_client)
+            self.organization = OrganizationClient(self.core_client)
         except Exception as exp:
             raise exp
 
