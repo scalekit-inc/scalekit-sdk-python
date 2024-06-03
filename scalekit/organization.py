@@ -43,7 +43,7 @@ class OrganizationClient:
         :param name     : Name of the org to be created
         :type           : ``` str ```
         :param options  : Additional details for org to be created
-        :type           :  Object of CreateOrganizationOptions
+        :type           : ``` obj ```
         :returns:
             Create Organization Response
         """
