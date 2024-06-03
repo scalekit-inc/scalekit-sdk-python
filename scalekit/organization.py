@@ -36,29 +36,29 @@ class OrganizationClient:
             ListOrganizationsRequest(page_size=page_size, page_token=page_token),
         )
 
-    def create_organization(self, organization: dict) -> CreateOrganizationResponse:
+    def create_organization(self, name: str, options: CreateOrganization) -> CreateOrganizationResponse:
         """
         Method to create organization based on given data
 
-        :param organization : dictionary containing org details for creation
-        :type               : ``` dict ```
+        :param name     : Name of the org to be created
+        :type           : ``` str ```
+        :param options  : Additional details for org to be created
+        :type           :  Object of CreateOrganizationOptions
         :returns:
             Create Organization Response
         """
         return self.core_client.grpc_exec(
             self.organization_service.CreateOrganization.with_call,
-            CreateOrganizationRequest(organization=organization),
+            CreateOrganizationRequest(organization={'displayName': name, 'externalId': options.external_id}),
         )
 
-    def update_organization(
-        self, org_id: str, organization: UpdateOrganization.MetadataEntry | None
-    ) -> UpdateOrganizationResponse:
+    def update_organization(self, org_id: str, organization: UpdateOrganization) -> UpdateOrganizationResponse:
         """
         Method to update organization based on given data
 
         :param org_id       : Organization id to update
         :type               : ``` str ```
-        :param organization : Update organization metadata object for org update
+        :param organization : Optional params for update organization operation
         :type               : ``` obj ```
         :returns:
             Update Organization Response
