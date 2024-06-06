@@ -18,9 +18,13 @@ class OrganizationClient:
             None
         """
         self.core_client = core_client
-        self.organization_service = OrganizationServiceStub(self.core_client.grpc_secure_channel)
+        self.organization_service = OrganizationServiceStub(
+            self.core_client.grpc_secure_channel
+        )
 
-    def list_organizations(self, page_size: int, page_token: Optional[str] = None) -> CreateOrganizationResponse:
+    def list_organizations(
+        self, page_size: int, page_token: Optional[str] = None
+    ) -> CreateOrganizationResponse:
         """
         Method to list organizations
 
@@ -36,7 +40,9 @@ class OrganizationClient:
             ListOrganizationsRequest(page_size=page_size, page_token=page_token),
         )
 
-    def create_organization(self, name: str, options: CreateOrganization) -> CreateOrganizationResponse:
+    def create_organization(
+        self, name: str, options: CreateOrganization
+    ) -> CreateOrganizationResponse:
         """
         Method to create organization based on given data
 
@@ -49,10 +55,14 @@ class OrganizationClient:
         """
         return self.core_client.grpc_exec(
             self.organization_service.CreateOrganization.with_call,
-            CreateOrganizationRequest(organization={'displayName': name, 'externalId': options.external_id}),
+            CreateOrganizationRequest(
+                organization={"displayName": name, "externalId": options.external_id}
+            ),
         )
 
-    def update_organization(self, org_id: str, organization: UpdateOrganization) -> UpdateOrganizationResponse:
+    def update_organization(
+        self, org_id: str, organization: UpdateOrganization
+    ) -> UpdateOrganizationResponse:
         """
         Method to update organization based on given data
 
@@ -68,7 +78,9 @@ class OrganizationClient:
             UpdateOrganizationRequest(id=org_id, organization=organization),
         )
 
-    def update_organization_by_external_id(self, external_id: str) -> UpdateOrganizationResponse:
+    def update_organization_by_external_id(
+        self, external_id: str
+    ) -> UpdateOrganizationResponse:
         """
         Method to update organization based on external id
 
@@ -123,7 +135,7 @@ class OrganizationClient:
             GeneratePortalLinkRequest(id=org_id),
         )
         if not response.link:
-            raise Exception('Error generating portal link')
+            raise Exception("Error generating portal link")
         return response.link
 
     def get_portal_links(self, org_id: str) -> GetPortalLinksResponse:

@@ -103,7 +103,7 @@ class CoreClient:
         return response
 
     def get_jwks(self):
-        """ Method to get JWT Keys """
+        """Method to get JWT Keys"""
         if self.keys and len(self.keys) > 0:
             return
         response = requests.get(
@@ -130,7 +130,7 @@ class CoreClient:
             return resp
         except grpc.RpcError as exp:
             if retry > 0:
-                return self.grpc_exec(func, data, retry=retry-1)
+                return self.grpc_exec(func, data, retry=retry - 1)
             else:
                 status_code = exp.code()
                 status = rpc_status.from_call(exp)

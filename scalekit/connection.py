@@ -1,4 +1,3 @@
-
 from scalekit.core import CoreClient
 from scalekit.v1.connections.connections_pb2 import *
 from scalekit.v1.connections.connections_pb2_grpc import ConnectionServiceStub
@@ -6,6 +5,7 @@ from scalekit.v1.connections.connections_pb2_grpc import ConnectionServiceStub
 
 class ConnectionClient:
     """Class definition for Connection Client"""
+
     def __init__(self, core_client: CoreClient):
         """
         Initializer for connection client
@@ -20,7 +20,9 @@ class ConnectionClient:
             self.core_client.grpc_secure_channel
         )
 
-    def get_connection(self, organization_id: str, conn_id: str) -> GetConnectionResponse:
+    def get_connection(
+        self, organization_id: str, conn_id: str
+    ) -> GetConnectionResponse:
         """
         Method to get connection object
 
@@ -63,8 +65,10 @@ class ConnectionClient:
             self.connection_service.ListConnections.with_call,
             ListConnectionsRequest(organization_id=organization_id),
         )
-    
-    def enable_connection(self, organization_id: str, conn_id: str) -> ToggleConnectionResponse:
+
+    def enable_connection(
+        self, organization_id: str, conn_id: str
+    ) -> ToggleConnectionResponse:
         """
         Method to enable connection
 
@@ -79,8 +83,10 @@ class ConnectionClient:
             self.connection_service.EnableConnection.with_call,
             ToggleConnectionRequest(organization_id=organization_id, id=conn_id),
         )
-    
-    def disable_connection(self, organization_id: str, conn_id: str) -> ToggleConnectionResponse:
+
+    def disable_connection(
+        self, organization_id: str, conn_id: str
+    ) -> ToggleConnectionResponse:
         """
         Method to disable connection
 
