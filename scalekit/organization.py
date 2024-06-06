@@ -61,12 +61,12 @@ class OrganizationClient:
         )
 
     def update_organization(
-        self, org_id: str, organization: UpdateOrganization
+        self, organization_id: str, organization: UpdateOrganization
     ) -> UpdateOrganizationResponse:
         """
         Method to update organization based on given data
 
-        :param org_id       : Organization id to update
+        :param organization_id       : Organization id to update
         :type               : ``` str ```
         :param organization : Optional params for update organization operation
         :type               : ``` obj ```
@@ -75,7 +75,7 @@ class OrganizationClient:
         """
         return self.core_client.grpc_exec(
             self.organization_service.UpdateOrganization.with_call,
-            UpdateOrganizationRequest(id=org_id, organization=organization),
+            UpdateOrganizationRequest(id=organization_id, organization=organization),
         )
 
     def update_organization_by_external_id(
@@ -94,18 +94,18 @@ class OrganizationClient:
             UpdateOrganizationRequest(external_id=external_id),
         )
 
-    def get_organization(self, org_id: str) -> GetOrganizationResponse:
+    def get_organization(self, organization_id: str) -> GetOrganizationResponse:
         """
         Method to get organization based on given org id
 
-        :param org_id  : Organization id
+        :param organization_id  : Organization id
         :type          : ``` str ```
         :returns:
             Get Organization Response
         """
         return self.core_client.grpc_exec(
             self.organization_service.GetOrganization.with_call,
-            GetOrganizationRequest(id=org_id),
+            GetOrganizationRequest(id=organization_id),
         )
 
     def get_organization_by_external_id(self, external_id: str):
@@ -122,46 +122,60 @@ class OrganizationClient:
             GetOrganizationRequest(external_id=external_id),
         )
 
-    def generate_portal_link(self, org_id: str) -> GeneratePortalLinkResponse:
+    def delete_organization(self, organization_id: str) -> None:
+        """
+        Method to delete organization based on given org id
+
+        :param organization_id  : Organization id
+        :type          : ``` str ```
+        :returns:
+            None
+        """
+        self.core_client.grpc_exec(
+            self.organization_service.DeleteOrganization.with_call,
+            DeleteOrganizationRequest(id=organization_id),
+        )
+
+    def generate_portal_link(self, organization_id: str) -> GeneratePortalLinkResponse:
         """
         Method to generate customer portal link
 
-        :param org_id       : Organization id to fetch portal link for
+        :param organization_id       : Organization id to fetch portal link for
         :type               : ``` str ```
         :return:
         """
         response = self.core_client.grpc_exec(
             self.organization_service.GeneratePortalLink.with_call,
-            GeneratePortalLinkRequest(id=org_id),
+            GeneratePortalLinkRequest(id=organization_id),
         )
         if not response.link:
             raise Exception("Error generating portal link")
         return response.link
 
-    def get_portal_links(self, org_id: str) -> GetPortalLinksResponse:
+    def get_portal_links(self, organization_id: str) -> GetPortalLinksResponse:
         """
         Method to get customer portal links
 
-        :param org_id       : Organization id to fetch portal link for
+        :param organization_id       : Organization id to fetch portal link for
         :type               : ``` str ```
         :return:
         """
         response = self.core_client.grpc_exec(
             self.organization_service.GetPortalLinks.with_call,
-            GetPortalLinkRequest(id=org_id),
+            GetPortalLinkRequest(id=organization_id),
         )
         return response.links
 
-    def delete_portal_link(self, org_id: str) -> None:
+    def delete_portal_link(self, organization_id: str) -> None:
         """
         Method to delete customer portal link
 
-        :param org_id       : Organization id to delete portal link for
+        :param organization_id       : Organization id to delete portal link for
         :type               : ``` str ```
         :returns:
             None
         """
         self.core_client.grpc_exec(
             self.organization_service.DeletePortalLink.with_call,
-            DeletePortalLinkRequest(id=org_id),
+            DeletePortalLinkRequest(id=organization_id),
         )
