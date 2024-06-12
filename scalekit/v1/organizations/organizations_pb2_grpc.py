@@ -40,20 +40,20 @@ class OrganizationServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.DeleteOrganizationRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
-        self.GenerateCustomerPortalLink = channel.unary_unary(
-                '/scalekit.v1.organizations.OrganizationService/GenerateCustomerPortalLink',
-                request_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.CustomerPortalLinkRequest.SerializeToString,
-                response_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.CustomerPortalLinksResponse.FromString,
+        self.GeneratePortalLink = channel.unary_unary(
+                '/scalekit.v1.organizations.OrganizationService/GeneratePortalLink',
+                request_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GeneratePortalLinkRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GeneratePortalLinkResponse.FromString,
                 )
-        self.DeleteCustomerPortalLink = channel.unary_unary(
-                '/scalekit.v1.organizations.OrganizationService/DeleteCustomerPortalLink',
-                request_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.CustomerPortalLinkRequest.SerializeToString,
+        self.DeletePortalLink = channel.unary_unary(
+                '/scalekit.v1.organizations.OrganizationService/DeletePortalLink',
+                request_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.DeletePortalLinkRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
-        self.GetCustomerPortalLink = channel.unary_unary(
-                '/scalekit.v1.organizations.OrganizationService/GetCustomerPortalLink',
-                request_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.CustomerPortalLinkRequest.SerializeToString,
-                response_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.CustomerPortalLinksResponse.FromString,
+        self.GetPortalLinks = channel.unary_unary(
+                '/scalekit.v1.organizations.OrganizationService/GetPortalLinks',
+                request_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetPortalLinkRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetPortalLinksResponse.FromString,
                 )
 
 
@@ -61,7 +61,8 @@ class OrganizationServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def CreateOrganization(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Create Organization
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -85,24 +86,26 @@ class OrganizationServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def DeleteOrganization(self, request, context):
+        """Delete an Organization
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GeneratePortalLink(self, request, context):
+        """Generate Portal Link for Org
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeletePortalLink(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def GenerateCustomerPortalLink(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def DeleteCustomerPortalLink(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def GetCustomerPortalLink(self, request, context):
+    def GetPortalLinks(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -136,20 +139,20 @@ def add_OrganizationServiceServicer_to_server(servicer, server):
                     request_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.DeleteOrganizationRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
-            'GenerateCustomerPortalLink': grpc.unary_unary_rpc_method_handler(
-                    servicer.GenerateCustomerPortalLink,
-                    request_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.CustomerPortalLinkRequest.FromString,
-                    response_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.CustomerPortalLinksResponse.SerializeToString,
+            'GeneratePortalLink': grpc.unary_unary_rpc_method_handler(
+                    servicer.GeneratePortalLink,
+                    request_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GeneratePortalLinkRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GeneratePortalLinkResponse.SerializeToString,
             ),
-            'DeleteCustomerPortalLink': grpc.unary_unary_rpc_method_handler(
-                    servicer.DeleteCustomerPortalLink,
-                    request_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.CustomerPortalLinkRequest.FromString,
+            'DeletePortalLink': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeletePortalLink,
+                    request_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.DeletePortalLinkRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
-            'GetCustomerPortalLink': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetCustomerPortalLink,
-                    request_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.CustomerPortalLinkRequest.FromString,
-                    response_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.CustomerPortalLinksResponse.SerializeToString,
+            'GetPortalLinks': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetPortalLinks,
+                    request_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetPortalLinkRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetPortalLinksResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -247,7 +250,7 @@ class OrganizationService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def GenerateCustomerPortalLink(request,
+    def GeneratePortalLink(request,
             target,
             options=(),
             channel_credentials=None,
@@ -257,14 +260,14 @@ class OrganizationService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.organizations.OrganizationService/GenerateCustomerPortalLink',
-            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.CustomerPortalLinkRequest.SerializeToString,
-            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.CustomerPortalLinksResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.organizations.OrganizationService/GeneratePortalLink',
+            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GeneratePortalLinkRequest.SerializeToString,
+            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GeneratePortalLinkResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def DeleteCustomerPortalLink(request,
+    def DeletePortalLink(request,
             target,
             options=(),
             channel_credentials=None,
@@ -274,14 +277,14 @@ class OrganizationService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.organizations.OrganizationService/DeleteCustomerPortalLink',
-            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.CustomerPortalLinkRequest.SerializeToString,
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.organizations.OrganizationService/DeletePortalLink',
+            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.DeletePortalLinkRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def GetCustomerPortalLink(request,
+    def GetPortalLinks(request,
             target,
             options=(),
             channel_credentials=None,
@@ -291,8 +294,8 @@ class OrganizationService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.organizations.OrganizationService/GetCustomerPortalLink',
-            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.CustomerPortalLinkRequest.SerializeToString,
-            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.CustomerPortalLinksResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.organizations.OrganizationService/GetPortalLinks',
+            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetPortalLinkRequest.SerializeToString,
+            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetPortalLinksResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

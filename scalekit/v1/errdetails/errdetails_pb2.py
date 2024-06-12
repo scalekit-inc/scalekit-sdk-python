@@ -15,7 +15,7 @@ _sym_db = _symbol_database.Default()
 from google.protobuf import duration_pb2 as google_dot_protobuf_dot_duration__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\'scalekit/v1/errdetails/errdetails.proto\x12\x16scalekit.v1.errdetails\x1a\x1egoogle/protobuf/duration.proto\"C\n\tErrorInfo\x12\x17\n\x07\x63ode_id\x18\x03 \x01(\tR\x06\x63odeId\x12\x1d\n\nerror_code\x18\x04 \x01(\tR\terrorCode\"H\n\tDebugInfo\x12#\n\rstack_entries\x18\x01 \x03(\tR\x0cstackEntries\x12\x16\n\x06\x64\x65tail\x18\x02 \x01(\tR\x06\x64\x65tail\"\xd4\x01\n\nBadRequest\x12\\\n\x10\x66ield_violations\x18\x01 \x03(\x0b\x32\x31.scalekit.v1.errdetails.BadRequest.FieldViolationR\x0f\x66ieldViolations\x1ah\n\x0e\x46ieldViolation\x12\x14\n\x05\x66ield\x18\x01 \x01(\tR\x05\x66ield\x12 \n\x0b\x64\x65scription\x18\x02 \x01(\tR\x0b\x64\x65scription\x12\x1e\n\nconstraint\x18\x03 \x01(\tR\nconstraint\"O\n\x0bRequestInfo\x12\x1d\n\nrequest_id\x18\x01 \x01(\tR\trequestId\x12!\n\x0cserving_data\x18\x02 \x01(\tR\x0bservingData\"\x90\x01\n\x0cResourceInfo\x12#\n\rresource_type\x18\x01 \x01(\tR\x0cresourceType\x12#\n\rresource_name\x18\x02 \x01(\tR\x0cresourceName\x12\x14\n\x05owner\x18\x03 \x01(\tR\x05owner\x12 \n\x0b\x64\x65scription\x18\x04 \x01(\tR\x0b\x64\x65scription\"{\n\x04Help\x12\x37\n\x05links\x18\x01 \x03(\x0b\x32!.scalekit.v1.errdetails.Help.LinkR\x05links\x1a:\n\x04Link\x12 \n\x0b\x64\x65scription\x18\x01 \x01(\tR\x0b\x64\x65scription\x12\x10\n\x03url\x18\x02 \x01(\tR\x03url\"D\n\x10LocalizedMessage\x12\x16\n\x06locale\x18\x01 \x01(\tR\x06locale\x12\x18\n\x07message\x18\x02 \x01(\tR\x07message\"\x8d\x02\n\x0cSsoErrorInfo\x12\x12\n\x04\x63ode\x18\x01 \x01(\tR\x04\x63ode\x12 \n\x0b\x64\x65scription\x18\x02 \x01(\tR\x0b\x64\x65scription\x12\x61\n\x0fredirect_params\x18\x03 \x03(\x0b\x32\x38.scalekit.v1.errdetails.SsoErrorInfo.RedirectParamsEntryR\x0eredirectParams\x12!\n\x0credirect_url\x18\x04 \x01(\tR\x0bredirectUrl\x1a\x41\n\x13RedirectParamsEntry\x12\x10\n\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n\x05value\x18\x02 \x01(\tR\x05value:\x02\x38\x01\x42\x36Z4github.com/scalekit-inc/scalekit/pkg/grpc/errdetailsb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\'scalekit/v1/errdetails/errdetails.proto\x12\x16scalekit.v1.errdetails\x1a\x1egoogle/protobuf/duration.proto\"\x96\x05\n\tErrorInfo\x12\x1d\n\nerror_code\x18\x01 \x01(\tR\terrorCode\x12\x45\n\ndebug_info\x18\x02 \x01(\x0b\x32!.scalekit.v1.errdetails.DebugInfoH\x00R\tdebugInfo\x88\x01\x01\x12\x42\n\thelp_info\x18\x03 \x01(\x0b\x32 .scalekit.v1.errdetails.HelpInfoH\x01R\x08helpInfo\x88\x01\x01\x12g\n\x16localized_message_info\x18\x04 \x01(\x0b\x32,.scalekit.v1.errdetails.LocalizedMessageInfoH\x02R\x14localizedMessageInfo\x88\x01\x01\x12N\n\rresource_info\x18\x05 \x01(\x0b\x32$.scalekit.v1.errdetails.ResourceInfoH\x03R\x0cresourceInfo\x88\x01\x01\x12K\n\x0crequest_info\x18\x06 \x01(\x0b\x32#.scalekit.v1.errdetails.RequestInfoH\x04R\x0brequestInfo\x88\x01\x01\x12\x64\n\x15validation_error_info\x18\x08 \x01(\x0b\x32+.scalekit.v1.errdetails.ValidationErrorInfoH\x05R\x13validationErrorInfo\x88\x01\x01\x42\r\n\x0b_debug_infoB\x0c\n\n_help_infoB\x19\n\x17_localized_message_infoB\x10\n\x0e_resource_infoB\x0f\n\r_request_infoB\x18\n\x16_validation_error_info\"H\n\tDebugInfo\x12#\n\rstack_entries\x18\x01 \x03(\tR\x0cstackEntries\x12\x16\n\x06\x64\x65tail\x18\x02 \x01(\tR\x06\x64\x65tail\"\xe6\x01\n\x13ValidationErrorInfo\x12\x65\n\x10\x66ield_violations\x18\x01 \x03(\x0b\x32:.scalekit.v1.errdetails.ValidationErrorInfo.FieldViolationR\x0f\x66ieldViolations\x1ah\n\x0e\x46ieldViolation\x12\x14\n\x05\x66ield\x18\x01 \x01(\tR\x05\x66ield\x12 \n\x0b\x64\x65scription\x18\x02 \x01(\tR\x0b\x64\x65scription\x12\x1e\n\nconstraint\x18\x03 \x01(\tR\nconstraint\"O\n\x0bRequestInfo\x12\x1d\n\nrequest_id\x18\x01 \x01(\tR\trequestId\x12!\n\x0cserving_data\x18\x02 \x01(\tR\x0bservingData\"\x90\x01\n\x0cResourceInfo\x12#\n\rresource_type\x18\x01 \x01(\tR\x0cresourceType\x12#\n\rresource_name\x18\x02 \x01(\tR\x0cresourceName\x12\x14\n\x05owner\x18\x03 \x01(\tR\x05owner\x12 \n\x0b\x64\x65scription\x18\x04 \x01(\tR\x0b\x64\x65scription\"\x83\x01\n\x08HelpInfo\x12;\n\x05links\x18\x01 \x03(\x0b\x32%.scalekit.v1.errdetails.HelpInfo.LinkR\x05links\x1a:\n\x04Link\x12 \n\x0b\x64\x65scription\x18\x01 \x01(\tR\x0b\x64\x65scription\x12\x10\n\x03url\x18\x02 \x01(\tR\x03url\"H\n\x14LocalizedMessageInfo\x12\x16\n\x06locale\x18\x01 \x01(\tR\x06locale\x12\x18\n\x07message\x18\x02 \x01(\tR\x07messageB6Z4github.com/scalekit-inc/scalekit/pkg/grpc/errdetailsb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -23,28 +23,22 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'scalekit.v1.errdetails.errd
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z4github.com/scalekit-inc/scalekit/pkg/grpc/errdetails'
-  _globals['_SSOERRORINFO_REDIRECTPARAMSENTRY']._loaded_options = None
-  _globals['_SSOERRORINFO_REDIRECTPARAMSENTRY']._serialized_options = b'8\001'
-  _globals['_ERRORINFO']._serialized_start=99
-  _globals['_ERRORINFO']._serialized_end=166
-  _globals['_DEBUGINFO']._serialized_start=168
-  _globals['_DEBUGINFO']._serialized_end=240
-  _globals['_BADREQUEST']._serialized_start=243
-  _globals['_BADREQUEST']._serialized_end=455
-  _globals['_BADREQUEST_FIELDVIOLATION']._serialized_start=351
-  _globals['_BADREQUEST_FIELDVIOLATION']._serialized_end=455
-  _globals['_REQUESTINFO']._serialized_start=457
-  _globals['_REQUESTINFO']._serialized_end=536
-  _globals['_RESOURCEINFO']._serialized_start=539
-  _globals['_RESOURCEINFO']._serialized_end=683
-  _globals['_HELP']._serialized_start=685
-  _globals['_HELP']._serialized_end=808
-  _globals['_HELP_LINK']._serialized_start=750
-  _globals['_HELP_LINK']._serialized_end=808
-  _globals['_LOCALIZEDMESSAGE']._serialized_start=810
-  _globals['_LOCALIZEDMESSAGE']._serialized_end=878
-  _globals['_SSOERRORINFO']._serialized_start=881
-  _globals['_SSOERRORINFO']._serialized_end=1150
-  _globals['_SSOERRORINFO_REDIRECTPARAMSENTRY']._serialized_start=1085
-  _globals['_SSOERRORINFO_REDIRECTPARAMSENTRY']._serialized_end=1150
+  _globals['_ERRORINFO']._serialized_start=100
+  _globals['_ERRORINFO']._serialized_end=762
+  _globals['_DEBUGINFO']._serialized_start=764
+  _globals['_DEBUGINFO']._serialized_end=836
+  _globals['_VALIDATIONERRORINFO']._serialized_start=839
+  _globals['_VALIDATIONERRORINFO']._serialized_end=1069
+  _globals['_VALIDATIONERRORINFO_FIELDVIOLATION']._serialized_start=965
+  _globals['_VALIDATIONERRORINFO_FIELDVIOLATION']._serialized_end=1069
+  _globals['_REQUESTINFO']._serialized_start=1071
+  _globals['_REQUESTINFO']._serialized_end=1150
+  _globals['_RESOURCEINFO']._serialized_start=1153
+  _globals['_RESOURCEINFO']._serialized_end=1297
+  _globals['_HELPINFO']._serialized_start=1300
+  _globals['_HELPINFO']._serialized_end=1431
+  _globals['_HELPINFO_LINK']._serialized_start=1373
+  _globals['_HELPINFO_LINK']._serialized_end=1431
+  _globals['_LOCALIZEDMESSAGEINFO']._serialized_start=1433
+  _globals['_LOCALIZEDMESSAGEINFO']._serialized_end=1505
 # @@protoc_insertion_point(module_scope)

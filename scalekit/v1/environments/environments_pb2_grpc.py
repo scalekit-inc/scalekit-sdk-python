@@ -65,6 +65,21 @@ class EnvironmentServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetEnvironmentRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetEnvironmentResponse.FromString,
                 )
+        self.UpdatePortalCustomization = channel.unary_unary(
+                '/scalekit.v1.environments.EnvironmentService/UpdatePortalCustomization',
+                request_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdatePortalCustomizationRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdatePortalCustomizationResponse.FromString,
+                )
+        self.GetPortalCustomization = channel.unary_unary(
+                '/scalekit.v1.environments.EnvironmentService/GetPortalCustomization',
+                request_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetPortalCustomizationRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetPortalCustomizationResponse.FromString,
+                )
+        self.CreateAssetUploadURL = channel.unary_unary(
+                '/scalekit.v1.environments.EnvironmentService/CreateAssetUploadURL',
+                request_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.CreateAssetUploadUrlRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.CreateAssetUploadUrlResponse.FromString,
+                )
 
 
 class EnvironmentServiceServicer(object):
@@ -130,6 +145,24 @@ class EnvironmentServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def UpdatePortalCustomization(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetPortalCustomization(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def CreateAssetUploadURL(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_EnvironmentServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -182,6 +215,21 @@ def add_EnvironmentServiceServicer_to_server(servicer, server):
                     servicer.CheckCustomDomainStatus,
                     request_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetEnvironmentRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetEnvironmentResponse.SerializeToString,
+            ),
+            'UpdatePortalCustomization': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdatePortalCustomization,
+                    request_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdatePortalCustomizationRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdatePortalCustomizationResponse.SerializeToString,
+            ),
+            'GetPortalCustomization': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetPortalCustomization,
+                    request_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetPortalCustomizationRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetPortalCustomizationResponse.SerializeToString,
+            ),
+            'CreateAssetUploadURL': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateAssetUploadURL,
+                    request_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.CreateAssetUploadUrlRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.CreateAssetUploadUrlResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -360,5 +408,56 @@ class EnvironmentService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.environments.EnvironmentService/CheckCustomDomainStatus',
             scalekit_dot_v1_dot_environments_dot_environments__pb2.GetEnvironmentRequest.SerializeToString,
             scalekit_dot_v1_dot_environments_dot_environments__pb2.GetEnvironmentResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def UpdatePortalCustomization(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.environments.EnvironmentService/UpdatePortalCustomization',
+            scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdatePortalCustomizationRequest.SerializeToString,
+            scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdatePortalCustomizationResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetPortalCustomization(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.environments.EnvironmentService/GetPortalCustomization',
+            scalekit_dot_v1_dot_environments_dot_environments__pb2.GetPortalCustomizationRequest.SerializeToString,
+            scalekit_dot_v1_dot_environments_dot_environments__pb2.GetPortalCustomizationResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def CreateAssetUploadURL(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.environments.EnvironmentService/CreateAssetUploadURL',
+            scalekit_dot_v1_dot_environments_dot_environments__pb2.CreateAssetUploadUrlRequest.SerializeToString,
+            scalekit_dot_v1_dot_environments_dot_environments__pb2.CreateAssetUploadUrlResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
