@@ -25,14 +25,17 @@ This Python SDK is a wrapper around Scalekit's REST API to help you integrate Sc
 
 ```sh
 pip install scalekit-sdk-python
+
 ```
 
 ## Usage
 
-```javascript
+```py
+
 from scalekit import ScalekitClient
 
-scalekit_client = Scalekit(env_url, client_id, client_secret)
+scalekit_client = ScalekitClient(env_url, client_id, client_secret)
+
 ```
 
 ## API Reference
