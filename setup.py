@@ -9,7 +9,7 @@ setup(
         "protobuf==5.27.0",
         "google==3.0.0",
         "requests==2.32.2",
-        "PyJWT==2.4.0",
+        "PyJWT==2.8.0",
         "cryptography==42.0.4",
         "setuptools==69.2.0",
         "grpcio-status==1.64.0",
