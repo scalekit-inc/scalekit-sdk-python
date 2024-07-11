@@ -40,6 +40,11 @@ class DomainServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_domains_dot_domains__pb2.ListDomainRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_domains_dot_domains__pb2.ListDomainResponse.FromString,
                 )
+        self.ListAuthorizedDomains = channel.unary_unary(
+                '/scalekit.v1.domains.DomainService/ListAuthorizedDomains',
+                request_serializer=scalekit_dot_v1_dot_domains_dot_domains__pb2.ListAuthorizedDomainRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_domains_dot_domains__pb2.ListAuthorizedDomainResponse.FromString,
+                )
 
 
 class DomainServiceServicer(object):
@@ -75,6 +80,12 @@ class DomainServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ListAuthorizedDomains(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_DomainServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -102,6 +113,11 @@ def add_DomainServiceServicer_to_server(servicer, server):
                     servicer.ListDomains,
                     request_deserializer=scalekit_dot_v1_dot_domains_dot_domains__pb2.ListDomainRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_domains_dot_domains__pb2.ListDomainResponse.SerializeToString,
+            ),
+            'ListAuthorizedDomains': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListAuthorizedDomains,
+                    request_deserializer=scalekit_dot_v1_dot_domains_dot_domains__pb2.ListAuthorizedDomainRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_domains_dot_domains__pb2.ListAuthorizedDomainResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -195,5 +211,22 @@ class DomainService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.domains.DomainService/ListDomains',
             scalekit_dot_v1_dot_domains_dot_domains__pb2.ListDomainRequest.SerializeToString,
             scalekit_dot_v1_dot_domains_dot_domains__pb2.ListDomainResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListAuthorizedDomains(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.domains.DomainService/ListAuthorizedDomains',
+            scalekit_dot_v1_dot_domains_dot_domains__pb2.ListAuthorizedDomainRequest.SerializeToString,
+            scalekit_dot_v1_dot_domains_dot_domains__pb2.ListAuthorizedDomainResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

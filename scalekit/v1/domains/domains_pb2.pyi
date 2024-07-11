@@ -126,6 +126,18 @@ class ListDomainResponse(_message.Message):
     domains: _containers.RepeatedCompositeFieldContainer[Domain]
     def __init__(self, page_size: _Optional[int] = ..., page_number: _Optional[int] = ..., domains: _Optional[_Iterable[_Union[Domain, _Mapping]]] = ...) -> None: ...
 
+class ListAuthorizedDomainRequest(_message.Message):
+    __slots__ = ("origin",)
+    ORIGIN_FIELD_NUMBER: _ClassVar[int]
+    origin: str
+    def __init__(self, origin: _Optional[str] = ...) -> None: ...
+
+class ListAuthorizedDomainResponse(_message.Message):
+    __slots__ = ("domains",)
+    DOMAINS_FIELD_NUMBER: _ClassVar[int]
+    domains: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, domains: _Optional[_Iterable[str]] = ...) -> None: ...
+
 class Domain(_message.Message):
     __slots__ = ("id", "domain", "environment_id", "organization_id", "connection_id", "txt_record_key", "txt_record_secret", "verification_status", "create_time", "update_time", "created_by")
     ID_FIELD_NUMBER: _ClassVar[int]

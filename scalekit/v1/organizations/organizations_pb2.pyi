@@ -141,6 +141,26 @@ class ListOrganizationsResponse(_message.Message):
     organizations: _containers.RepeatedCompositeFieldContainer[Organization]
     def __init__(self, next_page_token: _Optional[str] = ..., total_size: _Optional[int] = ..., organizations: _Optional[_Iterable[_Union[Organization, _Mapping]]] = ...) -> None: ...
 
+class SearchOrganizationsRequest(_message.Message):
+    __slots__ = ("query", "page_size", "page_token")
+    QUERY_FIELD_NUMBER: _ClassVar[int]
+    PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
+    PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    query: str
+    page_size: int
+    page_token: str
+    def __init__(self, query: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ...) -> None: ...
+
+class SearchOrganizationsResponse(_message.Message):
+    __slots__ = ("next_page_token", "total_size", "organizations")
+    NEXT_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    TOTAL_SIZE_FIELD_NUMBER: _ClassVar[int]
+    ORGANIZATIONS_FIELD_NUMBER: _ClassVar[int]
+    next_page_token: str
+    total_size: int
+    organizations: _containers.RepeatedCompositeFieldContainer[Organization]
+    def __init__(self, next_page_token: _Optional[str] = ..., total_size: _Optional[int] = ..., organizations: _Optional[_Iterable[_Union[Organization, _Mapping]]] = ...) -> None: ...
+
 class DeleteOrganizationRequest(_message.Message):
     __slots__ = ("id", "external_id")
     ID_FIELD_NUMBER: _ClassVar[int]
@@ -166,6 +186,14 @@ class DeletePortalLinkRequest(_message.Message):
     ID_FIELD_NUMBER: _ClassVar[int]
     id: str
     def __init__(self, id: _Optional[str] = ...) -> None: ...
+
+class DeletePortalLinkByIdRequest(_message.Message):
+    __slots__ = ("id", "link_id")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    LINK_ID_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    link_id: str
+    def __init__(self, id: _Optional[str] = ..., link_id: _Optional[str] = ...) -> None: ...
 
 class Link(_message.Message):
     __slots__ = ("id", "location", "expire_time")
