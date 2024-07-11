@@ -59,21 +59,22 @@ class ScalekitClient:
             scopes = (
                 options.scopes if options.scopes else ["openid", "profile", "email"]
             )
-            query_string = urlencode(
-                {
+            url_params_dict = {
                     "response_type": "code",
                     "client_id": self.core_client.client_id,
                     "redirect_uri": redirect_uri,
                     "scope": " ".join(scopes),
-                    "state": options.state if options.state else '',
-                    "nonce": options.nonce if options.nonce else '',
-                    "login_hint": options.login_hint if options.login_hint else '',
-                    "domain_hint": options.domain_hint if options.domain_hint else '',
-                    "connection_id": options.connection_id if options.connection_id else '',
-                    "organization_id": options.organization_id if options.organization_id else '',
-                    "provider": options.provider if options.provider else '',
-                }
-            )
+                    "state": options.state,
+                    "nonce": options.nonce,
+                    "login_hint": options.login_hint,
+                    "domain_hint": options.domain_hint,
+                    "connection_id": options.connection_id,
+                    "organization_id": options.organization_id,
+                    "provider": options.provider,
+            }
+
+            valid_auth_params = {k: v for k, v in url_params_dict.items() if v}
+            query_string = urlencode(valid_auth_params)
 
             return f"{self.core_client.env_url}/{AUTHORIZE_ENDPOINT}?{query_string}"
         except Exception as exp:
