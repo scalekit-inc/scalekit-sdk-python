@@ -10,7 +10,7 @@ setup(
         "google==3.0.0",
         "requests==2.32.2",
         "PyJWT==2.4.0",
-        "cryptography==42.0.4",
+        "cryptography==42.0.8",
         "setuptools==69.2.0",
         "grpcio-status==1.64.0",
         "protoc-gen-openapiv2==0.0.1",
