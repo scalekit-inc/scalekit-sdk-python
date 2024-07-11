@@ -65,12 +65,13 @@ class ScalekitClient:
                     "client_id": self.core_client.client_id,
                     "redirect_uri": redirect_uri,
                     "scope": " ".join(scopes),
-                    "state": options.state,
-                    "nonce": options.nonce,
-                    "login_hint": options.login_hint,
-                    "domain_hint": options.domain_hint,
-                    "connection_id": options.connection_id,
-                    "organization_id": options.organization_id,
+                    "state": options.state if options.state else '',
+                    "nonce": options.nonce if options.nonce else '',
+                    "login_hint": options.login_hint if options.login_hint else '',
+                    "domain_hint": options.domain_hint if options.domain_hint else '',
+                    "connection_id": options.connection_id if options.connection_id else '',
+                    "organization_id": options.organization_id if options.organization_id else '',
+                    "provider": options.provider if options.provider else '',
                 }
             )
 

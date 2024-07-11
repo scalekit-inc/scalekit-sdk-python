@@ -15,10 +15,25 @@ class ConnectionServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
+        self.GetProviders = channel.unary_unary(
+                '/scalekit.v1.connections.ConnectionService/GetProviders',
+                request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.GetProvidersRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.GetProvidersResponse.FromString,
+                )
+        self.CreateEnvironmentConnection = channel.unary_unary(
+                '/scalekit.v1.connections.ConnectionService/CreateEnvironmentConnection',
+                request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.CreateEnvironmentConnectionRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.CreateConnectionResponse.FromString,
+                )
         self.CreateConnection = channel.unary_unary(
                 '/scalekit.v1.connections.ConnectionService/CreateConnection',
                 request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.CreateConnectionRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.CreateConnectionResponse.FromString,
+                )
+        self.GetEnvironmentConnection = channel.unary_unary(
+                '/scalekit.v1.connections.ConnectionService/GetEnvironmentConnection',
+                request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.GetEnvironmentConnectionRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.GetConnectionResponse.FromString,
                 )
         self.GetConnection = channel.unary_unary(
                 '/scalekit.v1.connections.ConnectionService/GetConnection',
@@ -30,19 +45,39 @@ class ConnectionServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ListConnectionsRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ListConnectionsResponse.FromString,
                 )
+        self.UpdateEnvironmentConnection = channel.unary_unary(
+                '/scalekit.v1.connections.ConnectionService/UpdateEnvironmentConnection',
+                request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.UpdateEnvironmentConnectionRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.UpdateConnectionResponse.FromString,
+                )
         self.UpdateConnection = channel.unary_unary(
                 '/scalekit.v1.connections.ConnectionService/UpdateConnection',
                 request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.UpdateConnectionRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.UpdateConnectionResponse.FromString,
+                )
+        self.DeleteEnvironmentConnection = channel.unary_unary(
+                '/scalekit.v1.connections.ConnectionService/DeleteEnvironmentConnection',
+                request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.DeleteEnvironmentConnectionRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
         self.DeleteConnection = channel.unary_unary(
                 '/scalekit.v1.connections.ConnectionService/DeleteConnection',
                 request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.DeleteConnectionRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
+        self.EnableEnvironmentConnection = channel.unary_unary(
+                '/scalekit.v1.connections.ConnectionService/EnableEnvironmentConnection',
+                request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleEnvironmentConnectionRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleConnectionResponse.FromString,
+                )
         self.EnableConnection = channel.unary_unary(
                 '/scalekit.v1.connections.ConnectionService/EnableConnection',
                 request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleConnectionRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleConnectionResponse.FromString,
+                )
+        self.DisableEnvironmentConnection = channel.unary_unary(
+                '/scalekit.v1.connections.ConnectionService/DisableEnvironmentConnection',
+                request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleEnvironmentConnectionRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleConnectionResponse.FromString,
                 )
         self.DisableConnection = channel.unary_unary(
@@ -55,7 +90,25 @@ class ConnectionServiceStub(object):
 class ConnectionServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
+    def GetProviders(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def CreateEnvironmentConnection(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def CreateConnection(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetEnvironmentConnection(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -73,7 +126,19 @@ class ConnectionServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def UpdateEnvironmentConnection(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def UpdateConnection(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeleteEnvironmentConnection(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -85,7 +150,19 @@ class ConnectionServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def EnableEnvironmentConnection(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def EnableConnection(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DisableEnvironmentConnection(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -100,10 +177,25 @@ class ConnectionServiceServicer(object):
 
 def add_ConnectionServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
+            'GetProviders': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetProviders,
+                    request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.GetProvidersRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.GetProvidersResponse.SerializeToString,
+            ),
+            'CreateEnvironmentConnection': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateEnvironmentConnection,
+                    request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.CreateEnvironmentConnectionRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.CreateConnectionResponse.SerializeToString,
+            ),
             'CreateConnection': grpc.unary_unary_rpc_method_handler(
                     servicer.CreateConnection,
                     request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.CreateConnectionRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.CreateConnectionResponse.SerializeToString,
+            ),
+            'GetEnvironmentConnection': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetEnvironmentConnection,
+                    request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.GetEnvironmentConnectionRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.GetConnectionResponse.SerializeToString,
             ),
             'GetConnection': grpc.unary_unary_rpc_method_handler(
                     servicer.GetConnection,
@@ -115,19 +207,39 @@ def add_ConnectionServiceServicer_to_server(servicer, server):
                     request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ListConnectionsRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ListConnectionsResponse.SerializeToString,
             ),
+            'UpdateEnvironmentConnection': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateEnvironmentConnection,
+                    request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.UpdateEnvironmentConnectionRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.UpdateConnectionResponse.SerializeToString,
+            ),
             'UpdateConnection': grpc.unary_unary_rpc_method_handler(
                     servicer.UpdateConnection,
                     request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.UpdateConnectionRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.UpdateConnectionResponse.SerializeToString,
+            ),
+            'DeleteEnvironmentConnection': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteEnvironmentConnection,
+                    request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.DeleteEnvironmentConnectionRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'DeleteConnection': grpc.unary_unary_rpc_method_handler(
                     servicer.DeleteConnection,
                     request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.DeleteConnectionRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
+            'EnableEnvironmentConnection': grpc.unary_unary_rpc_method_handler(
+                    servicer.EnableEnvironmentConnection,
+                    request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleEnvironmentConnectionRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleConnectionResponse.SerializeToString,
+            ),
             'EnableConnection': grpc.unary_unary_rpc_method_handler(
                     servicer.EnableConnection,
                     request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleConnectionRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleConnectionResponse.SerializeToString,
+            ),
+            'DisableEnvironmentConnection': grpc.unary_unary_rpc_method_handler(
+                    servicer.DisableEnvironmentConnection,
+                    request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleEnvironmentConnectionRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleConnectionResponse.SerializeToString,
             ),
             'DisableConnection': grpc.unary_unary_rpc_method_handler(
@@ -146,6 +258,40 @@ class ConnectionService(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
+    def GetProviders(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connections.ConnectionService/GetProviders',
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.GetProvidersRequest.SerializeToString,
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.GetProvidersResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def CreateEnvironmentConnection(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connections.ConnectionService/CreateEnvironmentConnection',
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.CreateEnvironmentConnectionRequest.SerializeToString,
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.CreateConnectionResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
     def CreateConnection(request,
             target,
             options=(),
@@ -159,6 +305,23 @@ class ConnectionService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connections.ConnectionService/CreateConnection',
             scalekit_dot_v1_dot_connections_dot_connections__pb2.CreateConnectionRequest.SerializeToString,
             scalekit_dot_v1_dot_connections_dot_connections__pb2.CreateConnectionResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetEnvironmentConnection(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connections.ConnectionService/GetEnvironmentConnection',
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.GetEnvironmentConnectionRequest.SerializeToString,
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.GetConnectionResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -197,6 +360,23 @@ class ConnectionService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
+    def UpdateEnvironmentConnection(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connections.ConnectionService/UpdateEnvironmentConnection',
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.UpdateEnvironmentConnectionRequest.SerializeToString,
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.UpdateConnectionResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
     def UpdateConnection(request,
             target,
             options=(),
@@ -210,6 +390,23 @@ class ConnectionService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connections.ConnectionService/UpdateConnection',
             scalekit_dot_v1_dot_connections_dot_connections__pb2.UpdateConnectionRequest.SerializeToString,
             scalekit_dot_v1_dot_connections_dot_connections__pb2.UpdateConnectionResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DeleteEnvironmentConnection(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connections.ConnectionService/DeleteEnvironmentConnection',
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.DeleteEnvironmentConnectionRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -231,6 +428,23 @@ class ConnectionService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
+    def EnableEnvironmentConnection(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connections.ConnectionService/EnableEnvironmentConnection',
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleEnvironmentConnectionRequest.SerializeToString,
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleConnectionResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
     def EnableConnection(request,
             target,
             options=(),
@@ -243,6 +457,23 @@ class ConnectionService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connections.ConnectionService/EnableConnection',
             scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleConnectionRequest.SerializeToString,
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleConnectionResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DisableEnvironmentConnection(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connections.ConnectionService/DisableEnvironmentConnection',
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleEnvironmentConnectionRequest.SerializeToString,
             scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleConnectionResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

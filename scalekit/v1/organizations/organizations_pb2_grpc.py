@@ -35,6 +35,11 @@ class OrganizationServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.ListOrganizationsRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.ListOrganizationsResponse.FromString,
                 )
+        self.SearchOrganization = channel.unary_unary(
+                '/scalekit.v1.organizations.OrganizationService/SearchOrganization',
+                request_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.SearchOrganizationsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.SearchOrganizationsResponse.FromString,
+                )
         self.DeleteOrganization = channel.unary_unary(
                 '/scalekit.v1.organizations.OrganizationService/DeleteOrganization',
                 request_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.DeleteOrganizationRequest.SerializeToString,
@@ -48,6 +53,11 @@ class OrganizationServiceStub(object):
         self.DeletePortalLink = channel.unary_unary(
                 '/scalekit.v1.organizations.OrganizationService/DeletePortalLink',
                 request_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.DeletePortalLinkRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
+        self.DeletePortalLinkByID = channel.unary_unary(
+                '/scalekit.v1.organizations.OrganizationService/DeletePortalLinkByID',
+                request_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.DeletePortalLinkByIdRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
         self.GetPortalLinks = channel.unary_unary(
@@ -85,6 +95,12 @@ class OrganizationServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def SearchOrganization(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def DeleteOrganization(self, request, context):
         """Delete an Organization
         """
@@ -100,6 +116,12 @@ class OrganizationServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def DeletePortalLink(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeletePortalLinkByID(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -134,6 +156,11 @@ def add_OrganizationServiceServicer_to_server(servicer, server):
                     request_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.ListOrganizationsRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.ListOrganizationsResponse.SerializeToString,
             ),
+            'SearchOrganization': grpc.unary_unary_rpc_method_handler(
+                    servicer.SearchOrganization,
+                    request_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.SearchOrganizationsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.SearchOrganizationsResponse.SerializeToString,
+            ),
             'DeleteOrganization': grpc.unary_unary_rpc_method_handler(
                     servicer.DeleteOrganization,
                     request_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.DeleteOrganizationRequest.FromString,
@@ -147,6 +174,11 @@ def add_OrganizationServiceServicer_to_server(servicer, server):
             'DeletePortalLink': grpc.unary_unary_rpc_method_handler(
                     servicer.DeletePortalLink,
                     request_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.DeletePortalLinkRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'DeletePortalLinkByID': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeletePortalLinkByID,
+                    request_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.DeletePortalLinkByIdRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'GetPortalLinks': grpc.unary_unary_rpc_method_handler(
@@ -233,6 +265,23 @@ class OrganizationService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
+    def SearchOrganization(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.organizations.OrganizationService/SearchOrganization',
+            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.SearchOrganizationsRequest.SerializeToString,
+            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.SearchOrganizationsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
     def DeleteOrganization(request,
             target,
             options=(),
@@ -279,6 +328,23 @@ class OrganizationService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.organizations.OrganizationService/DeletePortalLink',
             scalekit_dot_v1_dot_organizations_dot_organizations__pb2.DeletePortalLinkRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DeletePortalLinkByID(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.organizations.OrganizationService/DeletePortalLinkByID',
+            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.DeletePortalLinkByIdRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

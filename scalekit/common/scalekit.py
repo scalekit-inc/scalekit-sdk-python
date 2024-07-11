@@ -22,6 +22,7 @@ class AuthorizationUrlOptions:
         self.nonce: Optional[str] = None
         self.domain_hint: Optional[str] = None
         self.login_hint: Optional[str] = None
+        self.provider: Optional[str] = None
 
 
 class CodeAuthenticationOptions:
