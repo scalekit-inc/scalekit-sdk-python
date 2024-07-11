@@ -5,7 +5,7 @@ setup(
     version="1.0.1",
     packages=find_packages(),
     install_requires=[
-        "grpcio==1.64.0",
+        "grpcio==1.64.1",
         "protobuf==5.27.0",
         "google==3.0.0",
         "requests==2.32.2",
