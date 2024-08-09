@@ -48,3 +48,14 @@ class AuthenticationOptions:
     def __init__(self):
         """ """
         self.refresh_token: Optional[str] = None
+
+
+class IdpInitiatedLoginClaims:
+    """Class definition for IDP Initiated Login Claims"""
+
+    def __init__(self) -> None:
+        self.connection_id: str
+        self.organization_id: str
+        self.login_hint: str
+        self.domain: Optional[str] = None
+        self.relay_state: Optional[str] = None
