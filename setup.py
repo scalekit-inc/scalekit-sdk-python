@@ -14,7 +14,7 @@ setup(
         "setuptools~=70.3.0",
         "grpcio-status~=1.64.0",
         "protoc-gen-openapiv2~=0.0.1",
-        "googleapis-common-protos~=1.56.1",
+        "googleapis-common-protos>=1.56.1,<1.66.0",
     ],
     url="https://github.com/scalekit-inc/scalekit-sdk-python",
     license="MIT",
