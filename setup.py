@@ -11,7 +11,7 @@ setup(
         "requests~=2.32.3",
         "PyJWT~=2.8.0",
         "cryptography~=42.0.8",
-        "setuptools~=70.3.0",
+        "setuptools>=70.3,<75.1",
         "grpcio-status~=1.64.0",
         "protoc-gen-openapiv2~=0.0.1",
         "googleapis-common-protos~=1.56.1",
