@@ -1,3 +1,4 @@
+from typing import Any, Dict, Optional
 import json
 from typing import Dict, Tuple
 from urllib.parse import urlencode
@@ -16,6 +17,7 @@ from common.scalekit import (
     AuthorizationUrlOptions,
     CodeAuthenticationOptions,
     GrantType,
+    IdpInitiatedLoginClaims,
 )
 from constants.user import id_token_claim_to_user_map
 
@@ -69,17 +71,17 @@ class ScalekitClient:
                 options.scopes if options.scopes else ["openid", "profile", "email"]
             )
             url_params_dict = {
-                    "response_type": "code",
-                    "client_id": self.core_client.client_id,
-                    "redirect_uri": redirect_uri,
-                    "scope": " ".join(scopes),
-                    "state": options.state,
-                    "nonce": options.nonce,
-                    "login_hint": options.login_hint,
-                    "domain_hint": options.domain_hint,
-                    "connection_id": options.connection_id,
-                    "organization_id": options.organization_id,
-                    "provider": options.provider,
+                "response_type": "code",
+                "client_id": self.core_client.client_id,
+                "redirect_uri": redirect_uri,
+                "scope": " ".join(scopes),
+                "state": options.state,
+                "nonce": options.nonce,
+                "login_hint": options.login_hint,
+                "domain_hint": options.domain_hint,
+                "connection_id": options.connection_id,
+                "organization_id": options.organization_id,
+                "provider": options.provider,
             }
 
             valid_auth_params = {k: v for k, v in url_params_dict.items() if v}
@@ -120,13 +122,8 @@ class ScalekitClient:
             response = json.loads(response.content)
             id_token = response["id_token"]
             access_token = response["access_token"]
-
-            self.core_client.get_jwks()
-            kid = jwt.get_unverified_header(id_token)["kid"]
-            key = self.core_client.keys[kid]
-            claims = jwt.decode(
-                id_token, key=key, algorithms="RS256", options={"verify_aud": False}
-            )
+            # Validate id_token
+            claims = self.__validate_token(id_token, {"verify_aud": False})
             user = {}
             for k, v in claims.items():
                 if id_token_claim_to_user_map.get(k, None):
@@ -146,9 +143,8 @@ class ScalekitClient:
         :returns
             bool
         """
-        self.core_client.get_jwks()
         try:
-            jwt.decode(token, self.core_client.keys)
+            self.__validate_token(token)
             return True
         except jwt.exceptions.InvalidTokenError:
             return False
@@ -219,3 +215,35 @@ class ScalekitClient:
         hash_object = hmac.new(secret, data.encode('utf-8'), hashlib.sha256)
         signature = hash_object.digest()
         return base64.b64encode(signature).decode('utf-8')
+
+    def get_idp_initiated_login_claims(self, idp_initiated_login_token: str) -> IdpInitiatedLoginClaims:
+        """
+        Method to get IDP initiated login claims
+
+        :param idp_initiated_login_token : IDP initiated login token
+        :type        : ``` str ```
+        :returns
+            ``` IdpInitiatedLoginClaims ```
+        """
+        try:
+            claims = self.__validate_token(idp_initiated_login_token, {"verify_aud": False})
+            return claims
+        except Exception as exp:
+            raise exp
+
+    def __validate_token(
+        self, token: str, options: Optional[Dict] = None
+    ) -> Dict[str, Any]:
+        """
+        Method to validate token
+
+        :param token : token
+        :type        : ``` str ```
+        :returns
+            payload
+        """
+        self.core_client.get_jwks()
+        kid = jwt.get_unverified_header(token)["kid"]
+        key = self.core_client.keys[kid]
+
+        return jwt.decode(token, key=key, algorithms="RS256", options=options)
