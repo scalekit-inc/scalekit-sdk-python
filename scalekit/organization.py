@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List, Dict
 
 from scalekit.core import CoreClient
 from scalekit.v1.organizations.organizations_pb2 import *
@@ -178,4 +178,19 @@ class OrganizationClient:
         self.core_client.grpc_exec(
             self.organization_service.DeletePortalLink.with_call,
             DeletePortalLinkRequest(id=organization_id),
+        )
+
+    def update_organization_settings(self, organization_id: str, settings: List[Dict[str, bool]]):
+        """
+        Method to update organization settings
+
+        :param organization_id    : Organization id for org update
+        :type                     : ``` str ```
+        :param settings           : Organization settings
+        :type                     : ``` str ```
+        """
+        self.core_client.grpc_exec(
+            self.organization_service.UpdateOrganizationSettings.with_call,
+            UpdateOrganizationSettingsRequest(
+                id=organization_id, settings={'features': settings})
         )

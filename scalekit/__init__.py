@@ -1,4 +1,5 @@
+
 from scalekit.client import ScalekitClient
-from scalekit.common.scalekit import AuthorizationUrlOptions, CodeAuthenticationOptions
+from scalekit.common.scalekit import CodeAuthenticationOptions, AuthorizationUrlOptions
 
 __all__ = ['ScalekitClient', 'AuthorizationUrlOptions', 'CodeAuthenticationOptions']
