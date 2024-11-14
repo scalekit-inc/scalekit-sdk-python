@@ -27,7 +27,7 @@ webhook_signature_version = "v1"
 
 
 class ScalekitClient:
-    """ """
+    """ Class definition for scalekit client """
 
     def __init__(self, env_url: str, client_id: str, client_secret: str):
         """
@@ -39,6 +39,7 @@ class ScalekitClient:
         :type                 : ``` str ```
         :param client_secret  : Client Secret
         :type                 : ``` str ```
+
         :returns
             None
         """
@@ -61,8 +62,9 @@ class ScalekitClient:
 
         :param redirect_uri   : Redirect URI for SAML SSO
         :type                 : ``` str ```
-        :param options        : ``` Auth URL options object```
+        :param options        : Auth URL options object
         :type                 : ``` obj ```
+
         :returns
             Authorization URL
         """
@@ -101,8 +103,9 @@ class ScalekitClient:
         :type                 : ``` str ```
         :param redirect_uri   : Redirect URI
         :type                 : ``` str ```
-        :param options        : ``` CodeAuthenticationOptions Object ```
+        :param options        : CodeAuthenticationOptions Object
         :type                 : ``` obj ```
+
         :returns:
             dict with user, id token & access token
         """
@@ -150,7 +153,19 @@ class ScalekitClient:
             return False
 
     def verify_webhook_payload(self, secret: str, headers: Dict[str, str], payload: bytes) -> Tuple[bool, Exception]:
-        """ """
+        """
+        Method to verify webhook payload
+
+        :param secret      :     Secret for webhook verification
+        :type              :     ``` str ```
+        :param headers     :     Auth URL options object
+        :type              :     ``` dict[str, str] ```
+        :param payload     :     Webhook payload in bytes
+        :type              :     ``` bytes ```
+        
+        :returns
+            bool
+        """
         webhook_id = headers.get("webhook-id")
         webhook_timestamp = headers.get("webhook-timestamp")
         webhook_signature = headers.get("webhook-signature")
@@ -168,12 +183,12 @@ class ScalekitClient:
             return False, e
 
         try:
-            timestamp = self.verify_timestamp(webhook_timestamp)
+            timestamp = self.__verify_timestamp(webhook_timestamp)
         except Exception as e:
             return False, e
 
         data = f"{webhook_id}.{timestamp}.{payload.decode('utf-8')}"
-        computed_signature = self.compute_signature(secret_bytes, data)
+        computed_signature = self.__compute_signature(secret_bytes, data)
 
         received_signatures = webhook_signature.split(" ")
         for versioned_signature in received_signatures:
@@ -193,8 +208,16 @@ class ScalekitClient:
         return False, Exception("Invalid signature")
 
     @staticmethod
-    def verify_timestamp(timestamp_str: str):
-        """ """
+    def __verify_timestamp(timestamp_str: str):
+        """
+        Method to verify timestamp
+
+        :param timestamp_str   :     Timestamp for verification
+        :type                  :     ``` str ```
+        
+        :returns
+            None
+        """
         now = datetime.now()
         try:
             timestamp = datetime.fromisoformat(timestamp_str)
@@ -210,8 +233,18 @@ class ScalekitClient:
         return timestamp, None
 
     @staticmethod
-    def compute_signature(secret: bytes, data: str) -> str:
-        """ """
+    def __compute_signature(secret: bytes, data: str) -> str:
+        """
+        Method to compute signature
+
+        :param secret   :     secret for signature
+        :type           :     ``` bytes ```
+        :param data     :     data for signature
+        :type           :     ``` str ```
+        
+        :returns
+            None
+        """
         hash_object = hmac.new(secret, data.encode('utf-8'), hashlib.sha256)
         signature = hash_object.digest()
         return base64.b64encode(signature).decode('utf-8')
