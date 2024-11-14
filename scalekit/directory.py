@@ -80,7 +80,7 @@ class DirectoryClient:
             ToggleDirectoryRequest(id=directory_id, organization_id=organization_id),
         )
 
-    def get_directory_by_organization_id(self, organization_id: str):
+    def get_primary_directory_by_organization_id(self, organization_id: str):
         """ """
         response = self.core_client.grpc_exec(
             self.directory_service.ListDirectories.with_call,
