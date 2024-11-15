@@ -152,7 +152,7 @@ class ScalekitClient:
         except jwt.exceptions.InvalidTokenError:
             return False
 
-    def verify_webhook_payload(self, secret: str, headers: Dict[str, str], payload: bytes) -> Tuple[bool, Exception]:
+    def verify_webhook_payload(self, secret: str, headers: Dict[str, str], payload: bytes) -> (tuple[bool, Exception] | tuple[bool, None]):
         """
         Method to verify webhook payload
 
@@ -220,7 +220,7 @@ class ScalekitClient:
         """
         now = datetime.now()
         try:
-            timestamp = datetime.fromisoformat(timestamp_str)
+            timestamp = datetime.fromtimestamp(int(timestamp_str))
         except ValueError as e:
             return None, e
 
