@@ -41,11 +41,11 @@ class DirectoryClient:
             self,
             directory_id: str,
             organization_id: str,
-            pageSize: Optional[int],
-            pageToken: Optional[str],
-            includeDetail: Optional[bool],
-            directoryGroupId: Optional[str],
-            updatedAfter: Optional[str]
+            pageSize: Optional[int] = None,
+            pageToken: Optional[str] = None,
+            includeDetail: Optional[bool] = None,
+            directoryGroupId: Optional[str] = None,
+            updatedAfter: Optional[str] = None
     ) -> GetDirectoryResponse:
         """
         Method to get directory based on given directory id and org id
@@ -77,10 +77,10 @@ class DirectoryClient:
             self,
             directory_id: str,
             organization_id: str,
-            pageSize: Optional[int],
-            pageToken: Optional[str],
-            includeDetail: Optional[bool],
-            updatedAfter: Optional[str]
+            pageSize: Optional[int] = None,
+            pageToken: Optional[str] = None,
+            includeDetail: Optional[bool] = None,
+            updatedAfter: Optional[str] = None
     ) -> ListDirectoryUsersResponse:
         """
         Method to fetch list of directory users
