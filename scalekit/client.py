@@ -1,29 +1,34 @@
-from typing import Any, Dict, Optional
+
 import json
-from typing import Dict, Tuple
+from math import floor
+from typing import Any, Optional, Dict
 from urllib.parse import urlencode
 
 import jwt
 import hmac
 import hashlib
 import base64
-from datetime import datetime, timedelta
-from core import CoreClient
-from domain import DomainClient
-from connection import ConnectionClient
-from organization import OrganizationClient
-from directory import DirectoryClient
-from common.scalekit import (
+from datetime import datetime, timedelta, timezone
+from scalekit.core import CoreClient
+from scalekit.domain import DomainClient
+from scalekit.connection import ConnectionClient
+from scalekit.organization import OrganizationClient
+from scalekit.directory import DirectoryClient
+from scalekit.common.scalekit import (
     AuthorizationUrlOptions,
     CodeAuthenticationOptions,
     GrantType,
     IdpInitiatedLoginClaims,
 )
-from constants.user import id_token_claim_to_user_map
+from scalekit.constants.user import id_token_claim_to_user_map
 
 AUTHORIZE_ENDPOINT = "oauth/authorize"
-webhook_tolerance_in_seconds = timedelta(minutes=5)  # Check on this
+webhook_tolerance_in_seconds = timedelta(minutes=5)
 webhook_signature_version = "v1"
+
+
+class WebhookVerificationError(Exception):
+    pass
 
 
 class ScalekitClient:
@@ -40,7 +45,7 @@ class ScalekitClient:
         :param client_secret  : Client Secret
         :type                 : ``` str ```
 
-        :returns
+        :returns:
             None
         """
         try:
@@ -65,7 +70,7 @@ class ScalekitClient:
         :param options        : Auth URL options object
         :type                 : ``` obj ```
 
-        :returns
+        :returns:
             Authorization URL
         """
         try:
@@ -143,7 +148,8 @@ class ScalekitClient:
 
         :param token : access token
         :type        : ``` str ```
-        :returns
+
+        :returns:
             bool
         """
         try:
@@ -152,110 +158,14 @@ class ScalekitClient:
         except jwt.exceptions.InvalidTokenError:
             return False
 
-    def verify_webhook_payload(self, secret: str, headers: Dict[str, str], payload: bytes) -> (tuple[bool, Exception] | tuple[bool, None]):
-        """
-        Method to verify webhook payload
-
-        :param secret      :     Secret for webhook verification
-        :type              :     ``` str ```
-        :param headers     :     Auth URL options object
-        :type              :     ``` dict[str, str] ```
-        :param payload     :     Webhook payload in bytes
-        :type              :     ``` bytes ```
-        
-        :returns
-            bool
-        """
-        webhook_id = headers.get("webhook-id")
-        webhook_timestamp = headers.get("webhook-timestamp")
-        webhook_signature = headers.get("webhook-signature")
-
-        if not all([webhook_id, webhook_timestamp, webhook_signature]):
-            return False, Exception("Missing required headers")
-
-        secret_parts = secret.split("_")
-        if len(secret_parts) < 2:
-            return False, Exception("Invalid secret")
-
-        try:
-            secret_bytes = base64.b64decode(secret_parts[1])
-        except Exception as e:
-            return False, e
-
-        try:
-            timestamp = self.__verify_timestamp(webhook_timestamp)
-        except Exception as e:
-            return False, e
-
-        data = f"{webhook_id}.{timestamp}.{payload.decode('utf-8')}"
-        computed_signature = self.__compute_signature(secret_bytes, data)
-
-        received_signatures = webhook_signature.split(" ")
-        for versioned_signature in received_signatures:
-            signature_parts = versioned_signature.split(",")
-            if len(signature_parts) < 2:
-                continue
-
-            version = signature_parts[0]
-            signature = signature_parts[1]
-
-            if version != webhook_signature_version:
-                continue
-
-            if hmac.compare_digest(signature.encode('utf-8'), computed_signature.encode('utf-8')):
-                return True, None
-
-        return False, Exception("Invalid signature")
-
-    @staticmethod
-    def __verify_timestamp(timestamp_str: str):
-        """
-        Method to verify timestamp
-
-        :param timestamp_str   :     Timestamp for verification
-        :type                  :     ``` str ```
-        
-        :returns
-            None
-        """
-        now = datetime.now()
-        try:
-            timestamp = datetime.fromtimestamp(int(timestamp_str))
-        except ValueError as e:
-            return None, e
-
-        if timestamp < (now - webhook_tolerance_in_seconds):
-            return None, Exception("Message timestamp too old")
-
-        if timestamp > (now + webhook_tolerance_in_seconds):
-            return None, Exception("Message timestamp too new")
-
-        return timestamp, None
-
-    @staticmethod
-    def __compute_signature(secret: bytes, data: str) -> str:
-        """
-        Method to compute signature
-
-        :param secret   :     secret for signature
-        :type           :     ``` bytes ```
-        :param data     :     data for signature
-        :type           :     ``` str ```
-        
-        :returns
-            None
-        """
-        hash_object = hmac.new(secret, data.encode('utf-8'), hashlib.sha256)
-        signature = hash_object.digest()
-        return base64.b64encode(signature).decode('utf-8')
-
     def get_idp_initiated_login_claims(self, idp_initiated_login_token: str) -> IdpInitiatedLoginClaims:
         """
         Method to get IDP initiated login claims
 
         :param idp_initiated_login_token : IDP initiated login token
         :type        : ``` str ```
-        :returns
+
+        :returns:
             ``` IdpInitiatedLoginClaims ```
         """
         try:
@@ -272,7 +182,8 @@ class ScalekitClient:
 
         :param token : token
         :type        : ``` str ```
-        :returns
+
+        :returns:
             payload
         """
         self.core_client.get_jwks()
@@ -280,3 +191,101 @@ class ScalekitClient:
         key = self.core_client.keys[kid]
 
         return jwt.decode(token, key=key, algorithms="RS256", options=options)
+
+    def verify_webhook_payload(self, secret: str, headers: Dict[str, str], payload: [str | bytes]) -> bool:
+        """
+        Method to verify webhook payload
+
+        :param secret      :     Secret for webhook verification
+        :type              :     ``` str ```
+        :param headers     :     Webhook request headers
+        :type              :     ``` dict[str, str] ```
+        :param payload     :     Webhook payload in str or bytes
+        :type              :     ``` str | bytes ```
+
+        :returns:
+            bool
+        """
+        payload = payload if isinstance(payload, str) else payload.decode()
+        webhook_id = headers.get("webhook-id")
+        webhook_timestamp = headers.get("webhook-timestamp")
+        webhook_signature = headers.get("webhook-signature")
+
+        if not all([webhook_id, webhook_timestamp, webhook_signature]):
+            raise WebhookVerificationError("Missing required headers")
+
+        secret_parts = secret.split("_")
+        if len(secret_parts) < 2:
+            raise WebhookVerificationError("Invalid secret")
+
+        try:
+            secret_bytes = base64.b64decode(secret_parts[1])
+        except Exception as exp:
+            raise exp
+
+        try:
+            timestamp = self.__verify_timestamp(webhook_timestamp)
+        except Exception as exp:
+            raise exp
+
+        timestamp_str = str(floor(timestamp.replace(tzinfo=timezone.utc).timestamp()))
+        data = f"{webhook_id}.{timestamp_str}.{payload}"
+        computed_signature = base64.b64decode(self.__compute_signature(secret_bytes, data).split(',')[1])
+
+        received_signatures = webhook_signature.split(" ")
+        for versioned_signature in received_signatures:
+            signature_parts = versioned_signature.split(",")
+            if len(signature_parts) < 2:
+                continue
+
+            version = signature_parts[0]
+            signature = base64.b64decode(signature_parts[1])
+
+            if version != webhook_signature_version:
+                continue
+
+            if hmac.compare_digest(signature, computed_signature):
+                return True
+
+        raise WebhookVerificationError("Invalid signature")
+
+    @staticmethod
+    def __verify_timestamp(timestamp_str: str):
+        """
+        Method to verify time stamp
+
+        :param timestamp_str   :     Timestamp for verification
+        :type                  :     ``` str ```
+
+        :returns:
+            None
+        """
+        now = datetime.now(tz=timezone.utc)
+        try:
+            timestamp = datetime.fromtimestamp(float(timestamp_str), tz=timezone.utc)
+        except Exception:
+            raise WebhookVerificationError("Invalid Signature Headers")
+
+        if timestamp < (now - webhook_tolerance_in_seconds):
+            raise Exception("Message timestamp too old")
+
+        if timestamp > (now + webhook_tolerance_in_seconds):
+            raise Exception("Message timestamp too new")
+
+        return timestamp
+
+    @staticmethod
+    def __compute_signature(secret: bytes, data: str) -> str:
+        """
+        Method to compute signature
+
+        :param secret   :     secret for signature
+        :type           :     ``` bytes ```
+        :param data     :     data for signature
+        :type           :     ``` str ```
+
+        :returns:
+            None
+        """
+        signature = hmac.new(secret, data.encode(), hashlib.sha256).digest()
+        return f"v1, {base64.b64encode(signature).decode('utf-8')}"

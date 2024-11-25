@@ -172,6 +172,7 @@ class OrganizationClient:
 
         :param organization_id       : Organization id to delete portal link for
         :type               : ``` str ```
+
         :returns:
             None
         """
@@ -187,7 +188,10 @@ class OrganizationClient:
         :param organization_id    : Organization id for org update
         :type                     : ``` str ```
         :param settings           : Organization settings
-        :type                     : ``` str ```
+        :type                     : ``` list[dict[str, bool]] ```
+
+        :returns:
+            None
         """
         self.core_client.grpc_exec(
             self.organization_service.UpdateOrganizationSettings.with_call,
