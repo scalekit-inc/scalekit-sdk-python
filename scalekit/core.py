@@ -83,6 +83,8 @@ class CoreClient:
         }
 
         response = self.authenticate(data=json.dumps(params))
+        if response.status_code != 200:
+            raise Exception(response.content)
         response = json.loads(response.content)
         self.access_token = response["access_token"]
 
