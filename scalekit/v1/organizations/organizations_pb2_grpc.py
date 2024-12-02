@@ -65,6 +65,11 @@ class OrganizationServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetPortalLinkRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetPortalLinksResponse.FromString,
                 )
+        self.UpdateOrganizationSettings = channel.unary_unary(
+                '/scalekit.v1.organizations.OrganizationService/UpdateOrganizationSettings',
+                request_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.UpdateOrganizationSettingsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationResponse.FromString,
+                )
 
 
 class OrganizationServiceServicer(object):
@@ -133,6 +138,12 @@ class OrganizationServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def UpdateOrganizationSettings(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_OrganizationServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -185,6 +196,11 @@ def add_OrganizationServiceServicer_to_server(servicer, server):
                     servicer.GetPortalLinks,
                     request_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetPortalLinkRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetPortalLinksResponse.SerializeToString,
+            ),
+            'UpdateOrganizationSettings': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateOrganizationSettings,
+                    request_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.UpdateOrganizationSettingsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -363,5 +379,22 @@ class OrganizationService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.organizations.OrganizationService/GetPortalLinks',
             scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetPortalLinkRequest.SerializeToString,
             scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetPortalLinksResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def UpdateOrganizationSettings(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.organizations.OrganizationService/UpdateOrganizationSettings',
+            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.UpdateOrganizationSettingsRequest.SerializeToString,
+            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

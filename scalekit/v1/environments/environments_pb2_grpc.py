@@ -65,6 +65,11 @@ class EnvironmentServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetEnvironmentRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetEnvironmentResponse.FromString,
                 )
+        self.GenerateNewSamlCertificate = channel.unary_unary(
+                '/scalekit.v1.environments.EnvironmentService/GenerateNewSamlCertificate',
+                request_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GenerateSamlCertificateRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GenerateSamlCertificateResponse.FromString,
+                )
         self.UpdatePortalCustomization = channel.unary_unary(
                 '/scalekit.v1.environments.EnvironmentService/UpdatePortalCustomization',
                 request_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdatePortalCustomizationRequest.SerializeToString,
@@ -79,6 +84,26 @@ class EnvironmentServiceStub(object):
                 '/scalekit.v1.environments.EnvironmentService/CreateAssetUploadURL',
                 request_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.CreateAssetUploadUrlRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.CreateAssetUploadUrlResponse.FromString,
+                )
+        self.UpdateFeatures = channel.unary_unary(
+                '/scalekit.v1.environments.EnvironmentService/UpdateFeatures',
+                request_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdateFeaturesRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetFeaturesResponse.FromString,
+                )
+        self.EnableFeature = channel.unary_unary(
+                '/scalekit.v1.environments.EnvironmentService/EnableFeature',
+                request_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.EnableFeatureRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
+        self.DisableFeature = channel.unary_unary(
+                '/scalekit.v1.environments.EnvironmentService/DisableFeature',
+                request_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.DisableFeatureRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
+        self.GetFeatures = channel.unary_unary(
+                '/scalekit.v1.environments.EnvironmentService/GetFeatures',
+                request_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetFeaturesRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetFeaturesResponse.FromString,
                 )
 
 
@@ -145,6 +170,12 @@ class EnvironmentServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GenerateNewSamlCertificate(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def UpdatePortalCustomization(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -158,6 +189,30 @@ class EnvironmentServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def CreateAssetUploadURL(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateFeatures(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def EnableFeature(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DisableFeature(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetFeatures(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -216,6 +271,11 @@ def add_EnvironmentServiceServicer_to_server(servicer, server):
                     request_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetEnvironmentRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetEnvironmentResponse.SerializeToString,
             ),
+            'GenerateNewSamlCertificate': grpc.unary_unary_rpc_method_handler(
+                    servicer.GenerateNewSamlCertificate,
+                    request_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GenerateSamlCertificateRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GenerateSamlCertificateResponse.SerializeToString,
+            ),
             'UpdatePortalCustomization': grpc.unary_unary_rpc_method_handler(
                     servicer.UpdatePortalCustomization,
                     request_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdatePortalCustomizationRequest.FromString,
@@ -230,6 +290,26 @@ def add_EnvironmentServiceServicer_to_server(servicer, server):
                     servicer.CreateAssetUploadURL,
                     request_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.CreateAssetUploadUrlRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.CreateAssetUploadUrlResponse.SerializeToString,
+            ),
+            'UpdateFeatures': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateFeatures,
+                    request_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdateFeaturesRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetFeaturesResponse.SerializeToString,
+            ),
+            'EnableFeature': grpc.unary_unary_rpc_method_handler(
+                    servicer.EnableFeature,
+                    request_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.EnableFeatureRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'DisableFeature': grpc.unary_unary_rpc_method_handler(
+                    servicer.DisableFeature,
+                    request_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.DisableFeatureRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'GetFeatures': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetFeatures,
+                    request_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetFeaturesRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetFeaturesResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -412,6 +492,23 @@ class EnvironmentService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
+    def GenerateNewSamlCertificate(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.environments.EnvironmentService/GenerateNewSamlCertificate',
+            scalekit_dot_v1_dot_environments_dot_environments__pb2.GenerateSamlCertificateRequest.SerializeToString,
+            scalekit_dot_v1_dot_environments_dot_environments__pb2.GenerateSamlCertificateResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
     def UpdatePortalCustomization(request,
             target,
             options=(),
@@ -459,5 +556,73 @@ class EnvironmentService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.environments.EnvironmentService/CreateAssetUploadURL',
             scalekit_dot_v1_dot_environments_dot_environments__pb2.CreateAssetUploadUrlRequest.SerializeToString,
             scalekit_dot_v1_dot_environments_dot_environments__pb2.CreateAssetUploadUrlResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def UpdateFeatures(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.environments.EnvironmentService/UpdateFeatures',
+            scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdateFeaturesRequest.SerializeToString,
+            scalekit_dot_v1_dot_environments_dot_environments__pb2.GetFeaturesResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def EnableFeature(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.environments.EnvironmentService/EnableFeature',
+            scalekit_dot_v1_dot_environments_dot_environments__pb2.EnableFeatureRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DisableFeature(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.environments.EnvironmentService/DisableFeature',
+            scalekit_dot_v1_dot_environments_dot_environments__pb2.DisableFeatureRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetFeatures(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.environments.EnvironmentService/GetFeatures',
+            scalekit_dot_v1_dot_environments_dot_environments__pb2.GetFeaturesRequest.SerializeToString,
+            scalekit_dot_v1_dot_environments_dot_environments__pb2.GetFeaturesResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

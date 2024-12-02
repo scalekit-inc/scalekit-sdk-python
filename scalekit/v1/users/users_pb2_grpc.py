@@ -40,6 +40,11 @@ class UserServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.DeleteUserRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
+        self.AddUserToOrganization = channel.unary_unary(
+                '/scalekit.v1.users.UserService/AddUserToOrganization',
+                request_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.AddUserRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.AddUserResponse.FromString,
+                )
 
 
 class UserServiceServicer(object):
@@ -75,6 +80,12 @@ class UserServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def AddUserToOrganization(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_UserServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -102,6 +113,11 @@ def add_UserServiceServicer_to_server(servicer, server):
                     servicer.DeleteUser,
                     request_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.DeleteUserRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'AddUserToOrganization': grpc.unary_unary_rpc_method_handler(
+                    servicer.AddUserToOrganization,
+                    request_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.AddUserRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.AddUserResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -195,5 +211,22 @@ class UserService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.users.UserService/DeleteUser',
             scalekit_dot_v1_dot_users_dot_users__pb2.DeleteUserRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def AddUserToOrganization(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.users.UserService/AddUserToOrganization',
+            scalekit_dot_v1_dot_users_dot_users__pb2.AddUserRequest.SerializeToString,
+            scalekit_dot_v1_dot_users_dot_users__pb2.AddUserResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

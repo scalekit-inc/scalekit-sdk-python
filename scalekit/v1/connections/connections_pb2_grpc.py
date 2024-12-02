@@ -85,6 +85,11 @@ class ConnectionServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleConnectionRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleConnectionResponse.FromString,
                 )
+        self.GetConnectionTestResult = channel.unary_unary(
+                '/scalekit.v1.connections.ConnectionService/GetConnectionTestResult',
+                request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.GetConnectionTestResultRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.GetConnectionTestResultResponse.FromString,
+                )
 
 
 class ConnectionServiceServicer(object):
@@ -174,6 +179,12 @@ class ConnectionServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetConnectionTestResult(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_ConnectionServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -246,6 +257,11 @@ def add_ConnectionServiceServicer_to_server(servicer, server):
                     servicer.DisableConnection,
                     request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleConnectionRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleConnectionResponse.SerializeToString,
+            ),
+            'GetConnectionTestResult': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetConnectionTestResult,
+                    request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.GetConnectionTestResultRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.GetConnectionTestResultResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -492,5 +508,22 @@ class ConnectionService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connections.ConnectionService/DisableConnection',
             scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleConnectionRequest.SerializeToString,
             scalekit_dot_v1_dot_connections_dot_connections__pb2.ToggleConnectionResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetConnectionTestResult(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connections.ConnectionService/GetConnectionTestResult',
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.GetConnectionTestResultRequest.SerializeToString,
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.GetConnectionTestResultResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

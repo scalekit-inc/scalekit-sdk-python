@@ -4,8 +4,8 @@ from google.api import field_behavior_pb2 as _field_behavior_pb2
 from google.protobuf import any_pb2 as _any_pb2
 from google.protobuf import duration_pb2 as _duration_pb2
 from google.protobuf import empty_pb2 as _empty_pb2
-from google.protobuf import timestamp_pb2 as _timestamp_pb2
 from google.protobuf import struct_pb2 as _struct_pb2
+from google.protobuf import timestamp_pb2 as _timestamp_pb2
 from scalekit.v1.commons import commons_pb2 as _commons_pb2
 from scalekit.v1.options import options_pb2 as _options_pb2
 from google.protobuf.internal import containers as _containers
@@ -186,6 +186,22 @@ class DeleteEnvironmentRequest(_message.Message):
     id: str
     def __init__(self, id: _Optional[str] = ...) -> None: ...
 
+class GenerateSamlCertificateRequest(_message.Message):
+    __slots__ = ("id",)
+    ID_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    def __init__(self, id: _Optional[str] = ...) -> None: ...
+
+class GenerateSamlCertificateResponse(_message.Message):
+    __slots__ = ("id", "certificate", "expiry")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    CERTIFICATE_FIELD_NUMBER: _ClassVar[int]
+    EXPIRY_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    certificate: str
+    expiry: int
+    def __init__(self, id: _Optional[str] = ..., certificate: _Optional[str] = ..., expiry: _Optional[int] = ...) -> None: ...
+
 class UpdatePortalCustomizationResponse(_message.Message):
     __slots__ = ("environmentId", "customization_settings")
     ENVIRONMENTID_FIELD_NUMBER: _ClassVar[int]
@@ -239,3 +255,47 @@ class AssetSettings(_message.Message):
     category: AssetCategory
     extension: str
     def __init__(self, category: _Optional[_Union[AssetCategory, str]] = ..., extension: _Optional[str] = ...) -> None: ...
+
+class UpdateFeaturesRequest(_message.Message):
+    __slots__ = ("id", "features")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    FEATURES_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    features: _containers.RepeatedCompositeFieldContainer[EnvironmentFeature]
+    def __init__(self, id: _Optional[str] = ..., features: _Optional[_Iterable[_Union[EnvironmentFeature, _Mapping]]] = ...) -> None: ...
+
+class GetFeaturesRequest(_message.Message):
+    __slots__ = ("id",)
+    ID_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    def __init__(self, id: _Optional[str] = ...) -> None: ...
+
+class GetFeaturesResponse(_message.Message):
+    __slots__ = ("features",)
+    FEATURES_FIELD_NUMBER: _ClassVar[int]
+    features: _containers.RepeatedCompositeFieldContainer[EnvironmentFeature]
+    def __init__(self, features: _Optional[_Iterable[_Union[EnvironmentFeature, _Mapping]]] = ...) -> None: ...
+
+class EnableFeatureRequest(_message.Message):
+    __slots__ = ("id", "feature_id")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    FEATURE_ID_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    feature_id: str
+    def __init__(self, id: _Optional[str] = ..., feature_id: _Optional[str] = ...) -> None: ...
+
+class DisableFeatureRequest(_message.Message):
+    __slots__ = ("id", "feature_id")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    FEATURE_ID_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    feature_id: str
+    def __init__(self, id: _Optional[str] = ..., feature_id: _Optional[str] = ...) -> None: ...
+
+class EnvironmentFeature(_message.Message):
+    __slots__ = ("name", "enabled")
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    ENABLED_FIELD_NUMBER: _ClassVar[int]
+    name: str
+    enabled: bool
+    def __init__(self, name: _Optional[str] = ..., enabled: bool = ...) -> None: ...

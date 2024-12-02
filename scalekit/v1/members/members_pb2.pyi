@@ -1,5 +1,6 @@
 from buf.validate import validate_pb2 as _validate_pb2
 from google.api import annotations_pb2 as _annotations_pb2
+from google.api import field_behavior_pb2 as _field_behavior_pb2
 from google.protobuf import empty_pb2 as _empty_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
 from scalekit.v1.commons import commons_pb2 as _commons_pb2
@@ -22,7 +23,7 @@ ADMIN: MemberRole
 USER: MemberRole
 
 class Member(_message.Message):
-    __slots__ = ("id", "create_time", "update_time", "workspace_id", "role", "first_name", "last_name", "email", "metadata")
+    __slots__ = ("id", "create_time", "update_time", "workspace_id", "role", "first_name", "last_name", "email", "metadata", "organizations", "user_profile")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -39,6 +40,8 @@ class Member(_message.Message):
     LAST_NAME_FIELD_NUMBER: _ClassVar[int]
     EMAIL_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
+    ORGANIZATIONS_FIELD_NUMBER: _ClassVar[int]
+    USER_PROFILE_FIELD_NUMBER: _ClassVar[int]
     id: str
     create_time: _timestamp_pb2.Timestamp
     update_time: _timestamp_pb2.Timestamp
@@ -48,7 +51,9 @@ class Member(_message.Message):
     last_name: str
     email: str
     metadata: _containers.ScalarMap[str, str]
-    def __init__(self, id: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., workspace_id: _Optional[str] = ..., role: _Optional[_Union[MemberRole, str]] = ..., first_name: _Optional[str] = ..., last_name: _Optional[str] = ..., email: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    organizations: _containers.RepeatedCompositeFieldContainer[_commons_pb2.OrganizationMembership]
+    user_profile: _commons_pb2.UserProfile
+    def __init__(self, id: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., workspace_id: _Optional[str] = ..., role: _Optional[_Union[MemberRole, str]] = ..., first_name: _Optional[str] = ..., last_name: _Optional[str] = ..., email: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., organizations: _Optional[_Iterable[_Union[_commons_pb2.OrganizationMembership, _Mapping]]] = ..., user_profile: _Optional[_Union[_commons_pb2.UserProfile, _Mapping]] = ...) -> None: ...
 
 class CreateMemberRequest(_message.Message):
     __slots__ = ("member",)
@@ -63,7 +68,7 @@ class CreateMemberResponse(_message.Message):
     def __init__(self, member: _Optional[_Union[Member, _Mapping]] = ...) -> None: ...
 
 class UpdateMember(_message.Message):
-    __slots__ = ("role", "first_name", "last_name", "metadata")
+    __slots__ = ("role", "first_name", "last_name", "metadata", "user_profile")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -75,11 +80,13 @@ class UpdateMember(_message.Message):
     FIRST_NAME_FIELD_NUMBER: _ClassVar[int]
     LAST_NAME_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
+    USER_PROFILE_FIELD_NUMBER: _ClassVar[int]
     role: MemberRole
     first_name: str
     last_name: str
     metadata: _containers.ScalarMap[str, str]
-    def __init__(self, role: _Optional[_Union[MemberRole, str]] = ..., first_name: _Optional[str] = ..., last_name: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    user_profile: _commons_pb2.UserProfile
+    def __init__(self, role: _Optional[_Union[MemberRole, str]] = ..., first_name: _Optional[str] = ..., last_name: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., user_profile: _Optional[_Union[_commons_pb2.UserProfile, _Mapping]] = ...) -> None: ...
 
 class UpdateCurrentMemberRequest(_message.Message):
     __slots__ = ("member",)

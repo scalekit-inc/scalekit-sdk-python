@@ -1,7 +1,10 @@
 from buf.validate import validate_pb2 as _validate_pb2
 from google.api import annotations_pb2 as _annotations_pb2
+from google.api import field_behavior_pb2 as _field_behavior_pb2
+from google.api import visibility_pb2 as _visibility_pb2
 from google.protobuf import empty_pb2 as _empty_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
+from protoc_gen_openapiv2.options import annotations_pb2 as _annotations_pb2_1
 from scalekit.v1.commons import commons_pb2 as _commons_pb2
 from scalekit.v1.options import options_pb2 as _options_pb2
 from google.protobuf.internal import containers as _containers
@@ -12,7 +15,7 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class User(_message.Message):
-    __slots__ = ("id", "create_time", "update_time", "first_name", "last_name", "email", "external_id", "metadata")
+    __slots__ = ("id", "environment_id", "create_time", "update_time", "email", "external_id", "identity", "phone_number", "organizations", "user_profile", "metadata")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -21,22 +24,28 @@ class User(_message.Message):
         value: str
         def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
     ID_FIELD_NUMBER: _ClassVar[int]
+    ENVIRONMENT_ID_FIELD_NUMBER: _ClassVar[int]
     CREATE_TIME_FIELD_NUMBER: _ClassVar[int]
     UPDATE_TIME_FIELD_NUMBER: _ClassVar[int]
-    FIRST_NAME_FIELD_NUMBER: _ClassVar[int]
-    LAST_NAME_FIELD_NUMBER: _ClassVar[int]
     EMAIL_FIELD_NUMBER: _ClassVar[int]
     EXTERNAL_ID_FIELD_NUMBER: _ClassVar[int]
+    IDENTITY_FIELD_NUMBER: _ClassVar[int]
+    PHONE_NUMBER_FIELD_NUMBER: _ClassVar[int]
+    ORGANIZATIONS_FIELD_NUMBER: _ClassVar[int]
+    USER_PROFILE_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     id: str
+    environment_id: str
     create_time: _timestamp_pb2.Timestamp
     update_time: _timestamp_pb2.Timestamp
-    first_name: str
-    last_name: str
     email: str
     external_id: str
+    identity: str
+    phone_number: str
+    organizations: _containers.RepeatedCompositeFieldContainer[_commons_pb2.OrganizationMembership]
+    user_profile: _commons_pb2.UserProfile
     metadata: _containers.ScalarMap[str, str]
-    def __init__(self, id: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., first_name: _Optional[str] = ..., last_name: _Optional[str] = ..., email: _Optional[str] = ..., external_id: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., environment_id: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., email: _Optional[str] = ..., external_id: _Optional[str] = ..., identity: _Optional[str] = ..., phone_number: _Optional[str] = ..., organizations: _Optional[_Iterable[_Union[_commons_pb2.OrganizationMembership, _Mapping]]] = ..., user_profile: _Optional[_Union[_commons_pb2.UserProfile, _Mapping]] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
 
 class CreateUserRequest(_message.Message):
     __slots__ = ("organization_id", "user")
@@ -53,7 +62,7 @@ class CreateUserResponse(_message.Message):
     def __init__(self, user: _Optional[_Union[User, _Mapping]] = ...) -> None: ...
 
 class UpdateUser(_message.Message):
-    __slots__ = ("first_name", "last_name", "external_id", "metadata")
+    __slots__ = ("external_id", "metadata", "user_profile")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -61,27 +70,27 @@ class UpdateUser(_message.Message):
         key: str
         value: str
         def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
-    FIRST_NAME_FIELD_NUMBER: _ClassVar[int]
-    LAST_NAME_FIELD_NUMBER: _ClassVar[int]
     EXTERNAL_ID_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
-    first_name: str
-    last_name: str
+    USER_PROFILE_FIELD_NUMBER: _ClassVar[int]
     external_id: str
     metadata: _containers.ScalarMap[str, str]
-    def __init__(self, first_name: _Optional[str] = ..., last_name: _Optional[str] = ..., external_id: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    user_profile: _commons_pb2.UserProfile
+    def __init__(self, external_id: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., user_profile: _Optional[_Union[_commons_pb2.UserProfile, _Mapping]] = ...) -> None: ...
 
 class UpdateUserRequest(_message.Message):
-    __slots__ = ("organization_id", "id", "external_id", "user")
+    __slots__ = ("organization_id", "id", "external_id", "identity", "user")
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     ID_FIELD_NUMBER: _ClassVar[int]
     EXTERNAL_ID_FIELD_NUMBER: _ClassVar[int]
+    IDENTITY_FIELD_NUMBER: _ClassVar[int]
     USER_FIELD_NUMBER: _ClassVar[int]
     organization_id: str
     id: str
     external_id: str
+    identity: str
     user: UpdateUser
-    def __init__(self, organization_id: _Optional[str] = ..., id: _Optional[str] = ..., external_id: _Optional[str] = ..., user: _Optional[_Union[UpdateUser, _Mapping]] = ...) -> None: ...
+    def __init__(self, organization_id: _Optional[str] = ..., id: _Optional[str] = ..., external_id: _Optional[str] = ..., identity: _Optional[str] = ..., user: _Optional[_Union[UpdateUser, _Mapping]] = ...) -> None: ...
 
 class UpdateUserResponse(_message.Message):
     __slots__ = ("user",)
@@ -90,14 +99,16 @@ class UpdateUserResponse(_message.Message):
     def __init__(self, user: _Optional[_Union[User, _Mapping]] = ...) -> None: ...
 
 class GetUserRequest(_message.Message):
-    __slots__ = ("organization_id", "id", "external_id")
+    __slots__ = ("organization_id", "id", "external_id", "identity")
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     ID_FIELD_NUMBER: _ClassVar[int]
     EXTERNAL_ID_FIELD_NUMBER: _ClassVar[int]
+    IDENTITY_FIELD_NUMBER: _ClassVar[int]
     organization_id: str
     id: str
     external_id: str
-    def __init__(self, organization_id: _Optional[str] = ..., id: _Optional[str] = ..., external_id: _Optional[str] = ...) -> None: ...
+    identity: str
+    def __init__(self, organization_id: _Optional[str] = ..., id: _Optional[str] = ..., external_id: _Optional[str] = ..., identity: _Optional[str] = ...) -> None: ...
 
 class GetUserResponse(_message.Message):
     __slots__ = ("user",)
@@ -126,11 +137,31 @@ class ListUserResponse(_message.Message):
     def __init__(self, next_page_token: _Optional[str] = ..., total_size: _Optional[int] = ..., user: _Optional[_Iterable[_Union[User, _Mapping]]] = ...) -> None: ...
 
 class DeleteUserRequest(_message.Message):
-    __slots__ = ("organization_id", "id", "external_id")
+    __slots__ = ("organization_id", "id", "external_id", "identity")
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     ID_FIELD_NUMBER: _ClassVar[int]
     EXTERNAL_ID_FIELD_NUMBER: _ClassVar[int]
+    IDENTITY_FIELD_NUMBER: _ClassVar[int]
     organization_id: str
     id: str
     external_id: str
-    def __init__(self, organization_id: _Optional[str] = ..., id: _Optional[str] = ..., external_id: _Optional[str] = ...) -> None: ...
+    identity: str
+    def __init__(self, organization_id: _Optional[str] = ..., id: _Optional[str] = ..., external_id: _Optional[str] = ..., identity: _Optional[str] = ...) -> None: ...
+
+class AddUserRequest(_message.Message):
+    __slots__ = ("organization_id", "id", "external_id", "identity")
+    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
+    ID_FIELD_NUMBER: _ClassVar[int]
+    EXTERNAL_ID_FIELD_NUMBER: _ClassVar[int]
+    IDENTITY_FIELD_NUMBER: _ClassVar[int]
+    organization_id: str
+    id: str
+    external_id: str
+    identity: str
+    def __init__(self, organization_id: _Optional[str] = ..., id: _Optional[str] = ..., external_id: _Optional[str] = ..., identity: _Optional[str] = ...) -> None: ...
+
+class AddUserResponse(_message.Message):
+    __slots__ = ("user",)
+    USER_FIELD_NUMBER: _ClassVar[int]
+    user: User
+    def __init__(self, user: _Optional[_Union[User, _Mapping]] = ...) -> None: ...

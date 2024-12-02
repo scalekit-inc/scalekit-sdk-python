@@ -1,12 +1,19 @@
-from typing import Any, Dict, Optional
+
 import json
+from math import floor
+from typing import Any, Optional, Dict
 from urllib.parse import urlencode
 
 import jwt
+import hmac
+import hashlib
+import base64
+from datetime import datetime, timedelta, timezone
 from scalekit.core import CoreClient
 from scalekit.domain import DomainClient
 from scalekit.connection import ConnectionClient
 from scalekit.organization import OrganizationClient
+from scalekit.directory import DirectoryClient
 from scalekit.common.scalekit import (
     AuthorizationUrlOptions,
     CodeAuthenticationOptions,
@@ -16,10 +23,16 @@ from scalekit.common.scalekit import (
 from scalekit.constants.user import id_token_claim_to_user_map
 
 AUTHORIZE_ENDPOINT = "oauth/authorize"
+webhook_tolerance_in_seconds = timedelta(minutes=5)
+webhook_signature_version = "v1"
+
+
+class WebhookVerificationError(Exception):
+    pass
 
 
 class ScalekitClient:
-    """ """
+    """ Class definition for scalekit client """
 
     def __init__(self, env_url: str, client_id: str, client_secret: str):
         """
@@ -31,7 +44,8 @@ class ScalekitClient:
         :type                 : ``` str ```
         :param client_secret  : Client Secret
         :type                 : ``` str ```
-        :returns
+
+        :returns:
             None
         """
         try:
@@ -41,6 +55,7 @@ class ScalekitClient:
             self.domain = DomainClient(self.core_client)
             self.connection = ConnectionClient(self.core_client)
             self.organization = OrganizationClient(self.core_client)
+            self.directory = DirectoryClient(self.core_client)
         except Exception as exp:
             raise exp
 
@@ -52,9 +67,10 @@ class ScalekitClient:
 
         :param redirect_uri   : Redirect URI for SAML SSO
         :type                 : ``` str ```
-        :param options        : ``` Auth URL options object```
+        :param options        : Auth URL options object
         :type                 : ``` obj ```
-        :returns
+
+        :returns:
             Authorization URL
         """
         try:
@@ -92,8 +108,9 @@ class ScalekitClient:
         :type                 : ``` str ```
         :param redirect_uri   : Redirect URI
         :type                 : ``` str ```
-        :param options        : ``` CodeAuthenticationOptions Object ```
+        :param options        : CodeAuthenticationOptions Object
         :type                 : ``` obj ```
+
         :returns:
             dict with user, id token & access token
         """
@@ -131,7 +148,8 @@ class ScalekitClient:
 
         :param token : access token
         :type        : ``` str ```
-        :returns
+
+        :returns:
             bool
         """
         try:
@@ -146,7 +164,8 @@ class ScalekitClient:
 
         :param idp_initiated_login_token : IDP initiated login token
         :type        : ``` str ```
-        :returns
+
+        :returns:
             ``` IdpInitiatedLoginClaims ```
         """
         try:
@@ -163,7 +182,8 @@ class ScalekitClient:
 
         :param token : token
         :type        : ``` str ```
-        :returns
+
+        :returns:
             payload
         """
         self.core_client.get_jwks()
@@ -171,3 +191,101 @@ class ScalekitClient:
         key = self.core_client.keys[kid]
 
         return jwt.decode(token, key=key, algorithms="RS256", options=options)
+
+    def verify_webhook_payload(self, secret: str, headers: Dict[str, str], payload: [str | bytes]) -> bool:
+        """
+        Method to verify webhook payload
+
+        :param secret      :     Secret for webhook verification
+        :type              :     ``` str ```
+        :param headers     :     Webhook request headers
+        :type              :     ``` dict[str, str] ```
+        :param payload     :     Webhook payload in str or bytes
+        :type              :     ``` str | bytes ```
+
+        :returns:
+            bool
+        """
+        payload = payload if isinstance(payload, str) else payload.decode()
+        webhook_id = headers.get("webhook-id")
+        webhook_timestamp = headers.get("webhook-timestamp")
+        webhook_signature = headers.get("webhook-signature")
+
+        if not all([webhook_id, webhook_timestamp, webhook_signature]):
+            raise WebhookVerificationError("Missing required headers")
+
+        secret_parts = secret.split("_")
+        if len(secret_parts) < 2:
+            raise WebhookVerificationError("Invalid secret")
+
+        try:
+            secret_bytes = base64.b64decode(secret_parts[1])
+        except Exception as exp:
+            raise exp
+
+        try:
+            timestamp = self.__verify_timestamp(webhook_timestamp)
+        except Exception as exp:
+            raise exp
+
+        timestamp_str = str(floor(timestamp.replace(tzinfo=timezone.utc).timestamp()))
+        data = f"{webhook_id}.{timestamp_str}.{payload}"
+        computed_signature = base64.b64decode(self.__compute_signature(secret_bytes, data).split(',')[1])
+
+        received_signatures = webhook_signature.split(" ")
+        for versioned_signature in received_signatures:
+            signature_parts = versioned_signature.split(",")
+            if len(signature_parts) < 2:
+                continue
+
+            version = signature_parts[0]
+            signature = base64.b64decode(signature_parts[1])
+
+            if version != webhook_signature_version:
+                continue
+
+            if hmac.compare_digest(signature, computed_signature):
+                return True
+
+        raise WebhookVerificationError("Invalid signature")
+
+    @staticmethod
+    def __verify_timestamp(timestamp_str: str):
+        """
+        Method to verify time stamp
+
+        :param timestamp_str   :     Timestamp for verification
+        :type                  :     ``` str ```
+
+        :returns:
+            None
+        """
+        now = datetime.now(tz=timezone.utc)
+        try:
+            timestamp = datetime.fromtimestamp(float(timestamp_str), tz=timezone.utc)
+        except Exception:
+            raise WebhookVerificationError("Invalid Signature Headers")
+
+        if timestamp < (now - webhook_tolerance_in_seconds):
+            raise Exception("Message timestamp too old")
+
+        if timestamp > (now + webhook_tolerance_in_seconds):
+            raise Exception("Message timestamp too new")
+
+        return timestamp
+
+    @staticmethod
+    def __compute_signature(secret: bytes, data: str) -> str:
+        """
+        Method to compute signature
+
+        :param secret   :     secret for signature
+        :type           :     ``` bytes ```
+        :param data     :     data for signature
+        :type           :     ``` str ```
+
+        :returns:
+            None
+        """
+        signature = hmac.new(secret, data.encode(), hashlib.sha256).digest()
+        return f"v1, {base64.b64encode(signature).decode('utf-8')}"
