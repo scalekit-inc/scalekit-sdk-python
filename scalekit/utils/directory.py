@@ -1,10 +1,8 @@
-from __future__ import annotations
-
 from google.protobuf import message as _message
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
 from google.protobuf.internal import containers as _containers
 from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Mapping, Optional as _Optional, \
-    Union as _Union, Optional
+    Union as _Union
 
 from scalekit.v1.directories.directories_pb2 import DirectoryGroup
 

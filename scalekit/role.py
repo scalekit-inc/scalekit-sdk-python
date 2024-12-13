@@ -6,7 +6,7 @@ from scalekit.v1.roles.roles_pb2_grpc import RolesServiceStub
 
 
 class RoleClient:
-    """Class definition for Organization Client"""
+    """Class definition for Role Client"""
 
     def __init__(self, core_client: CoreClient):
         """
@@ -89,7 +89,7 @@ class RoleClient:
             self, organization_id: str, role_id: str
     ) -> UpdateOrganizationRoleResponse:
         """
-        Method to delete role in an organization based on given data
+        Method to delete role from an organization based on given data
 
         :param organization_id       : Organization id of the role to delete
         :type               : ``` str ```
