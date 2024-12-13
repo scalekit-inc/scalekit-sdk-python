@@ -31,6 +31,8 @@ class DirectoryProvider(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     MICROSOFT_AD: _ClassVar[DirectoryProvider]
     AUTH0: _ClassVar[DirectoryProvider]
     ONELOGIN: _ClassVar[DirectoryProvider]
+    JUMPCLOUD: _ClassVar[DirectoryProvider]
+    PING_IDENTITY: _ClassVar[DirectoryProvider]
 
 class DirectoryStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
@@ -52,6 +54,8 @@ GOOGLE: DirectoryProvider
 MICROSOFT_AD: DirectoryProvider
 AUTH0: DirectoryProvider
 ONELOGIN: DirectoryProvider
+JUMPCLOUD: DirectoryProvider
+PING_IDENTITY: DirectoryProvider
 DIRECTORY_STATUS_UNSPECIFIED: DirectoryStatus
 DRAFT: DirectoryStatus
 IN_PROGRESS: DirectoryStatus
@@ -376,12 +380,12 @@ class AssignRolesResponse(_message.Message):
     def __init__(self, role_assignments: _Optional[_Union[RoleAssignments, _Mapping]] = ...) -> None: ...
 
 class RoleAssignment(_message.Message):
-    __slots__ = ("group_id", "role_id")
+    __slots__ = ("group_id", "role_name")
     GROUP_ID_FIELD_NUMBER: _ClassVar[int]
-    ROLE_ID_FIELD_NUMBER: _ClassVar[int]
+    ROLE_NAME_FIELD_NUMBER: _ClassVar[int]
     group_id: str
-    role_id: str
-    def __init__(self, group_id: _Optional[str] = ..., role_id: _Optional[str] = ...) -> None: ...
+    role_name: str
+    def __init__(self, group_id: _Optional[str] = ..., role_name: _Optional[str] = ...) -> None: ...
 
 class UpdateAttributesRequest(_message.Message):
     __slots__ = ("organization_id", "id", "attribute_mapping")

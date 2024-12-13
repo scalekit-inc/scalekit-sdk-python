@@ -57,6 +57,7 @@ class ObjectType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     Directory: _ClassVar[ObjectType]
     DirectoryUser: _ClassVar[ObjectType]
     DirectoryGroup: _ClassVar[ObjectType]
+    Session: _ClassVar[ObjectType]
 ACTOR_UNSPECIFIED: EventActor
 HUMAN: EventActor
 MACHINE: EventActor
@@ -84,6 +85,7 @@ CustomAttributes: ObjectType
 Directory: ObjectType
 DirectoryUser: ObjectType
 DirectoryGroup: ObjectType
+Session: ObjectType
 
 class IEventPaginationTokens(_message.Message):
     __slots__ = ("NextPage", "PreviousPage", "Total")

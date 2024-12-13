@@ -30,6 +30,31 @@ class UserStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     USER_STATUS_UNSPECIFIED: _ClassVar[UserStatus]
     ACTIVE: _ClassVar[UserStatus]
     INACTIVE: _ClassVar[UserStatus]
+
+class MembershipRole(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    MEMBERSHIP_ROLE_UNSPECIFIED: _ClassVar[MembershipRole]
+    ADMIN: _ClassVar[MembershipRole]
+    USER: _ClassVar[MembershipRole]
+
+class IdentityProviderType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    IDENTITY_PROVIDER_UNSPECIFIED: _ClassVar[IdentityProviderType]
+    OKTA: _ClassVar[IdentityProviderType]
+    GOOGLE: _ClassVar[IdentityProviderType]
+    MICROSOFT_AD: _ClassVar[IdentityProviderType]
+    AUTH0: _ClassVar[IdentityProviderType]
+    ONELOGIN: _ClassVar[IdentityProviderType]
+    PING_IDENTITY: _ClassVar[IdentityProviderType]
+    JUMPCLOUD: _ClassVar[IdentityProviderType]
+    CUSTOM: _ClassVar[IdentityProviderType]
+    GITHUB: _ClassVar[IdentityProviderType]
+    GITLAB: _ClassVar[IdentityProviderType]
+    LINKEDIN: _ClassVar[IdentityProviderType]
+    SALESFORCE: _ClassVar[IdentityProviderType]
+    MICROSOFT: _ClassVar[IdentityProviderType]
+    IDP_SIMULATOR: _ClassVar[IdentityProviderType]
+    SCALEKIT: _ClassVar[IdentityProviderType]
 REGION_CODE_UNSPECIFIED: RegionCode
 US: RegionCode
 EU: RegionCode
@@ -39,14 +64,39 @@ DEV: EnvironmentType
 USER_STATUS_UNSPECIFIED: UserStatus
 ACTIVE: UserStatus
 INACTIVE: UserStatus
+MEMBERSHIP_ROLE_UNSPECIFIED: MembershipRole
+ADMIN: MembershipRole
+USER: MembershipRole
+IDENTITY_PROVIDER_UNSPECIFIED: IdentityProviderType
+OKTA: IdentityProviderType
+GOOGLE: IdentityProviderType
+MICROSOFT_AD: IdentityProviderType
+AUTH0: IdentityProviderType
+ONELOGIN: IdentityProviderType
+PING_IDENTITY: IdentityProviderType
+JUMPCLOUD: IdentityProviderType
+CUSTOM: IdentityProviderType
+GITHUB: IdentityProviderType
+GITLAB: IdentityProviderType
+LINKEDIN: IdentityProviderType
+SALESFORCE: IdentityProviderType
+MICROSOFT: IdentityProviderType
+IDP_SIMULATOR: IdentityProviderType
+SCALEKIT: IdentityProviderType
 
 class OrganizationMembership(_message.Message):
-    __slots__ = ("id", "status")
+    __slots__ = ("id", "membership_status", "role", "name", "primary_identity_provider")
     ID_FIELD_NUMBER: _ClassVar[int]
-    STATUS_FIELD_NUMBER: _ClassVar[int]
+    MEMBERSHIP_STATUS_FIELD_NUMBER: _ClassVar[int]
+    ROLE_FIELD_NUMBER: _ClassVar[int]
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    PRIMARY_IDENTITY_PROVIDER_FIELD_NUMBER: _ClassVar[int]
     id: str
-    status: UserStatus
-    def __init__(self, id: _Optional[str] = ..., status: _Optional[_Union[UserStatus, str]] = ...) -> None: ...
+    membership_status: UserStatus
+    role: MembershipRole
+    name: str
+    primary_identity_provider: IdentityProviderType
+    def __init__(self, id: _Optional[str] = ..., membership_status: _Optional[_Union[UserStatus, str]] = ..., role: _Optional[_Union[MembershipRole, str]] = ..., name: _Optional[str] = ..., primary_identity_provider: _Optional[_Union[IdentityProviderType, str]] = ...) -> None: ...
 
 class UserProfile(_message.Message):
     __slots__ = ("id", "first_name", "last_name", "name", "locale", "email_verified", "metadata", "custom_attributes")
