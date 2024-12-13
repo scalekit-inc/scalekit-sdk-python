@@ -10,7 +10,7 @@ class RoleClient:
 
     def __init__(self, core_client: CoreClient):
         """
-        Initializer for Organization Client
+        Initializer for Role Client
 
         :param core_client    : CoreClient Object
         :type                 : ``` obj ```
@@ -89,7 +89,7 @@ class RoleClient:
             self, organization_id: str, role_id: str
     ) -> UpdateOrganizationRoleResponse:
         """
-        Method to update organization based on given data
+        Method to delete role in an organization based on given data
 
         :param organization_id       : Organization id of the role to delete
         :type               : ``` str ```
@@ -110,7 +110,7 @@ class RoleClient:
             self, organization_id: str, role_id: str
     ) -> GetOrganizationRoleResponse:
         """
-        Method to update organization based on given data
+        Method to get role in an organization based on given data
 
         :param organization_id       : Organization id of the role to delete
         :type               : ``` str ```

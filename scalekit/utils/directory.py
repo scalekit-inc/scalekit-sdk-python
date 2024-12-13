@@ -21,7 +21,7 @@ class DirUser(_message.Message):
     EMAILS_FIELD_NUMBER: _ClassVar[int]
     GROUPS_FIELD_NUMBER: _ClassVar[int]
     USER_DETAIL_FIELD_NUMBER: _ClassVar[int]
-    id: Optional[str]
+    id: str | None
     email: str | None
     preferred_username: str | None
     given_name: str | None
