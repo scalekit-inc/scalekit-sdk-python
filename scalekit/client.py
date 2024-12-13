@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import json
 from math import floor
 from typing import Any, Optional, Dict
