@@ -1,9 +1,10 @@
+from __future__ import annotations
 
 from google.protobuf import message as _message
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
 from google.protobuf.internal import containers as _containers
 from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Mapping, Optional as _Optional, \
-    Union as _Union
+    Union as _Union, Optional
 
 from scalekit.v1.directories.directories_pb2 import DirectoryGroup
 
@@ -20,7 +21,7 @@ class DirUser(_message.Message):
     EMAILS_FIELD_NUMBER: _ClassVar[int]
     GROUPS_FIELD_NUMBER: _ClassVar[int]
     USER_DETAIL_FIELD_NUMBER: _ClassVar[int]
-    id: str | None
+    id: Optional[str]
     email: str | None
     preferred_username: str | None
     given_name: str | None

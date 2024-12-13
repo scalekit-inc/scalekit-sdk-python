@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package scalekit.v1.webhooks;
+
+import "google/api/annotations.proto";
+import "google/api/visibility.proto";
+import "google/protobuf/struct.proto";
+import "scalekit/v1/options/options.proto";
+
+option go_package = "github.com/scalekit-inc/scalekit/pkg/grpc/webhooks";
+
+service WebhookService {
+  rpc GetPortalURL(GetPortalURLRequest) returns (GetPortalURLResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: WORKSPACE_SESSION_CLIENT};
+    option (google.api.http) = {get: "/api/v1/webhooks/portal-url"};
+  }
+  rpc WebhookWrapper(WebhookWrapperRequest) returns (google.protobuf.Struct) {
+    option (google.api.method_visibility).restriction = "PREVIEW";
+    option (scalekit.v1.options.auth_option) = {authentication_type: WORKSPACE_SESSION};
+    option (google.api.http) = {
+      get: "/api/v1/webhooks/wb/**"
+      additional_bindings: {
+        post: "/api/v1/webhooks/wb/**"
+        body: "request_body"
+      }
+      additional_bindings: {
+        put: "/api/v1/webhooks/wb/**"
+        body: "request_body"
+      }
+      additional_bindings: {
+        patch: "/api/v1/webhooks/wb/**"
+        body: "request_body"
+      }
+      additional_bindings: {delete: "/api/v1/webhooks/wb/**"}
+    };
+  }
+}
+
+message GetPortalURLRequest {}
+
+message GetPortalURLResponse {
+  string url = 1;
+}
+
+message WebhookWrapperRequest {
+  google.protobuf.Struct request_body = 1;
+}
+
+message WebhookWrapperResponse {
+  google.protobuf.Struct response_body = 1;
+}

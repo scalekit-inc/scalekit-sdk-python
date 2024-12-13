@@ -1,0 +1,325 @@
+syntax = "proto3";
+
+package scalekit.v1.roles;
+
+import "buf/validate/validate.proto";
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/any.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+import "scalekit/v1/commons/commons.proto";
+import "scalekit/v1/options/options.proto";
+
+option go_package = "github.com/scalekit-inc/scalekit/pkg/grpc/roles";
+
+service RolesService {
+  rpc CreateRole(CreateRoleRequest) returns (CreateRoleResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: WORKSPACE_SESSION};
+
+    option (google.api.http) = {
+      post: "/api/v1/environments/{env_id}/roles"
+      body: "role"
+      additional_bindings: [
+        {post: "/api/v1/environments/-/roles"}]
+    };
+  }
+
+  rpc UpdateRole(UpdateRoleRequest) returns (UpdateRoleResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: WORKSPACE_SESSION};
+
+    option (google.api.http) = {
+      put: "/api/v1/environments/{env_id}/roles/{id}"
+      body: "role"
+      additional_bindings: [
+        {put: "/api/v1/environments/-/roles/{id}"}]
+    };
+  }
+
+  rpc GetRole(GetRoleRequest) returns (GetRoleResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: WORKSPACE_SESSION};
+
+    option (google.api.http) = {
+      get: "/api/v1/environments/{env_id}/roles/{id}"
+      additional_bindings: [
+        {get: "/api/v1/environments/-/roles/{id}"}]
+    };
+  }
+
+  rpc ListRoles(ListRolesRequest) returns (ListRolesResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: WORKSPACE_SESSION_CUSTOMER_PORTAL};
+
+    option (google.api.http) = {
+      get: "/api/v1/environments/{env_id}/roles"
+      additional_bindings: [
+        {get: "/api/v1/environments/-/roles"}]
+    };
+  }
+
+  rpc DeleteRole(DeleteRoleRequest) returns (google.protobuf.Empty) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: WORKSPACE_SESSION};
+
+    option (google.api.http) = {
+      delete: "/api/v1/environments/{env_id}/roles/{id}"
+      additional_bindings: [
+        {delete: "/api/v1/environments/-/roles/{id}"}]
+    };
+  }
+
+  rpc CreateOrganizationRole(CreateOrganizationRoleRequest) returns (CreateOrganizationRoleResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: WORKSPACE_SESSION};
+
+    option (google.api.http) = {
+      post: "/api/v1/organizations/{org_id}/roles"
+      body: "role"
+    };
+  }
+
+  rpc UpdateOrganizationRole(UpdateOrganizationRoleRequest) returns (UpdateOrganizationRoleResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: WORKSPACE_SESSION};
+
+    option (google.api.http) = {
+      put: "/api/v1/organizations/{org_id}/roles/{id}"
+      body: "role"
+    };
+  }
+
+  rpc GetOrganizationRole(GetOrganizationRoleRequest) returns (GetOrganizationRoleResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: WORKSPACE_SESSION};
+
+    option (google.api.http) = {get: "/api/v1/organizations/{org_id}/roles/{id}"};
+  }
+
+  rpc ListOrganizationRoles(ListOrganizationRolesRequest) returns (ListOrganizationRolesResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: WORKSPACE_SESSION_CUSTOMER_PORTAL};
+
+    option (google.api.http) = {get: "/api/v1/organizations/{org_id}/roles"};
+  }
+
+  rpc DeleteOrganizationRole(DeleteOrganizationRoleRequest) returns (google.protobuf.Empty) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: WORKSPACE_SESSION};
+
+    option (google.api.http) = {delete: "/api/v1/organizations/{org_id}/roles/{id}"};
+  }
+}
+
+message Role {
+  string id = 1 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 32
+    prefix: "role"
+  }];
+  string name = 2 [
+    (buf.validate.field).string = {
+      min_len: 1
+      max_len: 100
+    },
+    (buf.validate.field).required = true
+  ];
+  string display_name = 3 [
+    (buf.validate.field).string = {
+      min_len: 1
+      max_len: 100
+    },
+    (buf.validate.field).required = true
+  ];
+  string description = 4 [(buf.validate.field).string = {max_len: 2000}];
+  bool default = 5;
+}
+
+message CreateRole {
+  string name = 2 [
+    (buf.validate.field).string = {
+      min_len: 1
+      max_len: 100
+      pattern: "^[a-zA-Z0-9_]{1,64}$"
+    },
+    (buf.validate.field).required = true
+  ];
+  string display_name = 3 [
+    (buf.validate.field).string = {
+      min_len: 1
+      max_len: 100
+    },
+    (buf.validate.field).required = true
+  ];
+  optional string description = 4 [(buf.validate.field).string = {max_len: 2000}];
+  optional bool default = 5;
+}
+
+message CreateRoleRequest {
+  string env_id = 1 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 32
+    prefix: "env"
+  }];
+  CreateRole role = 2 [(buf.validate.field).required = true];
+}
+
+message CreateRoleResponse {
+  Role role = 1;
+}
+
+message GetRoleRequest {
+  string env_id = 1 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 32
+    prefix: "env"
+  }];
+  string id = 2 [
+    (buf.validate.field).string = {
+      min_len: 1
+      max_len: 32
+      prefix: "role"
+    },
+    (buf.validate.field).required = true
+  ];
+}
+
+message GetRoleResponse {
+  Role role = 1;
+}
+
+message ListRolesRequest {
+  string env_id = 1 [(buf.validate.field).string = {
+    min_len: 0
+    max_len: 32
+  }];
+}
+
+message ListRolesResponse {
+  repeated Role roles = 1;
+}
+
+message UpdateRole {
+  optional string display_name = 1 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 100
+  }];
+  optional string description = 2 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 2000
+  }];
+  optional bool default = 3;
+}
+
+message UpdateRoleRequest {
+  string env_id = 1 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 32
+    prefix: "env"
+  }];
+  string id = 2 [
+    (buf.validate.field).string = {
+      min_len: 1
+      max_len: 32
+      prefix: "role"
+    },
+    (buf.validate.field).required = true
+  ];
+  UpdateRole role = 3 [(buf.validate.field).required = true];
+}
+
+message UpdateRoleResponse {
+  Role role = 1;
+}
+
+message DeleteRoleRequest {
+  string env_id = 1 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 32
+    prefix: "env"
+  }];
+  string id = 2 [
+    (buf.validate.field).string = {
+      min_len: 1
+      max_len: 32
+      prefix: "role"
+    },
+    (buf.validate.field).required = true
+  ];
+}
+
+message CreateOrganizationRoleRequest {
+  string org_id = 1 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 32
+    prefix: "org"
+  }];
+  CreateRole role = 2 [(buf.validate.field).required = true];
+}
+
+message CreateOrganizationRoleResponse {
+  Role role = 1;
+}
+
+message GetOrganizationRoleRequest {
+  string org_id = 1 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 32
+    prefix: "org"
+  }];
+  string id = 2 [
+    (buf.validate.field).string = {
+      min_len: 1
+      max_len: 32
+      prefix: "role"
+    },
+    (buf.validate.field).required = true
+  ];
+}
+
+message GetOrganizationRoleResponse {
+  Role role = 1;
+}
+
+message ListOrganizationRolesRequest {
+  string org_id = 1 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 32
+    prefix: "org"
+  }];
+}
+
+message ListOrganizationRolesResponse {
+  repeated Role roles = 1;
+}
+
+message UpdateOrganizationRoleRequest {
+  string org_id = 1 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 32
+    prefix: "org"
+  }];
+  string id = 2 [
+    (buf.validate.field).string = {
+      min_len: 1
+      max_len: 32
+      prefix: "role"
+    },
+    (buf.validate.field).required = true
+  ];
+  UpdateRole role = 3 [(buf.validate.field).required = true];
+}
+
+message UpdateOrganizationRoleResponse {
+  Role role = 1;
+}
+
+message DeleteOrganizationRoleRequest {
+  string org_id = 1 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 32
+    prefix: "org"
+  }];
+  string id = 2 [
+    (buf.validate.field).string = {
+      min_len: 1
+      max_len: 32
+      prefix: "role"
+    },
+    (buf.validate.field).required = true
+  ];
+}

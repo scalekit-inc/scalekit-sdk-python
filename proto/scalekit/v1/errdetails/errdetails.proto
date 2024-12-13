@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package scalekit.v1.errdetails;
+
+import "google/protobuf/duration.proto";
+
+option go_package = "github.com/scalekit-inc/scalekit/pkg/grpc/errdetails";
+
+message ErrorInfo {
+  string error_code = 1;
+  optional DebugInfo debug_info = 2;
+  optional HelpInfo help_info = 3;
+  optional LocalizedMessageInfo localized_message_info = 4;
+  optional ResourceInfo resource_info = 5;
+  optional RequestInfo request_info = 6;
+  optional ValidationErrorInfo validation_error_info = 8;
+}
+
+// Describes additional debugging info.
+message DebugInfo {
+  // The stack trace entries indicating where the error occurred.
+  repeated string stack_entries = 1;
+
+  // Additional debugging information provided by the server.
+  string detail = 2;
+}
+
+// Describes violations in a client request. This error type focuses on the
+// syntactic aspects of the request.
+message ValidationErrorInfo {
+  // A message type used to describe a single bad request field.
+  message FieldViolation {
+    string field = 1;
+    // A description of why the request element is bad.
+    string description = 2;
+
+    string constraint = 3;
+  }
+
+  // Describes all violations in a client request.
+  repeated FieldViolation field_violations = 1;
+}
+
+// Contains metadata about the request that clients can attach when filing a bug
+// or providing other forms of feedback.
+message RequestInfo {
+  // An opaque string that should only be interpreted by the service generating
+  // it. For example, it can be used to identify requests in the service's logs.
+  string request_id = 1;
+
+  // Any data that was used to serve this request. For example, an encrypted
+  // stack trace that can be sent back to the service provider for debugging.
+  string serving_data = 2;
+}
+
+// Describes the resource that is being accessed.
+message ResourceInfo {
+  string resource_type = 1;
+  string resource_name = 2;
+  string owner = 3;
+
+  // Describes what error is encountered when accessing this resource.
+  // For example, updating a cloud project may require the `writer` permission
+  // on the developer console project.
+  string description = 4;
+}
+
+message HelpInfo {
+  message Link {
+    string description = 1;
+    string url = 2;
+  }
+  repeated Link links = 1;
+}
+
+message LocalizedMessageInfo {
+  string locale = 1;
+  string message = 2;
+}

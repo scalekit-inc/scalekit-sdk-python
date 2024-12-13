@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package scalekit.v1.options;
+
+import "google/protobuf/descriptor.proto";
+
+option go_package = "github.com/scalekit-inc/scalekit/pkg/grpc/authoption";
+
+extend google.protobuf.MethodOptions {
+  AuthOption auth_option = 50000;
+}
+
+message AuthOption {
+  AuthenticationType authentication_type = 3;
+  string permission = 1;
+}
+
+enum AuthenticationType {
+  BLOCKED = 0; // API is blocked / private  and default
+  NONE = 1; // API is open
+  WORKSPACE = 64; // workspace_id is in claims
+  CUSTOMER_PORTAL = 32; // claims has organisation ID
+  SESSION = 16; // claims has UI in audience
+  WORKSPACE_SESSION = 80; // workspace_id is in claims and UI in audience
+  WORKSPACE_SESSION_CUSTOMER_PORTAL = 112; // workspace_id,organization_id is in claims and UI in audience
+  USER = 8; // user_id is in claims
+  CLIENT = 4; // client Id is in subject
+  SESSION_CLIENT = 20; // UI in audience or client Id is in subject
+  WORKSPACE_SESSION_CLIENT = 84; // workspace_id is in claims, UI in audience and client Id is in subject
+  CUSTOMER_PORTAL_SESSION_CLIENT = 52; // claims has organisation ID, UI in audience and client Id is in subject
+}

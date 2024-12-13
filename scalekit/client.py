@@ -1,3 +1,4 @@
+from __future__ import annotations
 
 import json
 from math import floor
@@ -14,6 +15,7 @@ from scalekit.domain import DomainClient
 from scalekit.connection import ConnectionClient
 from scalekit.organization import OrganizationClient
 from scalekit.directory import DirectoryClient
+from scalekit.role import RoleClient
 from scalekit.common.scalekit import (
     AuthorizationUrlOptions,
     CodeAuthenticationOptions,
@@ -55,6 +57,7 @@ class ScalekitClient:
             self.domain = DomainClient(self.core_client)
             self.connection = ConnectionClient(self.core_client)
             self.organization = OrganizationClient(self.core_client)
+            self.role = RoleClient(self.core_client)
             self.directory = DirectoryClient(self.core_client)
         except Exception as exp:
             raise exp

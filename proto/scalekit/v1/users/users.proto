@@ -1,0 +1,308 @@
+syntax = "proto3";
+
+package scalekit.v1.users;
+
+import "buf/validate/validate.proto";
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/api/visibility.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "scalekit/v1/commons/commons.proto";
+import "scalekit/v1/options/options.proto";
+
+option go_package = "github.com/scalekit-inc/scalekit/pkg/grpc/users";
+
+service UserService {
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: SESSION_CLIENT};
+    option (google.api.http) = {
+      post: "/api/v1/organizations/{organization_id}/users"
+      body: "user"
+      additional_bindings: [
+        {
+          post: "/api/v1/organizations/-/users"
+          body: "user"
+        }
+      ]
+    };
+
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "User"
+      summary: "Create a New User"
+      description: "Create a new user in an organization"
+
+      responses: {
+        key: "201"
+        value: {
+          description: "User created successfully"
+          schema: {
+            json_schema: {ref: ".scalekit.v1.users.CreateUserResponse"}
+          }
+        }
+      }
+    };
+  }
+  rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: SESSION_CLIENT};
+    option (google.api.http) = {
+      patch: "/api/v1/organizations/{organization_id}/users/{id}"
+      body: "user"
+      additional_bindings: [
+        {
+          patch: "/api/v1/organizations/-/users"
+          body: "user"
+        }
+      ]
+    };
+
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "User"
+      summary: "Update User in an organization"
+      description: "Update the user with id details in an organization"
+      responses: {
+        key: "200"
+        value: {
+          description: "User updated successfully"
+          schema: {
+            json_schema: {ref: ".scalekit.v1.users.UpdateUserResponse"}
+          }
+        }
+      }
+    };
+  }
+
+  rpc GetUser(GetUserRequest) returns (GetUserResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: SESSION_CLIENT};
+    option (google.api.http) = {
+      get: "/api/v1/organizations/{organization_id}/users/{id}"
+      additional_bindings: [
+        {get: "/api/v1/organizations/-/users/{id}"},
+        {get: "/api/v1/organizations/-/users/-"}]
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "User"
+      summary: "Retrieve User details"
+      description: "Fetch detailed information about a user with user id."
+
+      responses: {
+        key: "200"
+        value: {
+          description: "Successfully retrieved user details"
+          schema: {
+            json_schema: {ref: ".scalekit.v1.users.GetUserResponse"}
+          }
+        }
+      }
+    };
+  }
+
+  rpc ListUsers(ListUserRequest) returns (ListUserResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: SESSION_CLIENT};
+    option (google.api.http) = {
+      get: "/api/v1/organizations/{organization_id}/users"
+      additional_bindings: [
+        {get: "/api/v1/organizations/-/users"}]
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "User"
+      summary: "List users in an organization"
+      description: "Retrieve a paginated list of all users within the organization. Use the page_token from the response to access subsequent pages of results"
+      responses: {
+        key: "200"
+        value: {
+          description: "Successfully retrieved the list of users in the organization"
+          schema: {
+            json_schema: {ref: ".scalekit.v1.users.ListUserResponse"}
+          }
+        }
+      }
+    };
+  }
+
+  rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: SESSION_CLIENT};
+    option (google.api.http) = {
+      delete: "/api/v1/organizations/{organization_id}/users/{id}"
+      additional_bindings: [
+        {delete: "/api/v1/organizations/-/users/-"}]
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "User"
+      summary: "Delete a User in the organization"
+      description: "Remove an existing user from the organization using its unique identifier"
+
+      responses: {
+        key: "200"
+        value: {description: "Deleted Successfully"}
+      }
+    };
+  }
+
+  rpc AddUserToOrganization(AddUserRequest) returns (AddUserResponse) {
+    option (scalekit.v1.options.auth_option) = {authentication_type: SESSION_CLIENT};
+    option (google.api.http) = {
+      post: "/api/v1/organizations/{organization_id}/users/{id}"
+      additional_bindings: [
+        {post: "/api/v1/organizations/-/users/{id}"}]
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "User"
+      summary: "Add existing user to an organization"
+      description: "Adds an existing user to an organization"
+
+      responses: {
+        key: "201"
+        value: {
+          description: "User added to organization successfully"
+          schema: {
+            json_schema: {ref: ".scalekit.v1.users.AddUserResponse"}
+          }
+        }
+      }
+    };
+  }
+}
+
+message User {
+  string id = 1;
+  string environment_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp create_time = 3;
+  google.protobuf.Timestamp update_time = 4;
+  string email = 5 [(buf.validate.field).string.email = true];
+  optional string external_id = 6;
+  string identity = 8;
+  string phone_number = 9;
+  repeated scalekit.v1.commons.OrganizationMembership organizations = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  scalekit.v1.commons.UserProfile user_profile = 11;
+  map<string, string> metadata = 12 [(buf.validate.field).map = {
+    max_pairs: 20
+    keys: {
+      string: {
+        min_len: 3
+        max_len: 25
+      }
+    }
+    values: {
+      string: {
+        min_len: 1
+        max_len: 256
+      }
+    }
+  }];
+  google.protobuf.Timestamp last_login = 13;
+}
+
+message CreateUserRequest {
+  string organization_id = 1;
+  User user = 2 [(buf.validate.field).required = true];
+}
+
+message CreateUserResponse {
+  User user = 1;
+}
+
+message UpdateUser {
+  reserved 6;
+  optional string external_id = 7;
+  map<string, string> metadata = 8 [(buf.validate.field).map = {
+    max_pairs: 10
+    keys: {
+      string: {
+        min_len: 3
+        max_len: 25
+      }
+    }
+    values: {
+      string: {
+        min_len: 1
+        max_len: 256
+      }
+    }
+  }];
+  scalekit.v1.commons.UserProfile user_profile = 9;
+}
+
+message UpdateUserRequest {
+  string organization_id = 1;
+  oneof identities {
+    string id = 2 [(buf.validate.field).string = {
+      min_len: 19
+      max_len: 25
+    }];
+    string external_id = 3;
+    string identity = 4;
+  }
+  UpdateUser user = 5 [(buf.validate.field).required = true];
+}
+
+message UpdateUserResponse {
+  User user = 1;
+}
+
+message GetUserRequest {
+  string organization_id = 1; // validate the presence
+  oneof identities {
+    string id = 2 [(buf.validate.field).string = {
+      min_len: 19
+      max_len: 25
+    }];
+    string external_id = 3;
+    string identity = 4;
+  }
+}
+
+message GetUserResponse {
+  User user = 1;
+}
+
+message ListUserRequest {
+  string organization_id = 1;
+  uint32 page_size = 2;
+  string page_token = 3;
+}
+
+message ListUserResponse {
+  string next_page_token = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "30"
+    description: "Token to access the next page of results"
+  }];
+  uint32 total_size = 2 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "30"
+    description: "Total number of results"
+  }];
+  repeated User users = 3;
+  string prev_page_token = 4 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "30"
+    description: "Token to access the previous page of results"
+  }];
+}
+
+message DeleteUserRequest {
+  string organization_id = 1;
+  oneof identities {
+    string id = 2 [(buf.validate.field).string = {
+      min_len: 19
+      max_len: 25
+    }];
+    string external_id = 3;
+    string identity = 4;
+  }
+}
+
+message AddUserRequest {
+  string organization_id = 1;
+  oneof identities {
+    string id = 2 [(buf.validate.field).string = {
+      min_len: 19
+      max_len: 25
+    }];
+    string external_id = 3;
+    string identity = 4;
+  }
+}
+
+message AddUserResponse {
+  User user = 1;
+}
