@@ -153,7 +153,7 @@ class OrganizationClient:
         return response[0].link
 
     def generate_portal_link_for_features(
-            self, organization_id: str, features: Optional[list] = None) -> GeneratePortalLinkResponse:
+            self, organization_id: str, features: [Feature] = None) -> GeneratePortalLinkResponse:
         """
         Method to generate customer portal link based on given features
 
