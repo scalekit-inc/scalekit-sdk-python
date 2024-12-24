@@ -1,4 +1,5 @@
 
+import deprecation
 from typing import Optional
 
 from scalekit.core import CoreClient
@@ -41,22 +42,25 @@ class ConnectionClient:
             GetConnectionRequest(organization_id=organization_id, id=conn_id),
         )
 
-    def list_connections_by_domain(self, domain: str) -> ListConnectionsResponse:
+    def list_connections_by_domain(self, domain: str, include: Optional[str] = None) -> ListConnectionsResponse:
         """
         Method to get connection object by domain
 
         :param domain     : Client domain id to get connections
         :type             : ``` str ```
+        :param include    : Return active connections or all, E.g. - 'all'
+        :type             : ``` str ```
 
-        :returns
+        :returns:
             List Connections Response
         """
         return self.core_client.grpc_exec(
             self.connection_service.ListConnections.with_call,
-            ListConnectionsRequest(domain=domain, include='all'),
+            ListConnectionsRequest(domain=domain, include=include),
         )
 
-    def list_connections_by_organization(self, organization_id: str) -> ListConnectionsResponse:
+    @deprecation.deprecated(details="Use list_connections_by_organization method instead")
+    def list_connections(self, organization_id: str) -> ListConnectionsResponse:
         """
         Method to list connections
 
@@ -68,7 +72,25 @@ class ConnectionClient:
         """
         return self.core_client.grpc_exec(
             self.connection_service.ListConnections.with_call,
-            ListConnectionsRequest(organization_id=organization_id, include='all'),
+            ListConnectionsRequest(organization_id=organization_id)
+        )
+
+    def list_connections_by_organization(
+            self, organization_id: str, include: Optional[str] = None) -> ListConnectionsResponse:
+        """
+        Method to list connections by organization id
+
+        :param organization_id : Client organization id to get connections
+        :type                  : ``` str ```
+        :param include         : Return active connections or all, E.g. - 'all'
+        :type                  : ``` str ```
+
+        :returns:
+            List Connections Response
+        """
+        return self.core_client.grpc_exec(
+            self.connection_service.ListConnections.with_call,
+            ListConnectionsRequest(organization_id=organization_id, include=include),
         )
 
     def enable_connection(
@@ -105,4 +127,21 @@ class ConnectionClient:
         return self.core_client.grpc_exec(
             self.connection_service.DisableConnection.with_call,
             ToggleConnectionRequest(organization_id=organization_id, id=conn_id),
+        )
+
+    def create_connection(self, organization_id: str, connection: CreateConnection) -> CreateConnectionResponse:
+        """
+        Method to create a new connection
+
+        :param organization_id  : Organization id to create connection for
+        :type                   : ``` str ```
+        :param connection       : CreateConnection object with expected values for conn creation
+        :type                   : ``` obj ```
+
+        :returns:
+            Create Connection Response
+        """
+        return self.core_client.grpc_exec(
+            self.connection_service.CreateConnection.with_call,
+            CreateConnectionRequest(organization_id=organization_id, connection=connection),
         )
