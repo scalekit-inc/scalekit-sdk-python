@@ -41,23 +41,19 @@ class OrganizationClient:
         )
 
     def create_organization(
-        self, name: str, options: CreateOrganization
+        self, organization: CreateOrganization
     ) -> CreateOrganizationResponse:
         """
         Method to create organization based on given data
 
-        :param name     : Name of the org to be created
-        :type           : ``` str ```
-        :param options  : Additional details for org to be created
+        :param organization  : Create Organization obj with details for org to be created
         :type           : ``` obj ```
         :returns:
             Create Organization Response
         """
         return self.core_client.grpc_exec(
             self.organization_service.CreateOrganization.with_call,
-            CreateOrganizationRequest(
-                organization={"displayName": name, "externalId": options.external_id}
-            ),
+            CreateOrganizationRequest(organization=organization),
         )
 
     def update_organization(
