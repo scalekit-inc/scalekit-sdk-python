@@ -1,3 +1,6 @@
+
+from typing import Optional
+
 from scalekit.core import CoreClient
 from scalekit.v1.connections.connections_pb2 import *
 from scalekit.v1.connections.connections_pb2_grpc import ConnectionServiceStub
@@ -42,28 +45,30 @@ class ConnectionClient:
         """
         Method to get connection object by domain
 
-        :param domain     : Client domain id to get connection
+        :param domain     : Client domain id to get connections
         :type             : ``` str ```
+
         :returns
             List Connections Response
         """
         return self.core_client.grpc_exec(
             self.connection_service.ListConnections.with_call,
-            ListConnectionsRequest(domain=domain),
+            ListConnectionsRequest(domain=domain, include='all'),
         )
 
-    def list_connections(self, organization_id: str) -> ListConnectionsResponse:
+    def list_connections_by_organization(self, organization_id: str) -> ListConnectionsResponse:
         """
         Method to list connections
 
-        :param organization_id : Client organization id to get connection
+        :param organization_id : Client organization id to get connections
         :type                  : ``` str ```
+
         :returns:
             List Connections Response
         """
         return self.core_client.grpc_exec(
             self.connection_service.ListConnections.with_call,
-            ListConnectionsRequest(organization_id=organization_id),
+            ListConnectionsRequest(organization_id=organization_id, include='all'),
         )
 
     def enable_connection(

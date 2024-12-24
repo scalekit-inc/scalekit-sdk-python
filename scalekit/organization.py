@@ -148,38 +148,9 @@ class OrganizationClient:
             self.organization_service.GeneratePortalLink.with_call,
             GeneratePortalLinkRequest(id=organization_id),
         )
-        if not response.link:
+        if not response[0].link:
             raise Exception("Error generating portal link")
-        return response.link
-
-    def get_portal_links(self, organization_id: str) -> GetPortalLinksResponse:
-        """
-        Method to get customer portal links
-
-        :param organization_id       : Organization id to fetch portal link for
-        :type               : ``` str ```
-        :return:
-        """
-        response = self.core_client.grpc_exec(
-            self.organization_service.GetPortalLinks.with_call,
-            GetPortalLinkRequest(id=organization_id),
-        )
-        return response.links
-
-    def delete_portal_link(self, organization_id: str) -> None:
-        """
-        Method to delete customer portal link
-
-        :param organization_id       : Organization id to delete portal link for
-        :type               : ``` str ```
-
-        :returns:
-            None
-        """
-        self.core_client.grpc_exec(
-            self.organization_service.DeletePortalLink.with_call,
-            DeletePortalLinkRequest(id=organization_id),
-        )
+        return response[0].link
 
     def update_organization_settings(self, organization_id: str, settings: List[Dict[str, bool]]):
         """
