@@ -46,8 +46,8 @@ class OrganizationClient:
         """
         Method to create organization based on given data
 
-        :param organization  : Create Organization obj with details for org to be created
-        :type           : ``` obj ```
+        :param organization  : Create Organization obj with details for org creation
+        :type                : ``` obj ```
         :returns:
             Create Organization Response
         """
