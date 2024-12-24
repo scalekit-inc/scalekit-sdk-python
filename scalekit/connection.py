@@ -59,26 +59,9 @@ class ConnectionClient:
             ListConnectionsRequest(domain=domain, include=include),
         )
 
-    @deprecation.deprecated(details="Use list_connections_by_organization method instead")
-    def list_connections(self, organization_id: str) -> ListConnectionsResponse:
+    def list_connections(self, organization_id: str, include: Optional[str] = None) -> ListConnectionsResponse:
         """
         Method to list connections
-
-        :param organization_id : Client organization id to get connections
-        :type                  : ``` str ```
-
-        :returns:
-            List Connections Response
-        """
-        return self.core_client.grpc_exec(
-            self.connection_service.ListConnections.with_call,
-            ListConnectionsRequest(organization_id=organization_id)
-        )
-
-    def list_connections_by_organization(
-            self, organization_id: str, include: Optional[str] = None) -> ListConnectionsResponse:
-        """
-        Method to list connections by organization id
 
         :param organization_id : Client organization id to get connections
         :type                  : ``` str ```

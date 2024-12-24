@@ -136,26 +136,9 @@ class OrganizationClient:
             DeleteOrganizationRequest(id=organization_id),
         )
 
-    def generate_portal_link(self, organization_id: str) -> GeneratePortalLinkResponse:
+    def generate_portal_link(self, organization_id: str, features: [Feature] = None) -> GeneratePortalLinkResponse:
         """
         Method to generate customer portal link
-
-        :param organization_id       : Organization id to fetch portal link for
-        :type               : ``` str ```
-        :return:
-        """
-        response = self.core_client.grpc_exec(
-            self.organization_service.GeneratePortalLink.with_call,
-            GeneratePortalLinkRequest(id=organization_id),
-        )
-        if not response[0].link:
-            raise Exception("Error generating portal link")
-        return response[0].link
-
-    def generate_portal_link_for_features(
-            self, organization_id: str, features: [Feature] = None) -> GeneratePortalLinkResponse:
-        """
-        Method to generate customer portal link based on given features
 
         :param organization_id   :  Organization id to fetch portal link for
         :type                    :  ``` str ```
@@ -168,7 +151,7 @@ class OrganizationClient:
             GeneratePortalLinkRequest(id=organization_id, features=features),
         )
         if not response[0].link:
-            raise Exception("Error generating portal link for provided feature list")
+            raise Exception("Error generating portal link")
         return response[0].link
 
     def update_organization_settings(self, organization_id: str, settings: List[Dict[str, bool]]):
