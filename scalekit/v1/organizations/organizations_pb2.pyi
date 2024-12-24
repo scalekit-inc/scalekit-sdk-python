@@ -13,11 +13,21 @@ from protoc_gen_openapiv2.options import annotations_pb2 as _annotations_pb2_1
 from scalekit.v1.commons import commons_pb2 as _commons_pb2
 from scalekit.v1.options import options_pb2 as _options_pb2
 from google.protobuf.internal import containers as _containers
+from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Mapping, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
+
+class Feature(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    UNSPECIFIED: _ClassVar[Feature]
+    dir_sync: _ClassVar[Feature]
+    sso: _ClassVar[Feature]
+UNSPECIFIED: Feature
+dir_sync: Feature
+sso: Feature
 
 class CreateOrganizationRequest(_message.Message):
     __slots__ = ("organization",)
@@ -177,14 +187,16 @@ class DeleteOrganizationRequest(_message.Message):
     def __init__(self, id: _Optional[str] = ..., external_id: _Optional[str] = ...) -> None: ...
 
 class GeneratePortalLinkRequest(_message.Message):
-    __slots__ = ("id", "sso", "directory_sync")
+    __slots__ = ("id", "sso", "directory_sync", "features")
     ID_FIELD_NUMBER: _ClassVar[int]
     SSO_FIELD_NUMBER: _ClassVar[int]
     DIRECTORY_SYNC_FIELD_NUMBER: _ClassVar[int]
+    FEATURES_FIELD_NUMBER: _ClassVar[int]
     id: str
     sso: bool
     directory_sync: bool
-    def __init__(self, id: _Optional[str] = ..., sso: bool = ..., directory_sync: bool = ...) -> None: ...
+    features: _containers.RepeatedScalarFieldContainer[Feature]
+    def __init__(self, id: _Optional[str] = ..., sso: bool = ..., directory_sync: bool = ..., features: _Optional[_Iterable[_Union[Feature, str]]] = ...) -> None: ...
 
 class GetPortalLinkRequest(_message.Message):
     __slots__ = ("id",)
@@ -235,6 +247,82 @@ class UpdateOrganizationSettingsRequest(_message.Message):
     id: str
     settings: OrganizationSettings
     def __init__(self, id: _Optional[str] = ..., settings: _Optional[_Union[OrganizationSettings, _Mapping]] = ...) -> None: ...
+
+class UpdateOrganizationSessionSettingsRequest(_message.Message):
+    __slots__ = ("id", "environment_id", "session_settings")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    ENVIRONMENT_ID_FIELD_NUMBER: _ClassVar[int]
+    SESSION_SETTINGS_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    environment_id: str
+    session_settings: OrganizationSessionSettings
+    def __init__(self, id: _Optional[str] = ..., environment_id: _Optional[str] = ..., session_settings: _Optional[_Union[OrganizationSessionSettings, _Mapping]] = ...) -> None: ...
+
+class UpdateOrganizationSessionSettingsResponse(_message.Message):
+    __slots__ = ("environment_id", "organization_id", "session_settings")
+    ENVIRONMENT_ID_FIELD_NUMBER: _ClassVar[int]
+    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
+    SESSION_SETTINGS_FIELD_NUMBER: _ClassVar[int]
+    environment_id: str
+    organization_id: str
+    session_settings: OrganizationSessionSettings
+    def __init__(self, environment_id: _Optional[str] = ..., organization_id: _Optional[str] = ..., session_settings: _Optional[_Union[OrganizationSessionSettings, _Mapping]] = ...) -> None: ...
+
+class OrganizationSessionSettings(_message.Message):
+    __slots__ = ("absolute_session_timeout", "session_management_enabled", "idle_session_timeout", "idle_session_enabled")
+    ABSOLUTE_SESSION_TIMEOUT_FIELD_NUMBER: _ClassVar[int]
+    SESSION_MANAGEMENT_ENABLED_FIELD_NUMBER: _ClassVar[int]
+    IDLE_SESSION_TIMEOUT_FIELD_NUMBER: _ClassVar[int]
+    IDLE_SESSION_ENABLED_FIELD_NUMBER: _ClassVar[int]
+    absolute_session_timeout: _wrappers_pb2.Int32Value
+    session_management_enabled: _wrappers_pb2.BoolValue
+    idle_session_timeout: _wrappers_pb2.Int32Value
+    idle_session_enabled: _wrappers_pb2.BoolValue
+    def __init__(self, absolute_session_timeout: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., session_management_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., idle_session_timeout: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., idle_session_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ...) -> None: ...
+
+class GetOrganizationSessionSettingsRequest(_message.Message):
+    __slots__ = ("id", "environment_id")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    ENVIRONMENT_ID_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    environment_id: str
+    def __init__(self, id: _Optional[str] = ..., environment_id: _Optional[str] = ...) -> None: ...
+
+class CreateOrganizationSessionSettingsRequest(_message.Message):
+    __slots__ = ("id", "environment_id")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    ENVIRONMENT_ID_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    environment_id: str
+    def __init__(self, id: _Optional[str] = ..., environment_id: _Optional[str] = ...) -> None: ...
+
+class CreateOrganizationSessionSettingsResponse(_message.Message):
+    __slots__ = ("environment_id", "organization_id", "session_settings")
+    ENVIRONMENT_ID_FIELD_NUMBER: _ClassVar[int]
+    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
+    SESSION_SETTINGS_FIELD_NUMBER: _ClassVar[int]
+    environment_id: str
+    organization_id: str
+    session_settings: OrganizationSessionSettings
+    def __init__(self, environment_id: _Optional[str] = ..., organization_id: _Optional[str] = ..., session_settings: _Optional[_Union[OrganizationSessionSettings, _Mapping]] = ...) -> None: ...
+
+class GetOrganizationSessionSettingsResponse(_message.Message):
+    __slots__ = ("environment_id", "organization_id", "session_settings")
+    ENVIRONMENT_ID_FIELD_NUMBER: _ClassVar[int]
+    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
+    SESSION_SETTINGS_FIELD_NUMBER: _ClassVar[int]
+    environment_id: str
+    organization_id: str
+    session_settings: OrganizationSessionSettings
+    def __init__(self, environment_id: _Optional[str] = ..., organization_id: _Optional[str] = ..., session_settings: _Optional[_Union[OrganizationSessionSettings, _Mapping]] = ...) -> None: ...
+
+class DeleteOrganizationSessionSettingsRequest(_message.Message):
+    __slots__ = ("id", "environment_id")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    ENVIRONMENT_ID_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    environment_id: str
+    def __init__(self, id: _Optional[str] = ..., environment_id: _Optional[str] = ...) -> None: ...
 
 class OrganizationSettings(_message.Message):
     __slots__ = ("features",)

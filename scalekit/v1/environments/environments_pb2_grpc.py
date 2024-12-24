@@ -105,6 +105,31 @@ class EnvironmentServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetFeaturesRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetFeaturesResponse.FromString,
                 )
+        self.CreateEnvironmentSessionSettings = channel.unary_unary(
+                '/scalekit.v1.environments.EnvironmentService/CreateEnvironmentSessionSettings',
+                request_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.CreateEnvironmentSessionSettingsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.CreateEnvironmentSessionSettingsResponse.FromString,
+                )
+        self.GetEnvironmentSessionSettings = channel.unary_unary(
+                '/scalekit.v1.environments.EnvironmentService/GetEnvironmentSessionSettings',
+                request_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetEnvironmentSessionSettingsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetEnvironmentSessionSettingsResponse.FromString,
+                )
+        self.UpdateEnvironmentSessionSettings = channel.unary_unary(
+                '/scalekit.v1.environments.EnvironmentService/UpdateEnvironmentSessionSettings',
+                request_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdateEnvironmentSessionSettingsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdateEnvironmentSessionSettingsResponse.FromString,
+                )
+        self.GetContext = channel.unary_unary(
+                '/scalekit.v1.environments.EnvironmentService/GetContext',
+                request_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetContextRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetContextResponse.FromString,
+                )
+        self.UpdateContext = channel.unary_unary(
+                '/scalekit.v1.environments.EnvironmentService/UpdateContext',
+                request_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdateContextRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
 
 
 class EnvironmentServiceServicer(object):
@@ -218,6 +243,36 @@ class EnvironmentServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def CreateEnvironmentSessionSettings(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetEnvironmentSessionSettings(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateEnvironmentSessionSettings(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetContext(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateContext(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_EnvironmentServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -310,6 +365,31 @@ def add_EnvironmentServiceServicer_to_server(servicer, server):
                     servicer.GetFeatures,
                     request_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetFeaturesRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetFeaturesResponse.SerializeToString,
+            ),
+            'CreateEnvironmentSessionSettings': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateEnvironmentSessionSettings,
+                    request_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.CreateEnvironmentSessionSettingsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.CreateEnvironmentSessionSettingsResponse.SerializeToString,
+            ),
+            'GetEnvironmentSessionSettings': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetEnvironmentSessionSettings,
+                    request_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetEnvironmentSessionSettingsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetEnvironmentSessionSettingsResponse.SerializeToString,
+            ),
+            'UpdateEnvironmentSessionSettings': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateEnvironmentSessionSettings,
+                    request_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdateEnvironmentSessionSettingsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdateEnvironmentSessionSettingsResponse.SerializeToString,
+            ),
+            'GetContext': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetContext,
+                    request_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetContextRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetContextResponse.SerializeToString,
+            ),
+            'UpdateContext': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateContext,
+                    request_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdateContextRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -624,5 +704,90 @@ class EnvironmentService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.environments.EnvironmentService/GetFeatures',
             scalekit_dot_v1_dot_environments_dot_environments__pb2.GetFeaturesRequest.SerializeToString,
             scalekit_dot_v1_dot_environments_dot_environments__pb2.GetFeaturesResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def CreateEnvironmentSessionSettings(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.environments.EnvironmentService/CreateEnvironmentSessionSettings',
+            scalekit_dot_v1_dot_environments_dot_environments__pb2.CreateEnvironmentSessionSettingsRequest.SerializeToString,
+            scalekit_dot_v1_dot_environments_dot_environments__pb2.CreateEnvironmentSessionSettingsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetEnvironmentSessionSettings(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.environments.EnvironmentService/GetEnvironmentSessionSettings',
+            scalekit_dot_v1_dot_environments_dot_environments__pb2.GetEnvironmentSessionSettingsRequest.SerializeToString,
+            scalekit_dot_v1_dot_environments_dot_environments__pb2.GetEnvironmentSessionSettingsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def UpdateEnvironmentSessionSettings(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.environments.EnvironmentService/UpdateEnvironmentSessionSettings',
+            scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdateEnvironmentSessionSettingsRequest.SerializeToString,
+            scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdateEnvironmentSessionSettingsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetContext(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.environments.EnvironmentService/GetContext',
+            scalekit_dot_v1_dot_environments_dot_environments__pb2.GetContextRequest.SerializeToString,
+            scalekit_dot_v1_dot_environments_dot_environments__pb2.GetContextResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def UpdateContext(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.environments.EnvironmentService/UpdateContext',
+            scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdateContextRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

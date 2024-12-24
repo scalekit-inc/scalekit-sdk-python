@@ -152,6 +152,25 @@ class OrganizationClient:
             raise Exception("Error generating portal link")
         return response[0].link
 
+    def generate_portal_link_for_features(
+            self, organization_id: str, features: Optional[list] = None) -> GeneratePortalLinkResponse:
+        """
+        Method to generate customer portal link based on given features
+
+        :param organization_id   :  Organization id to fetch portal link for
+        :type                    :  ``` str ```
+        :param  features         :  Feature list to generate portal ink for
+        :type                    :  ```dict```
+        :return:
+        """
+        response = self.core_client.grpc_exec(
+            self.organization_service.GeneratePortalLink.with_call,
+            GeneratePortalLinkRequest(id=organization_id, features=features),
+        )
+        if not response[0].link:
+            raise Exception("Error generating portal link for provided feature list")
+        return response[0].link
+
     def update_organization_settings(self, organization_id: str, settings: List[Dict[str, bool]]):
         """
         Method to update organization settings

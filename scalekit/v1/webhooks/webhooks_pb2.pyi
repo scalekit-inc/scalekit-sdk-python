@@ -1,3 +1,4 @@
+from buf.validate import validate_pb2 as _validate_pb2
 from google.api import annotations_pb2 as _annotations_pb2
 from google.api import visibility_pb2 as _visibility_pb2
 from google.protobuf import struct_pb2 as _struct_pb2
@@ -7,6 +8,20 @@ from google.protobuf import message as _message
 from typing import ClassVar as _ClassVar, Mapping as _Mapping, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
+
+class SendTestEventRequest(_message.Message):
+    __slots__ = ("event_type",)
+    EVENT_TYPE_FIELD_NUMBER: _ClassVar[int]
+    event_type: str
+    def __init__(self, event_type: _Optional[str] = ...) -> None: ...
+
+class SendTestEventResponse(_message.Message):
+    __slots__ = ("event_type", "event_payload")
+    EVENT_TYPE_FIELD_NUMBER: _ClassVar[int]
+    EVENT_PAYLOAD_FIELD_NUMBER: _ClassVar[int]
+    event_type: str
+    event_payload: _struct_pb2.Struct
+    def __init__(self, event_type: _Optional[str] = ..., event_payload: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
 
 class GetPortalURLRequest(_message.Message):
     __slots__ = ()

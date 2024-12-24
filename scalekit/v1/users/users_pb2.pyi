@@ -15,7 +15,7 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class User(_message.Message):
-    __slots__ = ("id", "environment_id", "create_time", "update_time", "email", "external_id", "identity", "phone_number", "organizations", "user_profile", "metadata")
+    __slots__ = ("id", "environment_id", "create_time", "update_time", "email", "external_id", "identity", "phone_number", "organizations", "user_profile", "metadata", "last_login")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -34,6 +34,7 @@ class User(_message.Message):
     ORGANIZATIONS_FIELD_NUMBER: _ClassVar[int]
     USER_PROFILE_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
+    LAST_LOGIN_FIELD_NUMBER: _ClassVar[int]
     id: str
     environment_id: str
     create_time: _timestamp_pb2.Timestamp
@@ -45,7 +46,8 @@ class User(_message.Message):
     organizations: _containers.RepeatedCompositeFieldContainer[_commons_pb2.OrganizationMembership]
     user_profile: _commons_pb2.UserProfile
     metadata: _containers.ScalarMap[str, str]
-    def __init__(self, id: _Optional[str] = ..., environment_id: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., email: _Optional[str] = ..., external_id: _Optional[str] = ..., identity: _Optional[str] = ..., phone_number: _Optional[str] = ..., organizations: _Optional[_Iterable[_Union[_commons_pb2.OrganizationMembership, _Mapping]]] = ..., user_profile: _Optional[_Union[_commons_pb2.UserProfile, _Mapping]] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    last_login: _timestamp_pb2.Timestamp
+    def __init__(self, id: _Optional[str] = ..., environment_id: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., email: _Optional[str] = ..., external_id: _Optional[str] = ..., identity: _Optional[str] = ..., phone_number: _Optional[str] = ..., organizations: _Optional[_Iterable[_Union[_commons_pb2.OrganizationMembership, _Mapping]]] = ..., user_profile: _Optional[_Union[_commons_pb2.UserProfile, _Mapping]] = ..., metadata: _Optional[_Mapping[str, str]] = ..., last_login: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
 class CreateUserRequest(_message.Message):
     __slots__ = ("organization_id", "user")
@@ -127,14 +129,16 @@ class ListUserRequest(_message.Message):
     def __init__(self, organization_id: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ...) -> None: ...
 
 class ListUserResponse(_message.Message):
-    __slots__ = ("next_page_token", "total_size", "user")
+    __slots__ = ("next_page_token", "total_size", "users", "prev_page_token")
     NEXT_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
     TOTAL_SIZE_FIELD_NUMBER: _ClassVar[int]
-    USER_FIELD_NUMBER: _ClassVar[int]
+    USERS_FIELD_NUMBER: _ClassVar[int]
+    PREV_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
     next_page_token: str
     total_size: int
-    user: _containers.RepeatedCompositeFieldContainer[User]
-    def __init__(self, next_page_token: _Optional[str] = ..., total_size: _Optional[int] = ..., user: _Optional[_Iterable[_Union[User, _Mapping]]] = ...) -> None: ...
+    users: _containers.RepeatedCompositeFieldContainer[User]
+    prev_page_token: str
+    def __init__(self, next_page_token: _Optional[str] = ..., total_size: _Optional[int] = ..., users: _Optional[_Iterable[_Union[User, _Mapping]]] = ..., prev_page_token: _Optional[str] = ...) -> None: ...
 
 class DeleteUserRequest(_message.Message):
     __slots__ = ("organization_id", "id", "external_id", "identity")

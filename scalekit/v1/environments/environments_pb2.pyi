@@ -6,6 +6,7 @@ from google.protobuf import duration_pb2 as _duration_pb2
 from google.protobuf import empty_pb2 as _empty_pb2
 from google.protobuf import struct_pb2 as _struct_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
+from google.protobuf import wrappers_pb2 as _wrappers_pb2
 from scalekit.v1.commons import commons_pb2 as _commons_pb2
 from scalekit.v1.options import options_pb2 as _options_pb2
 from google.protobuf.internal import containers as _containers
@@ -27,12 +28,30 @@ class AssetCategory(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
     ASSET_CATEGORY_UNSPECIFIED: _ClassVar[AssetCategory]
     PORTAL_CUSTOMIZATION_IMAGE: _ClassVar[AssetCategory]
+
+class CookiePersistenceType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    CookiePersistenceType_UNSPECIFIED: _ClassVar[CookiePersistenceType]
+    PERSISTENT: _ClassVar[CookiePersistenceType]
+    SESSION: _ClassVar[CookiePersistenceType]
+
+class CookieSameSiteSetting(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    CookieSameSiteSetting_UNSPECIFIED: _ClassVar[CookieSameSiteSetting]
+    LAX_MODE: _ClassVar[CookieSameSiteSetting]
+    NONE_MODE: _ClassVar[CookieSameSiteSetting]
 UNSPECIFIED: CustomDomainStatus
 PENDING: CustomDomainStatus
 ACTIVE: CustomDomainStatus
 FAILED: CustomDomainStatus
 ASSET_CATEGORY_UNSPECIFIED: AssetCategory
 PORTAL_CUSTOMIZATION_IMAGE: AssetCategory
+CookiePersistenceType_UNSPECIFIED: CookiePersistenceType
+PERSISTENT: CookiePersistenceType
+SESSION: CookiePersistenceType
+CookieSameSiteSetting_UNSPECIFIED: CookieSameSiteSetting
+LAX_MODE: CookieSameSiteSetting
+NONE_MODE: CookieSameSiteSetting
 
 class CreateCustomDomainRequest(_message.Message):
     __slots__ = ("id", "custom_domain")
@@ -299,3 +318,89 @@ class EnvironmentFeature(_message.Message):
     name: str
     enabled: bool
     def __init__(self, name: _Optional[str] = ..., enabled: bool = ...) -> None: ...
+
+class GetEnvironmentSessionSettingsRequest(_message.Message):
+    __slots__ = ("id",)
+    ID_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    def __init__(self, id: _Optional[str] = ...) -> None: ...
+
+class GetEnvironmentSessionSettingsResponse(_message.Message):
+    __slots__ = ("session_settings",)
+    SESSION_SETTINGS_FIELD_NUMBER: _ClassVar[int]
+    session_settings: SessionSettings
+    def __init__(self, session_settings: _Optional[_Union[SessionSettings, _Mapping]] = ...) -> None: ...
+
+class CreateEnvironmentSessionSettingsRequest(_message.Message):
+    __slots__ = ("id", "session_settings")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    SESSION_SETTINGS_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    session_settings: SessionSettings
+    def __init__(self, id: _Optional[str] = ..., session_settings: _Optional[_Union[SessionSettings, _Mapping]] = ...) -> None: ...
+
+class CreateEnvironmentSessionSettingsResponse(_message.Message):
+    __slots__ = ("environment_id", "session_settings")
+    ENVIRONMENT_ID_FIELD_NUMBER: _ClassVar[int]
+    SESSION_SETTINGS_FIELD_NUMBER: _ClassVar[int]
+    environment_id: str
+    session_settings: SessionSettings
+    def __init__(self, environment_id: _Optional[str] = ..., session_settings: _Optional[_Union[SessionSettings, _Mapping]] = ...) -> None: ...
+
+class UpdateEnvironmentSessionSettingsRequest(_message.Message):
+    __slots__ = ("id", "session_settings")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    SESSION_SETTINGS_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    session_settings: SessionSettings
+    def __init__(self, id: _Optional[str] = ..., session_settings: _Optional[_Union[SessionSettings, _Mapping]] = ...) -> None: ...
+
+class UpdateEnvironmentSessionSettingsResponse(_message.Message):
+    __slots__ = ("environment_id", "session_settings")
+    ENVIRONMENT_ID_FIELD_NUMBER: _ClassVar[int]
+    SESSION_SETTINGS_FIELD_NUMBER: _ClassVar[int]
+    environment_id: str
+    session_settings: SessionSettings
+    def __init__(self, environment_id: _Optional[str] = ..., session_settings: _Optional[_Union[SessionSettings, _Mapping]] = ...) -> None: ...
+
+class SessionSettings(_message.Message):
+    __slots__ = ("access_token_expiry", "client_access_token_expiry", "absolute_session_timeout", "session_management_enabled", "idle_session_timeout", "idle_session_enabled", "cookie_persistence_type", "cookie_same_site_setting", "cookie_custom_domain")
+    ACCESS_TOKEN_EXPIRY_FIELD_NUMBER: _ClassVar[int]
+    CLIENT_ACCESS_TOKEN_EXPIRY_FIELD_NUMBER: _ClassVar[int]
+    ABSOLUTE_SESSION_TIMEOUT_FIELD_NUMBER: _ClassVar[int]
+    SESSION_MANAGEMENT_ENABLED_FIELD_NUMBER: _ClassVar[int]
+    IDLE_SESSION_TIMEOUT_FIELD_NUMBER: _ClassVar[int]
+    IDLE_SESSION_ENABLED_FIELD_NUMBER: _ClassVar[int]
+    COOKIE_PERSISTENCE_TYPE_FIELD_NUMBER: _ClassVar[int]
+    COOKIE_SAME_SITE_SETTING_FIELD_NUMBER: _ClassVar[int]
+    COOKIE_CUSTOM_DOMAIN_FIELD_NUMBER: _ClassVar[int]
+    access_token_expiry: _wrappers_pb2.Int32Value
+    client_access_token_expiry: _wrappers_pb2.Int32Value
+    absolute_session_timeout: _wrappers_pb2.Int32Value
+    session_management_enabled: _wrappers_pb2.BoolValue
+    idle_session_timeout: _wrappers_pb2.Int32Value
+    idle_session_enabled: _wrappers_pb2.BoolValue
+    cookie_persistence_type: CookiePersistenceType
+    cookie_same_site_setting: CookieSameSiteSetting
+    cookie_custom_domain: _wrappers_pb2.StringValue
+    def __init__(self, access_token_expiry: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., client_access_token_expiry: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., absolute_session_timeout: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., session_management_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., idle_session_timeout: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., idle_session_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., cookie_persistence_type: _Optional[_Union[CookiePersistenceType, str]] = ..., cookie_same_site_setting: _Optional[_Union[CookieSameSiteSetting, str]] = ..., cookie_custom_domain: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ...) -> None: ...
+
+class GetContextRequest(_message.Message):
+    __slots__ = ("environment_id",)
+    ENVIRONMENT_ID_FIELD_NUMBER: _ClassVar[int]
+    environment_id: str
+    def __init__(self, environment_id: _Optional[str] = ...) -> None: ...
+
+class GetContextResponse(_message.Message):
+    __slots__ = ("context",)
+    CONTEXT_FIELD_NUMBER: _ClassVar[int]
+    context: _struct_pb2.Struct
+    def __init__(self, context: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
+
+class UpdateContextRequest(_message.Message):
+    __slots__ = ("environment_id", "context")
+    ENVIRONMENT_ID_FIELD_NUMBER: _ClassVar[int]
+    CONTEXT_FIELD_NUMBER: _ClassVar[int]
+    environment_id: str
+    context: _struct_pb2.Struct
+    def __init__(self, environment_id: _Optional[str] = ..., context: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...

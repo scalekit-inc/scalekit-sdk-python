@@ -8,19 +8,11 @@ from google.protobuf import timestamp_pb2 as _timestamp_pb2
 from scalekit.v1.commons import commons_pb2 as _commons_pb2
 from scalekit.v1.options import options_pb2 as _options_pb2
 from google.protobuf.internal import containers as _containers
-from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Mapping, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
-
-class YesNo(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-    __slots__ = ()
-    YES: _ClassVar[YesNo]
-    NO: _ClassVar[YesNo]
-YES: YesNo
-NO: YesNo
 
 class Workspace(_message.Message):
     __slots__ = ("id", "create_time", "update_time", "display_name", "region_code")
@@ -37,14 +29,12 @@ class Workspace(_message.Message):
     def __init__(self, id: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., display_name: _Optional[str] = ..., region_code: _Optional[_Union[_commons_pb2.RegionCode, str]] = ...) -> None: ...
 
 class CreateWorkspace(_message.Message):
-    __slots__ = ("email", "company", "send_welcome_email")
+    __slots__ = ("email", "company")
     EMAIL_FIELD_NUMBER: _ClassVar[int]
     COMPANY_FIELD_NUMBER: _ClassVar[int]
-    SEND_WELCOME_EMAIL_FIELD_NUMBER: _ClassVar[int]
     email: str
     company: str
-    send_welcome_email: YesNo
-    def __init__(self, email: _Optional[str] = ..., company: _Optional[str] = ..., send_welcome_email: _Optional[_Union[YesNo, str]] = ...) -> None: ...
+    def __init__(self, email: _Optional[str] = ..., company: _Optional[str] = ...) -> None: ...
 
 class UpdateWorkspace(_message.Message):
     __slots__ = ("display_name",)
