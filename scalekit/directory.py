@@ -241,3 +241,20 @@ class DirectoryClient:
             return response[0].directories[0]
         else:
             raise Exception("Directory does not exist for given Organization Id.")
+
+    def create_directory(self, organization_id: str, directory: CreateDirectory) -> CreateDirectoryResponse:
+        """
+        Method to create directory based on given organization id
+
+        :param organization_id   :     Organization id to create directory for
+        :type                    :     ``` str ```
+        :param directory         :     CreateDirectory object with expected values for dir creation
+        :type                    :     ``` obj ```
+
+        :returns:
+            Create Directory Response
+        """
+        return self.core_client.grpc_exec(
+            self.directory_service.CreateDirectory.with_call,
+            CreateDirectoryRequest(organization_id=organization_id, directory=directory),
+        )

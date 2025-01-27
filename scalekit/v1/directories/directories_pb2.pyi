@@ -31,6 +31,8 @@ class DirectoryProvider(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     MICROSOFT_AD: _ClassVar[DirectoryProvider]
     AUTH0: _ClassVar[DirectoryProvider]
     ONELOGIN: _ClassVar[DirectoryProvider]
+    JUMPCLOUD: _ClassVar[DirectoryProvider]
+    PING_IDENTITY: _ClassVar[DirectoryProvider]
 
 class DirectoryStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
@@ -52,6 +54,8 @@ GOOGLE: DirectoryProvider
 MICROSOFT_AD: DirectoryProvider
 AUTH0: DirectoryProvider
 ONELOGIN: DirectoryProvider
+JUMPCLOUD: DirectoryProvider
+PING_IDENTITY: DirectoryProvider
 DIRECTORY_STATUS_UNSPECIFIED: DirectoryStatus
 DRAFT: DirectoryStatus
 IN_PROGRESS: DirectoryStatus

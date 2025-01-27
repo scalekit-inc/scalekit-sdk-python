@@ -70,6 +70,26 @@ class OrganizationServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.UpdateOrganizationSettingsRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationResponse.FromString,
                 )
+        self.CreateOrganizationSessionSettings = channel.unary_unary(
+                '/scalekit.v1.organizations.OrganizationService/CreateOrganizationSessionSettings',
+                request_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.CreateOrganizationSessionSettingsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.CreateOrganizationSessionSettingsResponse.FromString,
+                )
+        self.GetOrganizationSessionSettings = channel.unary_unary(
+                '/scalekit.v1.organizations.OrganizationService/GetOrganizationSessionSettings',
+                request_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationSessionSettingsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationSessionSettingsResponse.FromString,
+                )
+        self.UpdateOrganizationSessionSettings = channel.unary_unary(
+                '/scalekit.v1.organizations.OrganizationService/UpdateOrganizationSessionSettings',
+                request_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.UpdateOrganizationSessionSettingsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.UpdateOrganizationSessionSettingsResponse.FromString,
+                )
+        self.DeleteOrganizationSessionSettings = channel.unary_unary(
+                '/scalekit.v1.organizations.OrganizationService/DeleteOrganizationSessionSettings',
+                request_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.DeleteOrganizationSessionSettingsRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
 
 
 class OrganizationServiceServicer(object):
@@ -144,6 +164,30 @@ class OrganizationServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def CreateOrganizationSessionSettings(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetOrganizationSessionSettings(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateOrganizationSessionSettings(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeleteOrganizationSessionSettings(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_OrganizationServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -201,6 +245,26 @@ def add_OrganizationServiceServicer_to_server(servicer, server):
                     servicer.UpdateOrganizationSettings,
                     request_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.UpdateOrganizationSettingsRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationResponse.SerializeToString,
+            ),
+            'CreateOrganizationSessionSettings': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateOrganizationSessionSettings,
+                    request_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.CreateOrganizationSessionSettingsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.CreateOrganizationSessionSettingsResponse.SerializeToString,
+            ),
+            'GetOrganizationSessionSettings': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetOrganizationSessionSettings,
+                    request_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationSessionSettingsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationSessionSettingsResponse.SerializeToString,
+            ),
+            'UpdateOrganizationSessionSettings': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateOrganizationSessionSettings,
+                    request_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.UpdateOrganizationSessionSettingsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.UpdateOrganizationSessionSettingsResponse.SerializeToString,
+            ),
+            'DeleteOrganizationSessionSettings': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteOrganizationSessionSettings,
+                    request_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.DeleteOrganizationSessionSettingsRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -396,5 +460,73 @@ class OrganizationService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.organizations.OrganizationService/UpdateOrganizationSettings',
             scalekit_dot_v1_dot_organizations_dot_organizations__pb2.UpdateOrganizationSettingsRequest.SerializeToString,
             scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def CreateOrganizationSessionSettings(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.organizations.OrganizationService/CreateOrganizationSessionSettings',
+            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.CreateOrganizationSessionSettingsRequest.SerializeToString,
+            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.CreateOrganizationSessionSettingsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetOrganizationSessionSettings(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.organizations.OrganizationService/GetOrganizationSessionSettings',
+            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationSessionSettingsRequest.SerializeToString,
+            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationSessionSettingsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def UpdateOrganizationSessionSettings(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.organizations.OrganizationService/UpdateOrganizationSessionSettings',
+            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.UpdateOrganizationSessionSettingsRequest.SerializeToString,
+            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.UpdateOrganizationSessionSettingsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DeleteOrganizationSessionSettings(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.organizations.OrganizationService/DeleteOrganizationSessionSettings',
+            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.DeleteOrganizationSessionSettingsRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

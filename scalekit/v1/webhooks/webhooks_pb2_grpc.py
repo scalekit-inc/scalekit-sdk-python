@@ -25,6 +25,11 @@ class WebhookServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_webhooks_dot_webhooks__pb2.WebhookWrapperRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_struct__pb2.Struct.FromString,
                 )
+        self.SendTestEvent = channel.unary_unary(
+                '/scalekit.v1.webhooks.WebhookService/SendTestEvent',
+                request_serializer=scalekit_dot_v1_dot_webhooks_dot_webhooks__pb2.SendTestEventRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_webhooks_dot_webhooks__pb2.SendTestEventResponse.FromString,
+                )
 
 
 class WebhookServiceServicer(object):
@@ -42,6 +47,12 @@ class WebhookServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def SendTestEvent(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_WebhookServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -54,6 +65,11 @@ def add_WebhookServiceServicer_to_server(servicer, server):
                     servicer.WebhookWrapper,
                     request_deserializer=scalekit_dot_v1_dot_webhooks_dot_webhooks__pb2.WebhookWrapperRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_struct__pb2.Struct.SerializeToString,
+            ),
+            'SendTestEvent': grpc.unary_unary_rpc_method_handler(
+                    servicer.SendTestEvent,
+                    request_deserializer=scalekit_dot_v1_dot_webhooks_dot_webhooks__pb2.SendTestEventRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_webhooks_dot_webhooks__pb2.SendTestEventResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -96,5 +112,22 @@ class WebhookService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.webhooks.WebhookService/WebhookWrapper',
             scalekit_dot_v1_dot_webhooks_dot_webhooks__pb2.WebhookWrapperRequest.SerializeToString,
             google_dot_protobuf_dot_struct__pb2.Struct.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def SendTestEvent(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.webhooks.WebhookService/SendTestEvent',
+            scalekit_dot_v1_dot_webhooks_dot_webhooks__pb2.SendTestEventRequest.SerializeToString,
+            scalekit_dot_v1_dot_webhooks_dot_webhooks__pb2.SendTestEventResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
