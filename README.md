@@ -50,6 +50,17 @@ auth_url = sc.get_authorization_url(
 
 ```
 
+##### Minimum Requirements
+
+To use the Scalekit Python SDK, you must have the following:
+
+| Component | Version |
+| --------- | ------- |
+| Python    | 3.8+    |
+
+> **Tip:** Although Python 3.8 meets the minimum requirement, using a more recent version (such as Python 3.9 or later) is advisable.
+
+
 ## Examples - SSO with FastAPI
 
 Below is a simple code sample that showcases how to implement Single Sign-on using Scalekit SDK
