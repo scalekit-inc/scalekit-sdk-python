@@ -1,0 +1,559 @@
+# ScaleKit SDK API Reference
+
+This document provides comprehensive reference for the ScaleKit SDK methods, including their parameters and return values.
+
+## Table of Contents
+
+- [ScalekitClient](#scalekitclient)
+  - [Constructor](#constructor)
+  - [Authentication Methods](#authentication-methods)
+    - [get_authorization_url](#get_authorization_url)
+    - [authenticate_with_code](#authenticate_with_code)
+    - [validate_access_token](#validate_access_token)
+    - [get_idp_initiated_login_claims](#get_idp_initiated_login_claims)
+    - [verify_webhook_payload](#verify_webhook_payload)
+  - [Domain Methods](#domain-methods)
+  - [Connection Methods](#connection-methods)
+  - [Organization Methods](#organization-methods)
+  - [Directory Methods](#directory-methods)
+
+## ScalekitClient
+
+The main client for interacting with the ScaleKit API.
+
+### Constructor
+
+```python
+ScalekitClient(env_url: str, client_id: str, client_secret: str)
+```
+
+**Parameters:**
+- `env_url` (str): Environment URL for ScaleKit
+- `client_id` (str): Client ID for authentication
+- `client_secret` (str): Client Secret for authentication
+
+**Returns:** A ScalekitClient instance
+
+### Authentication Methods
+
+#### get_authorization_url
+
+```python
+get_authorization_url(redirect_uri: str, options: AuthorizationUrlOptions | None)
+```
+
+Generates an authorization URL for OAuth/SAML flows.
+
+**Parameters:**
+- `redirect_uri` (str): Redirect URI for SAML SSO
+- `options` (AuthorizationUrlOptions): Options for the authorization URL
+  - `connection_id` (str, optional): Connection ID
+  - `organization_id` (str, optional): Organization ID
+  - `scopes` (list[str], optional): OAuth scopes (defaults to ["openid", "profile", "email"])
+  - `state` (str, optional): State parameter for OAuth
+  - `nonce` (str, optional): Nonce parameter for OAuth
+  - `domain_hint` (str, optional): Domain hint
+  - `login_hint` (str, optional): Login hint
+  - `provider` (str, optional): Provider
+
+**Returns:** Authorization URL (str)
+
+#### authenticate_with_code
+
+```python
+authenticate_with_code(code: str, redirect_uri: str, options: CodeAuthenticationOptions)
+```
+
+Authenticates a user with an authorization code.
+
+**Parameters:**
+- `code` (str): Authorization code received from authorization endpoint
+- `redirect_uri` (str): Redirect URI (must match the one used to get the authorization code)
+- `options` (CodeAuthenticationOptions): Authentication options
+  - `code_verifier` (str, optional): PKCE code verifier
+
+**Returns:** Dict with keys:
+- `user`: User information
+- `id_token`: ID token
+- `access_token`: Access token
+
+#### validate_access_token
+
+```python
+validate_access_token(token: str) -> bool
+```
+
+Validates an access token.
+
+**Parameters:**
+- `token` (str): Access token to validate
+
+**Returns:** `True` if token is valid, `False` otherwise
+
+#### get_idp_initiated_login_claims
+
+```python
+get_idp_initiated_login_claims(idp_initiated_login_token: str) -> IdpInitiatedLoginClaims
+```
+
+Gets claims from an IDP initiated login token.
+
+**Parameters:**
+- `idp_initiated_login_token` (str): IDP initiated login token
+
+**Returns:** `IdpInitiatedLoginClaims` with:
+- `connection_id` (str): Connection ID
+- `organization_id` (str): Organization ID
+- `login_hint` (str): Login hint
+- `relay_state` (str, optional): Relay state
+
+#### verify_webhook_payload
+
+```python
+verify_webhook_payload(secret: str, headers: Dict[str, str], payload: str | bytes) -> bool
+```
+
+Verifies a webhook payload.
+
+**Parameters:**
+- `secret` (str): Webhook secret
+- `headers` (Dict[str, str]): Request headers containing signature information
+- `payload` (str | bytes): Webhook payload
+
+**Returns:** `True` if verified, raises `WebhookVerificationError` otherwise
+
+### Domain Methods
+
+The following methods are available through `client.domain`:
+
+#### create_domain
+
+```python
+create_domain(organization_id: str, domain_name: str) -> CreateDomainResponse
+```
+
+Creates a new domain.
+
+**Parameters:**
+- `organization_id` (str): Organization ID
+- `domain_name` (str): Domain name to create
+
+**Returns:** `CreateDomainResponse`
+
+#### list_domains
+
+```python
+list_domains(organization_id: str) -> ListDomainResponse
+```
+
+Lists domains for an organization.
+
+**Parameters:**
+- `organization_id` (str): Organization ID
+
+**Returns:** `ListDomainResponse`
+
+#### get_domain
+
+```python
+get_domain(organization_id: str, domain_id: str) -> GetDomainResponse
+```
+
+Gets details about a specific domain.
+
+**Parameters:**
+- `organization_id` (str): Organization ID
+- `domain_id` (str): Domain ID
+
+**Returns:** `GetDomainResponse`
+
+### Connection Methods
+
+The following methods are available through `client.connection`:
+
+#### get_connection
+
+```python
+get_connection(organization_id: str, conn_id: str) -> GetConnectionResponse
+```
+
+Gets details about a connection.
+
+**Parameters:**
+- `organization_id` (str): Organization ID
+- `conn_id` (str): Connection ID
+
+**Returns:** `GetConnectionResponse`
+
+#### list_connections_by_domain
+
+```python
+list_connections_by_domain(domain: str, include: Optional[str] = None) -> ListConnectionsResponse
+```
+
+Lists connections by domain.
+
+**Parameters:**
+- `domain` (str): Domain
+- `include` (str, optional): Include additional information
+
+**Returns:** `ListConnectionsResponse`
+
+#### list_connections
+
+```python
+list_connections(organization_id: str, include: Optional[str] = None) -> ListConnectionsResponse
+```
+
+Lists connections for an organization.
+
+**Parameters:**
+- `organization_id` (str): Organization ID
+- `include` (str, optional): Include additional information
+
+**Returns:** `ListConnectionsResponse`
+
+#### enable_connection
+
+```python
+enable_connection(organization_id: str, conn_id: str) -> ToggleConnectionResponse
+```
+
+Enables a connection.
+
+**Parameters:**
+- `organization_id` (str): Organization ID
+- `conn_id` (str): Connection ID
+
+**Returns:** `ToggleConnectionResponse`
+
+#### disable_connection
+
+```python
+disable_connection(organization_id: str, conn_id: str) -> ToggleConnectionResponse
+```
+
+Disables a connection.
+
+**Parameters:**
+- `organization_id` (str): Organization ID
+- `conn_id` (str): Connection ID
+
+**Returns:** `ToggleConnectionResponse`
+
+#### create_connection
+
+```python
+create_connection(organization_id: str, connection: CreateConnection) -> CreateConnectionResponse
+```
+
+Creates a new connection.
+
+**Parameters:**
+- `organization_id` (str): Organization ID
+- `connection` (CreateConnection): Connection details
+
+**Returns:** `CreateConnectionResponse`
+
+### Organization Methods
+
+The following methods are available through `client.organization`:
+
+#### list_organizations
+
+```python
+list_organizations(page_size: int, page_token: Optional[str] = None) -> CreateOrganizationResponse
+```
+
+Lists organizations.
+
+**Parameters:**
+- `page_size` (int): Page size for pagination
+- `page_token` (str, optional): Page token for pagination
+
+**Returns:** `CreateOrganizationResponse`
+
+#### create_organization
+
+```python
+create_organization(organization: CreateOrganization) -> CreateOrganizationResponse
+```
+
+Creates a new organization.
+
+**Parameters:**
+- `organization` (CreateOrganization): Organization details
+
+**Returns:** `CreateOrganizationResponse`
+
+#### update_organization
+
+```python
+update_organization(organization_id: str, organization: UpdateOrganization) -> UpdateOrganizationResponse
+```
+
+Updates an organization.
+
+**Parameters:**
+- `organization_id` (str): Organization ID
+- `organization` (UpdateOrganization): Updated organization details
+
+**Returns:** `UpdateOrganizationResponse`
+
+#### update_organization_by_external_id
+
+```python
+update_organization_by_external_id(external_id: str) -> UpdateOrganizationResponse
+```
+
+Updates an organization by external ID.
+
+**Parameters:**
+- `external_id` (str): External ID
+
+**Returns:** `UpdateOrganizationResponse`
+
+#### get_organization
+
+```python
+get_organization(organization_id: str) -> GetOrganizationResponse
+```
+
+Gets organization details.
+
+**Parameters:**
+- `organization_id` (str): Organization ID
+
+**Returns:** `GetOrganizationResponse`
+
+#### get_organization_by_external_id
+
+```python
+get_organization_by_external_id(external_id: str)
+```
+
+Gets organization details by external ID.
+
+**Parameters:**
+- `external_id` (str): External ID
+
+**Returns:** Organization details
+
+#### delete_organization
+
+```python
+delete_organization(organization_id: str) -> None
+```
+
+Deletes an organization.
+
+**Parameters:**
+- `organization_id` (str): Organization ID
+
+**Returns:** None
+
+#### generate_portal_link
+
+```python
+generate_portal_link(organization_id: str, features: [Feature] = None) -> GeneratePortalLinkResponse
+```
+
+Generates a portal link.
+
+**Parameters:**
+- `organization_id` (str): Organization ID
+- `features` (list[Feature], optional): Features to include in the portal
+
+**Returns:** `GeneratePortalLinkResponse`
+
+#### update_organization_settings
+
+```python
+update_organization_settings(organization_id: str, settings: List[Dict[str, bool]])
+```
+
+Updates organization settings.
+
+**Parameters:**
+- `organization_id` (str): Organization ID
+- `settings` (List[Dict[str, bool]]): Settings to update
+
+**Returns:** Updated settings
+
+### Directory Methods
+
+The following methods are available through `client.directory`:
+
+#### get_directory
+
+```python
+get_directory(organization_id: str, directory_id: str) -> GetDirectoryResponse
+```
+
+Gets directory details.
+
+**Parameters:**
+- `organization_id` (str): Organization ID
+- `directory_id` (str): Directory ID
+
+**Returns:** `GetDirectoryResponse`
+
+#### list_directories
+
+```python
+list_directories(organization_id: str) -> ListDirectoriesResponse
+```
+
+Lists directories for an organization.
+
+**Parameters:**
+- `organization_id` (str): Organization ID
+
+**Returns:** `ListDirectoriesResponse`
+
+#### list_directory_users
+
+```python
+list_directory_users(
+    organization_id: str,
+    directory_id: str,
+    page_size: Optional[int] = None,
+    page_token: Optional[str] = None,
+    include_detail: Optional[bool] = None,
+    updated_after: Optional[str] = None
+) -> tuple[ListDirUsersResponse, Any]
+```
+
+Lists users in a directory.
+
+**Parameters:**
+- `organization_id` (str): Organization ID
+- `directory_id` (str): Directory ID
+- `page_size` (int, optional): Page size for pagination
+- `page_token` (str, optional): Page token for pagination
+- `include_detail` (bool, optional): Whether to include detailed information
+- `updated_after` (str, optional): Only return users updated after this timestamp
+
+**Returns:** Tuple containing `ListDirUsersResponse` and metadata
+
+#### list_directory_groups
+
+```python
+list_directory_groups(
+    organization_id: str,
+    directory_id: str,
+    page_size: Optional[int] = None,
+    page_token: Optional[str] = None,
+    include_detail: Optional[bool] = None,
+    updated_after: Optional[str] = None
+) -> tuple[ListDirGroupsResponse, Any]
+```
+
+Lists groups in a directory.
+
+**Parameters:**
+- `organization_id` (str): Organization ID
+- `directory_id` (str): Directory ID
+- `page_size` (int, optional): Page size for pagination
+- `page_token` (str, optional): Page token for pagination
+- `include_detail` (bool, optional): Whether to include detailed information
+- `updated_after` (str, optional): Only return groups updated after this timestamp
+
+**Returns:** Tuple containing `ListDirGroupsResponse` and metadata
+
+#### enable_directory
+
+```python
+enable_directory(organization_id: str, directory_id: str) -> ToggleDirectoryResponse
+```
+
+Enables a directory.
+
+**Parameters:**
+- `organization_id` (str): Organization ID
+- `directory_id` (str): Directory ID
+
+**Returns:** `ToggleDirectoryResponse`
+
+#### disable_directory
+
+```python
+disable_directory(organization_id: str, directory_id: str) -> ToggleDirectoryResponse
+```
+
+Disables a directory.
+
+**Parameters:**
+- `organization_id` (str): Organization ID
+- `directory_id` (str): Directory ID
+
+**Returns:** `ToggleDirectoryResponse`
+
+#### get_primary_directory_by_organization_id
+
+```python
+get_primary_directory_by_organization_id(organization_id: str)
+```
+
+Gets the primary directory for an organization.
+
+**Parameters:**
+- `organization_id` (str): Organization ID
+
+**Returns:** Primary directory information
+
+#### create_directory
+
+```python
+create_directory(organization_id: str, directory: CreateDirectory) -> CreateDirectoryResponse
+```
+
+Creates a new directory.
+
+**Parameters:**
+- `organization_id` (str): Organization ID
+- `directory` (CreateDirectory): Directory details
+
+**Returns:** `CreateDirectoryResponse`
+
+## Data Types
+
+### AuthorizationUrlOptions
+
+```python
+class AuthorizationUrlOptions:
+    connection_id: Optional[str] = None
+    organization_id: Optional[str] = None
+    scopes: Optional[str] = None
+    state: Optional[str] = None
+    nonce: Optional[str] = None
+    domain_hint: Optional[str] = None
+    login_hint: Optional[str] = None
+    provider: Optional[str] = None
+```
+
+### CodeAuthenticationOptions
+
+```python
+class CodeAuthenticationOptions:
+    code_verifier: Optional[str] = None
+```
+
+### IdpInitiatedLoginClaims
+
+```python
+class IdpInitiatedLoginClaims:
+    connection_id: str
+    organization_id: str
+    login_hint: str
+    relay_state: Optional[str] = None
+```
+
+### GrantType
+
+```python
+class GrantType(Enum):
+    AuthorizationCode = "authorization_code"
+    RefreshToken = "refresh_token"
+    ClientCredentials = "client_credentials"
+```
