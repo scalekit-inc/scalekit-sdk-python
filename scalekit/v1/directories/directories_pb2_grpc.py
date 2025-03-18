@@ -2,6 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
+from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 from scalekit.v1.directories import directories_pb2 as scalekit_dot_v1_dot_directories_dot_directories__pb2
 
 
@@ -18,6 +19,11 @@ class DirectoryServiceStub(object):
                 '/scalekit.v1.directories.DirectoryService/CreateDirectory',
                 request_serializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.CreateDirectoryRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.CreateDirectoryResponse.FromString,
+                )
+        self.DeleteDirectory = channel.unary_unary(
+                '/scalekit.v1.directories.DirectoryService/DeleteDirectory',
+                request_serializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.DeleteDirectoryRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
         self.UpdateDirectory = channel.unary_unary(
                 '/scalekit.v1.directories.DirectoryService/UpdateDirectory',
@@ -80,6 +86,12 @@ class DirectoryServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def CreateDirectory(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeleteDirectory(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -158,6 +170,11 @@ def add_DirectoryServiceServicer_to_server(servicer, server):
                     servicer.CreateDirectory,
                     request_deserializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.CreateDirectoryRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.CreateDirectoryResponse.SerializeToString,
+            ),
+            'DeleteDirectory': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteDirectory,
+                    request_deserializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.DeleteDirectoryRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'UpdateDirectory': grpc.unary_unary_rpc_method_handler(
                     servicer.UpdateDirectory,
@@ -238,6 +255,23 @@ class DirectoryService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.directories.DirectoryService/CreateDirectory',
             scalekit_dot_v1_dot_directories_dot_directories__pb2.CreateDirectoryRequest.SerializeToString,
             scalekit_dot_v1_dot_directories_dot_directories__pb2.CreateDirectoryResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DeleteDirectory(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.directories.DirectoryService/DeleteDirectory',
+            scalekit_dot_v1_dot_directories_dot_directories__pb2.DeleteDirectoryRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

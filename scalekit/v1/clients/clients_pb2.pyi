@@ -61,16 +61,18 @@ class UpdateClientRequest(_message.Message):
     def __init__(self, client_id: _Optional[str] = ..., client: _Optional[_Union[UpdateClient, _Mapping]] = ..., mask: _Optional[_Union[_field_mask_pb2.FieldMask, _Mapping]] = ...) -> None: ...
 
 class UpdateClient(_message.Message):
-    __slots__ = ("redirect_uris", "default_redirect_uri", "back_channel_logout_uri", "post_logout_redirect_uris")
+    __slots__ = ("redirect_uris", "default_redirect_uri", "back_channel_logout_uri", "post_logout_redirect_uris", "initiate_login_uri")
     REDIRECT_URIS_FIELD_NUMBER: _ClassVar[int]
     DEFAULT_REDIRECT_URI_FIELD_NUMBER: _ClassVar[int]
     BACK_CHANNEL_LOGOUT_URI_FIELD_NUMBER: _ClassVar[int]
     POST_LOGOUT_REDIRECT_URIS_FIELD_NUMBER: _ClassVar[int]
+    INITIATE_LOGIN_URI_FIELD_NUMBER: _ClassVar[int]
     redirect_uris: _containers.RepeatedScalarFieldContainer[str]
     default_redirect_uri: str
     back_channel_logout_uri: str
     post_logout_redirect_uris: _containers.RepeatedScalarFieldContainer[str]
-    def __init__(self, redirect_uris: _Optional[_Iterable[str]] = ..., default_redirect_uri: _Optional[str] = ..., back_channel_logout_uri: _Optional[str] = ..., post_logout_redirect_uris: _Optional[_Iterable[str]] = ...) -> None: ...
+    initiate_login_uri: str
+    def __init__(self, redirect_uris: _Optional[_Iterable[str]] = ..., default_redirect_uri: _Optional[str] = ..., back_channel_logout_uri: _Optional[str] = ..., post_logout_redirect_uris: _Optional[_Iterable[str]] = ..., initiate_login_uri: _Optional[str] = ...) -> None: ...
 
 class UpdateClientResponse(_message.Message):
     __slots__ = ("client",)
@@ -125,7 +127,7 @@ class DeleteClientSecretRequest(_message.Message):
     def __init__(self, client_id: _Optional[str] = ..., secret_id: _Optional[str] = ...) -> None: ...
 
 class Client(_message.Message):
-    __slots__ = ("id", "keyId", "create_time", "update_time", "redirect_uris", "default_redirect_uri", "secrets", "post_logout_redirect_uris", "back_channel_logout_uri")
+    __slots__ = ("id", "keyId", "create_time", "update_time", "redirect_uris", "default_redirect_uri", "secrets", "post_logout_redirect_uris", "back_channel_logout_uri", "initiate_login_uri")
     ID_FIELD_NUMBER: _ClassVar[int]
     KEYID_FIELD_NUMBER: _ClassVar[int]
     CREATE_TIME_FIELD_NUMBER: _ClassVar[int]
@@ -135,6 +137,7 @@ class Client(_message.Message):
     SECRETS_FIELD_NUMBER: _ClassVar[int]
     POST_LOGOUT_REDIRECT_URIS_FIELD_NUMBER: _ClassVar[int]
     BACK_CHANNEL_LOGOUT_URI_FIELD_NUMBER: _ClassVar[int]
+    INITIATE_LOGIN_URI_FIELD_NUMBER: _ClassVar[int]
     id: str
     keyId: str
     create_time: _timestamp_pb2.Timestamp
@@ -144,7 +147,8 @@ class Client(_message.Message):
     secrets: _containers.RepeatedCompositeFieldContainer[ClientSecret]
     post_logout_redirect_uris: _containers.RepeatedScalarFieldContainer[str]
     back_channel_logout_uri: str
-    def __init__(self, id: _Optional[str] = ..., keyId: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., redirect_uris: _Optional[_Iterable[str]] = ..., default_redirect_uri: _Optional[str] = ..., secrets: _Optional[_Iterable[_Union[ClientSecret, _Mapping]]] = ..., post_logout_redirect_uris: _Optional[_Iterable[str]] = ..., back_channel_logout_uri: _Optional[str] = ...) -> None: ...
+    initiate_login_uri: str
+    def __init__(self, id: _Optional[str] = ..., keyId: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., redirect_uris: _Optional[_Iterable[str]] = ..., default_redirect_uri: _Optional[str] = ..., secrets: _Optional[_Iterable[_Union[ClientSecret, _Mapping]]] = ..., post_logout_redirect_uris: _Optional[_Iterable[str]] = ..., back_channel_logout_uri: _Optional[str] = ..., initiate_login_uri: _Optional[str] = ...) -> None: ...
 
 class ClientSecret(_message.Message):
     __slots__ = ("id", "create_time", "update_time", "secret_suffix", "created_by", "status", "expire_time", "last_used_time", "plain_secret")

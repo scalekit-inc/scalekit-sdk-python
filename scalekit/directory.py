@@ -258,3 +258,20 @@ class DirectoryClient:
             self.directory_service.CreateDirectory.with_call,
             CreateDirectoryRequest(organization_id=organization_id, directory=directory),
         )
+
+    def delete_directory(self, organization_id: str, directory_id: str):
+        """
+        Method to delete directory based on given organization and directory id
+
+        :param organization_id   :     Organization id to delete directory for
+        :type                    :     ``` str ```
+        :param directory_id      :     Directory id for directory to be deleted
+        :type                    :     ``` str ```
+
+        :returns:
+            None
+        """
+        return self.core_client.grpc_exec(
+            self.directory_service.DeleteDirectory.with_call,
+            DeleteDirectoryRequest(organization_id=organization_id, id=directory_id),
+        )

@@ -1,5 +1,3 @@
-
-import deprecation
 from typing import Optional
 
 from scalekit.core import CoreClient
@@ -127,4 +125,21 @@ class ConnectionClient:
         return self.core_client.grpc_exec(
             self.connection_service.CreateConnection.with_call,
             CreateConnectionRequest(organization_id=organization_id, connection=connection),
+        )
+    
+    def delete_connection(self, organization_id: str, connection_id: str):
+        """
+        Method to delete a connection based in given organization and connection id
+
+        :param organization_id  : Organization id to delete connection for
+        :type                   : ``` str ```
+        :param connection_id    : Connection id of connection to be deleted
+        :type                   : ``` str ```
+
+        :returns:
+            None
+        """
+        return self.core_client.grpc_exec(
+            self.connection_service.DeleteConnection.with_call,
+            DeleteConnectionRequest(organization_id=organization_id, id=connection_id),
         )

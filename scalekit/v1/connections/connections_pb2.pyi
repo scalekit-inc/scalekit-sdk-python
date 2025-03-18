@@ -31,6 +31,13 @@ class NameIdFormat(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     TRANSIENT: _ClassVar[NameIdFormat]
     PERSISTENT: _ClassVar[NameIdFormat]
 
+class PasswordlessType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    PasswordlessType_UNSPECIFIED: _ClassVar[PasswordlessType]
+    LINK: _ClassVar[PasswordlessType]
+    OTP: _ClassVar[PasswordlessType]
+    LINK_OTP: _ClassVar[PasswordlessType]
+
 class TestResultStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
     PENDING: _ClassVar[TestResultStatus]
@@ -74,7 +81,7 @@ class ConnectionType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     SAML: _ClassVar[ConnectionType]
     PASSWORD: _ClassVar[ConnectionType]
     OAUTH: _ClassVar[ConnectionType]
-    PASSWORD_LESS: _ClassVar[ConnectionType]
+    PASSWORDLESS: _ClassVar[ConnectionType]
 
 class ConnectionStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
@@ -109,6 +116,10 @@ UNSPECIFIED: NameIdFormat
 EMAIL: NameIdFormat
 TRANSIENT: NameIdFormat
 PERSISTENT: NameIdFormat
+PasswordlessType_UNSPECIFIED: PasswordlessType
+LINK: PasswordlessType
+OTP: PasswordlessType
+LINK_OTP: PasswordlessType
 PENDING: TestResultStatus
 SUCCESS: TestResultStatus
 FAILURE: TestResultStatus
@@ -135,7 +146,7 @@ OIDC: ConnectionType
 SAML: ConnectionType
 PASSWORD: ConnectionType
 OAUTH: ConnectionType
-PASSWORD_LESS: ConnectionType
+PASSWORDLESS: ConnectionType
 CONNECTION_STATUS_UNSPECIFIED: ConnectionStatus
 DRAFT: ConnectionStatus
 IN_PROGRESS: ConnectionStatus
@@ -200,7 +211,7 @@ class CreateConnection(_message.Message):
     def __init__(self, provider: _Optional[_Union[ConnectionProvider, str]] = ..., type: _Optional[_Union[ConnectionType, str]] = ...) -> None: ...
 
 class Connection(_message.Message):
-    __slots__ = ("id", "provider", "type", "status", "enabled", "debug_enabled", "organization_id", "ui_button_title", "configuration_type", "test_connection_uri", "attribute_mapping", "create_time", "update_time", "oidc_config", "saml_config", "oauth_config", "password_less_config", "key_id")
+    __slots__ = ("id", "provider", "type", "status", "enabled", "debug_enabled", "organization_id", "ui_button_title", "configuration_type", "test_connection_uri", "attribute_mapping", "create_time", "update_time", "oidc_config", "saml_config", "oauth_config", "passwordless_config", "key_id")
     class AttributeMappingEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -224,7 +235,7 @@ class Connection(_message.Message):
     OIDC_CONFIG_FIELD_NUMBER: _ClassVar[int]
     SAML_CONFIG_FIELD_NUMBER: _ClassVar[int]
     OAUTH_CONFIG_FIELD_NUMBER: _ClassVar[int]
-    PASSWORD_LESS_CONFIG_FIELD_NUMBER: _ClassVar[int]
+    PASSWORDLESS_CONFIG_FIELD_NUMBER: _ClassVar[int]
     KEY_ID_FIELD_NUMBER: _ClassVar[int]
     id: str
     provider: ConnectionProvider
@@ -242,9 +253,9 @@ class Connection(_message.Message):
     oidc_config: OIDCConnectionConfig
     saml_config: SAMLConnectionConfigResponse
     oauth_config: OAuthConnectionConfig
-    password_less_config: PasswordLessConfig
+    passwordless_config: PasswordLessConfig
     key_id: str
-    def __init__(self, id: _Optional[str] = ..., provider: _Optional[_Union[ConnectionProvider, str]] = ..., type: _Optional[_Union[ConnectionType, str]] = ..., status: _Optional[_Union[ConnectionStatus, str]] = ..., enabled: bool = ..., debug_enabled: bool = ..., organization_id: _Optional[str] = ..., ui_button_title: _Optional[str] = ..., configuration_type: _Optional[_Union[ConfigurationType, str]] = ..., test_connection_uri: _Optional[str] = ..., attribute_mapping: _Optional[_Mapping[str, str]] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., oidc_config: _Optional[_Union[OIDCConnectionConfig, _Mapping]] = ..., saml_config: _Optional[_Union[SAMLConnectionConfigResponse, _Mapping]] = ..., oauth_config: _Optional[_Union[OAuthConnectionConfig, _Mapping]] = ..., password_less_config: _Optional[_Union[PasswordLessConfig, _Mapping]] = ..., key_id: _Optional[str] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., provider: _Optional[_Union[ConnectionProvider, str]] = ..., type: _Optional[_Union[ConnectionType, str]] = ..., status: _Optional[_Union[ConnectionStatus, str]] = ..., enabled: bool = ..., debug_enabled: bool = ..., organization_id: _Optional[str] = ..., ui_button_title: _Optional[str] = ..., configuration_type: _Optional[_Union[ConfigurationType, str]] = ..., test_connection_uri: _Optional[str] = ..., attribute_mapping: _Optional[_Mapping[str, str]] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., oidc_config: _Optional[_Union[OIDCConnectionConfig, _Mapping]] = ..., saml_config: _Optional[_Union[SAMLConnectionConfigResponse, _Mapping]] = ..., oauth_config: _Optional[_Union[OAuthConnectionConfig, _Mapping]] = ..., passwordless_config: _Optional[_Union[PasswordLessConfig, _Mapping]] = ..., key_id: _Optional[str] = ...) -> None: ...
 
 class CreateConnectionResponse(_message.Message):
     __slots__ = ("connection",)
@@ -271,7 +282,7 @@ class UpdateConnectionRequest(_message.Message):
     def __init__(self, organization_id: _Optional[str] = ..., id: _Optional[str] = ..., connection: _Optional[_Union[UpdateConnection, _Mapping]] = ...) -> None: ...
 
 class UpdateConnection(_message.Message):
-    __slots__ = ("provider", "type", "debug_enabled", "ui_button_title", "configuration_type", "attribute_mapping", "oidc_config", "saml_config", "oauth_config", "password_less_config", "key_id")
+    __slots__ = ("provider", "type", "debug_enabled", "ui_button_title", "configuration_type", "attribute_mapping", "oidc_config", "saml_config", "oauth_config", "passwordless_config", "key_id")
     class AttributeMappingEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -288,7 +299,7 @@ class UpdateConnection(_message.Message):
     OIDC_CONFIG_FIELD_NUMBER: _ClassVar[int]
     SAML_CONFIG_FIELD_NUMBER: _ClassVar[int]
     OAUTH_CONFIG_FIELD_NUMBER: _ClassVar[int]
-    PASSWORD_LESS_CONFIG_FIELD_NUMBER: _ClassVar[int]
+    PASSWORDLESS_CONFIG_FIELD_NUMBER: _ClassVar[int]
     KEY_ID_FIELD_NUMBER: _ClassVar[int]
     provider: ConnectionProvider
     type: ConnectionType
@@ -299,9 +310,9 @@ class UpdateConnection(_message.Message):
     oidc_config: OIDCConnectionConfig
     saml_config: SAMLConnectionConfigRequest
     oauth_config: OAuthConnectionConfig
-    password_less_config: PasswordLessConfig
+    passwordless_config: PasswordLessConfig
     key_id: str
-    def __init__(self, provider: _Optional[_Union[ConnectionProvider, str]] = ..., type: _Optional[_Union[ConnectionType, str]] = ..., debug_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., ui_button_title: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., configuration_type: _Optional[_Union[ConfigurationType, str]] = ..., attribute_mapping: _Optional[_Mapping[str, str]] = ..., oidc_config: _Optional[_Union[OIDCConnectionConfig, _Mapping]] = ..., saml_config: _Optional[_Union[SAMLConnectionConfigRequest, _Mapping]] = ..., oauth_config: _Optional[_Union[OAuthConnectionConfig, _Mapping]] = ..., password_less_config: _Optional[_Union[PasswordLessConfig, _Mapping]] = ..., key_id: _Optional[str] = ...) -> None: ...
+    def __init__(self, provider: _Optional[_Union[ConnectionProvider, str]] = ..., type: _Optional[_Union[ConnectionType, str]] = ..., debug_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., ui_button_title: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., configuration_type: _Optional[_Union[ConfigurationType, str]] = ..., attribute_mapping: _Optional[_Mapping[str, str]] = ..., oidc_config: _Optional[_Union[OIDCConnectionConfig, _Mapping]] = ..., saml_config: _Optional[_Union[SAMLConnectionConfigRequest, _Mapping]] = ..., oauth_config: _Optional[_Union[OAuthConnectionConfig, _Mapping]] = ..., passwordless_config: _Optional[_Union[PasswordLessConfig, _Mapping]] = ..., key_id: _Optional[str] = ...) -> None: ...
 
 class UpdateConnectionResponse(_message.Message):
     __slots__ = ("connection",)
@@ -434,7 +445,7 @@ class OIDCConnectionConfig(_message.Message):
     def __init__(self, issuer: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., discovery_endpoint: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., authorize_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., token_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., user_info_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., jwks_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_id: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_secret: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., scopes: _Optional[_Iterable[_Union[OIDCScope, str]]] = ..., token_auth_type: _Optional[_Union[TokenAuthType, str]] = ..., redirect_uri: _Optional[str] = ..., pkce_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., idp_logout_required: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., post_logout_redirect_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., backchannel_logout_redirect_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ...) -> None: ...
 
 class OAuthConnectionConfig(_message.Message):
-    __slots__ = ("authorize_uri", "token_uri", "user_info_uri", "client_id", "client_secret", "scopes", "redirect_uri", "pkce_enabled", "prompt")
+    __slots__ = ("authorize_uri", "token_uri", "user_info_uri", "client_id", "client_secret", "scopes", "redirect_uri", "pkce_enabled", "prompt", "use_platform_creds")
     AUTHORIZE_URI_FIELD_NUMBER: _ClassVar[int]
     TOKEN_URI_FIELD_NUMBER: _ClassVar[int]
     USER_INFO_URI_FIELD_NUMBER: _ClassVar[int]
@@ -444,6 +455,7 @@ class OAuthConnectionConfig(_message.Message):
     REDIRECT_URI_FIELD_NUMBER: _ClassVar[int]
     PKCE_ENABLED_FIELD_NUMBER: _ClassVar[int]
     PROMPT_FIELD_NUMBER: _ClassVar[int]
+    USE_PLATFORM_CREDS_FIELD_NUMBER: _ClassVar[int]
     authorize_uri: _wrappers_pb2.StringValue
     token_uri: _wrappers_pb2.StringValue
     user_info_uri: _wrappers_pb2.StringValue
@@ -453,19 +465,18 @@ class OAuthConnectionConfig(_message.Message):
     redirect_uri: str
     pkce_enabled: _wrappers_pb2.BoolValue
     prompt: _wrappers_pb2.StringValue
-    def __init__(self, authorize_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., token_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., user_info_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_id: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_secret: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., scopes: _Optional[_Iterable[str]] = ..., redirect_uri: _Optional[str] = ..., pkce_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., prompt: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ...) -> None: ...
+    use_platform_creds: _wrappers_pb2.BoolValue
+    def __init__(self, authorize_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., token_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., user_info_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_id: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_secret: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., scopes: _Optional[_Iterable[str]] = ..., redirect_uri: _Optional[str] = ..., pkce_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., prompt: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., use_platform_creds: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ...) -> None: ...
 
 class PasswordLessConfig(_message.Message):
-    __slots__ = ("magicLinkEnabled", "magicOTPEnabled", "frequency", "validity")
-    MAGICLINKENABLED_FIELD_NUMBER: _ClassVar[int]
-    MAGICOTPENABLED_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("type", "frequency", "validity")
+    TYPE_FIELD_NUMBER: _ClassVar[int]
     FREQUENCY_FIELD_NUMBER: _ClassVar[int]
     VALIDITY_FIELD_NUMBER: _ClassVar[int]
-    magicLinkEnabled: bool
-    magicOTPEnabled: bool
+    type: PasswordlessType
     frequency: int
     validity: _duration_pb2.Duration
-    def __init__(self, magicLinkEnabled: bool = ..., magicOTPEnabled: bool = ..., frequency: _Optional[int] = ..., validity: _Optional[_Union[_duration_pb2.Duration, _Mapping]] = ...) -> None: ...
+    def __init__(self, type: _Optional[_Union[PasswordlessType, str]] = ..., frequency: _Optional[int] = ..., validity: _Optional[_Union[_duration_pb2.Duration, _Mapping]] = ...) -> None: ...
 
 class SAMLConnectionConfigRequest(_message.Message):
     __slots__ = ("idp_metadata_url", "idp_entity_id", "idp_sso_url", "idp_certificate", "idp_slo_url", "ui_button_title", "idp_name_id_format", "idp_sso_request_binding", "idp_slo_request_binding", "saml_signing_option", "force_authn", "default_redirect_uri", "assertion_encrypted", "want_request_signed", "certificate_id", "idp_slo_required")

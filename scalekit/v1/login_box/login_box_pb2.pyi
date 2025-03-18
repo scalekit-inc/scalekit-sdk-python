@@ -72,3 +72,17 @@ class GetBoxCustomizationResponse(_message.Message):
     CUSTOMIZATION_SETTINGS_FIELD_NUMBER: _ClassVar[int]
     customization_settings: _struct_pb2.Struct
     def __init__(self, customization_settings: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
+
+class VerifyPasswordLessRequest(_message.Message):
+    __slots__ = ("auth_request_id", "code")
+    AUTH_REQUEST_ID_FIELD_NUMBER: _ClassVar[int]
+    CODE_FIELD_NUMBER: _ClassVar[int]
+    auth_request_id: str
+    code: str
+    def __init__(self, auth_request_id: _Optional[str] = ..., code: _Optional[str] = ...) -> None: ...
+
+class VerifyPasswordLessResponse(_message.Message):
+    __slots__ = ("success",)
+    SUCCESS_FIELD_NUMBER: _ClassVar[int]
+    success: bool
+    def __init__(self, success: bool = ...) -> None: ...
