@@ -36,6 +36,9 @@ class EventTarget(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     ENVIRONMENT: _ClassVar[EventTarget]
     ORGANIZATION: _ClassVar[EventTarget]
     USER: _ClassVar[EventTarget]
+    SESSION: _ClassVar[EventTarget]
+    TEMPLATE: _ClassVar[EventTarget]
+    EMAIL_SERVER: _ClassVar[EventTarget]
 
 class EventCategory(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
@@ -58,6 +61,10 @@ class ObjectType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     DirectoryUser: _ClassVar[ObjectType]
     DirectoryGroup: _ClassVar[ObjectType]
     Session: _ClassVar[ObjectType]
+    Template: _ClassVar[ObjectType]
+    Job: _ClassVar[ObjectType]
+    Domain: _ClassVar[ObjectType]
+    EmailServer: _ClassVar[ObjectType]
 ACTOR_UNSPECIFIED: EventActor
 HUMAN: EventActor
 MACHINE: EventActor
@@ -70,6 +77,9 @@ WORKSPACE: EventTarget
 ENVIRONMENT: EventTarget
 ORGANIZATION: EventTarget
 USER: EventTarget
+SESSION: EventTarget
+TEMPLATE: EventTarget
+EMAIL_SERVER: EventTarget
 EVENT_SOURCE_UNSPECIFIED: EventCategory
 CORE: EventCategory
 SSO: EventCategory
@@ -86,6 +96,24 @@ Directory: ObjectType
 DirectoryUser: ObjectType
 DirectoryGroup: ObjectType
 Session: ObjectType
+Template: ObjectType
+Job: ObjectType
+Domain: ObjectType
+EmailServer: ObjectType
+
+class SendCustomEventRequest(_message.Message):
+    __slots__ = ("event_type", "event")
+    EVENT_TYPE_FIELD_NUMBER: _ClassVar[int]
+    EVENT_FIELD_NUMBER: _ClassVar[int]
+    event_type: str
+    event: _struct_pb2.Struct
+    def __init__(self, event_type: _Optional[str] = ..., event: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
+
+class SendCustomEventResponse(_message.Message):
+    __slots__ = ("event_id",)
+    EVENT_ID_FIELD_NUMBER: _ClassVar[int]
+    event_id: str
+    def __init__(self, event_id: _Optional[str] = ...) -> None: ...
 
 class IEventPaginationTokens(_message.Message):
     __slots__ = ("NextPage", "PreviousPage", "Total")

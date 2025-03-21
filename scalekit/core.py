@@ -6,6 +6,8 @@ import json
 import requests
 import platform
 from urllib.parse import urlparse
+
+from cryptography.hazmat.primitives import serialization
 from grpc_status import rpc_status
 from scalekit.common.scalekit import GrantType
 from scalekit.v1.errdetails.errdetails_pb2 import ErrorInfo
@@ -25,8 +27,8 @@ class WithCall(Protocol):
 class CoreClient:
     """Class definition for Core Client"""
 
-    sdk_version = "Scalekit-Python/1.0.5"
-    api_version = "20250127"
+    sdk_version = "Scalekit-Python/1.0.6"
+    api_version = "20250318"
     user_agent = f"{sdk_version} Python/{platform.python_version()} ({platform.system()}; {platform.architecture()}"
 
     def __init__(self, env_url, client_id, client_secret):
@@ -116,7 +118,14 @@ class CoreClient:
 
         for key in keys:
             kid = key["kid"]
-            self.keys[kid] = jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(key))
+            rsa_key = jwt.PyJWK.from_dict(key).key
+
+            pem_key = rsa_key.public_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PublicFormat.SubjectPublicKeyInfo
+            )
+
+            self.keys[kid] = pem_key.decode("utf-8")
 
     def grpc_exec(
         self,

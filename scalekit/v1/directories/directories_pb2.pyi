@@ -416,3 +416,11 @@ class UpdateAttributesResponse(_message.Message):
     ATTRIBUTE_MAPPINGS_FIELD_NUMBER: _ClassVar[int]
     attribute_mappings: AttributeMappings
     def __init__(self, attribute_mappings: _Optional[_Union[AttributeMappings, _Mapping]] = ...) -> None: ...
+
+class DeleteDirectoryRequest(_message.Message):
+    __slots__ = ("organization_id", "id")
+    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
+    ID_FIELD_NUMBER: _ClassVar[int]
+    organization_id: str
+    id: str
+    def __init__(self, organization_id: _Optional[str] = ..., id: _Optional[str] = ...) -> None: ...

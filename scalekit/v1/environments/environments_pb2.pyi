@@ -23,6 +23,7 @@ class CustomDomainStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     PENDING: _ClassVar[CustomDomainStatus]
     ACTIVE: _ClassVar[CustomDomainStatus]
     FAILED: _ClassVar[CustomDomainStatus]
+    INITIAL: _ClassVar[CustomDomainStatus]
 
 class AssetCategory(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
@@ -44,6 +45,7 @@ UNSPECIFIED: CustomDomainStatus
 PENDING: CustomDomainStatus
 ACTIVE: CustomDomainStatus
 FAILED: CustomDomainStatus
+INITIAL: CustomDomainStatus
 ASSET_CATEGORY_UNSPECIFIED: AssetCategory
 PORTAL_CUSTOMIZATION_IMAGE: AssetCategory
 CookiePersistenceType_UNSPECIFIED: CookiePersistenceType
@@ -404,3 +406,21 @@ class UpdateContextRequest(_message.Message):
     environment_id: str
     context: _struct_pb2.Struct
     def __init__(self, environment_id: _Optional[str] = ..., context: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
+
+class GetCurrentSessionRequest(_message.Message):
+    __slots__ = ("id",)
+    ID_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    def __init__(self, id: _Optional[str] = ...) -> None: ...
+
+class GetCurrentSessionResponse(_message.Message):
+    __slots__ = ("session_expiry", "access_token_expiry", "organization_id", "subject")
+    SESSION_EXPIRY_FIELD_NUMBER: _ClassVar[int]
+    ACCESS_TOKEN_EXPIRY_FIELD_NUMBER: _ClassVar[int]
+    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
+    SUBJECT_FIELD_NUMBER: _ClassVar[int]
+    session_expiry: _timestamp_pb2.Timestamp
+    access_token_expiry: _timestamp_pb2.Timestamp
+    organization_id: str
+    subject: str
+    def __init__(self, session_expiry: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., access_token_expiry: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., organization_id: _Optional[str] = ..., subject: _Optional[str] = ...) -> None: ...

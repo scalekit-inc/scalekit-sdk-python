@@ -19,12 +19,23 @@ class EventsServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_events_dot_events__pb2.ListEventsRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_events_dot_events__pb2.ListEventsResponse.FromString,
                 )
+        self.SendCustomEvent = channel.unary_unary(
+                '/scalekit.v1.events.EventsService/SendCustomEvent',
+                request_serializer=scalekit_dot_v1_dot_events_dot_events__pb2.SendCustomEventRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_events_dot_events__pb2.SendCustomEventResponse.FromString,
+                )
 
 
 class EventsServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def ListEvents(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def SendCustomEvent(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -37,6 +48,11 @@ def add_EventsServiceServicer_to_server(servicer, server):
                     servicer.ListEvents,
                     request_deserializer=scalekit_dot_v1_dot_events_dot_events__pb2.ListEventsRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_events_dot_events__pb2.ListEventsResponse.SerializeToString,
+            ),
+            'SendCustomEvent': grpc.unary_unary_rpc_method_handler(
+                    servicer.SendCustomEvent,
+                    request_deserializer=scalekit_dot_v1_dot_events_dot_events__pb2.SendCustomEventRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_events_dot_events__pb2.SendCustomEventResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -62,5 +78,22 @@ class EventsService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.events.EventsService/ListEvents',
             scalekit_dot_v1_dot_events_dot_events__pb2.ListEventsRequest.SerializeToString,
             scalekit_dot_v1_dot_events_dot_events__pb2.ListEventsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def SendCustomEvent(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.events.EventsService/SendCustomEvent',
+            scalekit_dot_v1_dot_events_dot_events__pb2.SendCustomEventRequest.SerializeToString,
+            scalekit_dot_v1_dot_events_dot_events__pb2.SendCustomEventResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

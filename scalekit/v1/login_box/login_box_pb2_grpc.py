@@ -29,6 +29,11 @@ class LoginBoxServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_login__box_dot_login__box__pb2.GetBoxCustomizationRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_login__box_dot_login__box__pb2.GetBoxCustomizationResponse.FromString,
                 )
+        self.VerifyPasswordLess = channel.unary_unary(
+                '/scalekit.v1.login_box.LoginBoxService/VerifyPasswordLess',
+                request_serializer=scalekit_dot_v1_dot_login__box_dot_login__box__pb2.VerifyPasswordLessRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_login__box_dot_login__box__pb2.VerifyPasswordLessResponse.FromString,
+                )
 
 
 class LoginBoxServiceServicer(object):
@@ -52,6 +57,12 @@ class LoginBoxServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def VerifyPasswordLess(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_LoginBoxServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -69,6 +80,11 @@ def add_LoginBoxServiceServicer_to_server(servicer, server):
                     servicer.GetBoxCustomizations,
                     request_deserializer=scalekit_dot_v1_dot_login__box_dot_login__box__pb2.GetBoxCustomizationRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_login__box_dot_login__box__pb2.GetBoxCustomizationResponse.SerializeToString,
+            ),
+            'VerifyPasswordLess': grpc.unary_unary_rpc_method_handler(
+                    servicer.VerifyPasswordLess,
+                    request_deserializer=scalekit_dot_v1_dot_login__box_dot_login__box__pb2.VerifyPasswordLessRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_login__box_dot_login__box__pb2.VerifyPasswordLessResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -128,5 +144,22 @@ class LoginBoxService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.login_box.LoginBoxService/GetBoxCustomizations',
             scalekit_dot_v1_dot_login__box_dot_login__box__pb2.GetBoxCustomizationRequest.SerializeToString,
             scalekit_dot_v1_dot_login__box_dot_login__box__pb2.GetBoxCustomizationResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def VerifyPasswordLess(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.login_box.LoginBoxService/VerifyPasswordLess',
+            scalekit_dot_v1_dot_login__box_dot_login__box__pb2.VerifyPasswordLessRequest.SerializeToString,
+            scalekit_dot_v1_dot_login__box_dot_login__box__pb2.VerifyPasswordLessResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
