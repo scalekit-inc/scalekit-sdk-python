@@ -17,6 +17,12 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
+class CodeChallengeType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    CODE_CHALLENGE_TYPE_UNSPECIFIED: _ClassVar[CodeChallengeType]
+    NUMERIC: _ClassVar[CodeChallengeType]
+    ALPHANUMERIC: _ClassVar[CodeChallengeType]
+
 class ConfigurationType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
     CONFIGURATION_TYPE_UNSPECIFIED: _ClassVar[ConfigurationType]
@@ -108,6 +114,9 @@ class ConnectionProvider(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     MICROSOFT: _ClassVar[ConnectionProvider]
     IDP_SIMULATOR: _ClassVar[ConnectionProvider]
     SCALEKIT: _ClassVar[ConnectionProvider]
+CODE_CHALLENGE_TYPE_UNSPECIFIED: CodeChallengeType
+NUMERIC: CodeChallengeType
+ALPHANUMERIC: CodeChallengeType
 CONFIGURATION_TYPE_UNSPECIFIED: ConfigurationType
 DISCOVERY: ConfigurationType
 MANUAL: ConfigurationType
@@ -403,12 +412,10 @@ class ToggleConnectionRequest(_message.Message):
     def __init__(self, organization_id: _Optional[str] = ..., id: _Optional[str] = ...) -> None: ...
 
 class ToggleConnectionResponse(_message.Message):
-    __slots__ = ("enabled", "error_message")
+    __slots__ = ("enabled",)
     ENABLED_FIELD_NUMBER: _ClassVar[int]
-    ERROR_MESSAGE_FIELD_NUMBER: _ClassVar[int]
     enabled: bool
-    error_message: str
-    def __init__(self, enabled: bool = ..., error_message: _Optional[str] = ...) -> None: ...
+    def __init__(self, enabled: bool = ...) -> None: ...
 
 class OIDCConnectionConfig(_message.Message):
     __slots__ = ("issuer", "discovery_endpoint", "authorize_uri", "token_uri", "user_info_uri", "jwks_uri", "client_id", "client_secret", "scopes", "token_auth_type", "redirect_uri", "pkce_enabled", "idp_logout_required", "post_logout_redirect_uri", "backchannel_logout_redirect_uri")
@@ -469,14 +476,20 @@ class OAuthConnectionConfig(_message.Message):
     def __init__(self, authorize_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., token_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., user_info_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_id: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_secret: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., scopes: _Optional[_Iterable[str]] = ..., redirect_uri: _Optional[str] = ..., pkce_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., prompt: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., use_platform_creds: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ...) -> None: ...
 
 class PasswordLessConfig(_message.Message):
-    __slots__ = ("type", "frequency", "validity")
+    __slots__ = ("type", "frequency", "validity", "enforce_same_browser_origin", "code_challenge_length", "code_challenge_type")
     TYPE_FIELD_NUMBER: _ClassVar[int]
     FREQUENCY_FIELD_NUMBER: _ClassVar[int]
     VALIDITY_FIELD_NUMBER: _ClassVar[int]
+    ENFORCE_SAME_BROWSER_ORIGIN_FIELD_NUMBER: _ClassVar[int]
+    CODE_CHALLENGE_LENGTH_FIELD_NUMBER: _ClassVar[int]
+    CODE_CHALLENGE_TYPE_FIELD_NUMBER: _ClassVar[int]
     type: PasswordlessType
-    frequency: int
-    validity: _duration_pb2.Duration
-    def __init__(self, type: _Optional[_Union[PasswordlessType, str]] = ..., frequency: _Optional[int] = ..., validity: _Optional[_Union[_duration_pb2.Duration, _Mapping]] = ...) -> None: ...
+    frequency: _wrappers_pb2.UInt32Value
+    validity: _wrappers_pb2.UInt32Value
+    enforce_same_browser_origin: _wrappers_pb2.BoolValue
+    code_challenge_length: _wrappers_pb2.UInt32Value
+    code_challenge_type: CodeChallengeType
+    def __init__(self, type: _Optional[_Union[PasswordlessType, str]] = ..., frequency: _Optional[_Union[_wrappers_pb2.UInt32Value, _Mapping]] = ..., validity: _Optional[_Union[_wrappers_pb2.UInt32Value, _Mapping]] = ..., enforce_same_browser_origin: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., code_challenge_length: _Optional[_Union[_wrappers_pb2.UInt32Value, _Mapping]] = ..., code_challenge_type: _Optional[_Union[CodeChallengeType, str]] = ...) -> None: ...
 
 class SAMLConnectionConfigRequest(_message.Message):
     __slots__ = ("idp_metadata_url", "idp_entity_id", "idp_sso_url", "idp_certificate", "idp_slo_url", "ui_button_title", "idp_name_id_format", "idp_sso_request_binding", "idp_slo_request_binding", "saml_signing_option", "force_authn", "default_redirect_uri", "assertion_encrypted", "want_request_signed", "certificate_id", "idp_slo_required")
