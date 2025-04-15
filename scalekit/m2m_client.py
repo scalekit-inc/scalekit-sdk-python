@@ -10,7 +10,7 @@ class M2MClient:
 
     def __init__(self, core_client: CoreClient):
         """
-        Initializer for Organization Client
+        Initializer for Organization M2M Client
 
         :param core_client    : CoreClient Object
         :type                 : ``` obj ```
@@ -23,21 +23,21 @@ class M2MClient:
         )
 
     def create_organization_client(
-        self, organizaton_id: str, m2m_client: OrganizationClient
+        self, organization_id: str, m2m_client: OrganizationClient
     ) -> CreateOrganizationClientResponse:
         """
-        Method to list organizations
+        Method to create organization client
 
-        :param page_size  : page size for org list fetch
-        :type             : ``` int ```
-        :param page_token : page token for org list fetch
-        :type             : ``` str ```
+        :param organization_id  : Organization Id to create client for
+        :type                                 : ``` str ```
+        :param m2m_client         : OrganizationClient obj with desired client properties defined
+        :type                                 : ``` obj ```
         :returns:
-             list of organizations
+             Create Organization Client Response
         """
         return self.core_client.grpc_exec(
             self.client_service.CreateOrganizationClient.with_call,
-            CreateOrganizationClientRequest(organization_id=organizaton_id, client=m2m_client,
+            CreateOrganizationClientRequest(organization_id=organization_id, client=m2m_client,
         ))
 
     def delete_organization_client(self, organization_id: str, client_id: str) -> None:
@@ -78,10 +78,10 @@ class M2MClient:
         :type                  : ``` str ```
         :param client_id        : client id
         :type                  : ``` str ```
-        :param m2m_client       : M2M Client
-        :type                  : ``` OrganizationClient ```
+        :param m2m_client       :   Organization Client
+        :type                               :   ``` Obj ```
         :returns:
-            None
+            Update Organization Client Response
         """
         return self.core_client.grpc_exec(
             self.client_service.UpdateOrganizationClient.with_call,
@@ -96,7 +96,7 @@ class M2MClient:
         :param client_id        : client id
         :type                  : ``` str ```
         :returns:
-            None
+            Create Organization Client Secret Response
         """
         return self.core_client.grpc_exec(
             self.client_service.CreateOrganizationClientSecret.with_call,
