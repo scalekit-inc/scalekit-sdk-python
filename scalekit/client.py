@@ -158,6 +158,22 @@ class ScalekitClient:
         except jwt.exceptions.InvalidTokenError:
             return False
 
+    def validate_access_token_and_get_claims(self, token: str) -> Dict[str, Any]:
+        """
+        Method to validate access token and get claims
+
+        :param token : access token
+        :type        : ``` str ```
+
+        :returns:
+            claims
+        """
+        try:
+            claims = self.__validate_token(token)
+            return claims
+        except Exception as exp:
+            raise exp        
+
     def get_idp_initiated_login_claims(self, idp_initiated_login_token: str) -> IdpInitiatedLoginClaims:
         """
         Method to get IDP initiated login claims
