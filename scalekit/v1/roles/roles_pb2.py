@@ -15,16 +15,18 @@ _sym_db = _symbol_database.Default()
 from buf.validate import validate_pb2 as buf_dot_validate_dot_validate__pb2
 from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
 from google.api import field_behavior_pb2 as google_dot_api_dot_field__behavior__pb2
+from google.api import visibility_pb2 as google_dot_api_dot_visibility__pb2
 from google.protobuf import any_pb2 as google_dot_protobuf_dot_any__pb2
 from google.protobuf import duration_pb2 as google_dot_protobuf_dot_duration__pb2
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 from google.protobuf import struct_pb2 as google_dot_protobuf_dot_struct__pb2
 from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
+from protoc_gen_openapiv2.options import annotations_pb2 as protoc__gen__openapiv2_dot_options_dot_annotations__pb2
 from scalekit.v1.commons import commons_pb2 as scalekit_dot_v1_dot_commons_dot_commons__pb2
 from scalekit.v1.options import options_pb2 as scalekit_dot_v1_dot_options_dot_options__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1dscalekit/v1/roles/roles.proto\x12\x11scalekit.v1.roles\x1a\x1b\x62uf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x19google/protobuf/any.proto\x1a\x1egoogle/protobuf/duration.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a!scalekit/v1/commons/commons.proto\x1a!scalekit/v1/options/options.proto\"\xbf\x01\n\x04Role\x12\x1f\n\x02id\x18\x01 \x01(\tB\x0f\xbaH\x0cr\n\x10\x01\x18 :\x04roleR\x02id\x12 \n\x04name\x18\x02 \x01(\tB\x0c\xbaH\tr\x04\x10\x01\x18\x64\xc8\x01\x01R\x04name\x12.\n\x0b\x64isplayName\x18\x03 \x01(\tB\x0c\xbaH\tr\x04\x10\x01\x18\x64\xc8\x01\x01R\x0b\x64isplayName\x12*\n\x0b\x64\x65scription\x18\x04 \x01(\tB\x08\xbaH\x05r\x03\x18\xd0\x0fR\x0b\x64\x65scription\x12\x18\n\x07\x64\x65\x66\x61ult\x18\x05 \x01(\x08R\x07\x64\x65\x66\x61ult\"\xe1\x01\n\nCreateRole\x12\x36\n\x04name\x18\x02 \x01(\tB\"\xbaH\x1fr\x1a\x10\x01\x18\x64\x32\x14^[a-zA-Z0-9_]{1,64}$\xc8\x01\x01R\x04name\x12/\n\x0c\x64isplay_name\x18\x03 \x01(\tB\x0c\xbaH\tr\x04\x10\x01\x18\x64\xc8\x01\x01R\x0b\x64isplayName\x12/\n\x0b\x64\x65scription\x18\x04 \x01(\tB\x08\xbaH\x05r\x03\x18\xd0\x0fH\x00R\x0b\x64\x65scription\x88\x01\x01\x12\x1d\n\x07\x64\x65\x66\x61ult\x18\x05 \x01(\x08H\x01R\x07\x64\x65\x66\x61ult\x88\x01\x01\x42\x0e\n\x0c_descriptionB\n\n\x08_default\"u\n\x11\x43reateRoleRequest\x12%\n\x06\x65nv_id\x18\x01 \x01(\tB\x0e\xbaH\x0br\t\x10\x01\x18 :\x03\x65nvR\x05\x65nvId\x12\x39\n\x04role\x18\x02 \x01(\x0b\x32\x1d.scalekit.v1.roles.CreateRoleB\x06\xbaH\x03\xc8\x01\x01R\x04role\"A\n\x12\x43reateRoleResponse\x12+\n\x04role\x18\x01 \x01(\x0b\x32\x17.scalekit.v1.roles.RoleR\x04role\"[\n\x0eGetRoleRequest\x12%\n\x06\x65nv_id\x18\x01 \x01(\tB\x0e\xbaH\x0br\t\x10\x01\x18 :\x03\x65nvR\x05\x65nvId\x12\"\n\x02id\x18\x02 \x01(\tB\x12\xbaH\x0fr\n\x10\x01\x18 :\x04role\xc8\x01\x01R\x02id\">\n\x0fGetRoleResponse\x12+\n\x04role\x18\x01 \x01(\x0b\x32\x17.scalekit.v1.roles.RoleR\x04role\"4\n\x10ListRolesRequest\x12 \n\x06\x65nv_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x00\x18 R\x05\x65nvId\"B\n\x11ListRolesResponse\x12-\n\x05roles\x18\x01 \x03(\x0b\x32\x17.scalekit.v1.roles.RoleR\x05roles\"\xbe\x01\n\nUpdateRole\x12\x31\n\x0c\x64isplay_name\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18\x64H\x00R\x0b\x64isplayName\x88\x01\x01\x12\x31\n\x0b\x64\x65scription\x18\x02 \x01(\tB\n\xbaH\x07r\x05\x10\x01\x18\xd0\x0fH\x01R\x0b\x64\x65scription\x88\x01\x01\x12\x1d\n\x07\x64\x65\x66\x61ult\x18\x03 \x01(\x08H\x02R\x07\x64\x65\x66\x61ult\x88\x01\x01\x42\x0f\n\r_display_nameB\x0e\n\x0c_descriptionB\n\n\x08_default\"\x99\x01\n\x11UpdateRoleRequest\x12%\n\x06\x65nv_id\x18\x01 \x01(\tB\x0e\xbaH\x0br\t\x10\x01\x18 :\x03\x65nvR\x05\x65nvId\x12\"\n\x02id\x18\x02 \x01(\tB\x12\xbaH\x0fr\n\x10\x01\x18 :\x04role\xc8\x01\x01R\x02id\x12\x39\n\x04role\x18\x03 \x01(\x0b\x32\x1d.scalekit.v1.roles.UpdateRoleB\x06\xbaH\x03\xc8\x01\x01R\x04role\"A\n\x12UpdateRoleResponse\x12+\n\x04role\x18\x01 \x01(\x0b\x32\x17.scalekit.v1.roles.RoleR\x04role\"^\n\x11\x44\x65leteRoleRequest\x12%\n\x06\x65nv_id\x18\x01 \x01(\tB\x0e\xbaH\x0br\t\x10\x01\x18 :\x03\x65nvR\x05\x65nvId\x12\"\n\x02id\x18\x02 \x01(\tB\x12\xbaH\x0fr\n\x10\x01\x18 :\x04role\xc8\x01\x01R\x02id2\x88\x07\n\x0cRolesService\x12\xb2\x01\n\nCreateRole\x12$.scalekit.v1.roles.CreateRoleRequest\x1a%.scalekit.v1.roles.CreateRoleResponse\"W\x82\xb5\x18\x02\x18P\x82\xd3\xe4\x93\x02K\"#/api/v1/environments/{env_id}/roles:\x04roleZ\x1e\"\x1c/api/v1/environments/-/roles\x12\xbc\x01\n\nUpdateRole\x12$.scalekit.v1.roles.UpdateRoleRequest\x1a%.scalekit.v1.roles.UpdateRoleResponse\"a\x82\xb5\x18\x02\x18P\x82\xd3\xe4\x93\x02U\x1a(/api/v1/environments/{env_id}/roles/{id}:\x04roleZ#\x1a!/api/v1/environments/-/roles/{id}\x12\xad\x01\n\x07GetRole\x12!.scalekit.v1.roles.GetRoleRequest\x1a\".scalekit.v1.roles.GetRoleResponse\"[\x82\xb5\x18\x02\x18P\x82\xd3\xe4\x93\x02O\x12(/api/v1/environments/{env_id}/roles/{id}Z#\x12!/api/v1/environments/-/roles/{id}\x12\xa9\x01\n\tListRoles\x12#.scalekit.v1.roles.ListRolesRequest\x1a$.scalekit.v1.roles.ListRolesResponse\"Q\x82\xb5\x18\x02\x18p\x82\xd3\xe4\x93\x02\x45\x12#/api/v1/environments/{env_id}/rolesZ\x1e\x12\x1c/api/v1/environments/-/roles\x12\xa7\x01\n\nDeleteRole\x12$.scalekit.v1.roles.DeleteRoleRequest\x1a\x16.google.protobuf.Empty\"[\x82\xb5\x18\x02\x18P\x82\xd3\xe4\x93\x02O*(/api/v1/environments/{env_id}/roles/{id}Z#*!/api/v1/environments/-/roles/{id}B1Z/github.com/scalekit-inc/scalekit/pkg/grpc/rolesb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1dscalekit/v1/roles/roles.proto\x12\x11scalekit.v1.roles\x1a\x1b\x62uf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1bgoogle/api/visibility.proto\x1a\x19google/protobuf/any.proto\x1a\x1egoogle/protobuf/duration.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a.protoc-gen-openapiv2/options/annotations.proto\x1a!scalekit/v1/commons/commons.proto\x1a!scalekit/v1/options/options.proto\"\xbf\x01\n\x04Role\x12\x1f\n\x02id\x18\x01 \x01(\tB\x0f\xbaH\x0cr\n\x10\x01\x18 :\x04roleR\x02id\x12 \n\x04name\x18\x02 \x01(\tB\x0c\xbaH\tr\x04\x10\x01\x18\x64\xc8\x01\x01R\x04name\x12.\n\x0b\x64isplayName\x18\x03 \x01(\tB\x0c\xbaH\tr\x04\x10\x01\x18\x64\xc8\x01\x01R\x0b\x64isplayName\x12*\n\x0b\x64\x65scription\x18\x04 \x01(\tB\x08\xbaH\x05r\x03\x18\xd0\x0fR\x0b\x64\x65scription\x12\x18\n\x07\x64\x65\x66\x61ult\x18\x05 \x01(\x08R\x07\x64\x65\x66\x61ult\"\xe1\x01\n\nCreateRole\x12\x36\n\x04name\x18\x02 \x01(\tB\"\xbaH\x1fr\x1a\x10\x01\x18\x64\x32\x14^[a-zA-Z0-9_]{1,64}$\xc8\x01\x01R\x04name\x12/\n\x0c\x64isplay_name\x18\x03 \x01(\tB\x0c\xbaH\tr\x04\x10\x01\x18\x64\xc8\x01\x01R\x0b\x64isplayName\x12/\n\x0b\x64\x65scription\x18\x04 \x01(\tB\x08\xbaH\x05r\x03\x18\xd0\x0fH\x00R\x0b\x64\x65scription\x88\x01\x01\x12\x1d\n\x07\x64\x65\x66\x61ult\x18\x05 \x01(\x08H\x01R\x07\x64\x65\x66\x61ult\x88\x01\x01\x42\x0e\n\x0c_descriptionB\n\n\x08_default\"u\n\x11\x43reateRoleRequest\x12%\n\x06\x65nv_id\x18\x01 \x01(\tB\x0e\xbaH\x0br\t\x10\x01\x18 :\x03\x65nvR\x05\x65nvId\x12\x39\n\x04role\x18\x02 \x01(\x0b\x32\x1d.scalekit.v1.roles.CreateRoleB\x06\xbaH\x03\xc8\x01\x01R\x04role\"A\n\x12\x43reateRoleResponse\x12+\n\x04role\x18\x01 \x01(\x0b\x32\x17.scalekit.v1.roles.RoleR\x04role\"[\n\x0eGetRoleRequest\x12%\n\x06\x65nv_id\x18\x01 \x01(\tB\x0e\xbaH\x0br\t\x10\x01\x18 :\x03\x65nvR\x05\x65nvId\x12\"\n\x02id\x18\x02 \x01(\tB\x12\xbaH\x0fr\n\x10\x01\x18 :\x04role\xc8\x01\x01R\x02id\">\n\x0fGetRoleResponse\x12+\n\x04role\x18\x01 \x01(\x0b\x32\x17.scalekit.v1.roles.RoleR\x04role\"4\n\x10ListRolesRequest\x12 \n\x06\x65nv_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x00\x18 R\x05\x65nvId\"B\n\x11ListRolesResponse\x12-\n\x05roles\x18\x01 \x03(\x0b\x32\x17.scalekit.v1.roles.RoleR\x05roles\"\xbe\x01\n\nUpdateRole\x12\x31\n\x0c\x64isplay_name\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18\x64H\x00R\x0b\x64isplayName\x88\x01\x01\x12\x31\n\x0b\x64\x65scription\x18\x02 \x01(\tB\n\xbaH\x07r\x05\x10\x01\x18\xd0\x0fH\x01R\x0b\x64\x65scription\x88\x01\x01\x12\x1d\n\x07\x64\x65\x66\x61ult\x18\x03 \x01(\x08H\x02R\x07\x64\x65\x66\x61ult\x88\x01\x01\x42\x0f\n\r_display_nameB\x0e\n\x0c_descriptionB\n\n\x08_default\"\x99\x01\n\x11UpdateRoleRequest\x12%\n\x06\x65nv_id\x18\x01 \x01(\tB\x0e\xbaH\x0br\t\x10\x01\x18 :\x03\x65nvR\x05\x65nvId\x12\"\n\x02id\x18\x02 \x01(\tB\x12\xbaH\x0fr\n\x10\x01\x18 :\x04role\xc8\x01\x01R\x02id\x12\x39\n\x04role\x18\x03 \x01(\x0b\x32\x1d.scalekit.v1.roles.UpdateRoleB\x06\xbaH\x03\xc8\x01\x01R\x04role\"A\n\x12UpdateRoleResponse\x12+\n\x04role\x18\x01 \x01(\x0b\x32\x17.scalekit.v1.roles.RoleR\x04role\"^\n\x11\x44\x65leteRoleRequest\x12%\n\x06\x65nv_id\x18\x01 \x01(\tB\x0e\xbaH\x0br\t\x10\x01\x18 :\x03\x65nvR\x05\x65nvId\x12\"\n\x02id\x18\x02 \x01(\tB\x12\xbaH\x0fr\n\x10\x01\x18 :\x04role\xc8\x01\x01R\x02id2\xd3\x07\n\x0cRolesService\x12\xc1\x01\n\nCreateRole\x12$.scalekit.v1.roles.CreateRoleRequest\x1a%.scalekit.v1.roles.CreateRoleResponse\"f\x82\xb5\x18\x02\x18P\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02K\"#/api/v1/environments/{env_id}/roles:\x04roleZ\x1e\"\x1c/api/v1/environments/-/roles\x12\xcb\x01\n\nUpdateRole\x12$.scalekit.v1.roles.UpdateRoleRequest\x1a%.scalekit.v1.roles.UpdateRoleResponse\"p\x82\xb5\x18\x02\x18P\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02U\x1a(/api/v1/environments/{env_id}/roles/{id}:\x04roleZ#\x1a!/api/v1/environments/-/roles/{id}\x12\xbc\x01\n\x07GetRole\x12!.scalekit.v1.roles.GetRoleRequest\x1a\".scalekit.v1.roles.GetRoleResponse\"j\x82\xb5\x18\x02\x18P\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02O\x12(/api/v1/environments/{env_id}/roles/{id}Z#\x12!/api/v1/environments/-/roles/{id}\x12\xb8\x01\n\tListRoles\x12#.scalekit.v1.roles.ListRolesRequest\x1a$.scalekit.v1.roles.ListRolesResponse\"`\x82\xb5\x18\x02\x18p\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02\x45\x12#/api/v1/environments/{env_id}/rolesZ\x1e\x12\x1c/api/v1/environments/-/roles\x12\xb6\x01\n\nDeleteRole\x12$.scalekit.v1.roles.DeleteRoleRequest\x1a\x16.google.protobuf.Empty\"j\x82\xb5\x18\x02\x18P\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02O*(/api/v1/environments/{env_id}/roles/{id}Z#*!/api/v1/environments/-/roles/{id}B1Z/github.com/scalekit-inc/scalekit/pkg/grpc/rolesb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -71,39 +73,39 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_DELETEROLEREQUEST'].fields_by_name['id']._loaded_options = None
   _globals['_DELETEROLEREQUEST'].fields_by_name['id']._serialized_options = b'\272H\017r\n\020\001\030 :\004role\310\001\001'
   _globals['_ROLESSERVICE'].methods_by_name['CreateRole']._loaded_options = None
-  _globals['_ROLESSERVICE'].methods_by_name['CreateRole']._serialized_options = b'\202\265\030\002\030P\202\323\344\223\002K\"#/api/v1/environments/{env_id}/roles:\004roleZ\036\"\034/api/v1/environments/-/roles'
+  _globals['_ROLESSERVICE'].methods_by_name['CreateRole']._serialized_options = b'\202\265\030\002\030P\372\322\344\223\002\t\022\007PREVIEW\202\323\344\223\002K\"#/api/v1/environments/{env_id}/roles:\004roleZ\036\"\034/api/v1/environments/-/roles'
   _globals['_ROLESSERVICE'].methods_by_name['UpdateRole']._loaded_options = None
-  _globals['_ROLESSERVICE'].methods_by_name['UpdateRole']._serialized_options = b'\202\265\030\002\030P\202\323\344\223\002U\032(/api/v1/environments/{env_id}/roles/{id}:\004roleZ#\032!/api/v1/environments/-/roles/{id}'
+  _globals['_ROLESSERVICE'].methods_by_name['UpdateRole']._serialized_options = b'\202\265\030\002\030P\372\322\344\223\002\t\022\007PREVIEW\202\323\344\223\002U\032(/api/v1/environments/{env_id}/roles/{id}:\004roleZ#\032!/api/v1/environments/-/roles/{id}'
   _globals['_ROLESSERVICE'].methods_by_name['GetRole']._loaded_options = None
-  _globals['_ROLESSERVICE'].methods_by_name['GetRole']._serialized_options = b'\202\265\030\002\030P\202\323\344\223\002O\022(/api/v1/environments/{env_id}/roles/{id}Z#\022!/api/v1/environments/-/roles/{id}'
+  _globals['_ROLESSERVICE'].methods_by_name['GetRole']._serialized_options = b'\202\265\030\002\030P\372\322\344\223\002\t\022\007PREVIEW\202\323\344\223\002O\022(/api/v1/environments/{env_id}/roles/{id}Z#\022!/api/v1/environments/-/roles/{id}'
   _globals['_ROLESSERVICE'].methods_by_name['ListRoles']._loaded_options = None
-  _globals['_ROLESSERVICE'].methods_by_name['ListRoles']._serialized_options = b'\202\265\030\002\030p\202\323\344\223\002E\022#/api/v1/environments/{env_id}/rolesZ\036\022\034/api/v1/environments/-/roles'
+  _globals['_ROLESSERVICE'].methods_by_name['ListRoles']._serialized_options = b'\202\265\030\002\030p\372\322\344\223\002\t\022\007PREVIEW\202\323\344\223\002E\022#/api/v1/environments/{env_id}/rolesZ\036\022\034/api/v1/environments/-/roles'
   _globals['_ROLESSERVICE'].methods_by_name['DeleteRole']._loaded_options = None
-  _globals['_ROLESSERVICE'].methods_by_name['DeleteRole']._serialized_options = b'\202\265\030\002\030P\202\323\344\223\002O*(/api/v1/environments/{env_id}/roles/{id}Z#*!/api/v1/environments/-/roles/{id}'
-  _globals['_ROLE']._serialized_start=366
-  _globals['_ROLE']._serialized_end=557
-  _globals['_CREATEROLE']._serialized_start=560
-  _globals['_CREATEROLE']._serialized_end=785
-  _globals['_CREATEROLEREQUEST']._serialized_start=787
-  _globals['_CREATEROLEREQUEST']._serialized_end=904
-  _globals['_CREATEROLERESPONSE']._serialized_start=906
-  _globals['_CREATEROLERESPONSE']._serialized_end=971
-  _globals['_GETROLEREQUEST']._serialized_start=973
-  _globals['_GETROLEREQUEST']._serialized_end=1064
-  _globals['_GETROLERESPONSE']._serialized_start=1066
-  _globals['_GETROLERESPONSE']._serialized_end=1128
-  _globals['_LISTROLESREQUEST']._serialized_start=1130
-  _globals['_LISTROLESREQUEST']._serialized_end=1182
-  _globals['_LISTROLESRESPONSE']._serialized_start=1184
-  _globals['_LISTROLESRESPONSE']._serialized_end=1250
-  _globals['_UPDATEROLE']._serialized_start=1253
-  _globals['_UPDATEROLE']._serialized_end=1443
-  _globals['_UPDATEROLEREQUEST']._serialized_start=1446
-  _globals['_UPDATEROLEREQUEST']._serialized_end=1599
-  _globals['_UPDATEROLERESPONSE']._serialized_start=1601
-  _globals['_UPDATEROLERESPONSE']._serialized_end=1666
-  _globals['_DELETEROLEREQUEST']._serialized_start=1668
-  _globals['_DELETEROLEREQUEST']._serialized_end=1762
-  _globals['_ROLESSERVICE']._serialized_start=1765
-  _globals['_ROLESSERVICE']._serialized_end=2669
+  _globals['_ROLESSERVICE'].methods_by_name['DeleteRole']._serialized_options = b'\202\265\030\002\030P\372\322\344\223\002\t\022\007PREVIEW\202\323\344\223\002O*(/api/v1/environments/{env_id}/roles/{id}Z#*!/api/v1/environments/-/roles/{id}'
+  _globals['_ROLE']._serialized_start=443
+  _globals['_ROLE']._serialized_end=634
+  _globals['_CREATEROLE']._serialized_start=637
+  _globals['_CREATEROLE']._serialized_end=862
+  _globals['_CREATEROLEREQUEST']._serialized_start=864
+  _globals['_CREATEROLEREQUEST']._serialized_end=981
+  _globals['_CREATEROLERESPONSE']._serialized_start=983
+  _globals['_CREATEROLERESPONSE']._serialized_end=1048
+  _globals['_GETROLEREQUEST']._serialized_start=1050
+  _globals['_GETROLEREQUEST']._serialized_end=1141
+  _globals['_GETROLERESPONSE']._serialized_start=1143
+  _globals['_GETROLERESPONSE']._serialized_end=1205
+  _globals['_LISTROLESREQUEST']._serialized_start=1207
+  _globals['_LISTROLESREQUEST']._serialized_end=1259
+  _globals['_LISTROLESRESPONSE']._serialized_start=1261
+  _globals['_LISTROLESRESPONSE']._serialized_end=1327
+  _globals['_UPDATEROLE']._serialized_start=1330
+  _globals['_UPDATEROLE']._serialized_end=1520
+  _globals['_UPDATEROLEREQUEST']._serialized_start=1523
+  _globals['_UPDATEROLEREQUEST']._serialized_end=1676
+  _globals['_UPDATEROLERESPONSE']._serialized_start=1678
+  _globals['_UPDATEROLERESPONSE']._serialized_end=1743
+  _globals['_DELETEROLEREQUEST']._serialized_start=1745
+  _globals['_DELETEROLEREQUEST']._serialized_end=1839
+  _globals['_ROLESSERVICE']._serialized_start=1842
+  _globals['_ROLESSERVICE']._serialized_end=2821
 # @@protoc_insertion_point(module_scope)

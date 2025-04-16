@@ -1,10 +1,12 @@
 from buf.validate import validate_pb2 as _validate_pb2
 from google.api import annotations_pb2 as _annotations_pb2
 from google.api import field_behavior_pb2 as _field_behavior_pb2
+from google.api import visibility_pb2 as _visibility_pb2
 from google.protobuf import any_pb2 as _any_pb2
 from google.protobuf import duration_pb2 as _duration_pb2
 from google.protobuf import empty_pb2 as _empty_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
+from protoc_gen_openapiv2.options import annotations_pb2 as _annotations_pb2_1
 from google.protobuf.internal import containers as _containers
 from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
@@ -55,6 +57,7 @@ class IdentityProviderType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     MICROSOFT: _ClassVar[IdentityProviderType]
     IDP_SIMULATOR: _ClassVar[IdentityProviderType]
     SCALEKIT: _ClassVar[IdentityProviderType]
+    ADFS: _ClassVar[IdentityProviderType]
 REGION_CODE_UNSPECIFIED: RegionCode
 US: RegionCode
 EU: RegionCode
@@ -83,6 +86,7 @@ SALESFORCE: IdentityProviderType
 MICROSOFT: IdentityProviderType
 IDP_SIMULATOR: IdentityProviderType
 SCALEKIT: IdentityProviderType
+ADFS: IdentityProviderType
 
 class OrganizationMembership(_message.Message):
     __slots__ = ("id", "membership_status", "role", "name", "primary_identity_provider")

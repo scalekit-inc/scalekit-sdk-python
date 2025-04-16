@@ -30,6 +30,11 @@ class MigrationServiceStub(object):
                 request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrationServiceResponse.FromString,
                 )
+        self.CreateNewSAMLCertificate = channel.unary_unary(
+                '/scalekit.v1.migrations.MigrationService/CreateNewSAMLCertificate',
+                request_serializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrationSAMLRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrationSAMLResponse.FromString,
+                )
 
 
 class MigrationServiceServicer(object):
@@ -53,6 +58,12 @@ class MigrationServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def CreateNewSAMLCertificate(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_MigrationServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -70,6 +81,11 @@ def add_MigrationServiceServicer_to_server(servicer, server):
                     servicer.MigrateWebhookProvider,
                     request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                     response_serializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrationServiceResponse.SerializeToString,
+            ),
+            'CreateNewSAMLCertificate': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateNewSAMLCertificate,
+                    request_deserializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrationSAMLRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrationSAMLResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -129,5 +145,22 @@ class MigrationService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.migrations.MigrationService/MigrateWebhookProvider',
             google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrationServiceResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def CreateNewSAMLCertificate(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.migrations.MigrationService/CreateNewSAMLCertificate',
+            scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrationSAMLRequest.SerializeToString,
+            scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrationSAMLResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

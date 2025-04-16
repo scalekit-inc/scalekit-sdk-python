@@ -114,6 +114,7 @@ class ConnectionProvider(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     MICROSOFT: _ClassVar[ConnectionProvider]
     IDP_SIMULATOR: _ClassVar[ConnectionProvider]
     SCALEKIT: _ClassVar[ConnectionProvider]
+    ADFS: _ClassVar[ConnectionProvider]
 CODE_CHALLENGE_TYPE_UNSPECIFIED: CodeChallengeType
 NUMERIC: CodeChallengeType
 ALPHANUMERIC: CodeChallengeType
@@ -176,6 +177,7 @@ SALESFORCE: ConnectionProvider
 MICROSOFT: ConnectionProvider
 IDP_SIMULATOR: ConnectionProvider
 SCALEKIT: ConnectionProvider
+ADFS: ConnectionProvider
 
 class GetProvidersRequest(_message.Message):
     __slots__ = ()
@@ -412,10 +414,12 @@ class ToggleConnectionRequest(_message.Message):
     def __init__(self, organization_id: _Optional[str] = ..., id: _Optional[str] = ...) -> None: ...
 
 class ToggleConnectionResponse(_message.Message):
-    __slots__ = ("enabled",)
+    __slots__ = ("enabled", "error_message")
     ENABLED_FIELD_NUMBER: _ClassVar[int]
+    ERROR_MESSAGE_FIELD_NUMBER: _ClassVar[int]
     enabled: bool
-    def __init__(self, enabled: bool = ...) -> None: ...
+    error_message: str
+    def __init__(self, enabled: bool = ..., error_message: _Optional[str] = ...) -> None: ...
 
 class OIDCConnectionConfig(_message.Message):
     __slots__ = ("issuer", "discovery_endpoint", "authorize_uri", "token_uri", "user_info_uri", "jwks_uri", "client_id", "client_secret", "scopes", "token_auth_type", "redirect_uri", "pkce_enabled", "idp_logout_required", "post_logout_redirect_uri", "backchannel_logout_redirect_uri")

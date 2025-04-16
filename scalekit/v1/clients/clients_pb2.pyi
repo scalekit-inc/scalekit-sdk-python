@@ -34,18 +34,20 @@ class CreateOrganizationClientRequest(_message.Message):
     def __init__(self, organization_id: _Optional[str] = ..., client: _Optional[_Union[OrganizationClient, _Mapping]] = ...) -> None: ...
 
 class OrganizationClient(_message.Message):
-    __slots__ = ("name", "description", "scopes", "audience", "custom_claims")
+    __slots__ = ("name", "description", "scopes", "audience", "custom_claims", "expiry")
     NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     SCOPES_FIELD_NUMBER: _ClassVar[int]
     AUDIENCE_FIELD_NUMBER: _ClassVar[int]
     CUSTOM_CLAIMS_FIELD_NUMBER: _ClassVar[int]
+    EXPIRY_FIELD_NUMBER: _ClassVar[int]
     name: str
     description: str
     scopes: _containers.RepeatedScalarFieldContainer[str]
     audience: _containers.RepeatedScalarFieldContainer[str]
     custom_claims: _containers.RepeatedCompositeFieldContainer[CustomClaim]
-    def __init__(self, name: _Optional[str] = ..., description: _Optional[str] = ..., scopes: _Optional[_Iterable[str]] = ..., audience: _Optional[_Iterable[str]] = ..., custom_claims: _Optional[_Iterable[_Union[CustomClaim, _Mapping]]] = ...) -> None: ...
+    expiry: int
+    def __init__(self, name: _Optional[str] = ..., description: _Optional[str] = ..., scopes: _Optional[_Iterable[str]] = ..., audience: _Optional[_Iterable[str]] = ..., custom_claims: _Optional[_Iterable[_Union[CustomClaim, _Mapping]]] = ..., expiry: _Optional[int] = ...) -> None: ...
 
 class CreateOrganizationClientResponse(_message.Message):
     __slots__ = ("client", "plain_secret")
@@ -72,7 +74,7 @@ class UpdateOrganizationClientResponse(_message.Message):
     def __init__(self, client: _Optional[_Union[M2MClient, _Mapping]] = ...) -> None: ...
 
 class M2MClient(_message.Message):
-    __slots__ = ("client_id", "secrets", "name", "description", "organization_id", "create_time", "update_time", "scopes", "audience", "custom_claims")
+    __slots__ = ("client_id", "secrets", "name", "description", "organization_id", "create_time", "update_time", "scopes", "audience", "custom_claims", "expiry")
     CLIENT_ID_FIELD_NUMBER: _ClassVar[int]
     SECRETS_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
@@ -83,6 +85,7 @@ class M2MClient(_message.Message):
     SCOPES_FIELD_NUMBER: _ClassVar[int]
     AUDIENCE_FIELD_NUMBER: _ClassVar[int]
     CUSTOM_CLAIMS_FIELD_NUMBER: _ClassVar[int]
+    EXPIRY_FIELD_NUMBER: _ClassVar[int]
     client_id: str
     secrets: _containers.RepeatedCompositeFieldContainer[ClientSecret]
     name: str
@@ -93,7 +96,8 @@ class M2MClient(_message.Message):
     scopes: _containers.RepeatedScalarFieldContainer[str]
     audience: _containers.RepeatedScalarFieldContainer[str]
     custom_claims: _containers.RepeatedCompositeFieldContainer[CustomClaim]
-    def __init__(self, client_id: _Optional[str] = ..., secrets: _Optional[_Iterable[_Union[ClientSecret, _Mapping]]] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., organization_id: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., scopes: _Optional[_Iterable[str]] = ..., audience: _Optional[_Iterable[str]] = ..., custom_claims: _Optional[_Iterable[_Union[CustomClaim, _Mapping]]] = ...) -> None: ...
+    expiry: int
+    def __init__(self, client_id: _Optional[str] = ..., secrets: _Optional[_Iterable[_Union[ClientSecret, _Mapping]]] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., organization_id: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., scopes: _Optional[_Iterable[str]] = ..., audience: _Optional[_Iterable[str]] = ..., custom_claims: _Optional[_Iterable[_Union[CustomClaim, _Mapping]]] = ..., expiry: _Optional[int] = ...) -> None: ...
 
 class GetOrganizationClientRequest(_message.Message):
     __slots__ = ("organization_id", "client_id")

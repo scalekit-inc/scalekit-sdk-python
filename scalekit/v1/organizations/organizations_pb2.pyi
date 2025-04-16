@@ -137,12 +137,14 @@ class GetOrganizationResponse(_message.Message):
     def __init__(self, organization: _Optional[_Union[Organization, _Mapping]] = ...) -> None: ...
 
 class ListOrganizationsRequest(_message.Message):
-    __slots__ = ("page_size", "page_token")
+    __slots__ = ("page_size", "page_token", "external_id")
     PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
     PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    EXTERNAL_ID_FIELD_NUMBER: _ClassVar[int]
     page_size: int
     page_token: str
-    def __init__(self, page_size: _Optional[int] = ..., page_token: _Optional[str] = ...) -> None: ...
+    external_id: str
+    def __init__(self, page_size: _Optional[int] = ..., page_token: _Optional[str] = ..., external_id: _Optional[str] = ...) -> None: ...
 
 class ListOrganizationsResponse(_message.Message):
     __slots__ = ("next_page_token", "total_size", "organizations", "prev_page_token")

@@ -15,13 +15,15 @@ _sym_db = _symbol_database.Default()
 from buf.validate import validate_pb2 as buf_dot_validate_dot_validate__pb2
 from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
 from google.api import field_behavior_pb2 as google_dot_api_dot_field__behavior__pb2
+from google.api import visibility_pb2 as google_dot_api_dot_visibility__pb2
 from google.protobuf import any_pb2 as google_dot_protobuf_dot_any__pb2
 from google.protobuf import duration_pb2 as google_dot_protobuf_dot_duration__pb2
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
+from protoc_gen_openapiv2.options import annotations_pb2 as protoc__gen__openapiv2_dot_options_dot_annotations__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n!scalekit/v1/commons/commons.proto\x12\x13scalekit.v1.commons\x1a\x1b\x62uf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x19google/protobuf/any.proto\x1a\x1egoogle/protobuf/duration.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xb8\x02\n\x16OrganizationMembership\x12\x0e\n\x02id\x18\x01 \x01(\tR\x02id\x12L\n\x11membership_status\x18\x02 \x01(\x0e\x32\x1f.scalekit.v1.commons.UserStatusR\x10membershipStatus\x12\x37\n\x04role\x18\x03 \x01(\x0e\x32#.scalekit.v1.commons.MembershipRoleR\x04role\x12\x17\n\x04name\x18\x04 \x01(\tH\x00R\x04name\x88\x01\x01\x12\x65\n\x19primary_identity_provider\x18\x05 \x01(\x0e\x32).scalekit.v1.commons.IdentityProviderTypeR\x17primaryIdentityProviderB\x07\n\x05_name\"\xb3\x04\n\x0bUserProfile\x12\x13\n\x02id\x18\x01 \x01(\tB\x03\xe0\x41\x03R\x02id\x12\'\n\nfirst_name\x18\x02 \x01(\tB\x08\xbaH\x05r\x03\x18\xc8\x01R\tfirstName\x12%\n\tlast_name\x18\x03 \x01(\tB\x08\xbaH\x05r\x03\x18\xc8\x01R\x08lastName\x12\x12\n\x04name\x18\x04 \x01(\tR\x04name\x12\x16\n\x06locale\x18\x05 \x01(\tR\x06locale\x12*\n\x0e\x65mail_verified\x18\x06 \x01(\x08\x42\x03\xe0\x41\x03R\remailVerified\x12\x65\n\x08metadata\x18\x07 \x03(\x0b\x32..scalekit.v1.commons.UserProfile.MetadataEntryB\x19\xbaH\x16\x9a\x01\x13\x10\x1e\"\x06r\x04\x10\x03\x18\x19*\x07r\x05\x10\x01\x18\x80\x02R\x08metadata\x12~\n\x11\x63ustom_attributes\x18\x08 \x03(\x0b\x32\x36.scalekit.v1.commons.UserProfile.CustomAttributesEntryB\x19\xbaH\x16\x9a\x01\x13\x10\x64\"\x06r\x04\x10\x03\x18\x19*\x07r\x05\x10\x01\x18\x80\x02R\x10\x63ustomAttributes\x1a;\n\rMetadataEntry\x12\x10\n\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n\x05value\x18\x02 \x01(\tR\x05value:\x02\x38\x01\x1a\x43\n\x15\x43ustomAttributesEntry\x12\x10\n\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n\x05value\x18\x02 \x01(\tR\x05value:\x02\x38\x01*9\n\nRegionCode\x12\x1b\n\x17REGION_CODE_UNSPECIFIED\x10\x00\x12\x06\n\x02US\x10\x01\x12\x06\n\x02\x45U\x10\x02*E\n\x0f\x45nvironmentType\x12 \n\x1c\x45NVIRONMENT_TYPE_UNSPECIFIED\x10\x00\x12\x07\n\x03PRD\x10\x01\x12\x07\n\x03\x44\x45V\x10\x02*C\n\nUserStatus\x12\x1b\n\x17USER_STATUS_UNSPECIFIED\x10\x00\x12\n\n\x06\x41\x43TIVE\x10\x01\x12\x0c\n\x08INACTIVE\x10\x02*F\n\x0eMembershipRole\x12\x1f\n\x1bMEMBERSHIP_ROLE_UNSPECIFIED\x10\x00\x12\t\n\x05\x41\x44MIN\x10\x01\x12\x08\n\x04USER\x10\x02*\x8e\x02\n\x14IdentityProviderType\x12!\n\x1dIDENTITY_PROVIDER_UNSPECIFIED\x10\x00\x12\x08\n\x04OKTA\x10\x01\x12\n\n\x06GOOGLE\x10\x02\x12\x10\n\x0cMICROSOFT_AD\x10\x03\x12\t\n\x05\x41UTH0\x10\x04\x12\x0c\n\x08ONELOGIN\x10\x05\x12\x11\n\rPING_IDENTITY\x10\x06\x12\r\n\tJUMPCLOUD\x10\x07\x12\n\n\x06\x43USTOM\x10\x08\x12\n\n\x06GITHUB\x10\t\x12\n\n\x06GITLAB\x10\n\x12\x0c\n\x08LINKEDIN\x10\x0b\x12\x0e\n\nSALESFORCE\x10\x0c\x12\r\n\tMICROSOFT\x10\r\x12\x11\n\rIDP_SIMULATOR\x10\x0e\x12\x0c\n\x08SCALEKIT\x10\x0f\x42\x33Z1github.com/scalekit-inc/scalekit/pkg/grpc/commonsb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n!scalekit/v1/commons/commons.proto\x12\x13scalekit.v1.commons\x1a\x1b\x62uf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1bgoogle/api/visibility.proto\x1a\x19google/protobuf/any.proto\x1a\x1egoogle/protobuf/duration.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a.protoc-gen-openapiv2/options/annotations.proto\"\xb8\x02\n\x16OrganizationMembership\x12\x0e\n\x02id\x18\x01 \x01(\tR\x02id\x12L\n\x11membership_status\x18\x02 \x01(\x0e\x32\x1f.scalekit.v1.commons.UserStatusR\x10membershipStatus\x12\x37\n\x04role\x18\x03 \x01(\x0e\x32#.scalekit.v1.commons.MembershipRoleR\x04role\x12\x17\n\x04name\x18\x04 \x01(\tH\x00R\x04name\x88\x01\x01\x12\x65\n\x19primary_identity_provider\x18\x05 \x01(\x0e\x32).scalekit.v1.commons.IdentityProviderTypeR\x17primaryIdentityProviderB\x07\n\x05_name\"\x8c\x0b\n\x0bUserProfile\x12\x89\x01\n\x02id\x18\x01 \x01(\tBy\x92\x41s2QUnique system-generated identifier for the user profile. Immutable and read-only.J\x1e\"usr_profile_1234abcd5678efgh\"\xe0\x41\x03R\x02id\x12^\n\nfirst_name\x18\x02 \x01(\tB?\x92\x41\x34\x32*User\'s given name. Maximum 200 characters.J\x06\"John\"\xbaH\x05r\x03\x18\xc8\x01R\tfirstName\x12\\\n\tlast_name\x18\x03 \x01(\tB?\x92\x41\x34\x32+User\'s family name. Maximum 200 characters.J\x05\"Doe\"\xbaH\x05r\x03\x18\xc8\x01R\x08lastName\x12v\n\x04name\x18\x04 \x01(\tBb\x92\x41_2IFull name in display format. Typically combines first_name and last_name.J\x12\"John Michael Doe\"R\x04name\x12y\n\x06locale\x18\x05 \x01(\tBa\x92\x41^2SUser\'s localization preference in BCP-47 format. Defaults to organization settings.J\x07\"en-US\"R\x06locale\x12\x92\x01\n\x0e\x65mail_verified\x18\x06 \x01(\x08\x42k\x92\x41\x65\x32]Indicates if the user\'s email address has been verified. Automatically updated by the system.J\x04true\xe0\x41\x03R\remailVerified\x12\x87\x02\n\x08metadata\x18\x07 \x03(\x0b\x32..scalekit.v1.commons.UserProfile.MetadataEntryB\xba\x01\x92\x41\x9d\x01\x32^System-managed key-value pairs for internal tracking. Keys (3-25 chars), values (1-256 chars).J;{\"account_status\": \"active\", \"signup_source\": \"mobile_app\"}\xbaH\x16\x9a\x01\x13\x10\x1e\"\x06r\x04\x10\x03\x18\x19*\x07r\x05\x10\x01\x18\x80\x02R\x08metadata\x12\x9e\x02\n\x11\x63ustom_attributes\x18\x08 \x03(\x0b\x32\x36.scalekit.v1.commons.UserProfile.CustomAttributesEntryB\xb8\x01\x92\x41\x9b\x01\x32ZCustom attributes for extended user profile data. Keys (3-25 chars), values (1-256 chars).J={\"department\": \"engineering\", \"security_clearance\": \"level2\"}\xbaH\x16\x9a\x01\x13\x10\x64\"\x06r\x04\x10\x03\x18\x19*\x07r\x05\x10\x01\x18\x80\x02R\x10\x63ustomAttributes\x1a;\n\rMetadataEntry\x12\x10\n\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n\x05value\x18\x02 \x01(\tR\x05value:\x02\x38\x01\x1a\x43\n\x15\x43ustomAttributesEntry\x12\x10\n\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n\x05value\x18\x02 \x01(\tR\x05value:\x02\x38\x01*9\n\nRegionCode\x12\x1b\n\x17REGION_CODE_UNSPECIFIED\x10\x00\x12\x06\n\x02US\x10\x01\x12\x06\n\x02\x45U\x10\x02*E\n\x0f\x45nvironmentType\x12 \n\x1c\x45NVIRONMENT_TYPE_UNSPECIFIED\x10\x00\x12\x07\n\x03PRD\x10\x01\x12\x07\n\x03\x44\x45V\x10\x02*C\n\nUserStatus\x12\x1b\n\x17USER_STATUS_UNSPECIFIED\x10\x00\x12\n\n\x06\x41\x43TIVE\x10\x01\x12\x0c\n\x08INACTIVE\x10\x02*F\n\x0eMembershipRole\x12\x1f\n\x1bMEMBERSHIP_ROLE_UNSPECIFIED\x10\x00\x12\t\n\x05\x41\x44MIN\x10\x01\x12\x08\n\x04USER\x10\x02*\x98\x02\n\x14IdentityProviderType\x12!\n\x1dIDENTITY_PROVIDER_UNSPECIFIED\x10\x00\x12\x08\n\x04OKTA\x10\x01\x12\n\n\x06GOOGLE\x10\x02\x12\x10\n\x0cMICROSOFT_AD\x10\x03\x12\t\n\x05\x41UTH0\x10\x04\x12\x0c\n\x08ONELOGIN\x10\x05\x12\x11\n\rPING_IDENTITY\x10\x06\x12\r\n\tJUMPCLOUD\x10\x07\x12\n\n\x06\x43USTOM\x10\x08\x12\n\n\x06GITHUB\x10\t\x12\n\n\x06GITLAB\x10\n\x12\x0c\n\x08LINKEDIN\x10\x0b\x12\x0e\n\nSALESFORCE\x10\x0c\x12\r\n\tMICROSOFT\x10\r\x12\x11\n\rIDP_SIMULATOR\x10\x0e\x12\x0c\n\x08SCALEKIT\x10\x0f\x12\x08\n\x04\x41\x44\x46S\x10\x10\x42\x33Z1github.com/scalekit-inc/scalekit/pkg/grpc/commonsb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -34,33 +36,37 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_USERPROFILE_CUSTOMATTRIBUTESENTRY']._loaded_options = None
   _globals['_USERPROFILE_CUSTOMATTRIBUTESENTRY']._serialized_options = b'8\001'
   _globals['_USERPROFILE'].fields_by_name['id']._loaded_options = None
-  _globals['_USERPROFILE'].fields_by_name['id']._serialized_options = b'\340A\003'
+  _globals['_USERPROFILE'].fields_by_name['id']._serialized_options = b'\222As2QUnique system-generated identifier for the user profile. Immutable and read-only.J\036\"usr_profile_1234abcd5678efgh\"\340A\003'
   _globals['_USERPROFILE'].fields_by_name['first_name']._loaded_options = None
-  _globals['_USERPROFILE'].fields_by_name['first_name']._serialized_options = b'\272H\005r\003\030\310\001'
+  _globals['_USERPROFILE'].fields_by_name['first_name']._serialized_options = b'\222A42*User\'s given name. Maximum 200 characters.J\006\"John\"\272H\005r\003\030\310\001'
   _globals['_USERPROFILE'].fields_by_name['last_name']._loaded_options = None
-  _globals['_USERPROFILE'].fields_by_name['last_name']._serialized_options = b'\272H\005r\003\030\310\001'
+  _globals['_USERPROFILE'].fields_by_name['last_name']._serialized_options = b'\222A42+User\'s family name. Maximum 200 characters.J\005\"Doe\"\272H\005r\003\030\310\001'
+  _globals['_USERPROFILE'].fields_by_name['name']._loaded_options = None
+  _globals['_USERPROFILE'].fields_by_name['name']._serialized_options = b'\222A_2IFull name in display format. Typically combines first_name and last_name.J\022\"John Michael Doe\"'
+  _globals['_USERPROFILE'].fields_by_name['locale']._loaded_options = None
+  _globals['_USERPROFILE'].fields_by_name['locale']._serialized_options = b'\222A^2SUser\'s localization preference in BCP-47 format. Defaults to organization settings.J\007\"en-US\"'
   _globals['_USERPROFILE'].fields_by_name['email_verified']._loaded_options = None
-  _globals['_USERPROFILE'].fields_by_name['email_verified']._serialized_options = b'\340A\003'
+  _globals['_USERPROFILE'].fields_by_name['email_verified']._serialized_options = b'\222Ae2]Indicates if the user\'s email address has been verified. Automatically updated by the system.J\004true\340A\003'
   _globals['_USERPROFILE'].fields_by_name['metadata']._loaded_options = None
-  _globals['_USERPROFILE'].fields_by_name['metadata']._serialized_options = b'\272H\026\232\001\023\020\036\"\006r\004\020\003\030\031*\007r\005\020\001\030\200\002'
+  _globals['_USERPROFILE'].fields_by_name['metadata']._serialized_options = b'\222A\235\0012^System-managed key-value pairs for internal tracking. Keys (3-25 chars), values (1-256 chars).J;{\"account_status\": \"active\", \"signup_source\": \"mobile_app\"}\272H\026\232\001\023\020\036\"\006r\004\020\003\030\031*\007r\005\020\001\030\200\002'
   _globals['_USERPROFILE'].fields_by_name['custom_attributes']._loaded_options = None
-  _globals['_USERPROFILE'].fields_by_name['custom_attributes']._serialized_options = b'\272H\026\232\001\023\020d\"\006r\004\020\003\030\031*\007r\005\020\001\030\200\002'
-  _globals['_REGIONCODE']._serialized_start=1152
-  _globals['_REGIONCODE']._serialized_end=1209
-  _globals['_ENVIRONMENTTYPE']._serialized_start=1211
-  _globals['_ENVIRONMENTTYPE']._serialized_end=1280
-  _globals['_USERSTATUS']._serialized_start=1282
-  _globals['_USERSTATUS']._serialized_end=1349
-  _globals['_MEMBERSHIPROLE']._serialized_start=1351
-  _globals['_MEMBERSHIPROLE']._serialized_end=1421
-  _globals['_IDENTITYPROVIDERTYPE']._serialized_start=1424
-  _globals['_IDENTITYPROVIDERTYPE']._serialized_end=1694
-  _globals['_ORGANIZATIONMEMBERSHIP']._serialized_start=272
-  _globals['_ORGANIZATIONMEMBERSHIP']._serialized_end=584
-  _globals['_USERPROFILE']._serialized_start=587
-  _globals['_USERPROFILE']._serialized_end=1150
-  _globals['_USERPROFILE_METADATAENTRY']._serialized_start=1022
-  _globals['_USERPROFILE_METADATAENTRY']._serialized_end=1081
-  _globals['_USERPROFILE_CUSTOMATTRIBUTESENTRY']._serialized_start=1083
-  _globals['_USERPROFILE_CUSTOMATTRIBUTESENTRY']._serialized_end=1150
+  _globals['_USERPROFILE'].fields_by_name['custom_attributes']._serialized_options = b'\222A\233\0012ZCustom attributes for extended user profile data. Keys (3-25 chars), values (1-256 chars).J={\"department\": \"engineering\", \"security_clearance\": \"level2\"}\272H\026\232\001\023\020d\"\006r\004\020\003\030\031*\007r\005\020\001\030\200\002'
+  _globals['_REGIONCODE']._serialized_start=2086
+  _globals['_REGIONCODE']._serialized_end=2143
+  _globals['_ENVIRONMENTTYPE']._serialized_start=2145
+  _globals['_ENVIRONMENTTYPE']._serialized_end=2214
+  _globals['_USERSTATUS']._serialized_start=2216
+  _globals['_USERSTATUS']._serialized_end=2283
+  _globals['_MEMBERSHIPROLE']._serialized_start=2285
+  _globals['_MEMBERSHIPROLE']._serialized_end=2355
+  _globals['_IDENTITYPROVIDERTYPE']._serialized_start=2358
+  _globals['_IDENTITYPROVIDERTYPE']._serialized_end=2638
+  _globals['_ORGANIZATIONMEMBERSHIP']._serialized_start=349
+  _globals['_ORGANIZATIONMEMBERSHIP']._serialized_end=661
+  _globals['_USERPROFILE']._serialized_start=664
+  _globals['_USERPROFILE']._serialized_end=2084
+  _globals['_USERPROFILE_METADATAENTRY']._serialized_start=1956
+  _globals['_USERPROFILE_METADATAENTRY']._serialized_end=2015
+  _globals['_USERPROFILE_CUSTOMATTRIBUTESENTRY']._serialized_start=2017
+  _globals['_USERPROFILE_CUSTOMATTRIBUTESENTRY']._serialized_end=2084
 # @@protoc_insertion_point(module_scope)
