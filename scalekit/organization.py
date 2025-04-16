@@ -64,7 +64,7 @@ class OrganizationClient:
 
         :param organization_id       : Organization id to update
         :type               : ``` str ```
-        :param organization : Optional params for update organization operation
+        :param organization : params for update organization operation
         :type               : ``` obj ```
         :returns:
             Update Organization Response
@@ -75,19 +75,22 @@ class OrganizationClient:
         )
 
     def update_organization_by_external_id(
-        self, external_id: str
+        self, external_id: str, organization: UpdateOrganization
     ) -> UpdateOrganizationResponse:
         """
         Method to update organization based on external id
 
         :param external_id  : External id to update org
         :type               : ``` str ```
+        :param organization : params for update organization operation
+        :type               : ``` obj ```
+
         :returns:
             Update Organization Response
         """
         return self.core_client.grpc_exec(
             self.organization_service.UpdateOrganization.with_call,
-            UpdateOrganizationRequest(external_id=external_id),
+            UpdateOrganizationRequest(external_id=external_id, organization=organization),
         )
 
     def get_organization(self, organization_id: str) -> GetOrganizationResponse:
@@ -118,7 +121,7 @@ class OrganizationClient:
             GetOrganizationRequest(external_id=external_id),
         )
 
-    def delete_organization(self, organization_id: str) -> None:
+    def delete_organization(self, organization_id: str):
         """
         Method to delete organization based on given org id
 
@@ -127,7 +130,7 @@ class OrganizationClient:
         :returns:
             None
         """
-        self.core_client.grpc_exec(
+        return self.core_client.grpc_exec(
             self.organization_service.DeleteOrganization.with_call,
             DeleteOrganizationRequest(id=organization_id),
         )
@@ -138,7 +141,7 @@ class OrganizationClient:
 
         :param organization_id   :  Organization id to fetch portal link for
         :type                    :  ``` str ```
-        :param  features         :  Feature list to generate portal ink for
+        :param  features         :  Feature list to generate portal link for
         :type                    :  ```dict```
         :return:
         """
@@ -162,7 +165,7 @@ class OrganizationClient:
         :returns:
             None
         """
-        self.core_client.grpc_exec(
+        return self.core_client.grpc_exec(
             self.organization_service.UpdateOrganizationSettings.with_call,
             UpdateOrganizationSettingsRequest(
                 id=organization_id, settings={'features': settings})
