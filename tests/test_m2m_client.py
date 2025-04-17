@@ -7,6 +7,7 @@ from scalekit.v1.clients.clients_pb2 import OrganizationClient
 
 
 class TestM2MClient(BaseTest):
+    """ Class definition for TestM2MClient Class """
     def setUp(self):
         self.org_id = None
         self.client_id = None
