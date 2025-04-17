@@ -18,9 +18,7 @@ class M2MClient:
             None
         """
         self.core_client = core_client
-        self.client_service = ClientServiceStub(
-            self.core_client.grpc_secure_channel
-        )
+        self.client_service = ClientServiceStub(self.core_client.grpc_secure_channel)
 
     def create_organization_client(
         self, organization_id: str, m2m_client: OrganizationClient
@@ -37,8 +35,7 @@ class M2MClient:
         """
         return self.core_client.grpc_exec(
             self.client_service.CreateOrganizationClient.with_call,
-            CreateOrganizationClientRequest(organization_id=organization_id, client=m2m_client,
-        ))
+            CreateOrganizationClientRequest(organization_id=organization_id, client=m2m_client))
 
     def delete_organization_client(self, organization_id: str, client_id: str) -> None:
         """
@@ -69,9 +66,10 @@ class M2MClient:
         return self.core_client.grpc_exec(
             self.client_service.GetOrganizationClient.with_call,
             GetOrganizationClientRequest(organization_id=organization_id, client_id=client_id))
-    
 
-    def update_organization_client(self, organization_id: str, client_id: str, m2m_client: OrganizationClient) -> UpdateOrganizationClientResponse:
+    def update_organization_client(
+            self, organization_id: str, client_id: str, m2m_client: OrganizationClient
+    ) -> UpdateOrganizationClientResponse:
         """
         Method to update organization client
         :param organization_id  : organization id
@@ -87,8 +85,8 @@ class M2MClient:
             self.client_service.UpdateOrganizationClient.with_call,
             UpdateOrganizationClientRequest(organization_id=organization_id, client_id=client_id, client=m2m_client))
 
-
-    def add_organization_client_secret(self, organization_id: str, client_id: str) -> CreateOrganizationClientSecretResponse:
+    def add_organization_client_secret(
+            self, organization_id: str, client_id: str) -> CreateOrganizationClientSecretResponse:
         """
         Method to add organization client secret
         :param organization_id  : organization id
@@ -101,7 +99,6 @@ class M2MClient:
         return self.core_client.grpc_exec(
             self.client_service.CreateOrganizationClientSecret.with_call,
             CreateOrganizationClientSecretRequest(organization_id=organization_id, client_id=client_id))
-    
 
     def remove_organization_client_secret(self, organization_id: str, client_id: str, secret_id: str) -> None:
         """
@@ -117,4 +114,6 @@ class M2MClient:
         """
         return self.core_client.grpc_exec(
             self.client_service.DeleteOrganizationClientSecret.with_call,
-            DeleteOrganizationClientSecretRequest(organization_id=organization_id, client_id=client_id, secret_id=secret_id))         
+            DeleteOrganizationClientSecretRequest(
+                organization_id=organization_id, client_id=client_id, secret_id=secret_id)
+        )
