@@ -45,6 +45,36 @@ class ClientServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.DeleteClientSecretRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
+        self.CreateOrganizationClient = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/CreateOrganizationClient',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateOrganizationClientRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateOrganizationClientResponse.FromString,
+                )
+        self.GetOrganizationClient = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/GetOrganizationClient',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetOrganizationClientRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetOrganizationClientResponse.FromString,
+                )
+        self.CreateOrganizationClientSecret = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/CreateOrganizationClientSecret',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateOrganizationClientSecretRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateOrganizationClientSecretResponse.FromString,
+                )
+        self.DeleteOrganizationClientSecret = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/DeleteOrganizationClientSecret',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.DeleteOrganizationClientSecretRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
+        self.UpdateOrganizationClient = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/UpdateOrganizationClient',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateOrganizationClientRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateOrganizationClientResponse.FromString,
+                )
+        self.DeleteOrganizationClient = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/DeleteOrganizationClient',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.DeleteOrganizationClientRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
 
 
 class ClientServiceServicer(object):
@@ -86,6 +116,42 @@ class ClientServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def CreateOrganizationClient(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetOrganizationClient(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def CreateOrganizationClientSecret(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeleteOrganizationClientSecret(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateOrganizationClient(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeleteOrganizationClient(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_ClientServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -117,6 +183,36 @@ def add_ClientServiceServicer_to_server(servicer, server):
             'DeleteClientSecret': grpc.unary_unary_rpc_method_handler(
                     servicer.DeleteClientSecret,
                     request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.DeleteClientSecretRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'CreateOrganizationClient': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateOrganizationClient,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateOrganizationClientRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateOrganizationClientResponse.SerializeToString,
+            ),
+            'GetOrganizationClient': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetOrganizationClient,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetOrganizationClientRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetOrganizationClientResponse.SerializeToString,
+            ),
+            'CreateOrganizationClientSecret': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateOrganizationClientSecret,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateOrganizationClientSecretRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateOrganizationClientSecretResponse.SerializeToString,
+            ),
+            'DeleteOrganizationClientSecret': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteOrganizationClientSecret,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.DeleteOrganizationClientSecretRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'UpdateOrganizationClient': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateOrganizationClient,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateOrganizationClientRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateOrganizationClientResponse.SerializeToString,
+            ),
+            'DeleteOrganizationClient': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteOrganizationClient,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.DeleteOrganizationClientRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
     }
@@ -227,6 +323,108 @@ class ClientService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/DeleteClientSecret',
             scalekit_dot_v1_dot_clients_dot_clients__pb2.DeleteClientSecretRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def CreateOrganizationClient(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/CreateOrganizationClient',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateOrganizationClientRequest.SerializeToString,
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateOrganizationClientResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetOrganizationClient(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/GetOrganizationClient',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.GetOrganizationClientRequest.SerializeToString,
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.GetOrganizationClientResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def CreateOrganizationClientSecret(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/CreateOrganizationClientSecret',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateOrganizationClientSecretRequest.SerializeToString,
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateOrganizationClientSecretResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DeleteOrganizationClientSecret(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/DeleteOrganizationClientSecret',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.DeleteOrganizationClientSecretRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def UpdateOrganizationClient(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/UpdateOrganizationClient',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateOrganizationClientRequest.SerializeToString,
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateOrganizationClientResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DeleteOrganizationClient(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/DeleteOrganizationClient',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.DeleteOrganizationClientRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

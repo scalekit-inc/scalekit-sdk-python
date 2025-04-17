@@ -39,6 +39,7 @@ class EventTarget(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     SESSION: _ClassVar[EventTarget]
     TEMPLATE: _ClassVar[EventTarget]
     EMAIL_SERVER: _ClassVar[EventTarget]
+    EMAIL: _ClassVar[EventTarget]
 
 class EventCategory(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
@@ -65,6 +66,7 @@ class ObjectType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     Job: _ClassVar[ObjectType]
     Domain: _ClassVar[ObjectType]
     EmailServer: _ClassVar[ObjectType]
+    Email: _ClassVar[ObjectType]
 ACTOR_UNSPECIFIED: EventActor
 HUMAN: EventActor
 MACHINE: EventActor
@@ -80,6 +82,7 @@ USER: EventTarget
 SESSION: EventTarget
 TEMPLATE: EventTarget
 EMAIL_SERVER: EventTarget
+EMAIL: EventTarget
 EVENT_SOURCE_UNSPECIFIED: EventCategory
 CORE: EventCategory
 SSO: EventCategory
@@ -100,6 +103,7 @@ Template: ObjectType
 Job: ObjectType
 Domain: ObjectType
 EmailServer: ObjectType
+Email: ObjectType
 
 class SendCustomEventRequest(_message.Message):
     __slots__ = ("event_type", "event")

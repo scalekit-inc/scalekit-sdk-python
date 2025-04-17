@@ -12,6 +12,7 @@ from datetime import datetime, timedelta, timezone
 from scalekit.core import CoreClient
 from scalekit.domain import DomainClient
 from scalekit.connection import ConnectionClient
+from scalekit.m2m_client import M2MClient
 from scalekit.organization import OrganizationClient
 from scalekit.directory import DirectoryClient
 from scalekit.common.scalekit import (
@@ -56,6 +57,7 @@ class ScalekitClient:
             self.connection = ConnectionClient(self.core_client)
             self.organization = OrganizationClient(self.core_client)
             self.directory = DirectoryClient(self.core_client)
+            self.m2m_client = M2MClient(self.core_client)
         except Exception as exp:
             raise exp
 
@@ -157,6 +159,22 @@ class ScalekitClient:
             return True
         except jwt.exceptions.InvalidTokenError:
             return False
+
+    def validate_access_token_and_get_claims(self, token: str) -> Dict[str, Any]:
+        """
+        Method to validate access token and get claims
+
+        :param token : access token
+        :type        : ``` str ```
+
+        :returns:
+            claims
+        """
+        try:
+            claims = self.__validate_token(token)
+            return claims
+        except Exception as exp:
+            raise exp        
 
     def get_idp_initiated_login_claims(self, idp_initiated_login_token: str) -> IdpInitiatedLoginClaims:
         """

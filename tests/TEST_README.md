@@ -6,7 +6,7 @@ To run the test cases for this project, follow the steps below:
 1. Ensure you have Python 3.8 or higher installed.
 2. Install the required dependencies by running:
    ```sh
-   pip setup.py install
+   python3 setup.py install
    ```
 
 ### Setting Up Environment Variables
@@ -19,9 +19,9 @@ To run the test cases for this project, follow the steps below:
 ### Running Tests
 Use the unittest module to discover and run all test cases:  
 ```py
-python -m unittest discover -s tests
+python3 -m unittest discover -s tests
 ```
 To run a specific test file, use:  
 ```py
-python -m unittest discover -s tests -p "test_file_name.py"
+python3 -m unittest discover -s tests -p "test_file_name.py"
 ```
