@@ -160,6 +160,31 @@ class ScalekitClient:
         except jwt.exceptions.InvalidTokenError:
             return False
 
+    def generate_client_token(self, client_id: str, client_secret: str) -> str:
+        """
+        Method to generate access token
+
+        :param refresh_token : refresh token
+        :type               : ``` str ```
+
+        :returns:
+            access token
+        """
+        try:
+            response = self.core_client.authenticate(
+                json.dumps(
+                    {
+                        "grant_type": GrantType.ClientCredentials.value,
+                        "client_id": client_id,
+                        "client_secret": client_secret,
+                    }
+                )
+            )
+            response = json.loads(response.content)
+            return response
+        except Exception as exp:
+            raise exp
+
     def validate_access_token_and_get_claims(self, token: str) -> Dict[str, Any]:
         """
         Method to validate access token and get claims

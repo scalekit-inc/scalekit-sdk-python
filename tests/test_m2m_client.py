@@ -64,6 +64,9 @@ class TestM2MClient(BaseTest):
         response = self.scalekit_client.m2m_client.get_organization_client(
             organization_id=self.org_id, client_id=self.client_id
         )
+        self.assertIsNotNone(create_response[0].client.client_id)
+        self.assertIsNotNone(create_response[0].client.plain_secret)
+        self.assertIsNone(response[0].client.plain_secret)
         self.assertEqual(response[1].code().name, "OK")
         self.assertEqual(response[0].client.client_id, self.client_id)
         self.assertTrue(response[0].client.secrets, create_response[0].client.secrets)
@@ -241,6 +244,54 @@ class TestM2MClient(BaseTest):
         except Exception as exp:
             self.assertEqual(exp.args[0], "client not found")
             self.client_id = None
+
+    def test_generate_token_organization_client(self):
+        """ Method to test generate token organization client """
+        token, client_id, client_secret  = self.__generate_token_for_org()
+
+        self.assertIsNone(client_id)
+        self.assertIsNone(client_secret)
+        self.assertIsNotNone(token)
+
+    def __generate_token_for_org(self):
+        organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
+        org_response = self.scalekit_client.organization.create_organization(organization=organization)
+        self.org_id = org_response[0].organization.id
+
+        m2m_client = OrganizationClient(
+            name=Faker().company(),
+            description=Faker().sentence(),
+            custom_claims=[{"key": "wksp_id", "value": f"wks_{Faker().credit_card_number()}"}],
+            scopes=["write", "read"],
+            audience=["my-own-api"],
+            expiry=3600
+        )
+
+        create_response = self.scalekit_client.m2m_client.create_organization_client(
+            organization_id=self.org_id, m2m_client=m2m_client
+        )
+
+        client_id = create_response.client.client_id
+        client_secret = create_response.plain_secret
+
+        token_response = self.scalekit_client.generate_client_token(
+           client_id=client_id, client_secret=client_secret
+        )
+
+        token = token_response["access_token"]
+        return token, client_id, client_secret
+
+    def test_token_validation(self):
+        """ Method to test token validation """
+        token, client_id, client_secret  = self.__generate_token_for_org()
+        claims = self.scalekit_client.validate_access_token_and_get_claims(token=token)
+        self.assertIsNotNone(claims)
+        self.assertIn("client_id", claims)
+        self.assertIn("my-own-api", claims["aud"])
+        self.assertIn("write", claims["scopes"])
+        self.assertIn("read", claims["scopes"])
+        self.assertIn("wksp_id", claims["custom_claims"])
+
 
     def tearDown(self):
         # Cleanup code if needed
