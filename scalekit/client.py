@@ -160,7 +160,33 @@ class ScalekitClient:
         except jwt.exceptions.InvalidTokenError:
             return False
 
-    def validate_access_token_and_get_claims(self, token: str) -> Dict[str, Any]:
+    def generate_client_token(self, client_id: str, client_secret: str) -> str:
+        """
+        Method to generate access token
+
+        :param client_id        : Client Id for access token
+        :type                           : ``` str ```
+        :param client_secret : Client Secret for access token
+        :type                            : ``` str ```
+        :returns:
+            access token
+        """
+        try:
+            response = self.core_client.authenticate(
+                json.dumps(
+                    {
+                        "grant_type": GrantType.ClientCredentials.value,
+                        "client_id": client_id,
+                        "client_secret": client_secret,
+                    }
+                )
+            )
+            response = json.loads(response.content)
+            return response
+        except Exception as exp:
+            raise exp
+
+    def validate_access_token_and_get_claims(self, token: str, options: Optional[Dict] = None, audience = None) -> Dict[str, Any]:
         """
         Method to validate access token and get claims
 
@@ -170,8 +196,12 @@ class ScalekitClient:
         :returns:
             claims
         """
+
+        options = options if options else {}
+        options["verify_aud"] = False if not audience else True
+        
         try:
-            claims = self.__validate_token(token)
+            claims = self.__validate_token(token, options=options, audience=audience)
             return claims
         except Exception as exp:
             raise exp        
@@ -193,7 +223,7 @@ class ScalekitClient:
             raise exp
 
     def __validate_token(
-        self, token: str, options: Optional[Dict] = None
+        self, token: str, options: Optional[Dict] = None, audience: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Method to validate token
@@ -208,7 +238,7 @@ class ScalekitClient:
         kid = jwt.get_unverified_header(token)["kid"]
         key = self.core_client.keys[kid]
 
-        return jwt.decode(token, key=key, algorithms="RS256", options=options)
+        return jwt.decode(token, key=key, algorithms="RS256", options=options, audience=audience)
 
     def verify_webhook_payload(self, secret: str, headers: Dict[str, str], payload: [str | bytes]) -> bool:
         """
