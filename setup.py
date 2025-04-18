@@ -2,14 +2,15 @@ from setuptools import setup, find_packages
 
 setup(
     name="scalekit-sdk-python",
-    version="1.0.8",
+    version="1.0.9",
     packages=find_packages(),
     install_requires=[
         "grpcio>=1.64.1",
-        "protobuf>=5.27.0",
+        "protobuf<6.0.0,>=5.26.1",
         "google>=3.0",
         "requests>=2.32.3",
         "PyJWT>=2.8,<2.10",
+        "cffi>=1.15.1",
         "cryptography==44.0.1",
         "setuptools~=70.3",
         "grpcio-status>=1.64,<1.67",
