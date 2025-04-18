@@ -164,9 +164,10 @@ class ScalekitClient:
         """
         Method to generate access token
 
-        :param refresh_token : refresh token
-        :type               : ``` str ```
-
+        :param client_id        : Client Id for access token
+        :type                           : ``` str ```
+        :param client_secret : Client Secret for access token
+        :type                            : ``` str ```
         :returns:
             access token
         """
