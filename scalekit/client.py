@@ -185,7 +185,7 @@ class ScalekitClient:
         except Exception as exp:
             raise exp
 
-    def validate_access_token_and_get_claims(self, token: str) -> Dict[str, Any]:
+    def validate_access_token_and_get_claims(self, token: str, options: Optional[Dict] = None, audience = None) -> Dict[str, Any]:
         """
         Method to validate access token and get claims
 
@@ -195,8 +195,12 @@ class ScalekitClient:
         :returns:
             claims
         """
+
+        options = options if options else {}
+        options["verify_aud"] = False if not audience else True
+        
         try:
-            claims = self.__validate_token(token)
+            claims = self.__validate_token(token, options=options, audience=audience)
             return claims
         except Exception as exp:
             raise exp        
@@ -218,7 +222,7 @@ class ScalekitClient:
             raise exp
 
     def __validate_token(
-        self, token: str, options: Optional[Dict] = None
+        self, token: str, options: Optional[Dict] = None, audience: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Method to validate token
@@ -233,7 +237,7 @@ class ScalekitClient:
         kid = jwt.get_unverified_header(token)["kid"]
         key = self.core_client.keys[kid]
 
-        return jwt.decode(token, key=key, algorithms="RS256", options=options)
+        return jwt.decode(token, key=key, algorithms="RS256", options=options, audience=audience)
 
     def verify_webhook_payload(self, secret: str, headers: Dict[str, str], payload: [str | bytes]) -> bool:
         """

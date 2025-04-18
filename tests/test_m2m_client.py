@@ -65,8 +65,7 @@ class TestM2MClient(BaseTest):
             organization_id=self.org_id, client_id=self.client_id
         )
         self.assertIsNotNone(create_response[0].client.client_id)
-        self.assertIsNotNone(create_response[0].client.plain_secret)
-        self.assertIsNone(response[0].client.plain_secret)
+        self.assertIsNotNone(create_response[0].plain_secret)
         self.assertEqual(response[1].code().name, "OK")
         self.assertEqual(response[0].client.client_id, self.client_id)
         self.assertTrue(response[0].client.secrets, create_response[0].client.secrets)
@@ -249,8 +248,9 @@ class TestM2MClient(BaseTest):
         """ Method to test generate token organization client """
         token, client_id, client_secret  = self.__generate_token_for_org()
 
-        self.assertIsNone(client_id)
-        self.assertIsNone(client_secret)
+        self.assertIsNotNone(client_id)
+        self.assertRegex(client_id, r"^m2morg_[0-9]*$")
+        self.assertIsNotNone(client_secret)
         self.assertIsNotNone(token)
 
     def __generate_token_for_org(self):
@@ -271,14 +271,15 @@ class TestM2MClient(BaseTest):
             organization_id=self.org_id, m2m_client=m2m_client
         )
 
-        client_id = create_response.client.client_id
-        client_secret = create_response.plain_secret
+        client_id = create_response[0].client.client_id
+        client_secret = create_response[0].plain_secret
 
         token_response = self.scalekit_client.generate_client_token(
            client_id=client_id, client_secret=client_secret
         )
 
         token = token_response["access_token"]
+        print (f"Token: {token}")
         return token, client_id, client_secret
 
     def test_token_validation(self):
@@ -291,6 +292,17 @@ class TestM2MClient(BaseTest):
         self.assertIn("write", claims["scopes"])
         self.assertIn("read", claims["scopes"])
         self.assertIn("wksp_id", claims["custom_claims"])
+
+        # with Audience check enforced 
+        claims = self.scalekit_client.validate_access_token_and_get_claims(token=token, audience="my-own-api")
+
+        self.assertIsNotNone(claims)
+        self.assertIn("client_id", claims)
+        self.assertIn("my-own-api", claims["aud"])
+        self.assertIn("write", claims["scopes"])
+        self.assertIn("read", claims["scopes"])
+        self.assertIn("wksp_id", claims["custom_claims"])
+
 
 
     def tearDown(self):
