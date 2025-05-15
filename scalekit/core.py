@@ -104,6 +104,8 @@ class CoreClient:
             data=json.loads(data),
             verify=True,
         )
+        if response.status_code != 200:
+            raise Exception(response.content)
         return response
 
     def get_jwks(self):
