@@ -135,15 +135,11 @@ class ScalekitClient:
             # Validate id_token
             claims = self.__validate_token(id_token, {"verify_aud": False})
             user = {}
-            connection_id = None
-            organization_id = None
+            connection_id = claims['amr'][0]
+            organization_id = claims['oid']
             for k, v in claims.items():
                 if id_token_claim_to_user_map.get(k, None):
                     user[id_token_claim_to_user_map[k]] = v
-                elif k == 'amr':
-                    connection_id = v[0]
-                elif k == 'oid':
-                    organization_id = v
 
             return {
                 "user": user,
