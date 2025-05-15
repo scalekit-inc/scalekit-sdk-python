@@ -135,11 +135,23 @@ class ScalekitClient:
             # Validate id_token
             claims = self.__validate_token(id_token, {"verify_aud": False})
             user = {}
+            connection_id = None
+            organization_id = None
             for k, v in claims.items():
                 if id_token_claim_to_user_map.get(k, None):
                     user[id_token_claim_to_user_map[k]] = v
+                elif k == 'amr':
+                    connection_id = v[0]
+                elif k == 'oid':
+                    organization_id = v
 
-            return {"user": user, "id_token": id_token, "access_token": access_token}
+            return {
+                "user": user,
+                "id_token": id_token,
+                "access_token": access_token,
+                "connection_id": connection_id,
+                "organization_id": organization_id
+            }
 
         except Exception as exp:
             raise exp

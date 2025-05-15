@@ -246,7 +246,7 @@ class TestM2MClient(BaseTest):
 
     def test_generate_token_organization_client(self):
         """ Method to test generate token organization client """
-        token, client_id, client_secret  = self.__generate_token_for_org()
+        token, client_id, client_secret = self.__generate_token_for_org()
 
         self.assertIsNotNone(client_id)
         self.assertRegex(client_id, r"^m2morg_[0-9]*$")
@@ -279,12 +279,11 @@ class TestM2MClient(BaseTest):
         )
 
         token = token_response["access_token"]
-        print (f"Token: {token}")
         return token, client_id, client_secret
 
     def test_token_validation(self):
         """ Method to test token validation """
-        token, client_id, client_secret  = self.__generate_token_for_org()
+        token, client_id, client_secret = self.__generate_token_for_org()
         claims = self.scalekit_client.validate_access_token_and_get_claims(token=token)
         self.assertIsNotNone(claims)
         self.assertIn("client_id", claims)
@@ -302,8 +301,6 @@ class TestM2MClient(BaseTest):
         self.assertIn("write", claims["scopes"])
         self.assertIn("read", claims["scopes"])
         self.assertIn("wksp_id", claims["custom_claims"])
-
-
 
     def tearDown(self):
         # Cleanup code if needed

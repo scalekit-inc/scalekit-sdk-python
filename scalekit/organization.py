@@ -24,7 +24,7 @@ class OrganizationClient:
 
     def list_organizations(
         self, page_size: int, page_token: Optional[str] = None
-    ) -> CreateOrganizationResponse:
+    ) -> ListOrganizationsResponse:
         """
         Method to list organizations
 
