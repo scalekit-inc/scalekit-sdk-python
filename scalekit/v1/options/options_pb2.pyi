@@ -15,6 +15,7 @@ class AuthenticationType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     SESSION: _ClassVar[AuthenticationType]
     WORKSPACE_SESSION: _ClassVar[AuthenticationType]
     WORKSPACE_SESSION_CUSTOMER_PORTAL: _ClassVar[AuthenticationType]
+    WORKSPACE_SESSION_CUSTOMER_PORTAL_CLIENT: _ClassVar[AuthenticationType]
     USER: _ClassVar[AuthenticationType]
     CLIENT: _ClassVar[AuthenticationType]
     SESSION_CLIENT: _ClassVar[AuthenticationType]
@@ -27,6 +28,7 @@ CUSTOMER_PORTAL: AuthenticationType
 SESSION: AuthenticationType
 WORKSPACE_SESSION: AuthenticationType
 WORKSPACE_SESSION_CUSTOMER_PORTAL: AuthenticationType
+WORKSPACE_SESSION_CUSTOMER_PORTAL_CLIENT: AuthenticationType
 USER: AuthenticationType
 CLIENT: AuthenticationType
 SESSION_CLIENT: AuthenticationType

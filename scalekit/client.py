@@ -1,4 +1,3 @@
-
 import json
 from math import floor
 from typing import Any, Optional, Dict
@@ -345,3 +344,33 @@ class ScalekitClient:
         """
         signature = hmac.new(secret, data.encode(), hashlib.sha256).digest()
         return f"v1, {base64.b64encode(signature).decode('utf-8')}"
+
+    def refresh_token(self, refresh_token: str):
+        """
+        Method to refresh access token using refresh token
+
+        :param refresh_token  : Refresh token to get new access token
+        :type                 : ``` str ```
+
+        :returns:
+            dict with access token & refresh token
+        """
+        try:
+            response = self.core_client.authenticate(
+                json.dumps(
+                    {
+                        "refresh_token": refresh_token,
+                        "grant_type": GrantType.RefreshToken.value,
+                        "client_id": self.core_client.client_id,
+                        "client_secret": self.core_client.client_secret,
+                    }
+                )
+            )
+            response = json.loads(response.content)
+            return {
+                "access_token": response["access_token"],
+                "refresh_token": response["refresh_token"]
+            }
+
+        except Exception as exp:
+            raise exp

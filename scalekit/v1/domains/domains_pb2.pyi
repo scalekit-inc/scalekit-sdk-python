@@ -116,6 +116,16 @@ class ListDomainRequest(_message.Message):
     page_number: _wrappers_pb2.Int32Value
     def __init__(self, organization_id: _Optional[str] = ..., external_id: _Optional[str] = ..., connection_id: _Optional[str] = ..., include: _Optional[str] = ..., page_size: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., page_number: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ...) -> None: ...
 
+class VerifyDomainRequest(_message.Message):
+    __slots__ = ("organization_id", "external_id", "id")
+    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
+    EXTERNAL_ID_FIELD_NUMBER: _ClassVar[int]
+    ID_FIELD_NUMBER: _ClassVar[int]
+    organization_id: str
+    external_id: str
+    id: str
+    def __init__(self, organization_id: _Optional[str] = ..., external_id: _Optional[str] = ..., id: _Optional[str] = ...) -> None: ...
+
 class ListDomainResponse(_message.Message):
     __slots__ = ("page_size", "page_number", "domains")
     PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
