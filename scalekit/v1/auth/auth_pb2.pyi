@@ -9,11 +9,21 @@ from scalekit.v1.commons import commons_pb2 as _commons_pb2
 from scalekit.v1.connections import connections_pb2 as _connections_pb2
 from scalekit.v1.options import options_pb2 as _options_pb2
 from google.protobuf.internal import containers as _containers
+from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Mapping, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
+
+class Intent(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    INTENT_UNSPECIFIED: _ClassVar[Intent]
+    sign_in: _ClassVar[Intent]
+    sign_up: _ClassVar[Intent]
+INTENT_UNSPECIFIED: Intent
+sign_in: Intent
+sign_up: Intent
 
 class ListAuthMethodsResponse(_message.Message):
     __slots__ = ("auth_methods",)
@@ -44,10 +54,12 @@ class DiscoveryAuthMethodRequest(_message.Message):
     def __init__(self, discovery_request: _Optional[_Union[DiscoveryRequest, _Mapping]] = ...) -> None: ...
 
 class DiscoveryRequest(_message.Message):
-    __slots__ = ("email",)
+    __slots__ = ("email", "intent")
     EMAIL_FIELD_NUMBER: _ClassVar[int]
+    INTENT_FIELD_NUMBER: _ClassVar[int]
     email: str
-    def __init__(self, email: _Optional[str] = ...) -> None: ...
+    intent: Intent
+    def __init__(self, email: _Optional[str] = ..., intent: _Optional[_Union[Intent, str]] = ...) -> None: ...
 
 class DiscoveryAuthMethodResponse(_message.Message):
     __slots__ = ("auth_method",)
@@ -60,10 +72,16 @@ class GetAuthCustomizationsRequest(_message.Message):
     def __init__(self) -> None: ...
 
 class GetAuthCustomizationsResponse(_message.Message):
-    __slots__ = ("customizations",)
-    CUSTOMIZATIONS_FIELD_NUMBER: _ClassVar[int]
-    customizations: _struct_pb2.Struct
-    def __init__(self, customizations: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
+    __slots__ = ("customization_settings",)
+    CUSTOMIZATION_SETTINGS_FIELD_NUMBER: _ClassVar[int]
+    customization_settings: _struct_pb2.Struct
+    def __init__(self, customization_settings: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
+
+class GetAuthFeaturesResponse(_message.Message):
+    __slots__ = ("features",)
+    FEATURES_FIELD_NUMBER: _ClassVar[int]
+    features: _struct_pb2.Struct
+    def __init__(self, features: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
 
 class VerifyPasswordLessRequest(_message.Message):
     __slots__ = ("otp_req",)
@@ -71,8 +89,64 @@ class VerifyPasswordLessRequest(_message.Message):
     otp_req: OTPRequest
     def __init__(self, otp_req: _Optional[_Union[OTPRequest, _Mapping]] = ...) -> None: ...
 
+class VerifyPasswordLessResponse(_message.Message):
+    __slots__ = ()
+    def __init__(self) -> None: ...
+
 class OTPRequest(_message.Message):
     __slots__ = ("code_challenge",)
     CODE_CHALLENGE_FIELD_NUMBER: _ClassVar[int]
     code_challenge: str
     def __init__(self, code_challenge: _Optional[str] = ...) -> None: ...
+
+class ListUserOrganizationsResponse(_message.Message):
+    __slots__ = ("organizations", "user", "intent")
+    ORGANIZATIONS_FIELD_NUMBER: _ClassVar[int]
+    USER_FIELD_NUMBER: _ClassVar[int]
+    INTENT_FIELD_NUMBER: _ClassVar[int]
+    organizations: _containers.RepeatedCompositeFieldContainer[Organization]
+    user: UserDetails
+    intent: Intent
+    def __init__(self, organizations: _Optional[_Iterable[_Union[Organization, _Mapping]]] = ..., user: _Optional[_Union[UserDetails, _Mapping]] = ..., intent: _Optional[_Union[Intent, str]] = ...) -> None: ...
+
+class Organization(_message.Message):
+    __slots__ = ("id", "name", "membership_status")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    MEMBERSHIP_STATUS_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    name: str
+    membership_status: str
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., membership_status: _Optional[str] = ...) -> None: ...
+
+class UserDetails(_message.Message):
+    __slots__ = ("email", "first_name", "last_name")
+    EMAIL_FIELD_NUMBER: _ClassVar[int]
+    FIRST_NAME_FIELD_NUMBER: _ClassVar[int]
+    LAST_NAME_FIELD_NUMBER: _ClassVar[int]
+    email: str
+    first_name: str
+    last_name: str
+    def __init__(self, email: _Optional[str] = ..., first_name: _Optional[str] = ..., last_name: _Optional[str] = ...) -> None: ...
+
+class SignupOrganizationRequest(_message.Message):
+    __slots__ = ("organization_name", "first_name", "last_name", "full_name", "phone_number")
+    ORGANIZATION_NAME_FIELD_NUMBER: _ClassVar[int]
+    FIRST_NAME_FIELD_NUMBER: _ClassVar[int]
+    LAST_NAME_FIELD_NUMBER: _ClassVar[int]
+    FULL_NAME_FIELD_NUMBER: _ClassVar[int]
+    PHONE_NUMBER_FIELD_NUMBER: _ClassVar[int]
+    organization_name: str
+    first_name: str
+    last_name: str
+    full_name: str
+    phone_number: str
+    def __init__(self, organization_name: _Optional[str] = ..., first_name: _Optional[str] = ..., last_name: _Optional[str] = ..., full_name: _Optional[str] = ..., phone_number: _Optional[str] = ...) -> None: ...
+
+class SignupOrganizationResponse(_message.Message):
+    __slots__ = ("organization_id", "organization_name")
+    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
+    ORGANIZATION_NAME_FIELD_NUMBER: _ClassVar[int]
+    organization_id: str
+    organization_name: str
+    def __init__(self, organization_id: _Optional[str] = ..., organization_name: _Optional[str] = ...) -> None: ...

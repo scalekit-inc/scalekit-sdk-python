@@ -110,15 +110,30 @@ class EnvironmentServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.CreateEnvironmentSessionSettingsRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.CreateEnvironmentSessionSettingsResponse.FromString,
                 )
+        self.CreateEnvironmentUserManagement = channel.unary_unary(
+                '/scalekit.v1.environments.EnvironmentService/CreateEnvironmentUserManagement',
+                request_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.CreateEnvironmentUserManagementRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.CreateEnvironmentUserManagementResponse.FromString,
+                )
         self.GetEnvironmentSessionSettings = channel.unary_unary(
                 '/scalekit.v1.environments.EnvironmentService/GetEnvironmentSessionSettings',
                 request_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetEnvironmentSessionSettingsRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetEnvironmentSessionSettingsResponse.FromString,
                 )
+        self.GetEnvironmentUserManagement = channel.unary_unary(
+                '/scalekit.v1.environments.EnvironmentService/GetEnvironmentUserManagement',
+                request_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetEnvironmentUserManagementRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetEnvironmentUserManagementResponse.FromString,
+                )
         self.UpdateEnvironmentSessionSettings = channel.unary_unary(
                 '/scalekit.v1.environments.EnvironmentService/UpdateEnvironmentSessionSettings',
                 request_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdateEnvironmentSessionSettingsRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdateEnvironmentSessionSettingsResponse.FromString,
+                )
+        self.UpdateEnvironmentUserManagement = channel.unary_unary(
+                '/scalekit.v1.environments.EnvironmentService/UpdateEnvironmentUserManagement',
+                request_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdateEnvironmentUserManagementRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdateEnvironmentUserManagementResponse.FromString,
                 )
         self.GetContext = channel.unary_unary(
                 '/scalekit.v1.environments.EnvironmentService/GetContext',
@@ -254,13 +269,31 @@ class EnvironmentServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def CreateEnvironmentUserManagement(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def GetEnvironmentSessionSettings(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetEnvironmentUserManagement(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def UpdateEnvironmentSessionSettings(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateEnvironmentUserManagement(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -382,15 +415,30 @@ def add_EnvironmentServiceServicer_to_server(servicer, server):
                     request_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.CreateEnvironmentSessionSettingsRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.CreateEnvironmentSessionSettingsResponse.SerializeToString,
             ),
+            'CreateEnvironmentUserManagement': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateEnvironmentUserManagement,
+                    request_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.CreateEnvironmentUserManagementRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.CreateEnvironmentUserManagementResponse.SerializeToString,
+            ),
             'GetEnvironmentSessionSettings': grpc.unary_unary_rpc_method_handler(
                     servicer.GetEnvironmentSessionSettings,
                     request_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetEnvironmentSessionSettingsRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetEnvironmentSessionSettingsResponse.SerializeToString,
             ),
+            'GetEnvironmentUserManagement': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetEnvironmentUserManagement,
+                    request_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetEnvironmentUserManagementRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetEnvironmentUserManagementResponse.SerializeToString,
+            ),
             'UpdateEnvironmentSessionSettings': grpc.unary_unary_rpc_method_handler(
                     servicer.UpdateEnvironmentSessionSettings,
                     request_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdateEnvironmentSessionSettingsRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdateEnvironmentSessionSettingsResponse.SerializeToString,
+            ),
+            'UpdateEnvironmentUserManagement': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateEnvironmentUserManagement,
+                    request_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdateEnvironmentUserManagementRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdateEnvironmentUserManagementResponse.SerializeToString,
             ),
             'GetContext': grpc.unary_unary_rpc_method_handler(
                     servicer.GetContext,
@@ -741,6 +789,23 @@ class EnvironmentService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
+    def CreateEnvironmentUserManagement(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.environments.EnvironmentService/CreateEnvironmentUserManagement',
+            scalekit_dot_v1_dot_environments_dot_environments__pb2.CreateEnvironmentUserManagementRequest.SerializeToString,
+            scalekit_dot_v1_dot_environments_dot_environments__pb2.CreateEnvironmentUserManagementResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
     def GetEnvironmentSessionSettings(request,
             target,
             options=(),
@@ -758,6 +823,23 @@ class EnvironmentService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
+    def GetEnvironmentUserManagement(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.environments.EnvironmentService/GetEnvironmentUserManagement',
+            scalekit_dot_v1_dot_environments_dot_environments__pb2.GetEnvironmentUserManagementRequest.SerializeToString,
+            scalekit_dot_v1_dot_environments_dot_environments__pb2.GetEnvironmentUserManagementResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
     def UpdateEnvironmentSessionSettings(request,
             target,
             options=(),
@@ -771,6 +853,23 @@ class EnvironmentService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.environments.EnvironmentService/UpdateEnvironmentSessionSettings',
             scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdateEnvironmentSessionSettingsRequest.SerializeToString,
             scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdateEnvironmentSessionSettingsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def UpdateEnvironmentUserManagement(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.environments.EnvironmentService/UpdateEnvironmentUserManagement',
+            scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdateEnvironmentUserManagementRequest.SerializeToString,
+            scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdateEnvironmentUserManagementResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

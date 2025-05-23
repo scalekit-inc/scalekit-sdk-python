@@ -30,6 +30,12 @@ class AssetCategory(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     ASSET_CATEGORY_UNSPECIFIED: _ClassVar[AssetCategory]
     PORTAL_CUSTOMIZATION_IMAGE: _ClassVar[AssetCategory]
 
+class OrgUserRelationshipType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    OrgUserRelationshipType_UNSPECIFIED: _ClassVar[OrgUserRelationshipType]
+    SINGLE_ORGANIZATION: _ClassVar[OrgUserRelationshipType]
+    MULTIPLE_ORGANIZATIONS: _ClassVar[OrgUserRelationshipType]
+
 class CookiePersistenceType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
     CookiePersistenceType_UNSPECIFIED: _ClassVar[CookiePersistenceType]
@@ -48,6 +54,9 @@ FAILED: CustomDomainStatus
 INITIAL: CustomDomainStatus
 ASSET_CATEGORY_UNSPECIFIED: AssetCategory
 PORTAL_CUSTOMIZATION_IMAGE: AssetCategory
+OrgUserRelationshipType_UNSPECIFIED: OrgUserRelationshipType
+SINGLE_ORGANIZATION: OrgUserRelationshipType
+MULTIPLE_ORGANIZATIONS: OrgUserRelationshipType
 CookiePersistenceType_UNSPECIFIED: CookiePersistenceType
 PERSISTENT: CookiePersistenceType
 SESSION: CookiePersistenceType
@@ -327,11 +336,23 @@ class GetEnvironmentSessionSettingsRequest(_message.Message):
     id: str
     def __init__(self, id: _Optional[str] = ...) -> None: ...
 
+class GetEnvironmentUserManagementRequest(_message.Message):
+    __slots__ = ("id",)
+    ID_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    def __init__(self, id: _Optional[str] = ...) -> None: ...
+
 class GetEnvironmentSessionSettingsResponse(_message.Message):
     __slots__ = ("session_settings",)
     SESSION_SETTINGS_FIELD_NUMBER: _ClassVar[int]
     session_settings: SessionSettings
     def __init__(self, session_settings: _Optional[_Union[SessionSettings, _Mapping]] = ...) -> None: ...
+
+class GetEnvironmentUserManagementResponse(_message.Message):
+    __slots__ = ("user_management",)
+    USER_MANAGEMENT_FIELD_NUMBER: _ClassVar[int]
+    user_management: UserManagement
+    def __init__(self, user_management: _Optional[_Union[UserManagement, _Mapping]] = ...) -> None: ...
 
 class CreateEnvironmentSessionSettingsRequest(_message.Message):
     __slots__ = ("id", "session_settings")
@@ -341,6 +362,14 @@ class CreateEnvironmentSessionSettingsRequest(_message.Message):
     session_settings: SessionSettings
     def __init__(self, id: _Optional[str] = ..., session_settings: _Optional[_Union[SessionSettings, _Mapping]] = ...) -> None: ...
 
+class CreateEnvironmentUserManagementRequest(_message.Message):
+    __slots__ = ("id", "user_management")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    USER_MANAGEMENT_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    user_management: UserManagement
+    def __init__(self, id: _Optional[str] = ..., user_management: _Optional[_Union[UserManagement, _Mapping]] = ...) -> None: ...
+
 class CreateEnvironmentSessionSettingsResponse(_message.Message):
     __slots__ = ("environment_id", "session_settings")
     ENVIRONMENT_ID_FIELD_NUMBER: _ClassVar[int]
@@ -348,6 +377,14 @@ class CreateEnvironmentSessionSettingsResponse(_message.Message):
     environment_id: str
     session_settings: SessionSettings
     def __init__(self, environment_id: _Optional[str] = ..., session_settings: _Optional[_Union[SessionSettings, _Mapping]] = ...) -> None: ...
+
+class CreateEnvironmentUserManagementResponse(_message.Message):
+    __slots__ = ("environment_id", "user_management")
+    ENVIRONMENT_ID_FIELD_NUMBER: _ClassVar[int]
+    USER_MANAGEMENT_FIELD_NUMBER: _ClassVar[int]
+    environment_id: str
+    user_management: UserManagement
+    def __init__(self, environment_id: _Optional[str] = ..., user_management: _Optional[_Union[UserManagement, _Mapping]] = ...) -> None: ...
 
 class UpdateEnvironmentSessionSettingsRequest(_message.Message):
     __slots__ = ("id", "session_settings")
@@ -357,6 +394,14 @@ class UpdateEnvironmentSessionSettingsRequest(_message.Message):
     session_settings: SessionSettings
     def __init__(self, id: _Optional[str] = ..., session_settings: _Optional[_Union[SessionSettings, _Mapping]] = ...) -> None: ...
 
+class UpdateEnvironmentUserManagementRequest(_message.Message):
+    __slots__ = ("id", "user_management")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    USER_MANAGEMENT_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    user_management: UserManagement
+    def __init__(self, id: _Optional[str] = ..., user_management: _Optional[_Union[UserManagement, _Mapping]] = ...) -> None: ...
+
 class UpdateEnvironmentSessionSettingsResponse(_message.Message):
     __slots__ = ("environment_id", "session_settings")
     ENVIRONMENT_ID_FIELD_NUMBER: _ClassVar[int]
@@ -364,6 +409,14 @@ class UpdateEnvironmentSessionSettingsResponse(_message.Message):
     environment_id: str
     session_settings: SessionSettings
     def __init__(self, environment_id: _Optional[str] = ..., session_settings: _Optional[_Union[SessionSettings, _Mapping]] = ...) -> None: ...
+
+class UpdateEnvironmentUserManagementResponse(_message.Message):
+    __slots__ = ("environment_id", "user_management")
+    ENVIRONMENT_ID_FIELD_NUMBER: _ClassVar[int]
+    USER_MANAGEMENT_FIELD_NUMBER: _ClassVar[int]
+    environment_id: str
+    user_management: UserManagement
+    def __init__(self, environment_id: _Optional[str] = ..., user_management: _Optional[_Union[UserManagement, _Mapping]] = ...) -> None: ...
 
 class SessionSettings(_message.Message):
     __slots__ = ("access_token_expiry", "client_access_token_expiry", "absolute_session_timeout", "session_management_enabled", "idle_session_timeout", "idle_session_enabled", "cookie_persistence_type", "cookie_same_site_setting", "cookie_custom_domain")
@@ -386,6 +439,26 @@ class SessionSettings(_message.Message):
     cookie_same_site_setting: CookieSameSiteSetting
     cookie_custom_domain: _wrappers_pb2.StringValue
     def __init__(self, access_token_expiry: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., client_access_token_expiry: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., absolute_session_timeout: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., session_management_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., idle_session_timeout: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., idle_session_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., cookie_persistence_type: _Optional[_Union[CookiePersistenceType, str]] = ..., cookie_same_site_setting: _Optional[_Union[CookieSameSiteSetting, str]] = ..., cookie_custom_domain: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ...) -> None: ...
+
+class UserManagement(_message.Message):
+    __slots__ = ("allow_duplicate_user_identities", "allow_multiple_memberships", "allow_organization_signup", "org_user_relationship", "enable_max_users_limit", "max_users_limit", "invitation_expiry", "organization_meta_name")
+    ALLOW_DUPLICATE_USER_IDENTITIES_FIELD_NUMBER: _ClassVar[int]
+    ALLOW_MULTIPLE_MEMBERSHIPS_FIELD_NUMBER: _ClassVar[int]
+    ALLOW_ORGANIZATION_SIGNUP_FIELD_NUMBER: _ClassVar[int]
+    ORG_USER_RELATIONSHIP_FIELD_NUMBER: _ClassVar[int]
+    ENABLE_MAX_USERS_LIMIT_FIELD_NUMBER: _ClassVar[int]
+    MAX_USERS_LIMIT_FIELD_NUMBER: _ClassVar[int]
+    INVITATION_EXPIRY_FIELD_NUMBER: _ClassVar[int]
+    ORGANIZATION_META_NAME_FIELD_NUMBER: _ClassVar[int]
+    allow_duplicate_user_identities: _wrappers_pb2.BoolValue
+    allow_multiple_memberships: _wrappers_pb2.BoolValue
+    allow_organization_signup: _wrappers_pb2.BoolValue
+    org_user_relationship: OrgUserRelationshipType
+    enable_max_users_limit: _wrappers_pb2.BoolValue
+    max_users_limit: _wrappers_pb2.Int32Value
+    invitation_expiry: _wrappers_pb2.Int32Value
+    organization_meta_name: _wrappers_pb2.StringValue
+    def __init__(self, allow_duplicate_user_identities: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., allow_multiple_memberships: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., allow_organization_signup: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., org_user_relationship: _Optional[_Union[OrgUserRelationshipType, str]] = ..., enable_max_users_limit: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., max_users_limit: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., invitation_expiry: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., organization_meta_name: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ...) -> None: ...
 
 class GetContextRequest(_message.Message):
     __slots__ = ("environment_id",)

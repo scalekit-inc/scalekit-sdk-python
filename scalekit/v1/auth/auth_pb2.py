@@ -24,7 +24,7 @@ from scalekit.v1.connections import connections_pb2 as scalekit_dot_v1_dot_conne
 from scalekit.v1.options import options_pb2 as scalekit_dot_v1_dot_options_dot_options__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1bscalekit/v1/auth/auth.proto\x12\x10scalekit.v1.auth\x1a\x1b\x62uf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a.protoc-gen-openapiv2/options/annotations.proto\x1a!scalekit/v1/commons/commons.proto\x1a)scalekit/v1/connections/connections.proto\x1a!scalekit/v1/options/options.proto\"Z\n\x17ListAuthMethodsResponse\x12?\n\x0c\x61uth_methods\x18\x01 \x03(\x0b\x32\x1c.scalekit.v1.auth.AuthMethodR\x0b\x61uthMethods\"\xc1\x05\n\nAuthMethod\x12}\n\rconnection_id\x18\x01 \x01(\tBX\x92\x41L22Unique identifier for the connection to be toggledJ\x16\"conn_121312434123312\"\xbaH\x06r\x04\x10\x01\x18 R\x0c\x63onnectionId\x12P\n\x0f\x63onnection_type\x18\x02 \x01(\x0e\x32\'.scalekit.v1.connections.ConnectionTypeR\x0e\x63onnectionType\x12G\n\x08provider\x18\x03 \x01(\x0e\x32+.scalekit.v1.connections.ConnectionProviderR\x08provider\x12\x93\x01\n\x13\x61uth_initiation_uri\x18\x04 \x01(\tBc\x92\x41V2\x1eURI to initiate the connectionJ4\"https://sso.acmecorp.com/sso/v1/oidc/conn_123/init\"\xbaH\x07r\x05\x10\x01\x18\xff\x01R\x11\x61uthInitiationUri\x12z\n\x11passwordless_type\x18\x05 \x01(\x0e\x32).scalekit.v1.connections.PasswordlessTypeB\x1d\x92\x41\x1a\x32\x11Passwordless typeJ\x05\"OTP\"H\x00R\x10passwordlessType\x88\x01\x01\x12W\n\x15\x63ode_challenge_length\x18\x06 \x01(\rB\x1e\x92\x41\x1b\x32\x16Length of the OTP codeJ\x01\x36H\x01R\x13\x63odeChallengeLength\x88\x01\x01\x42\x14\n\x12_passwordless_typeB\x18\n\x16_code_challenge_length\"m\n\x1a\x44iscoveryAuthMethodRequest\x12O\n\x11\x64iscovery_request\x18\x01 \x01(\x0b\x32\".scalekit.v1.auth.DiscoveryRequestR\x10\x64iscoveryRequest\"w\n\x10\x44iscoveryRequest\x12\x63\n\x05\x65mail\x18\x01 \x01(\tBM\x92\x41\x41\x32*user identifier like email or phone numberJ\x13\"john@acmecorp.com\"\xbaH\x06r\x04\x10\x03\x18\x64R\x05\x65mail\"\\\n\x1b\x44iscoveryAuthMethodResponse\x12=\n\x0b\x61uth_method\x18\x01 \x01(\x0b\x32\x1c.scalekit.v1.auth.AuthMethodR\nauthMethod\"\x1e\n\x1cGetAuthCustomizationsRequest\"`\n\x1dGetAuthCustomizationsResponse\x12?\n\x0e\x63ustomizations\x18\x02 \x01(\x0b\x32\x17.google.protobuf.StructR\x0e\x63ustomizations\"R\n\x19VerifyPasswordLessRequest\x12\x35\n\x07otp_req\x18\x02 \x01(\x0b\x32\x1c.scalekit.v1.auth.OTPRequestR\x06otpReq\"i\n\nOTPRequest\x12[\n\x0e\x63ode_challenge\x18\x01 \x01(\tB4\x92\x41(2\x1cOTP sent to the user\'s emailJ\x08\"123456\"\xbaH\x06r\x04\x10\x05\x18\x06R\rcodeChallenge2\xe8\x05\n\x0b\x41uthService\x12w\n\x0fListAuthMethods\x12\x16.google.protobuf.Empty\x1a).scalekit.v1.auth.ListAuthMethodsResponse\"!\x82\xb5\x18\x02\x18\x01\x82\xd3\xe4\x93\x02\x15\x12\x13/api/v1/authmethods\x12\xab\x01\n\x13\x44iscoveryAuthMethod\x12,.scalekit.v1.auth.DiscoveryAuthMethodRequest\x1a-.scalekit.v1.auth.DiscoveryAuthMethodResponse\"7\x82\xb5\x18\x02\x18\x01\x82\xd3\xe4\x93\x02+\"\x16/api/v1/auth:discovery:\x11\x64iscovery_request\x12\xa3\x01\n\x15GetAuthCustomizations\x12..scalekit.v1.auth.GetAuthCustomizationsRequest\x1a/.scalekit.v1.auth.GetAuthCustomizationsResponse\")\x82\xb5\x18\x02\x18\x01\x82\xd3\xe4\x93\x02\x1d\x12\x1b/api/v1/auth:customizations\x12\x95\x01\n\x15VerifyPasswordLessOtp\x12+.scalekit.v1.auth.VerifyPasswordLessRequest\x1a\x16.google.protobuf.Empty\"7\x82\xb5\x18\x02\x18\x01\x82\xd3\xe4\x93\x02+\" /api/v1/auth/passwordless:verify:\x07otp_req\x12t\n\x12ResendPasswordless\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\".\x82\xb5\x18\x02\x18\x01\x82\xd3\xe4\x93\x02\"\" /api/v1/auth/passwordless:resendB0Z.github.com/scalekit-inc/scalekit/pkg/grpc/authb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1bscalekit/v1/auth/auth.proto\x12\x10scalekit.v1.auth\x1a\x1b\x62uf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a.protoc-gen-openapiv2/options/annotations.proto\x1a!scalekit/v1/commons/commons.proto\x1a)scalekit/v1/connections/connections.proto\x1a!scalekit/v1/options/options.proto\"Z\n\x17ListAuthMethodsResponse\x12?\n\x0c\x61uth_methods\x18\x01 \x03(\x0b\x32\x1c.scalekit.v1.auth.AuthMethodR\x0b\x61uthMethods\"\xc1\x05\n\nAuthMethod\x12}\n\rconnection_id\x18\x01 \x01(\tBX\x92\x41L22Unique identifier for the connection to be toggledJ\x16\"conn_121312434123312\"\xbaH\x06r\x04\x10\x01\x18 R\x0c\x63onnectionId\x12P\n\x0f\x63onnection_type\x18\x02 \x01(\x0e\x32\'.scalekit.v1.connections.ConnectionTypeR\x0e\x63onnectionType\x12G\n\x08provider\x18\x03 \x01(\x0e\x32+.scalekit.v1.connections.ConnectionProviderR\x08provider\x12\x93\x01\n\x13\x61uth_initiation_uri\x18\x04 \x01(\tBc\x92\x41V2\x1eURI to initiate the connectionJ4\"https://sso.acmecorp.com/sso/v1/oidc/conn_123/init\"\xbaH\x07r\x05\x10\x01\x18\xff\x01R\x11\x61uthInitiationUri\x12z\n\x11passwordless_type\x18\x05 \x01(\x0e\x32).scalekit.v1.connections.PasswordlessTypeB\x1d\x92\x41\x1a\x32\x11Passwordless typeJ\x05\"OTP\"H\x00R\x10passwordlessType\x88\x01\x01\x12W\n\x15\x63ode_challenge_length\x18\x06 \x01(\rB\x1e\x92\x41\x1b\x32\x16Length of the OTP codeJ\x01\x36H\x01R\x13\x63odeChallengeLength\x88\x01\x01\x42\x14\n\x12_passwordless_typeB\x18\n\x16_code_challenge_length\"m\n\x1a\x44iscoveryAuthMethodRequest\x12O\n\x11\x64iscovery_request\x18\x02 \x01(\x0b\x32\".scalekit.v1.auth.DiscoveryRequestR\x10\x64iscoveryRequest\"\xb3\x01\n\x10\x44iscoveryRequest\x12\x63\n\x05\x65mail\x18\x01 \x01(\tBM\x92\x41\x41\x32*user identifier like email or phone numberJ\x13\"john@acmecorp.com\"\xbaH\x06r\x04\x10\x03\x18\x64R\x05\x65mail\x12:\n\x06intent\x18\x02 \x01(\x0e\x32\x18.scalekit.v1.auth.IntentB\x08\xbaH\x05\x82\x01\x02\x10\x01R\x06intent\"\\\n\x1b\x44iscoveryAuthMethodResponse\x12=\n\x0b\x61uth_method\x18\x01 \x01(\x0b\x32\x1c.scalekit.v1.auth.AuthMethodR\nauthMethod\"\x1e\n\x1cGetAuthCustomizationsRequest\"o\n\x1dGetAuthCustomizationsResponse\x12N\n\x16\x63ustomization_settings\x18\x02 \x01(\x0b\x32\x17.google.protobuf.StructR\x15\x63ustomizationSettings\"N\n\x17GetAuthFeaturesResponse\x12\x33\n\x08\x66\x65\x61tures\x18\x01 \x01(\x0b\x32\x17.google.protobuf.StructR\x08\x66\x65\x61tures\"R\n\x19VerifyPasswordLessRequest\x12\x35\n\x07otp_req\x18\x02 \x01(\x0b\x32\x1c.scalekit.v1.auth.OTPRequestR\x06otpReq\"\x1c\n\x1aVerifyPasswordLessResponse\"i\n\nOTPRequest\x12[\n\x0e\x63ode_challenge\x18\x01 \x01(\tB4\x92\x41(2\x1cOTP sent to the user\'s emailJ\x08\"123456\"\xbaH\x06r\x04\x10\x05\x18\x06R\rcodeChallenge\"\xd4\x01\n\x1dListUserOrganizationsResponse\x12\x44\n\rorganizations\x18\x01 \x03(\x0b\x32\x1e.scalekit.v1.auth.OrganizationR\rorganizations\x12\x31\n\x04user\x18\x02 \x01(\x0b\x32\x1d.scalekit.v1.auth.UserDetailsR\x04user\x12:\n\x06intent\x18\x03 \x01(\x0e\x32\x18.scalekit.v1.auth.IntentB\x08\xbaH\x05\x82\x01\x02\x10\x01R\x06intent\"_\n\x0cOrganization\x12\x0e\n\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n\x04name\x18\x02 \x01(\tR\x04name\x12+\n\x11membership_status\x18\x03 \x01(\tR\x10membershipStatus\"_\n\x0bUserDetails\x12\x14\n\x05\x65mail\x18\x01 \x01(\tR\x05\x65mail\x12\x1d\n\nfirst_name\x18\x02 \x01(\tR\tfirstName\x12\x1b\n\tlast_name\x18\x03 \x01(\tR\x08lastName\"\xc4\x01\n\x19SignupOrganizationRequest\x12+\n\x11organization_name\x18\x01 \x01(\tR\x10organizationName\x12\x1d\n\nfirst_name\x18\x02 \x01(\tR\tfirstName\x12\x1b\n\tlast_name\x18\x03 \x01(\tR\x08lastName\x12\x1b\n\tfull_name\x18\x04 \x01(\tR\x08\x66ullName\x12!\n\x0cphone_number\x18\x05 \x01(\tR\x0bphoneNumber\"r\n\x1aSignupOrganizationResponse\x12\'\n\x0forganization_id\x18\x01 \x01(\tR\x0eorganizationId\x12+\n\x11organization_name\x18\x02 \x01(\tR\x10organizationName*:\n\x06Intent\x12\x16\n\x12INTENT_UNSPECIFIED\x10\x00\x12\x0b\n\x07sign_in\x10\x01\x12\x0b\n\x07sign_up\x10\x02\x32\x88\n\n\x0b\x41uthService\x12w\n\x0fListAuthMethods\x12\x16.google.protobuf.Empty\x1a).scalekit.v1.auth.ListAuthMethodsResponse\"!\x82\xb5\x18\x02\x18\x01\x82\xd3\xe4\x93\x02\x15\x12\x13/api/v1/authmethods\x12\xab\x01\n\x13\x44iscoveryAuthMethod\x12,.scalekit.v1.auth.DiscoveryAuthMethodRequest\x1a-.scalekit.v1.auth.DiscoveryAuthMethodResponse\"7\x82\xb5\x18\x02\x18\x01\x82\xd3\xe4\x93\x02+\"\x16/api/v1/auth:discovery:\x11\x64iscovery_request\x12\xab\x01\n\x15VerifyPasswordLessOtp\x12+.scalekit.v1.auth.VerifyPasswordLessRequest\x1a,.scalekit.v1.auth.VerifyPasswordLessResponse\"7\x82\xb5\x18\x02\x18\x01\x82\xd3\xe4\x93\x02+\" /api/v1/auth/passwordless:verify:\x07otp_req\x12t\n\x12ResendPasswordless\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\".\x82\xb5\x18\x02\x18\x01\x82\xd3\xe4\x93\x02\"\" /api/v1/auth/passwordless:resend\x12\x8a\x01\n\x15ListUserOrganizations\x12\x16.google.protobuf.Empty\x1a/.scalekit.v1.auth.ListUserOrganizationsResponse\"(\x82\xb5\x18\x02\x18\x01\x82\xd3\xe4\x93\x02\x1c\x12\x1a/api/v1/auth:organizations\x12\x95\x01\n\x12SignupOrganization\x12+.scalekit.v1.auth.SignupOrganizationRequest\x1a,.scalekit.v1.auth.SignupOrganizationResponse\"$\x82\xb5\x18\x02\x18\x01\x82\xd3\xe4\x93\x02\x18\"\x13/api/v1/auth:signup:\x01*\x12h\n\x10GetActiveSession\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\"$\x82\xb5\x18\x02\x18\x01\x82\xd3\xe4\x93\x02\x18\x12\x16/api/v1/session:active\x12\xa3\x01\n\x15GetAuthCustomizations\x12..scalekit.v1.auth.GetAuthCustomizationsRequest\x1a/.scalekit.v1.auth.GetAuthCustomizationsResponse\")\x82\xb5\x18\x02\x18\x01\x82\xd3\xe4\x93\x02\x1d\x12\x1b/api/v1/auth:customizations\x12y\n\x0fGetAuthFeatures\x12\x16.google.protobuf.Empty\x1a).scalekit.v1.auth.GetAuthFeaturesResponse\"#\x82\xb5\x18\x02\x18\x01\x82\xd3\xe4\x93\x02\x17\x12\x15/api/v1/auth:featuresB0Z.github.com/scalekit-inc/scalekit/pkg/grpc/authb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -42,36 +42,64 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_AUTHMETHOD'].fields_by_name['code_challenge_length']._serialized_options = b'\222A\0332\026Length of the OTP codeJ\0016'
   _globals['_DISCOVERYREQUEST'].fields_by_name['email']._loaded_options = None
   _globals['_DISCOVERYREQUEST'].fields_by_name['email']._serialized_options = b'\222AA2*user identifier like email or phone numberJ\023\"john@acmecorp.com\"\272H\006r\004\020\003\030d'
+  _globals['_DISCOVERYREQUEST'].fields_by_name['intent']._loaded_options = None
+  _globals['_DISCOVERYREQUEST'].fields_by_name['intent']._serialized_options = b'\272H\005\202\001\002\020\001'
   _globals['_OTPREQUEST'].fields_by_name['code_challenge']._loaded_options = None
   _globals['_OTPREQUEST'].fields_by_name['code_challenge']._serialized_options = b'\222A(2\034OTP sent to the user\'s emailJ\010\"123456\"\272H\006r\004\020\005\030\006'
+  _globals['_LISTUSERORGANIZATIONSRESPONSE'].fields_by_name['intent']._loaded_options = None
+  _globals['_LISTUSERORGANIZATIONSRESPONSE'].fields_by_name['intent']._serialized_options = b'\272H\005\202\001\002\020\001'
   _globals['_AUTHSERVICE'].methods_by_name['ListAuthMethods']._loaded_options = None
   _globals['_AUTHSERVICE'].methods_by_name['ListAuthMethods']._serialized_options = b'\202\265\030\002\030\001\202\323\344\223\002\025\022\023/api/v1/authmethods'
   _globals['_AUTHSERVICE'].methods_by_name['DiscoveryAuthMethod']._loaded_options = None
   _globals['_AUTHSERVICE'].methods_by_name['DiscoveryAuthMethod']._serialized_options = b'\202\265\030\002\030\001\202\323\344\223\002+\"\026/api/v1/auth:discovery:\021discovery_request'
-  _globals['_AUTHSERVICE'].methods_by_name['GetAuthCustomizations']._loaded_options = None
-  _globals['_AUTHSERVICE'].methods_by_name['GetAuthCustomizations']._serialized_options = b'\202\265\030\002\030\001\202\323\344\223\002\035\022\033/api/v1/auth:customizations'
   _globals['_AUTHSERVICE'].methods_by_name['VerifyPasswordLessOtp']._loaded_options = None
   _globals['_AUTHSERVICE'].methods_by_name['VerifyPasswordLessOtp']._serialized_options = b'\202\265\030\002\030\001\202\323\344\223\002+\" /api/v1/auth/passwordless:verify:\007otp_req'
   _globals['_AUTHSERVICE'].methods_by_name['ResendPasswordless']._loaded_options = None
   _globals['_AUTHSERVICE'].methods_by_name['ResendPasswordless']._serialized_options = b'\202\265\030\002\030\001\202\323\344\223\002\"\" /api/v1/auth/passwordless:resend'
+  _globals['_AUTHSERVICE'].methods_by_name['ListUserOrganizations']._loaded_options = None
+  _globals['_AUTHSERVICE'].methods_by_name['ListUserOrganizations']._serialized_options = b'\202\265\030\002\030\001\202\323\344\223\002\034\022\032/api/v1/auth:organizations'
+  _globals['_AUTHSERVICE'].methods_by_name['SignupOrganization']._loaded_options = None
+  _globals['_AUTHSERVICE'].methods_by_name['SignupOrganization']._serialized_options = b'\202\265\030\002\030\001\202\323\344\223\002\030\"\023/api/v1/auth:signup:\001*'
+  _globals['_AUTHSERVICE'].methods_by_name['GetActiveSession']._loaded_options = None
+  _globals['_AUTHSERVICE'].methods_by_name['GetActiveSession']._serialized_options = b'\202\265\030\002\030\001\202\323\344\223\002\030\022\026/api/v1/session:active'
+  _globals['_AUTHSERVICE'].methods_by_name['GetAuthCustomizations']._loaded_options = None
+  _globals['_AUTHSERVICE'].methods_by_name['GetAuthCustomizations']._serialized_options = b'\202\265\030\002\030\001\202\323\344\223\002\035\022\033/api/v1/auth:customizations'
+  _globals['_AUTHSERVICE'].methods_by_name['GetAuthFeatures']._loaded_options = None
+  _globals['_AUTHSERVICE'].methods_by_name['GetAuthFeatures']._serialized_options = b'\202\265\030\002\030\001\202\323\344\223\002\027\022\025/api/v1/auth:features'
+  _globals['_INTENT']._serialized_start=2751
+  _globals['_INTENT']._serialized_end=2809
   _globals['_LISTAUTHMETHODSRESPONSE']._serialized_start=394
   _globals['_LISTAUTHMETHODSRESPONSE']._serialized_end=484
   _globals['_AUTHMETHOD']._serialized_start=487
   _globals['_AUTHMETHOD']._serialized_end=1192
   _globals['_DISCOVERYAUTHMETHODREQUEST']._serialized_start=1194
   _globals['_DISCOVERYAUTHMETHODREQUEST']._serialized_end=1303
-  _globals['_DISCOVERYREQUEST']._serialized_start=1305
-  _globals['_DISCOVERYREQUEST']._serialized_end=1424
-  _globals['_DISCOVERYAUTHMETHODRESPONSE']._serialized_start=1426
-  _globals['_DISCOVERYAUTHMETHODRESPONSE']._serialized_end=1518
-  _globals['_GETAUTHCUSTOMIZATIONSREQUEST']._serialized_start=1520
-  _globals['_GETAUTHCUSTOMIZATIONSREQUEST']._serialized_end=1550
-  _globals['_GETAUTHCUSTOMIZATIONSRESPONSE']._serialized_start=1552
-  _globals['_GETAUTHCUSTOMIZATIONSRESPONSE']._serialized_end=1648
-  _globals['_VERIFYPASSWORDLESSREQUEST']._serialized_start=1650
-  _globals['_VERIFYPASSWORDLESSREQUEST']._serialized_end=1732
-  _globals['_OTPREQUEST']._serialized_start=1734
-  _globals['_OTPREQUEST']._serialized_end=1839
-  _globals['_AUTHSERVICE']._serialized_start=1842
-  _globals['_AUTHSERVICE']._serialized_end=2586
+  _globals['_DISCOVERYREQUEST']._serialized_start=1306
+  _globals['_DISCOVERYREQUEST']._serialized_end=1485
+  _globals['_DISCOVERYAUTHMETHODRESPONSE']._serialized_start=1487
+  _globals['_DISCOVERYAUTHMETHODRESPONSE']._serialized_end=1579
+  _globals['_GETAUTHCUSTOMIZATIONSREQUEST']._serialized_start=1581
+  _globals['_GETAUTHCUSTOMIZATIONSREQUEST']._serialized_end=1611
+  _globals['_GETAUTHCUSTOMIZATIONSRESPONSE']._serialized_start=1613
+  _globals['_GETAUTHCUSTOMIZATIONSRESPONSE']._serialized_end=1724
+  _globals['_GETAUTHFEATURESRESPONSE']._serialized_start=1726
+  _globals['_GETAUTHFEATURESRESPONSE']._serialized_end=1804
+  _globals['_VERIFYPASSWORDLESSREQUEST']._serialized_start=1806
+  _globals['_VERIFYPASSWORDLESSREQUEST']._serialized_end=1888
+  _globals['_VERIFYPASSWORDLESSRESPONSE']._serialized_start=1890
+  _globals['_VERIFYPASSWORDLESSRESPONSE']._serialized_end=1918
+  _globals['_OTPREQUEST']._serialized_start=1920
+  _globals['_OTPREQUEST']._serialized_end=2025
+  _globals['_LISTUSERORGANIZATIONSRESPONSE']._serialized_start=2028
+  _globals['_LISTUSERORGANIZATIONSRESPONSE']._serialized_end=2240
+  _globals['_ORGANIZATION']._serialized_start=2242
+  _globals['_ORGANIZATION']._serialized_end=2337
+  _globals['_USERDETAILS']._serialized_start=2339
+  _globals['_USERDETAILS']._serialized_end=2434
+  _globals['_SIGNUPORGANIZATIONREQUEST']._serialized_start=2437
+  _globals['_SIGNUPORGANIZATIONREQUEST']._serialized_end=2633
+  _globals['_SIGNUPORGANIZATIONRESPONSE']._serialized_start=2635
+  _globals['_SIGNUPORGANIZATIONRESPONSE']._serialized_end=2749
+  _globals['_AUTHSERVICE']._serialized_start=2812
+  _globals['_AUTHSERVICE']._serialized_end=4100
 # @@protoc_insertion_point(module_scope)

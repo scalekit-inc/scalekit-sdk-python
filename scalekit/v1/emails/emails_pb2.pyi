@@ -27,6 +27,9 @@ class TemplateUsecase(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     USER_LOGIN_OTP: _ClassVar[TemplateUsecase]
     USER_LOGIN_LINK: _ClassVar[TemplateUsecase]
     USER_LOGIN_LINK_OTP: _ClassVar[TemplateUsecase]
+    USER_SIGNUP_OTP: _ClassVar[TemplateUsecase]
+    USER_SIGNUP_LINK: _ClassVar[TemplateUsecase]
+    USER_SIGNUP_LINK_OTP: _ClassVar[TemplateUsecase]
 
 class EmailServerProvider(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
@@ -44,6 +47,9 @@ SIGNUP: TemplateUsecase
 USER_LOGIN_OTP: TemplateUsecase
 USER_LOGIN_LINK: TemplateUsecase
 USER_LOGIN_LINK_OTP: TemplateUsecase
+USER_SIGNUP_OTP: TemplateUsecase
+USER_SIGNUP_LINK: TemplateUsecase
+USER_SIGNUP_LINK_OTP: TemplateUsecase
 EMAIL_SERVER_UNSPECIFIED: EmailServerProvider
 SENDGRID: EmailServerProvider
 POSTMARK: EmailServerProvider
