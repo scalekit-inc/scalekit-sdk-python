@@ -23,6 +23,7 @@ class AuthorizationUrlOptions:
         self.domain_hint: Optional[str] = None
         self.login_hint: Optional[str] = None
         self.provider: Optional[str] = None
+        self.prompt: Optional[str] = None
 
 
 class CodeAuthenticationOptions:
@@ -58,3 +59,16 @@ class IdpInitiatedLoginClaims:
         self.organization_id: str
         self.login_hint: str
         self.relay_state: Optional[str] = None
+
+
+class LogoutUrlOptions:
+    """Options for logout URL generation"""
+    def __init__(
+        self,
+        id_token_hint: Optional[str] = None,
+        post_logout_redirect_uri: Optional[str] = None,
+        state: Optional[str] = None
+    ):
+        self.id_token_hint = id_token_hint
+        self.post_logout_redirect_uri = post_logout_redirect_uri
+        self.state = state
