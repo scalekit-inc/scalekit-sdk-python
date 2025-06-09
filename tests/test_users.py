@@ -127,7 +127,7 @@ class TestUsers(BaseTest):
 
         response = self.scalekit_client.users.add_user_to_organization(
             organization_id=self.org_id,
-            user=user
+            user_id=self.user_id
         )
         self.assertEqual(response[1].code().name, "OK")
         self.assertTrue(response[0] is not None)
