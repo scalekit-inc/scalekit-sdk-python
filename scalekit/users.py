@@ -118,19 +118,25 @@ class UserClient:
             DeleteUserRequest(organization_id=organization_id, id=user_id),
         )
 
-    def add_user_to_organization(self, organization_id: str, user: AddUser) -> AddUserResponse:
+    def add_user_to_organization(self, organization_id: str, user_id: str) -> AddUserResponse:
         """
         Method to add user to organization
 
         :param organization_id  : Organization id to add user to
         :type                   : ``` str ```
-        :param user            : AddUser object with expected values for adding user
-        :type                   : ``` obj ```
+        :param user_id         : User id to be added
+        :type                   : ``` str ```
 
         :returns:
             Add User Response
         """
         return self.core_client.grpc_exec(
             self.user_service.AddUserToOrganization.with_call,
-            AddUserRequest(organization_id=organization_id, user=user),
+            AddUserRequest(
+                organization_id=organization_id,
+                identities={
+                    'case': 'id',
+                    'value': user_id
+                }
+            ),
         ) 
