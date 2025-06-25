@@ -319,8 +319,7 @@ class UserClient:
     def delete_membership(
         self,
         organization_id: str,
-        user_id: str,
-        cascade: bool = True
+        user_id: str
     ):
         """
         Method to delete a membership for a user by user ID
@@ -329,8 +328,6 @@ class UserClient:
         :type                   : ``` str ```
         :param user_id          : User id
         :type                   : ``` str ```
-        :param cascade          : Whether to cascade delete
-        :type                   : ``` bool ```
 
         :returns:
             None
@@ -339,16 +336,14 @@ class UserClient:
             self.user_service.DeleteMembership.with_call,
             DeleteMembershipRequest(
                 organization_id=organization_id,
-                id=user_id,
-                cascade=cascade
+                id=user_id
             ),
         )
 
     def delete_membership_by_external_id(
         self,
         organization_id: str,
-        external_id: str,
-        cascade: bool = True
+        external_id: str
     ):
         """
         Method to delete a membership for a user by external ID
@@ -357,8 +352,6 @@ class UserClient:
         :type                   : ``` str ```
         :param external_id      : External id
         :type                   : ``` str ```
-        :param cascade          : Whether to cascade delete
-        :type                   : ``` bool ```
 
         :returns:
             None
@@ -367,8 +360,7 @@ class UserClient:
             self.user_service.DeleteMembership.with_call,
             DeleteMembershipRequest(
                 organization_id=organization_id,
-                external_id=external_id,
-                cascade=cascade
+                external_id=external_id
             ),
         )
 

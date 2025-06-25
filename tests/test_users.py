@@ -266,8 +266,7 @@ class TestUsers(BaseTest):
         try:
             self.scalekit_client.users.delete_membership(
                 organization_id=self.org_id,
-                user_id=self.user_id,
-                cascade=False
+                user_id=self.user_id
             )
         except Exception:
             # Membership might already be deleted or not exist
@@ -309,8 +308,7 @@ class TestUsers(BaseTest):
         try:
             self.scalekit_client.users.delete_membership_by_external_id(
                 organization_id=self.org_id,
-                external_id=external_id,
-                cascade=False
+                external_id=external_id
             )
         except Exception:
             # Membership might already be deleted or not exist
@@ -354,8 +352,7 @@ class TestUsers(BaseTest):
         try:
             self.scalekit_client.users.delete_membership(
                 organization_id=self.org_id,
-                user_id=self.user_id,
-                cascade=False
+                user_id=self.user_id
             )
         except Exception:
             # If this fails, the test will still work
@@ -410,11 +407,10 @@ class TestUsers(BaseTest):
         try:
             self.scalekit_client.users.delete_membership_by_external_id(
                 organization_id=self.org_id,
-                external_id=external_id,
-                cascade=False
+                external_id=external_id
             )
         except Exception:
-            # If this fails, the test will still work
+            # Membership might already be deleted or not exist
             pass
 
         # Now create a new membership
@@ -529,8 +525,7 @@ class TestUsers(BaseTest):
         # Delete membership
         response = self.scalekit_client.users.delete_membership(
             organization_id=self.org_id,
-            user_id=self.user_id,
-            cascade=False
+            user_id=self.user_id
         )
         self.assertEqual(response[1].code().name, "OK")
 
@@ -558,8 +553,7 @@ class TestUsers(BaseTest):
         # Delete membership
         response = self.scalekit_client.users.delete_membership_by_external_id(
             organization_id=self.org_id,
-            external_id=external_id,
-            cascade=False
+            external_id=external_id
         )
         self.assertEqual(response[1].code().name, "OK")
 
@@ -571,8 +565,7 @@ class TestUsers(BaseTest):
                 try:
                     self.scalekit_client.users.delete_membership(
                         organization_id=self.org_id,
-                        user_id=self.user_id,
-                        cascade=False
+                        user_id=self.user_id
                     )
                 except Exception:
                     pass
@@ -588,8 +581,7 @@ class TestUsers(BaseTest):
                 try:
                     self.scalekit_client.users.delete_membership_by_external_id(
                         organization_id=self.org_id,
-                        external_id=self.external_id,
-                        cascade=False
+                        external_id=self.external_id
                     )
                 except Exception:
                     pass
