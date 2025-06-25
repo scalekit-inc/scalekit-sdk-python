@@ -62,12 +62,7 @@ class UserClient:
         """
         return self.core_client.grpc_exec(
             self.user_service.GetUser.with_call,
-            GetUserRequest(
-                identities={
-                    'case': 'id',
-                    'value': user_id
-                }
-            ),
+            GetUserRequest(id=user_id),
         )
 
     def get_user_by_external_id(self, external_id: str) -> GetUserResponse:
@@ -82,12 +77,7 @@ class UserClient:
         """
         return self.core_client.grpc_exec(
             self.user_service.GetUser.with_call,
-            GetUserRequest(
-                identities={
-                    'case': 'external_id',
-                    'value': external_id
-                }
-            ),
+            GetUserRequest(external_id=external_id),
         )
 
     def list_users(
@@ -156,13 +146,7 @@ class UserClient:
         """
         return self.core_client.grpc_exec(
             self.user_service.UpdateUser.with_call,
-            UpdateUserRequest(
-                identities={
-                    'case': 'id',
-                    'value': user_id
-                },
-                user=user
-            ),
+            UpdateUserRequest(id=user_id, user=user),
         )
 
     def update_user_by_external_id(self, external_id: str, user: UpdateUser) -> UpdateUserResponse:
@@ -179,13 +163,7 @@ class UserClient:
         """
         return self.core_client.grpc_exec(
             self.user_service.UpdateUser.with_call,
-            UpdateUserRequest(
-                identities={
-                    'case': 'external_id',
-                    'value': external_id
-                },
-                user=user
-            ),
+            UpdateUserRequest(external_id=external_id, user=user),
         )
 
     def delete_user(self, user_id: str):
@@ -200,12 +178,7 @@ class UserClient:
         """
         return self.core_client.grpc_exec(
             self.user_service.DeleteUser.with_call,
-            DeleteUserRequest(
-                identities={
-                    'case': 'id',
-                    'value': user_id
-                }
-            ),
+            DeleteUserRequest(id=user_id),
         )
 
     def delete_user_by_external_id(self, external_id: str):
@@ -220,12 +193,7 @@ class UserClient:
         """
         return self.core_client.grpc_exec(
             self.user_service.DeleteUser.with_call,
-            DeleteUserRequest(
-                identities={
-                    'case': 'external_id',
-                    'value': external_id
-                }
-            ),
+            DeleteUserRequest(external_id=external_id),
         )
 
     def create_membership(
@@ -236,14 +204,14 @@ class UserClient:
         send_invitation_email: bool = True
     ) -> CreateMembershipResponse:
         """
-        Method to create membership for a user in an organization
+        Method to create a membership for a user by user ID
 
-        :param organization_id      : Organization id to create membership for
-        :type                       : ``` str ```
-        :param user_id             : User id to create membership for
-        :type                       : ``` str ```
-        :param membership          : CreateMembership object with membership details
-        :type                       : ``` obj ```
+        :param organization_id  : Organization id
+        :type                   : ``` str ```
+        :param user_id          : User id
+        :type                   : ``` str ```
+        :param membership       : CreateMembership object
+        :type                   : ``` obj ```
         :param send_invitation_email: Whether to send activation email to the user
         :type                       : ``` bool ```
 
@@ -254,10 +222,7 @@ class UserClient:
             self.user_service.CreateMembership.with_call,
             CreateMembershipRequest(
                 organization_id=organization_id,
-                identities={
-                    'case': 'id',
-                    'value': user_id
-                },
+                id=user_id,
                 membership=membership,
                 send_invitation_email=send_invitation_email
             ),
@@ -271,14 +236,14 @@ class UserClient:
         send_invitation_email: bool = True
     ) -> CreateMembershipResponse:
         """
-        Method to create membership for a user in an organization by external ID
+        Method to create a membership for a user by external ID
 
-        :param organization_id      : Organization id to create membership for
-        :type                       : ``` str ```
-        :param external_id         : External id to create membership for
-        :type                       : ``` str ```
-        :param membership          : CreateMembership object with membership details
-        :type                       : ``` obj ```
+        :param organization_id  : Organization id
+        :type                   : ``` str ```
+        :param external_id      : External id
+        :type                   : ``` str ```
+        :param membership       : CreateMembership object
+        :type                   : ``` obj ```
         :param send_invitation_email: Whether to send activation email to the user
         :type                       : ``` bool ```
 
@@ -289,10 +254,7 @@ class UserClient:
             self.user_service.CreateMembership.with_call,
             CreateMembershipRequest(
                 organization_id=organization_id,
-                identities={
-                    'case': 'external_id',
-                    'value': external_id
-                },
+                external_id=external_id,
                 membership=membership,
                 send_invitation_email=send_invitation_email
             ),
@@ -305,13 +267,13 @@ class UserClient:
         membership: UpdateMembership
     ) -> UpdateMembershipResponse:
         """
-        Method to update membership for a user in an organization
+        Method to update a membership for a user by user ID
 
-        :param organization_id  : Organization id to update membership for
+        :param organization_id  : Organization id
         :type                   : ``` str ```
-        :param user_id         : User id to update membership for
+        :param user_id          : User id
         :type                   : ``` str ```
-        :param membership      : UpdateMembership object with membership details
+        :param membership       : UpdateMembership object
         :type                   : ``` obj ```
 
         :returns:
@@ -321,10 +283,7 @@ class UserClient:
             self.user_service.UpdateMembership.with_call,
             UpdateMembershipRequest(
                 organization_id=organization_id,
-                identities={
-                    'case': 'id',
-                    'value': user_id
-                },
+                id=user_id,
                 membership=membership
             ),
         )
@@ -336,13 +295,13 @@ class UserClient:
         membership: UpdateMembership
     ) -> UpdateMembershipResponse:
         """
-        Method to update membership for a user in an organization by external ID
+        Method to update a membership for a user by external ID
 
-        :param organization_id  : Organization id to update membership for
+        :param organization_id  : Organization id
         :type                   : ``` str ```
-        :param external_id     : External id to update membership for
+        :param external_id      : External id
         :type                   : ``` str ```
-        :param membership      : UpdateMembership object with membership details
+        :param membership       : UpdateMembership object
         :type                   : ``` obj ```
 
         :returns:
@@ -352,10 +311,7 @@ class UserClient:
             self.user_service.UpdateMembership.with_call,
             UpdateMembershipRequest(
                 organization_id=organization_id,
-                identities={
-                    'case': 'external_id',
-                    'value': external_id
-                },
+                external_id=external_id,
                 membership=membership
             ),
         )
@@ -367,13 +323,13 @@ class UserClient:
         cascade: bool = True
     ):
         """
-        Method to delete membership for a user in an organization
+        Method to delete a membership for a user by user ID
 
-        :param organization_id  : Organization id to delete membership for
+        :param organization_id  : Organization id
         :type                   : ``` str ```
-        :param user_id         : User id to delete membership for
+        :param user_id          : User id
         :type                   : ``` str ```
-        :param cascade         : If true, delete user if no memberships left
+        :param cascade          : Whether to cascade delete
         :type                   : ``` bool ```
 
         :returns:
@@ -383,10 +339,7 @@ class UserClient:
             self.user_service.DeleteMembership.with_call,
             DeleteMembershipRequest(
                 organization_id=organization_id,
-                identities={
-                    'case': 'id',
-                    'value': user_id
-                },
+                id=user_id,
                 cascade=cascade
             ),
         )
@@ -398,13 +351,13 @@ class UserClient:
         cascade: bool = True
     ):
         """
-        Method to delete membership for a user in an organization by external ID
+        Method to delete a membership for a user by external ID
 
-        :param organization_id  : Organization id to delete membership for
+        :param organization_id  : Organization id
         :type                   : ``` str ```
-        :param external_id     : External id to delete membership for
+        :param external_id      : External id
         :type                   : ``` str ```
-        :param cascade         : If true, delete user if no memberships left
+        :param cascade          : Whether to cascade delete
         :type                   : ``` bool ```
 
         :returns:
@@ -414,10 +367,7 @@ class UserClient:
             self.user_service.DeleteMembership.with_call,
             DeleteMembershipRequest(
                 organization_id=organization_id,
-                identities={
-                    'case': 'external_id',
-                    'value': external_id
-                },
+                external_id=external_id,
                 cascade=cascade
             ),
         )
