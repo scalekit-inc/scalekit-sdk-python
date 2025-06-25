@@ -422,18 +422,4 @@ class UserClient:
             ),
         )
 
-    # Legacy method for backward compatibility
-    def add_user_to_organization(self, organization_id: str, user_id: str) -> CreateMembershipResponse:
-        """
-        Method to add user to organization (legacy method for backward compatibility)
-
-        :param organization_id  : Organization id to add user to
-        :type                   : ``` str ```
-        :param user_id         : User id to be added
-        :type                   : ``` str ```
-
-        :returns:
-            Create Membership Response
-        """
-        membership = CreateMembership()
-        return self.create_membership(organization_id, user_id, membership) 
+   

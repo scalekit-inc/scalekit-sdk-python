@@ -263,34 +263,7 @@ class TestUsers(BaseTest):
         self.assertEqual(response[1].code().name, "OK")
         self.assertTrue(response[0] is not None)
         self.assertEqual(response[0].user.id, self.user_id)
-
-    def test_add_user_to_organization(self):
-        """ Method to test add user to organization (legacy method) """
-        user_profile = CreateUserProfile(
-            first_name="Test",
-            last_name="User",
-            name="Test User",
-            locale="en-US"
-        )
-        user = CreateUser(
-            email="test.user@example.com",
-            user_profile=user_profile,
-            metadata={"source": "test"}
-        )
-        create_response = self.scalekit_client.users.create_user_and_membership(
-            organization_id=self.org_id, 
-            user=user
-        )
-        self.user_id = create_response[0].user.id
-
-        response = self.scalekit_client.users.add_user_to_organization(
-            organization_id=self.org_id,
-            user_id=self.user_id
-        )
-        self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
-        self.assertEqual(response[0].user.id, self.user_id)
-        self.assertEqual(response[0].user.email, user.email)
+   
 
     def tearDown(self):
         """ Method to clean up """
