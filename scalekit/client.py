@@ -14,6 +14,7 @@ from scalekit.connection import ConnectionClient
 from scalekit.m2m_client import M2MClient
 from scalekit.organization import OrganizationClient
 from scalekit.directory import DirectoryClient
+from scalekit.users import UserClient
 from scalekit.common.scalekit import (
     AuthorizationUrlOptions,
     CodeAuthenticationOptions,
@@ -59,6 +60,7 @@ class ScalekitClient:
             self.organization = OrganizationClient(self.core_client)
             self.directory = DirectoryClient(self.core_client)
             self.m2m_client = M2MClient(self.core_client)
+            self.users = UserClient(self.core_client)
         except Exception as exp:
             raise exp
 
