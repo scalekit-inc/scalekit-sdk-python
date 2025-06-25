@@ -75,6 +75,56 @@ class ClientServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.DeleteOrganizationClientRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
+        self.CreateApplication = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/CreateApplication',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateApplicationRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateApplicationResponse.FromString,
+                )
+        self.GetApplication = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/GetApplication',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetApplicationRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetApplicationResponse.FromString,
+                )
+        self.ListApplications = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/ListApplications',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListApplicationsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListApplicationsResponse.FromString,
+                )
+        self.UpdateApplication = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/UpdateApplication',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateApplicationRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateApplicationResponse.FromString,
+                )
+        self.CreateApplicationClient = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/CreateApplicationClient',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateApplicationClientRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateApplicationClientResponse.FromString,
+                )
+        self.GetApplicationClient = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/GetApplicationClient',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetApplicationClientRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetApplicationClientResponse.FromString,
+                )
+        self.RegisterClient = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/RegisterClient',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.RegisterClientRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.RegisterClientResponse.FromString,
+                )
+        self.CreateScope = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/CreateScope',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateScopeRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateScopeResponse.FromString,
+                )
+        self.ListScopes = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/ListScopes',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListScopesRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListScopesResponse.FromString,
+                )
+        self.GetConsentDetails = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/GetConsentDetails',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetConsentDetailsResponse.FromString,
+                )
 
 
 class ClientServiceServicer(object):
@@ -152,6 +202,66 @@ class ClientServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def CreateApplication(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetApplication(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListApplications(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateApplication(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def CreateApplicationClient(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetApplicationClient(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def RegisterClient(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def CreateScope(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListScopes(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetConsentDetails(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_ClientServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -214,6 +324,56 @@ def add_ClientServiceServicer_to_server(servicer, server):
                     servicer.DeleteOrganizationClient,
                     request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.DeleteOrganizationClientRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'CreateApplication': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateApplication,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateApplicationRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateApplicationResponse.SerializeToString,
+            ),
+            'GetApplication': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetApplication,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetApplicationRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetApplicationResponse.SerializeToString,
+            ),
+            'ListApplications': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListApplications,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListApplicationsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListApplicationsResponse.SerializeToString,
+            ),
+            'UpdateApplication': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateApplication,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateApplicationRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateApplicationResponse.SerializeToString,
+            ),
+            'CreateApplicationClient': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateApplicationClient,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateApplicationClientRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateApplicationClientResponse.SerializeToString,
+            ),
+            'GetApplicationClient': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetApplicationClient,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetApplicationClientRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetApplicationClientResponse.SerializeToString,
+            ),
+            'RegisterClient': grpc.unary_unary_rpc_method_handler(
+                    servicer.RegisterClient,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.RegisterClientRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.RegisterClientResponse.SerializeToString,
+            ),
+            'CreateScope': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateScope,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateScopeRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateScopeResponse.SerializeToString,
+            ),
+            'ListScopes': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListScopes,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListScopesRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListScopesResponse.SerializeToString,
+            ),
+            'GetConsentDetails': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetConsentDetails,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetConsentDetailsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -426,5 +586,175 @@ class ClientService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/DeleteOrganizationClient',
             scalekit_dot_v1_dot_clients_dot_clients__pb2.DeleteOrganizationClientRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def CreateApplication(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/CreateApplication',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateApplicationRequest.SerializeToString,
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateApplicationResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetApplication(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/GetApplication',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.GetApplicationRequest.SerializeToString,
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.GetApplicationResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListApplications(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/ListApplications',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.ListApplicationsRequest.SerializeToString,
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.ListApplicationsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def UpdateApplication(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/UpdateApplication',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateApplicationRequest.SerializeToString,
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateApplicationResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def CreateApplicationClient(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/CreateApplicationClient',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateApplicationClientRequest.SerializeToString,
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateApplicationClientResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetApplicationClient(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/GetApplicationClient',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.GetApplicationClientRequest.SerializeToString,
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.GetApplicationClientResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def RegisterClient(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/RegisterClient',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.RegisterClientRequest.SerializeToString,
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.RegisterClientResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def CreateScope(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/CreateScope',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateScopeRequest.SerializeToString,
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateScopeResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListScopes(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/ListScopes',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.ListScopesRequest.SerializeToString,
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.ListScopesResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetConsentDetails(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/GetConsentDetails',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.GetConsentDetailsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

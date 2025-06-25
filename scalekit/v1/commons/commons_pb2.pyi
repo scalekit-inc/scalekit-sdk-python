@@ -11,7 +11,7 @@ from google.protobuf.internal import containers as _containers
 from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
-from typing import ClassVar as _ClassVar, Mapping as _Mapping, Optional as _Optional, Union as _Union
+from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Mapping, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
@@ -27,17 +27,12 @@ class EnvironmentType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     PRD: _ClassVar[EnvironmentType]
     DEV: _ClassVar[EnvironmentType]
 
-class UserStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+class MembershipStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
-    USER_STATUS_UNSPECIFIED: _ClassVar[UserStatus]
-    ACTIVE: _ClassVar[UserStatus]
-    INACTIVE: _ClassVar[UserStatus]
-
-class MembershipRole(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-    __slots__ = ()
-    MEMBERSHIP_ROLE_UNSPECIFIED: _ClassVar[MembershipRole]
-    ADMIN: _ClassVar[MembershipRole]
-    USER: _ClassVar[MembershipRole]
+    Membership_Status_UNSPECIFIED: _ClassVar[MembershipStatus]
+    ACTIVE: _ClassVar[MembershipStatus]
+    INACTIVE: _ClassVar[MembershipStatus]
+    PENDING_INVITE: _ClassVar[MembershipStatus]
 
 class IdentityProviderType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
@@ -64,12 +59,10 @@ EU: RegionCode
 ENVIRONMENT_TYPE_UNSPECIFIED: EnvironmentType
 PRD: EnvironmentType
 DEV: EnvironmentType
-USER_STATUS_UNSPECIFIED: UserStatus
-ACTIVE: UserStatus
-INACTIVE: UserStatus
-MEMBERSHIP_ROLE_UNSPECIFIED: MembershipRole
-ADMIN: MembershipRole
-USER: MembershipRole
+Membership_Status_UNSPECIFIED: MembershipStatus
+ACTIVE: MembershipStatus
+INACTIVE: MembershipStatus
+PENDING_INVITE: MembershipStatus
 IDENTITY_PROVIDER_UNSPECIFIED: IdentityProviderType
 OKTA: IdentityProviderType
 GOOGLE: IdentityProviderType
@@ -89,21 +82,40 @@ SCALEKIT: IdentityProviderType
 ADFS: IdentityProviderType
 
 class OrganizationMembership(_message.Message):
-    __slots__ = ("id", "membership_status", "role", "name", "primary_identity_provider")
-    ID_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("organization_id", "join_time", "membership_status", "roles", "name", "primary_identity_provider", "metadata")
+    class MetadataEntry(_message.Message):
+        __slots__ = ("key", "value")
+        KEY_FIELD_NUMBER: _ClassVar[int]
+        VALUE_FIELD_NUMBER: _ClassVar[int]
+        key: str
+        value: str
+        def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
+    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
+    JOIN_TIME_FIELD_NUMBER: _ClassVar[int]
     MEMBERSHIP_STATUS_FIELD_NUMBER: _ClassVar[int]
-    ROLE_FIELD_NUMBER: _ClassVar[int]
+    ROLES_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     PRIMARY_IDENTITY_PROVIDER_FIELD_NUMBER: _ClassVar[int]
-    id: str
-    membership_status: UserStatus
-    role: MembershipRole
+    METADATA_FIELD_NUMBER: _ClassVar[int]
+    organization_id: str
+    join_time: _timestamp_pb2.Timestamp
+    membership_status: MembershipStatus
+    roles: _containers.RepeatedCompositeFieldContainer[Role]
     name: str
     primary_identity_provider: IdentityProviderType
-    def __init__(self, id: _Optional[str] = ..., membership_status: _Optional[_Union[UserStatus, str]] = ..., role: _Optional[_Union[MembershipRole, str]] = ..., name: _Optional[str] = ..., primary_identity_provider: _Optional[_Union[IdentityProviderType, str]] = ...) -> None: ...
+    metadata: _containers.ScalarMap[str, str]
+    def __init__(self, organization_id: _Optional[str] = ..., join_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., membership_status: _Optional[_Union[MembershipStatus, str]] = ..., roles: _Optional[_Iterable[_Union[Role, _Mapping]]] = ..., name: _Optional[str] = ..., primary_identity_provider: _Optional[_Union[IdentityProviderType, str]] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
+
+class Role(_message.Message):
+    __slots__ = ("id", "name")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    name: str
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ...) -> None: ...
 
 class UserProfile(_message.Message):
-    __slots__ = ("id", "first_name", "last_name", "name", "locale", "email_verified", "metadata", "custom_attributes")
+    __slots__ = ("id", "first_name", "last_name", "name", "locale", "email_verified", "phone_number", "metadata", "custom_attributes")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -124,6 +136,7 @@ class UserProfile(_message.Message):
     NAME_FIELD_NUMBER: _ClassVar[int]
     LOCALE_FIELD_NUMBER: _ClassVar[int]
     EMAIL_VERIFIED_FIELD_NUMBER: _ClassVar[int]
+    PHONE_NUMBER_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     CUSTOM_ATTRIBUTES_FIELD_NUMBER: _ClassVar[int]
     id: str
@@ -132,6 +145,7 @@ class UserProfile(_message.Message):
     name: str
     locale: str
     email_verified: bool
+    phone_number: str
     metadata: _containers.ScalarMap[str, str]
     custom_attributes: _containers.ScalarMap[str, str]
-    def __init__(self, id: _Optional[str] = ..., first_name: _Optional[str] = ..., last_name: _Optional[str] = ..., name: _Optional[str] = ..., locale: _Optional[str] = ..., email_verified: bool = ..., metadata: _Optional[_Mapping[str, str]] = ..., custom_attributes: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., first_name: _Optional[str] = ..., last_name: _Optional[str] = ..., name: _Optional[str] = ..., locale: _Optional[str] = ..., email_verified: bool = ..., phone_number: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., custom_attributes: _Optional[_Mapping[str, str]] = ...) -> None: ...

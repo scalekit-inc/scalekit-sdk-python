@@ -1,6 +1,7 @@
 from buf.validate import validate_pb2 as _validate_pb2
 from google.api import annotations_pb2 as _annotations_pb2
 from google.api import field_behavior_pb2 as _field_behavior_pb2
+from google.api import visibility_pb2 as _visibility_pb2
 from google.protobuf import empty_pb2 as _empty_pb2
 from google.protobuf import struct_pb2 as _struct_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
@@ -21,9 +22,20 @@ class Intent(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     INTENT_UNSPECIFIED: _ClassVar[Intent]
     sign_in: _ClassVar[Intent]
     sign_up: _ClassVar[Intent]
+
+class AuthState(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    AUTHENTICATION: _ClassVar[AuthState]
+    ORGANIZATION_SWITCHER: _ClassVar[AuthState]
+    ORGANIZATION_SWITCHER_SIGNUP: _ClassVar[AuthState]
+    ORGANIZATION_SIGNUP: _ClassVar[AuthState]
 INTENT_UNSPECIFIED: Intent
 sign_in: Intent
 sign_up: Intent
+AUTHENTICATION: AuthState
+ORGANIZATION_SWITCHER: AuthState
+ORGANIZATION_SWITCHER_SIGNUP: AuthState
+ORGANIZATION_SIGNUP: AuthState
 
 class ListAuthMethodsResponse(_message.Message):
     __slots__ = ("auth_methods",)
@@ -150,3 +162,51 @@ class SignupOrganizationResponse(_message.Message):
     organization_id: str
     organization_name: str
     def __init__(self, organization_id: _Optional[str] = ..., organization_name: _Optional[str] = ...) -> None: ...
+
+class UpdateLoginUserDetailsRequest(_message.Message):
+    __slots__ = ("connection_id", "login_request_id", "user")
+    CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
+    LOGIN_REQUEST_ID_FIELD_NUMBER: _ClassVar[int]
+    USER_FIELD_NUMBER: _ClassVar[int]
+    connection_id: str
+    login_request_id: str
+    user: User
+    def __init__(self, connection_id: _Optional[str] = ..., login_request_id: _Optional[str] = ..., user: _Optional[_Union[User, _Mapping]] = ...) -> None: ...
+
+class User(_message.Message):
+    __slots__ = ("sub", "email", "given_name", "family_name", "email_verified", "phone_number", "phone_number_verified", "name", "preferred_username", "picture", "gender", "locale", "groups", "custom_attributes")
+    SUB_FIELD_NUMBER: _ClassVar[int]
+    EMAIL_FIELD_NUMBER: _ClassVar[int]
+    GIVEN_NAME_FIELD_NUMBER: _ClassVar[int]
+    FAMILY_NAME_FIELD_NUMBER: _ClassVar[int]
+    EMAIL_VERIFIED_FIELD_NUMBER: _ClassVar[int]
+    PHONE_NUMBER_FIELD_NUMBER: _ClassVar[int]
+    PHONE_NUMBER_VERIFIED_FIELD_NUMBER: _ClassVar[int]
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    PREFERRED_USERNAME_FIELD_NUMBER: _ClassVar[int]
+    PICTURE_FIELD_NUMBER: _ClassVar[int]
+    GENDER_FIELD_NUMBER: _ClassVar[int]
+    LOCALE_FIELD_NUMBER: _ClassVar[int]
+    GROUPS_FIELD_NUMBER: _ClassVar[int]
+    CUSTOM_ATTRIBUTES_FIELD_NUMBER: _ClassVar[int]
+    sub: str
+    email: str
+    given_name: str
+    family_name: str
+    email_verified: bool
+    phone_number: str
+    phone_number_verified: bool
+    name: str
+    preferred_username: str
+    picture: str
+    gender: str
+    locale: str
+    groups: _containers.RepeatedScalarFieldContainer[str]
+    custom_attributes: _struct_pb2.Struct
+    def __init__(self, sub: _Optional[str] = ..., email: _Optional[str] = ..., given_name: _Optional[str] = ..., family_name: _Optional[str] = ..., email_verified: bool = ..., phone_number: _Optional[str] = ..., phone_number_verified: bool = ..., name: _Optional[str] = ..., preferred_username: _Optional[str] = ..., picture: _Optional[str] = ..., gender: _Optional[str] = ..., locale: _Optional[str] = ..., groups: _Optional[_Iterable[str]] = ..., custom_attributes: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
+
+class GetAuthStateResponse(_message.Message):
+    __slots__ = ("auth_state",)
+    AUTH_STATE_FIELD_NUMBER: _ClassVar[int]
+    auth_state: AuthState
+    def __init__(self, auth_state: _Optional[_Union[AuthState, str]] = ...) -> None: ...

@@ -22,63 +22,104 @@ class UserClient:
             self.core_client.grpc_secure_channel
         )
 
-    def create_user(self, organization_id: str, user: CreateUser) -> CreateUserResponse:
+    def create_user_and_membership(
+        self, 
+        organization_id: str, 
+        user: CreateUser, 
+        send_invitation_email: bool = True
+    ) -> CreateUserAndMembershipResponse:
         """
-        Method to create a new user
+        Method to create a new user and add them to an organization
 
-        :param organization_id  : Organization id to create user for
-        :type                   : ``` str ```
-        :param user            : CreateUser object with expected values for user creation
-        :type                   : ``` obj ```
+        :param organization_id      : Organization id to create user for
+        :type                       : ``` str ```
+        :param user                : CreateUser object with expected values for user creation
+        :type                       : ``` obj ```
+        :param send_invitation_email: Whether to send activation email to the user
+        :type                       : ``` bool ```
 
         :returns:
-            Create User Response
+            Create User And Membership Response
         """
         return self.core_client.grpc_exec(
-            self.user_service.CreateUser.with_call,
-            CreateUserRequest(organization_id=organization_id, user=user),
+            self.user_service.CreateUserAndMembership.with_call,
+            CreateUserAndMembershipRequest(
+                organization_id=organization_id,
+                user=user,
+                send_invitation_email=send_invitation_email
+            ),
         )
 
-    def update_user(self, organization_id: str, user: UpdateUser) -> UpdateUserResponse:
+    def get_user(self, user_id: str) -> GetUserResponse:
         """
-        Method to update an existing user
+        Method to get user by ID
 
-        :param organization_id  : Organization id to update user for
-        :type                   : ``` str ```
-        :param user            : UpdateUser object with expected values for user update
-        :type                   : ``` obj ```
-
-        :returns:
-            Update User Response
-        """
-        return self.core_client.grpc_exec(
-            self.user_service.UpdateUser.with_call,
-            UpdateUserRequest(organization_id=organization_id, user=user),
-        )
-
-    def get_user(self, organization_id: str, user_id: str) -> GetUserResponse:
-        """
-        Method to get user based on given organization and user id
-
-        :param organization_id  : Organization id to get user for
-        :type                   : ``` str ```
         :param user_id         : User id to get user details
-        :type                   : ``` str ```
+        :type                  : ``` str ```
 
         :returns:
             Get User Response
         """
         return self.core_client.grpc_exec(
             self.user_service.GetUser.with_call,
-            GetUserRequest(organization_id=organization_id, id=user_id),
+            GetUserRequest(
+                identities={
+                    'case': 'id',
+                    'value': user_id
+                }
+            ),
+        )
+
+    def get_user_by_external_id(self, external_id: str) -> GetUserResponse:
+        """
+        Method to get user by external ID
+
+        :param external_id     : External id to get user details
+        :type                  : ``` str ```
+
+        :returns:
+            Get User Response
+        """
+        return self.core_client.grpc_exec(
+            self.user_service.GetUser.with_call,
+            GetUserRequest(
+                identities={
+                    'case': 'external_id',
+                    'value': external_id
+                }
+            ),
         )
 
     def list_users(
         self,
+        page_size: Optional[int] = None,
+        page_token: Optional[str] = None
+    ) -> ListUsersResponse:
+        """
+        Method to list all users in environment
+
+        :param page_size       : Page size for pagination
+        :type                  : ``` int ```
+        :param page_token      : Page token for pagination
+        :type                  : ``` str ```
+
+        :returns:
+            List Users Response
+        """
+        return self.core_client.grpc_exec(
+            self.user_service.ListUsers.with_call,
+            ListUsersRequest(
+                page_size=page_size,
+                page_token=page_token
+            ),
+        )
+
+    def list_organization_users(
+        self,
         organization_id: str,
         page_size: Optional[int] = None,
         page_token: Optional[str] = None
-    ) -> ListUserResponse:
+    ) -> ListOrganizationUsersResponse:
         """
         Method to list users for given organization id
 
@@ -90,37 +131,301 @@ class UserClient:
         :type                   : ``` str ```
 
         :returns:
-            List User Response
+            List Organization Users Response
         """
         return self.core_client.grpc_exec(
-            self.user_service.ListUsers.with_call,
-            ListUserRequest(
+            self.user_service.ListOrganizationUsers.with_call,
+            ListOrganizationUsersRequest(
                 organization_id=organization_id,
                 page_size=page_size,
                 page_token=page_token
             ),
         )
 
-    def delete_user(self, organization_id: str, user_id: str):
+    def update_user(self, user_id: str, user: UpdateUser) -> UpdateUserResponse:
         """
-        Method to delete user based on given organization and user id
+        Method to update an existing user by ID
 
-        :param organization_id  : Organization id to delete user for
-        :type                   : ``` str ```
+        :param user_id         : User id to update
+        :type                  : ``` str ```
+        :param user            : UpdateUser object with expected values for user update
+        :type                  : ``` obj ```
+
+        :returns:
+            Update User Response
+        """
+        return self.core_client.grpc_exec(
+            self.user_service.UpdateUser.with_call,
+            UpdateUserRequest(
+                identities={
+                    'case': 'id',
+                    'value': user_id
+                },
+                user=user
+            ),
+        )
+
+    def update_user_by_external_id(self, external_id: str, user: UpdateUser) -> UpdateUserResponse:
+        """
+        Method to update an existing user by external ID
+
+        :param external_id     : External id to update
+        :type                  : ``` str ```
+        :param user            : UpdateUser object with expected values for user update
+        :type                  : ``` obj ```
+
+        :returns:
+            Update User Response
+        """
+        return self.core_client.grpc_exec(
+            self.user_service.UpdateUser.with_call,
+            UpdateUserRequest(
+                identities={
+                    'case': 'external_id',
+                    'value': external_id
+                },
+                user=user
+            ),
+        )
+
+    def delete_user(self, user_id: str):
+        """
+        Method to delete user by ID
+
         :param user_id         : User id to be deleted
-        :type                   : ``` str ```
+        :type                  : ``` str ```
 
         :returns:
             None
         """
         return self.core_client.grpc_exec(
             self.user_service.DeleteUser.with_call,
-            DeleteUserRequest(organization_id=organization_id, id=user_id),
+            DeleteUserRequest(
+                identities={
+                    'case': 'id',
+                    'value': user_id
+                }
+            ),
         )
 
-    def add_user_to_organization(self, organization_id: str, user_id: str) -> AddUserResponse:
+    def delete_user_by_external_id(self, external_id: str):
         """
-        Method to add user to organization
+        Method to delete user by external ID
+
+        :param external_id     : External id to be deleted
+        :type                  : ``` str ```
+
+        :returns:
+            None
+        """
+        return self.core_client.grpc_exec(
+            self.user_service.DeleteUser.with_call,
+            DeleteUserRequest(
+                identities={
+                    'case': 'external_id',
+                    'value': external_id
+                }
+            ),
+        )
+
+    def create_membership(
+        self,
+        organization_id: str,
+        user_id: str,
+        membership: CreateMembership,
+        send_invitation_email: bool = True
+    ) -> CreateMembershipResponse:
+        """
+        Method to create membership for a user in an organization
+
+        :param organization_id      : Organization id to create membership for
+        :type                       : ``` str ```
+        :param user_id             : User id to create membership for
+        :type                       : ``` str ```
+        :param membership          : CreateMembership object with membership details
+        :type                       : ``` obj ```
+        :param send_invitation_email: Whether to send activation email to the user
+        :type                       : ``` bool ```
+
+        :returns:
+            Create Membership Response
+        """
+        return self.core_client.grpc_exec(
+            self.user_service.CreateMembership.with_call,
+            CreateMembershipRequest(
+                organization_id=organization_id,
+                identities={
+                    'case': 'id',
+                    'value': user_id
+                },
+                membership=membership,
+                send_invitation_email=send_invitation_email
+            ),
+        )
+
+    def create_membership_by_external_id(
+        self,
+        organization_id: str,
+        external_id: str,
+        membership: CreateMembership,
+        send_invitation_email: bool = True
+    ) -> CreateMembershipResponse:
+        """
+        Method to create membership for a user in an organization by external ID
+
+        :param organization_id      : Organization id to create membership for
+        :type                       : ``` str ```
+        :param external_id         : External id to create membership for
+        :type                       : ``` str ```
+        :param membership          : CreateMembership object with membership details
+        :type                       : ``` obj ```
+        :param send_invitation_email: Whether to send activation email to the user
+        :type                       : ``` bool ```
+
+        :returns:
+            Create Membership Response
+        """
+        return self.core_client.grpc_exec(
+            self.user_service.CreateMembership.with_call,
+            CreateMembershipRequest(
+                organization_id=organization_id,
+                identities={
+                    'case': 'external_id',
+                    'value': external_id
+                },
+                membership=membership,
+                send_invitation_email=send_invitation_email
+            ),
+        )
+
+    def update_membership(
+        self,
+        organization_id: str,
+        user_id: str,
+        membership: UpdateMembership
+    ) -> UpdateMembershipResponse:
+        """
+        Method to update membership for a user in an organization
+
+        :param organization_id  : Organization id to update membership for
+        :type                   : ``` str ```
+        :param user_id         : User id to update membership for
+        :type                   : ``` str ```
+        :param membership      : UpdateMembership object with membership details
+        :type                   : ``` obj ```
+
+        :returns:
+            Update Membership Response
+        """
+        return self.core_client.grpc_exec(
+            self.user_service.UpdateMembership.with_call,
+            UpdateMembershipRequest(
+                organization_id=organization_id,
+                identities={
+                    'case': 'id',
+                    'value': user_id
+                },
+                membership=membership
+            ),
+        )
+
+    def update_membership_by_external_id(
+        self,
+        organization_id: str,
+        external_id: str,
+        membership: UpdateMembership
+    ) -> UpdateMembershipResponse:
+        """
+        Method to update membership for a user in an organization by external ID
+
+        :param organization_id  : Organization id to update membership for
+        :type                   : ``` str ```
+        :param external_id     : External id to update membership for
+        :type                   : ``` str ```
+        :param membership      : UpdateMembership object with membership details
+        :type                   : ``` obj ```
+
+        :returns:
+            Update Membership Response
+        """
+        return self.core_client.grpc_exec(
+            self.user_service.UpdateMembership.with_call,
+            UpdateMembershipRequest(
+                organization_id=organization_id,
+                identities={
+                    'case': 'external_id',
+                    'value': external_id
+                },
+                membership=membership
+            ),
+        )
+
+    def delete_membership(
+        self,
+        organization_id: str,
+        user_id: str,
+        cascade: bool = True
+    ):
+        """
+        Method to delete membership for a user in an organization
+
+        :param organization_id  : Organization id to delete membership for
+        :type                   : ``` str ```
+        :param user_id         : User id to delete membership for
+        :type                   : ``` str ```
+        :param cascade         : If true, delete user if no memberships left
+        :type                   : ``` bool ```
+
+        :returns:
+            None
+        """
+        return self.core_client.grpc_exec(
+            self.user_service.DeleteMembership.with_call,
+            DeleteMembershipRequest(
+                organization_id=organization_id,
+                identities={
+                    'case': 'id',
+                    'value': user_id
+                },
+                cascade=cascade
+            ),
+        )
+
+    def delete_membership_by_external_id(
+        self,
+        organization_id: str,
+        external_id: str,
+        cascade: bool = True
+    ):
+        """
+        Method to delete membership for a user in an organization by external ID
+
+        :param organization_id  : Organization id to delete membership for
+        :type                   : ``` str ```
+        :param external_id     : External id to delete membership for
+        :type                   : ``` str ```
+        :param cascade         : If true, delete user if no memberships left
+        :type                   : ``` bool ```
+
+        :returns:
+            None
+        """
+        return self.core_client.grpc_exec(
+            self.user_service.DeleteMembership.with_call,
+            DeleteMembershipRequest(
+                organization_id=organization_id,
+                identities={
+                    'case': 'external_id',
+                    'value': external_id
+                },
+                cascade=cascade
+            ),
+        )
+
+    # Legacy method for backward compatibility
+    def add_user_to_organization(self, organization_id: str, user_id: str) -> CreateMembershipResponse:
+        """
+        Method to add user to organization (legacy method for backward compatibility)
 
         :param organization_id  : Organization id to add user to
         :type                   : ``` str ```
@@ -128,15 +433,7 @@ class UserClient:
         :type                   : ``` str ```
 
         :returns:
-            Add User Response
+            Create Membership Response
         """
-        return self.core_client.grpc_exec(
-            self.user_service.AddUserToOrganization.with_call,
-            AddUserRequest(
-                organization_id=organization_id,
-                identities={
-                    'case': 'id',
-                    'value': user_id
-                }
-            ),
-        ) 
+        membership = CreateMembership()
+        return self.create_membership(organization_id, user_id, membership) 

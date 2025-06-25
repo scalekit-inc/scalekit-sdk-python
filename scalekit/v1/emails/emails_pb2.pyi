@@ -5,6 +5,7 @@ from google.protobuf import empty_pb2 as _empty_pb2
 from google.protobuf import field_mask_pb2 as _field_mask_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
 from google.protobuf import wrappers_pb2 as _wrappers_pb2
+from protoc_gen_openapiv2.options import annotations_pb2 as _annotations_pb2_1
 from scalekit.v1.commons import commons_pb2 as _commons_pb2
 from scalekit.v1.options import options_pb2 as _options_pb2
 from google.protobuf.internal import containers as _containers
@@ -31,6 +32,12 @@ class TemplateUsecase(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     USER_SIGNUP_LINK: _ClassVar[TemplateUsecase]
     USER_SIGNUP_LINK_OTP: _ClassVar[TemplateUsecase]
 
+class EmailServerType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    UNSPECIFIED: _ClassVar[EmailServerType]
+    INHOUSE: _ClassVar[EmailServerType]
+    CUSTOMER: _ClassVar[EmailServerType]
+
 class EmailServerProvider(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
     EMAIL_SERVER_UNSPECIFIED: _ClassVar[EmailServerProvider]
@@ -50,6 +57,9 @@ USER_LOGIN_LINK_OTP: TemplateUsecase
 USER_SIGNUP_OTP: TemplateUsecase
 USER_SIGNUP_LINK: TemplateUsecase
 USER_SIGNUP_LINK_OTP: TemplateUsecase
+UNSPECIFIED: EmailServerType
+INHOUSE: EmailServerType
+CUSTOMER: EmailServerType
 EMAIL_SERVER_UNSPECIFIED: EmailServerProvider
 SENDGRID: EmailServerProvider
 POSTMARK: EmailServerProvider
@@ -177,6 +187,66 @@ class UpdateTemplate(_message.Message):
     plain_content: str
     def __init__(self, subject: _Optional[str] = ..., html_content: _Optional[str] = ..., plain_content: _Optional[str] = ...) -> None: ...
 
+class GetEmailConfigurationResponse(_message.Message):
+    __slots__ = ("default_from_name", "default_from_address", "email_server_selected", "server")
+    DEFAULT_FROM_NAME_FIELD_NUMBER: _ClassVar[int]
+    DEFAULT_FROM_ADDRESS_FIELD_NUMBER: _ClassVar[int]
+    EMAIL_SERVER_SELECTED_FIELD_NUMBER: _ClassVar[int]
+    SERVER_FIELD_NUMBER: _ClassVar[int]
+    default_from_name: str
+    default_from_address: str
+    email_server_selected: EmailServerType
+    server: EmailServer
+    def __init__(self, default_from_name: _Optional[str] = ..., default_from_address: _Optional[str] = ..., email_server_selected: _Optional[_Union[EmailServerType, str]] = ..., server: _Optional[_Union[EmailServer, _Mapping]] = ...) -> None: ...
+
+class UpsertEmailConfigurationRequest(_message.Message):
+    __slots__ = ("default_from_name", "server")
+    DEFAULT_FROM_NAME_FIELD_NUMBER: _ClassVar[int]
+    SERVER_FIELD_NUMBER: _ClassVar[int]
+    default_from_name: str
+    server: UpsertEmailConfigurationServer
+    def __init__(self, default_from_name: _Optional[str] = ..., server: _Optional[_Union[UpsertEmailConfigurationServer, _Mapping]] = ...) -> None: ...
+
+class UpsertEmailConfigurationServer(_message.Message):
+    __slots__ = ("id", "provider", "enabled", "settings")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    PROVIDER_FIELD_NUMBER: _ClassVar[int]
+    ENABLED_FIELD_NUMBER: _ClassVar[int]
+    SETTINGS_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    provider: EmailServerProvider
+    enabled: _wrappers_pb2.BoolValue
+    settings: UpsertEmailConfigurationSMTPServerSettings
+    def __init__(self, id: _Optional[str] = ..., provider: _Optional[_Union[EmailServerProvider, str]] = ..., enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., settings: _Optional[_Union[UpsertEmailConfigurationSMTPServerSettings, _Mapping]] = ...) -> None: ...
+
+class UpsertEmailConfigurationSMTPServerSettings(_message.Message):
+    __slots__ = ("host", "port", "username", "password", "from_email", "from_name")
+    HOST_FIELD_NUMBER: _ClassVar[int]
+    PORT_FIELD_NUMBER: _ClassVar[int]
+    USERNAME_FIELD_NUMBER: _ClassVar[int]
+    PASSWORD_FIELD_NUMBER: _ClassVar[int]
+    FROM_EMAIL_FIELD_NUMBER: _ClassVar[int]
+    FROM_NAME_FIELD_NUMBER: _ClassVar[int]
+    host: str
+    port: int
+    username: str
+    password: str
+    from_email: str
+    from_name: str
+    def __init__(self, host: _Optional[str] = ..., port: _Optional[int] = ..., username: _Optional[str] = ..., password: _Optional[str] = ..., from_email: _Optional[str] = ..., from_name: _Optional[str] = ...) -> None: ...
+
+class UpsertEmailConfigurationResponse(_message.Message):
+    __slots__ = ("default_from_name", "default_from_address", "email_server_selected", "server")
+    DEFAULT_FROM_NAME_FIELD_NUMBER: _ClassVar[int]
+    DEFAULT_FROM_ADDRESS_FIELD_NUMBER: _ClassVar[int]
+    EMAIL_SERVER_SELECTED_FIELD_NUMBER: _ClassVar[int]
+    SERVER_FIELD_NUMBER: _ClassVar[int]
+    default_from_name: str
+    default_from_address: str
+    email_server_selected: EmailServerType
+    server: EmailServer
+    def __init__(self, default_from_name: _Optional[str] = ..., default_from_address: _Optional[str] = ..., email_server_selected: _Optional[_Union[EmailServerType, str]] = ..., server: _Optional[_Union[EmailServer, _Mapping]] = ...) -> None: ...
+
 class PatchEmailTemplateRequest(_message.Message):
     __slots__ = ("organization_id", "template_id", "template", "update_mask")
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
@@ -212,6 +282,22 @@ class EmailServer(_message.Message):
     def __init__(self, updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., id: _Optional[str] = ..., provider: _Optional[_Union[EmailServerProvider, str]] = ..., enabled: bool = ..., smtp_settings: _Optional[_Union[SMTPServerSettings, _Mapping]] = ...) -> None: ...
 
 class SMTPServerSettings(_message.Message):
+    __slots__ = ("host", "port", "username", "password", "from_email", "from_name")
+    HOST_FIELD_NUMBER: _ClassVar[int]
+    PORT_FIELD_NUMBER: _ClassVar[int]
+    USERNAME_FIELD_NUMBER: _ClassVar[int]
+    PASSWORD_FIELD_NUMBER: _ClassVar[int]
+    FROM_EMAIL_FIELD_NUMBER: _ClassVar[int]
+    FROM_NAME_FIELD_NUMBER: _ClassVar[int]
+    host: str
+    port: int
+    username: str
+    password: str
+    from_email: str
+    from_name: str
+    def __init__(self, host: _Optional[str] = ..., port: _Optional[int] = ..., username: _Optional[str] = ..., password: _Optional[str] = ..., from_email: _Optional[str] = ..., from_name: _Optional[str] = ...) -> None: ...
+
+class PatchSMTPServerSettings(_message.Message):
     __slots__ = ("host", "port", "username", "password", "from_email", "from_name")
     HOST_FIELD_NUMBER: _ClassVar[int]
     PORT_FIELD_NUMBER: _ClassVar[int]
@@ -284,8 +370,8 @@ class PatchEmailServerSettingsRequest(_message.Message):
     SERVER_ID_FIELD_NUMBER: _ClassVar[int]
     SETTINGS_FIELD_NUMBER: _ClassVar[int]
     server_id: str
-    settings: SMTPServerSettings
-    def __init__(self, server_id: _Optional[str] = ..., settings: _Optional[_Union[SMTPServerSettings, _Mapping]] = ...) -> None: ...
+    settings: PatchSMTPServerSettings
+    def __init__(self, server_id: _Optional[str] = ..., settings: _Optional[_Union[PatchSMTPServerSettings, _Mapping]] = ...) -> None: ...
 
 class DeleteEmailServerRequest(_message.Message):
     __slots__ = ("server_id",)

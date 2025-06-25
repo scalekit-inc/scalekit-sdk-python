@@ -4,6 +4,7 @@ from google.api import field_behavior_pb2 as _field_behavior_pb2
 from google.api import visibility_pb2 as _visibility_pb2
 from google.protobuf import duration_pb2 as _duration_pb2
 from google.protobuf import empty_pb2 as _empty_pb2
+from google.protobuf import struct_pb2 as _struct_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
 from google.protobuf import wrappers_pb2 as _wrappers_pb2
 from protoc_gen_openapiv2.options import annotations_pb2 as _annotations_pb2_1
@@ -382,7 +383,7 @@ class ListConnectionsResponse(_message.Message):
     def __init__(self, connections: _Optional[_Iterable[_Union[ListConnection, _Mapping]]] = ...) -> None: ...
 
 class ListConnection(_message.Message):
-    __slots__ = ("id", "provider", "type", "status", "enabled", "organization_id", "ui_button_title", "domains", "OrganizationName")
+    __slots__ = ("id", "provider", "type", "status", "enabled", "organization_id", "ui_button_title", "domains", "organization_name")
     ID_FIELD_NUMBER: _ClassVar[int]
     PROVIDER_FIELD_NUMBER: _ClassVar[int]
     TYPE_FIELD_NUMBER: _ClassVar[int]
@@ -391,7 +392,7 @@ class ListConnection(_message.Message):
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     UI_BUTTON_TITLE_FIELD_NUMBER: _ClassVar[int]
     DOMAINS_FIELD_NUMBER: _ClassVar[int]
-    ORGANIZATIONNAME_FIELD_NUMBER: _ClassVar[int]
+    ORGANIZATION_NAME_FIELD_NUMBER: _ClassVar[int]
     id: str
     provider: ConnectionProvider
     type: ConnectionType
@@ -400,8 +401,8 @@ class ListConnection(_message.Message):
     organization_id: str
     ui_button_title: str
     domains: _containers.RepeatedScalarFieldContainer[str]
-    OrganizationName: str
-    def __init__(self, id: _Optional[str] = ..., provider: _Optional[_Union[ConnectionProvider, str]] = ..., type: _Optional[_Union[ConnectionType, str]] = ..., status: _Optional[_Union[ConnectionStatus, str]] = ..., enabled: bool = ..., organization_id: _Optional[str] = ..., ui_button_title: _Optional[str] = ..., domains: _Optional[_Iterable[str]] = ..., OrganizationName: _Optional[str] = ...) -> None: ...
+    organization_name: str
+    def __init__(self, id: _Optional[str] = ..., provider: _Optional[_Union[ConnectionProvider, str]] = ..., type: _Optional[_Union[ConnectionType, str]] = ..., status: _Optional[_Union[ConnectionStatus, str]] = ..., enabled: bool = ..., organization_id: _Optional[str] = ..., ui_button_title: _Optional[str] = ..., domains: _Optional[_Iterable[str]] = ..., organization_name: _Optional[str] = ...) -> None: ...
 
 class ListOrganizationConnectionsRequest(_message.Message):
     __slots__ = ("page_size", "page_token")

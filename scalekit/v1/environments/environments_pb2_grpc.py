@@ -90,6 +90,11 @@ class EnvironmentServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdateFeaturesRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetFeaturesResponse.FromString,
                 )
+        self.EnableFSAFeature = channel.unary_unary(
+                '/scalekit.v1.environments.EnvironmentService/EnableFSAFeature',
+                request_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.EnableFSAFeatureRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
         self.EnableFeature = channel.unary_unary(
                 '/scalekit.v1.environments.EnvironmentService/EnableFeature',
                 request_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.EnableFeatureRequest.SerializeToString,
@@ -245,6 +250,12 @@ class EnvironmentServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def EnableFSAFeature(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def EnableFeature(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -394,6 +405,11 @@ def add_EnvironmentServiceServicer_to_server(servicer, server):
                     servicer.UpdateFeatures,
                     request_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdateFeaturesRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetFeaturesResponse.SerializeToString,
+            ),
+            'EnableFSAFeature': grpc.unary_unary_rpc_method_handler(
+                    servicer.EnableFSAFeature,
+                    request_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.EnableFSAFeatureRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'EnableFeature': grpc.unary_unary_rpc_method_handler(
                     servicer.EnableFeature,
@@ -717,6 +733,23 @@ class EnvironmentService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.environments.EnvironmentService/UpdateFeatures',
             scalekit_dot_v1_dot_environments_dot_environments__pb2.UpdateFeaturesRequest.SerializeToString,
             scalekit_dot_v1_dot_environments_dot_environments__pb2.GetFeaturesResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def EnableFSAFeature(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.environments.EnvironmentService/EnableFSAFeature',
+            scalekit_dot_v1_dot_environments_dot_environments__pb2.EnableFSAFeatureRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

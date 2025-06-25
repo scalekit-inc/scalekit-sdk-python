@@ -5,6 +5,7 @@ from google.protobuf import empty_pb2 as _empty_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
 from scalekit.v1.commons import commons_pb2 as _commons_pb2
 from scalekit.v1.options import options_pb2 as _options_pb2
+from scalekit.v1.users import users_pb2 as _users_pb2
 from google.protobuf.internal import containers as _containers
 from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
@@ -85,8 +86,8 @@ class UpdateMember(_message.Message):
     first_name: str
     last_name: str
     metadata: _containers.ScalarMap[str, str]
-    user_profile: _commons_pb2.UserProfile
-    def __init__(self, role: _Optional[_Union[MemberRole, str]] = ..., first_name: _Optional[str] = ..., last_name: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., user_profile: _Optional[_Union[_commons_pb2.UserProfile, _Mapping]] = ...) -> None: ...
+    user_profile: _users_pb2.UpdateUserProfile
+    def __init__(self, role: _Optional[_Union[MemberRole, str]] = ..., first_name: _Optional[str] = ..., last_name: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., user_profile: _Optional[_Union[_users_pb2.UpdateUserProfile, _Mapping]] = ...) -> None: ...
 
 class UpdateCurrentMemberRequest(_message.Message):
     __slots__ = ("member",)

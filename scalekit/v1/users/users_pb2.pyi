@@ -15,7 +15,7 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class User(_message.Message):
-    __slots__ = ("id", "environment_id", "create_time", "update_time", "email", "external_id", "identity", "phone_number", "organizations", "user_profile", "metadata", "last_login")
+    __slots__ = ("id", "environment_id", "create_time", "update_time", "email", "external_id", "memberships", "user_profile", "metadata", "last_login")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -29,9 +29,7 @@ class User(_message.Message):
     UPDATE_TIME_FIELD_NUMBER: _ClassVar[int]
     EMAIL_FIELD_NUMBER: _ClassVar[int]
     EXTERNAL_ID_FIELD_NUMBER: _ClassVar[int]
-    IDENTITY_FIELD_NUMBER: _ClassVar[int]
-    PHONE_NUMBER_FIELD_NUMBER: _ClassVar[int]
-    ORGANIZATIONS_FIELD_NUMBER: _ClassVar[int]
+    MEMBERSHIPS_FIELD_NUMBER: _ClassVar[int]
     USER_PROFILE_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     LAST_LOGIN_FIELD_NUMBER: _ClassVar[int]
@@ -41,30 +39,30 @@ class User(_message.Message):
     update_time: _timestamp_pb2.Timestamp
     email: str
     external_id: str
-    identity: str
-    phone_number: str
-    organizations: _containers.RepeatedCompositeFieldContainer[_commons_pb2.OrganizationMembership]
+    memberships: _containers.RepeatedCompositeFieldContainer[_commons_pb2.OrganizationMembership]
     user_profile: _commons_pb2.UserProfile
     metadata: _containers.ScalarMap[str, str]
     last_login: _timestamp_pb2.Timestamp
-    def __init__(self, id: _Optional[str] = ..., environment_id: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., email: _Optional[str] = ..., external_id: _Optional[str] = ..., identity: _Optional[str] = ..., phone_number: _Optional[str] = ..., organizations: _Optional[_Iterable[_Union[_commons_pb2.OrganizationMembership, _Mapping]]] = ..., user_profile: _Optional[_Union[_commons_pb2.UserProfile, _Mapping]] = ..., metadata: _Optional[_Mapping[str, str]] = ..., last_login: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., environment_id: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., email: _Optional[str] = ..., external_id: _Optional[str] = ..., memberships: _Optional[_Iterable[_Union[_commons_pb2.OrganizationMembership, _Mapping]]] = ..., user_profile: _Optional[_Union[_commons_pb2.UserProfile, _Mapping]] = ..., metadata: _Optional[_Mapping[str, str]] = ..., last_login: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
-class CreateUserRequest(_message.Message):
-    __slots__ = ("organization_id", "user")
+class CreateUserAndMembershipRequest(_message.Message):
+    __slots__ = ("organization_id", "user", "send_invitation_email")
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     USER_FIELD_NUMBER: _ClassVar[int]
+    SEND_INVITATION_EMAIL_FIELD_NUMBER: _ClassVar[int]
     organization_id: str
-    user: User
-    def __init__(self, organization_id: _Optional[str] = ..., user: _Optional[_Union[User, _Mapping]] = ...) -> None: ...
+    user: CreateUser
+    send_invitation_email: bool
+    def __init__(self, organization_id: _Optional[str] = ..., user: _Optional[_Union[CreateUser, _Mapping]] = ..., send_invitation_email: bool = ...) -> None: ...
 
-class CreateUserResponse(_message.Message):
+class CreateUserAndMembershipResponse(_message.Message):
     __slots__ = ("user",)
     USER_FIELD_NUMBER: _ClassVar[int]
     user: User
     def __init__(self, user: _Optional[_Union[User, _Mapping]] = ...) -> None: ...
 
 class UpdateUser(_message.Message):
-    __slots__ = ("external_id", "metadata", "user_profile")
+    __slots__ = ("external_id", "user_profile", "metadata")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -73,26 +71,22 @@ class UpdateUser(_message.Message):
         value: str
         def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
     EXTERNAL_ID_FIELD_NUMBER: _ClassVar[int]
-    METADATA_FIELD_NUMBER: _ClassVar[int]
     USER_PROFILE_FIELD_NUMBER: _ClassVar[int]
+    METADATA_FIELD_NUMBER: _ClassVar[int]
     external_id: str
+    user_profile: UpdateUserProfile
     metadata: _containers.ScalarMap[str, str]
-    user_profile: _commons_pb2.UserProfile
-    def __init__(self, external_id: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., user_profile: _Optional[_Union[_commons_pb2.UserProfile, _Mapping]] = ...) -> None: ...
+    def __init__(self, external_id: _Optional[str] = ..., user_profile: _Optional[_Union[UpdateUserProfile, _Mapping]] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
 
 class UpdateUserRequest(_message.Message):
-    __slots__ = ("organization_id", "id", "external_id", "identity", "user")
-    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("id", "external_id", "user")
     ID_FIELD_NUMBER: _ClassVar[int]
     EXTERNAL_ID_FIELD_NUMBER: _ClassVar[int]
-    IDENTITY_FIELD_NUMBER: _ClassVar[int]
     USER_FIELD_NUMBER: _ClassVar[int]
-    organization_id: str
     id: str
     external_id: str
-    identity: str
     user: UpdateUser
-    def __init__(self, organization_id: _Optional[str] = ..., id: _Optional[str] = ..., external_id: _Optional[str] = ..., identity: _Optional[str] = ..., user: _Optional[_Union[UpdateUser, _Mapping]] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., external_id: _Optional[str] = ..., user: _Optional[_Union[UpdateUser, _Mapping]] = ...) -> None: ...
 
 class UpdateUserResponse(_message.Message):
     __slots__ = ("user",)
@@ -101,16 +95,12 @@ class UpdateUserResponse(_message.Message):
     def __init__(self, user: _Optional[_Union[User, _Mapping]] = ...) -> None: ...
 
 class GetUserRequest(_message.Message):
-    __slots__ = ("organization_id", "id", "external_id", "identity")
-    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("id", "external_id")
     ID_FIELD_NUMBER: _ClassVar[int]
     EXTERNAL_ID_FIELD_NUMBER: _ClassVar[int]
-    IDENTITY_FIELD_NUMBER: _ClassVar[int]
-    organization_id: str
     id: str
     external_id: str
-    identity: str
-    def __init__(self, organization_id: _Optional[str] = ..., id: _Optional[str] = ..., external_id: _Optional[str] = ..., identity: _Optional[str] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., external_id: _Optional[str] = ...) -> None: ...
 
 class GetUserResponse(_message.Message):
     __slots__ = ("user",)
@@ -118,7 +108,7 @@ class GetUserResponse(_message.Message):
     user: User
     def __init__(self, user: _Optional[_Union[User, _Mapping]] = ...) -> None: ...
 
-class ListUserRequest(_message.Message):
+class ListOrganizationUsersRequest(_message.Message):
     __slots__ = ("organization_id", "page_size", "page_token")
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
@@ -128,7 +118,81 @@ class ListUserRequest(_message.Message):
     page_token: str
     def __init__(self, organization_id: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ...) -> None: ...
 
-class ListUserResponse(_message.Message):
+class ListOrganizationUsersResponse(_message.Message):
+    __slots__ = ("next_page_token", "total_size", "users", "prev_page_token")
+    NEXT_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    TOTAL_SIZE_FIELD_NUMBER: _ClassVar[int]
+    USERS_FIELD_NUMBER: _ClassVar[int]
+    PREV_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    next_page_token: str
+    total_size: int
+    users: _containers.RepeatedCompositeFieldContainer[User]
+    prev_page_token: str
+    def __init__(self, next_page_token: _Optional[str] = ..., total_size: _Optional[int] = ..., users: _Optional[_Iterable[_Union[User, _Mapping]]] = ..., prev_page_token: _Optional[str] = ...) -> None: ...
+
+class DeleteMembershipRequest(_message.Message):
+    __slots__ = ("organization_id", "id", "external_id", "cascade")
+    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
+    ID_FIELD_NUMBER: _ClassVar[int]
+    EXTERNAL_ID_FIELD_NUMBER: _ClassVar[int]
+    CASCADE_FIELD_NUMBER: _ClassVar[int]
+    organization_id: str
+    id: str
+    external_id: str
+    cascade: bool
+    def __init__(self, organization_id: _Optional[str] = ..., id: _Optional[str] = ..., external_id: _Optional[str] = ..., cascade: bool = ...) -> None: ...
+
+class CreateMembershipRequest(_message.Message):
+    __slots__ = ("organization_id", "membership", "id", "external_id", "send_invitation_email")
+    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
+    MEMBERSHIP_FIELD_NUMBER: _ClassVar[int]
+    ID_FIELD_NUMBER: _ClassVar[int]
+    EXTERNAL_ID_FIELD_NUMBER: _ClassVar[int]
+    SEND_INVITATION_EMAIL_FIELD_NUMBER: _ClassVar[int]
+    organization_id: str
+    membership: CreateMembership
+    id: str
+    external_id: str
+    send_invitation_email: bool
+    def __init__(self, organization_id: _Optional[str] = ..., membership: _Optional[_Union[CreateMembership, _Mapping]] = ..., id: _Optional[str] = ..., external_id: _Optional[str] = ..., send_invitation_email: bool = ...) -> None: ...
+
+class CreateMembershipResponse(_message.Message):
+    __slots__ = ("user",)
+    USER_FIELD_NUMBER: _ClassVar[int]
+    user: User
+    def __init__(self, user: _Optional[_Union[User, _Mapping]] = ...) -> None: ...
+
+class ListUsersRequest(_message.Message):
+    __slots__ = ("page_size", "page_token")
+    PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
+    PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    page_size: int
+    page_token: str
+    def __init__(self, page_size: _Optional[int] = ..., page_token: _Optional[str] = ...) -> None: ...
+
+class ListUsersResponse(_message.Message):
+    __slots__ = ("users", "next_page_token", "total_size", "prev_page_token")
+    USERS_FIELD_NUMBER: _ClassVar[int]
+    NEXT_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    TOTAL_SIZE_FIELD_NUMBER: _ClassVar[int]
+    PREV_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    users: _containers.RepeatedCompositeFieldContainer[User]
+    next_page_token: str
+    total_size: int
+    prev_page_token: str
+    def __init__(self, users: _Optional[_Iterable[_Union[User, _Mapping]]] = ..., next_page_token: _Optional[str] = ..., total_size: _Optional[int] = ..., prev_page_token: _Optional[str] = ...) -> None: ...
+
+class SearchUsersRequest(_message.Message):
+    __slots__ = ("query", "page_size", "page_token")
+    QUERY_FIELD_NUMBER: _ClassVar[int]
+    PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
+    PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    query: str
+    page_size: int
+    page_token: str
+    def __init__(self, query: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ...) -> None: ...
+
+class SearchUsersResponse(_message.Message):
     __slots__ = ("next_page_token", "total_size", "users", "prev_page_token")
     NEXT_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
     TOTAL_SIZE_FIELD_NUMBER: _ClassVar[int]
@@ -141,31 +205,166 @@ class ListUserResponse(_message.Message):
     def __init__(self, next_page_token: _Optional[str] = ..., total_size: _Optional[int] = ..., users: _Optional[_Iterable[_Union[User, _Mapping]]] = ..., prev_page_token: _Optional[str] = ...) -> None: ...
 
 class DeleteUserRequest(_message.Message):
-    __slots__ = ("organization_id", "id", "external_id", "identity")
+    __slots__ = ("id", "external_id")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    EXTERNAL_ID_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    external_id: str
+    def __init__(self, id: _Optional[str] = ..., external_id: _Optional[str] = ...) -> None: ...
+
+class UpdateMembershipRequest(_message.Message):
+    __slots__ = ("organization_id", "id", "external_id", "membership")
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     ID_FIELD_NUMBER: _ClassVar[int]
     EXTERNAL_ID_FIELD_NUMBER: _ClassVar[int]
-    IDENTITY_FIELD_NUMBER: _ClassVar[int]
+    MEMBERSHIP_FIELD_NUMBER: _ClassVar[int]
     organization_id: str
     id: str
     external_id: str
-    identity: str
-    def __init__(self, organization_id: _Optional[str] = ..., id: _Optional[str] = ..., external_id: _Optional[str] = ..., identity: _Optional[str] = ...) -> None: ...
+    membership: UpdateMembership
+    def __init__(self, organization_id: _Optional[str] = ..., id: _Optional[str] = ..., external_id: _Optional[str] = ..., membership: _Optional[_Union[UpdateMembership, _Mapping]] = ...) -> None: ...
 
-class AddUserRequest(_message.Message):
-    __slots__ = ("organization_id", "id", "external_id", "identity")
-    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
-    ID_FIELD_NUMBER: _ClassVar[int]
-    EXTERNAL_ID_FIELD_NUMBER: _ClassVar[int]
-    IDENTITY_FIELD_NUMBER: _ClassVar[int]
-    organization_id: str
-    id: str
-    external_id: str
-    identity: str
-    def __init__(self, organization_id: _Optional[str] = ..., id: _Optional[str] = ..., external_id: _Optional[str] = ..., identity: _Optional[str] = ...) -> None: ...
+class UpdateMembership(_message.Message):
+    __slots__ = ("roles", "metadata")
+    class MetadataEntry(_message.Message):
+        __slots__ = ("key", "value")
+        KEY_FIELD_NUMBER: _ClassVar[int]
+        VALUE_FIELD_NUMBER: _ClassVar[int]
+        key: str
+        value: str
+        def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
+    ROLES_FIELD_NUMBER: _ClassVar[int]
+    METADATA_FIELD_NUMBER: _ClassVar[int]
+    roles: _containers.RepeatedCompositeFieldContainer[_commons_pb2.Role]
+    metadata: _containers.ScalarMap[str, str]
+    def __init__(self, roles: _Optional[_Iterable[_Union[_commons_pb2.Role, _Mapping]]] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
 
-class AddUserResponse(_message.Message):
+class CreateMembership(_message.Message):
+    __slots__ = ("roles", "metadata")
+    class MetadataEntry(_message.Message):
+        __slots__ = ("key", "value")
+        KEY_FIELD_NUMBER: _ClassVar[int]
+        VALUE_FIELD_NUMBER: _ClassVar[int]
+        key: str
+        value: str
+        def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
+    ROLES_FIELD_NUMBER: _ClassVar[int]
+    METADATA_FIELD_NUMBER: _ClassVar[int]
+    roles: _containers.RepeatedCompositeFieldContainer[_commons_pb2.Role]
+    metadata: _containers.ScalarMap[str, str]
+    def __init__(self, roles: _Optional[_Iterable[_Union[_commons_pb2.Role, _Mapping]]] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
+
+class UpdateMembershipResponse(_message.Message):
     __slots__ = ("user",)
     USER_FIELD_NUMBER: _ClassVar[int]
     user: User
     def __init__(self, user: _Optional[_Union[User, _Mapping]] = ...) -> None: ...
+
+class SearchOrganizationUsersRequest(_message.Message):
+    __slots__ = ("organization_id", "query", "page_size", "page_token")
+    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
+    QUERY_FIELD_NUMBER: _ClassVar[int]
+    PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
+    PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    organization_id: str
+    query: str
+    page_size: int
+    page_token: str
+    def __init__(self, organization_id: _Optional[str] = ..., query: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ...) -> None: ...
+
+class SearchOrganizationUsersResponse(_message.Message):
+    __slots__ = ("next_page_token", "total_size", "users", "prev_page_token")
+    NEXT_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    TOTAL_SIZE_FIELD_NUMBER: _ClassVar[int]
+    USERS_FIELD_NUMBER: _ClassVar[int]
+    PREV_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    next_page_token: str
+    total_size: int
+    users: _containers.RepeatedCompositeFieldContainer[User]
+    prev_page_token: str
+    def __init__(self, next_page_token: _Optional[str] = ..., total_size: _Optional[int] = ..., users: _Optional[_Iterable[_Union[User, _Mapping]]] = ..., prev_page_token: _Optional[str] = ...) -> None: ...
+
+class CreateUser(_message.Message):
+    __slots__ = ("email", "external_id", "membership", "user_profile", "metadata")
+    class MetadataEntry(_message.Message):
+        __slots__ = ("key", "value")
+        KEY_FIELD_NUMBER: _ClassVar[int]
+        VALUE_FIELD_NUMBER: _ClassVar[int]
+        key: str
+        value: str
+        def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
+    EMAIL_FIELD_NUMBER: _ClassVar[int]
+    EXTERNAL_ID_FIELD_NUMBER: _ClassVar[int]
+    MEMBERSHIP_FIELD_NUMBER: _ClassVar[int]
+    USER_PROFILE_FIELD_NUMBER: _ClassVar[int]
+    METADATA_FIELD_NUMBER: _ClassVar[int]
+    email: str
+    external_id: str
+    membership: CreateMembership
+    user_profile: CreateUserProfile
+    metadata: _containers.ScalarMap[str, str]
+    def __init__(self, email: _Optional[str] = ..., external_id: _Optional[str] = ..., membership: _Optional[_Union[CreateMembership, _Mapping]] = ..., user_profile: _Optional[_Union[CreateUserProfile, _Mapping]] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
+
+class CreateUserProfile(_message.Message):
+    __slots__ = ("first_name", "last_name", "name", "locale", "phone_number", "metadata", "custom_attributes")
+    class MetadataEntry(_message.Message):
+        __slots__ = ("key", "value")
+        KEY_FIELD_NUMBER: _ClassVar[int]
+        VALUE_FIELD_NUMBER: _ClassVar[int]
+        key: str
+        value: str
+        def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
+    class CustomAttributesEntry(_message.Message):
+        __slots__ = ("key", "value")
+        KEY_FIELD_NUMBER: _ClassVar[int]
+        VALUE_FIELD_NUMBER: _ClassVar[int]
+        key: str
+        value: str
+        def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
+    FIRST_NAME_FIELD_NUMBER: _ClassVar[int]
+    LAST_NAME_FIELD_NUMBER: _ClassVar[int]
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    LOCALE_FIELD_NUMBER: _ClassVar[int]
+    PHONE_NUMBER_FIELD_NUMBER: _ClassVar[int]
+    METADATA_FIELD_NUMBER: _ClassVar[int]
+    CUSTOM_ATTRIBUTES_FIELD_NUMBER: _ClassVar[int]
+    first_name: str
+    last_name: str
+    name: str
+    locale: str
+    phone_number: str
+    metadata: _containers.ScalarMap[str, str]
+    custom_attributes: _containers.ScalarMap[str, str]
+    def __init__(self, first_name: _Optional[str] = ..., last_name: _Optional[str] = ..., name: _Optional[str] = ..., locale: _Optional[str] = ..., phone_number: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., custom_attributes: _Optional[_Mapping[str, str]] = ...) -> None: ...
+
+class UpdateUserProfile(_message.Message):
+    __slots__ = ("first_name", "last_name", "name", "locale", "phone_number", "metadata", "custom_attributes")
+    class MetadataEntry(_message.Message):
+        __slots__ = ("key", "value")
+        KEY_FIELD_NUMBER: _ClassVar[int]
+        VALUE_FIELD_NUMBER: _ClassVar[int]
+        key: str
+        value: str
+        def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
+    class CustomAttributesEntry(_message.Message):
+        __slots__ = ("key", "value")
+        KEY_FIELD_NUMBER: _ClassVar[int]
+        VALUE_FIELD_NUMBER: _ClassVar[int]
+        key: str
+        value: str
+        def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
+    FIRST_NAME_FIELD_NUMBER: _ClassVar[int]
+    LAST_NAME_FIELD_NUMBER: _ClassVar[int]
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    LOCALE_FIELD_NUMBER: _ClassVar[int]
+    PHONE_NUMBER_FIELD_NUMBER: _ClassVar[int]
+    METADATA_FIELD_NUMBER: _ClassVar[int]
+    CUSTOM_ATTRIBUTES_FIELD_NUMBER: _ClassVar[int]
+    first_name: str
+    last_name: str
+    name: str
+    locale: str
+    phone_number: str
+    metadata: _containers.ScalarMap[str, str]
+    custom_attributes: _containers.ScalarMap[str, str]
+    def __init__(self, first_name: _Optional[str] = ..., last_name: _Optional[str] = ..., name: _Optional[str] = ..., locale: _Optional[str] = ..., phone_number: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., custom_attributes: _Optional[_Mapping[str, str]] = ...) -> None: ...
