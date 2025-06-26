@@ -350,7 +350,7 @@ class ScalekitClient:
         signature = hmac.new(secret, data.encode(), hashlib.sha256).digest()
         return f"v1, {base64.b64encode(signature).decode('utf-8')}"
 
-    def refresh_token(self, refresh_token: str):
+    def refresh_access_token(self, refresh_token: str):
         """
         Method to refresh access token using refresh token
 
