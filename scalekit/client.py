@@ -1,4 +1,3 @@
-
 import json
 from math import floor
 from typing import Any, Optional, Dict
@@ -15,15 +14,18 @@ from scalekit.connection import ConnectionClient
 from scalekit.m2m_client import M2MClient
 from scalekit.organization import OrganizationClient
 from scalekit.directory import DirectoryClient
+from scalekit.users import UserClient
 from scalekit.common.scalekit import (
     AuthorizationUrlOptions,
     CodeAuthenticationOptions,
     GrantType,
     IdpInitiatedLoginClaims,
+    LogoutUrlOptions,
 )
 from scalekit.constants.user import id_token_claim_to_user_map
 
 AUTHORIZE_ENDPOINT = "oauth/authorize"
+LOGOUT_ENDPOINT = "end_session" 
 webhook_tolerance_in_seconds = timedelta(minutes=5)
 webhook_signature_version = "v1"
 
@@ -58,6 +60,7 @@ class ScalekitClient:
             self.organization = OrganizationClient(self.core_client)
             self.directory = DirectoryClient(self.core_client)
             self.m2m_client = M2MClient(self.core_client)
+            self.users = UserClient(self.core_client)
         except Exception as exp:
             raise exp
 
@@ -91,6 +94,7 @@ class ScalekitClient:
                 "connection_id": options.connection_id,
                 "organization_id": options.organization_id,
                 "provider": options.provider,
+                "prompt": options.prompt,  
             }
 
             valid_auth_params = {k: v for k, v in url_params_dict.items() if v}
@@ -345,3 +349,57 @@ class ScalekitClient:
         """
         signature = hmac.new(secret, data.encode(), hashlib.sha256).digest()
         return f"v1, {base64.b64encode(signature).decode('utf-8')}"
+
+    def refresh_access_token(self, refresh_token: str):
+        """
+        Method to refresh access token using refresh token
+
+        :param refresh_token  : Refresh token to get new access token
+        :type                 : ``` str ```
+
+        :returns:
+            dict with access token & refresh token
+        """
+        try:
+            response = self.core_client.authenticate(
+                json.dumps(
+                    {
+                        "refresh_token": refresh_token,
+                        "grant_type": GrantType.RefreshToken.value,
+                        "client_id": self.core_client.client_id,
+                        "client_secret": self.core_client.client_secret,
+                    }
+                )
+            )
+            response = json.loads(response.content)
+            return {
+                "access_token": response["access_token"],
+                "refresh_token": response["refresh_token"]
+            }
+
+        except Exception as exp:
+            raise exp
+
+    def get_logout_url(self, options: LogoutUrlOptions) -> str:
+        """
+        Method to get logout URL
+
+        :param options        : Logout URL options object
+        :type                 : ``` LogoutUrlOptions ```
+
+        :returns:
+            str: The logout URL
+        """
+        try:
+            url_params_dict = {
+                "id_token_hint": options.id_token_hint,
+                "post_logout_redirect_uri": options.post_logout_redirect_uri,
+                "state": options.state
+            }
+
+            valid_params = {k: v for k, v in url_params_dict.items() if v is not None}
+            query_string = urlencode(valid_params)
+
+            return f"{self.core_client.env_url}/{LOGOUT_ENDPOINT}?{query_string}"
+        except Exception as exp:
+            raise exp

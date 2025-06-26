@@ -40,6 +40,31 @@ class RolesServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.DeleteRoleRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
+        self.CreateOrganizationRole = channel.unary_unary(
+                '/scalekit.v1.roles.RolesService/CreateOrganizationRole',
+                request_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.CreateOrganizationRoleRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.CreateOrganizationRoleResponse.FromString,
+                )
+        self.UpdateOrganizationRole = channel.unary_unary(
+                '/scalekit.v1.roles.RolesService/UpdateOrganizationRole',
+                request_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.UpdateOrganizationRoleRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.UpdateOrganizationRoleResponse.FromString,
+                )
+        self.GetOrganizationRole = channel.unary_unary(
+                '/scalekit.v1.roles.RolesService/GetOrganizationRole',
+                request_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.GetOrganizationRoleRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.GetOrganizationRoleResponse.FromString,
+                )
+        self.ListOrganizationRoles = channel.unary_unary(
+                '/scalekit.v1.roles.RolesService/ListOrganizationRoles',
+                request_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.ListOrganizationRolesRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.ListOrganizationRolesResponse.FromString,
+                )
+        self.DeleteOrganizationRole = channel.unary_unary(
+                '/scalekit.v1.roles.RolesService/DeleteOrganizationRole',
+                request_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.DeleteOrganizationRoleRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
 
 
 class RolesServiceServicer(object):
@@ -75,6 +100,36 @@ class RolesServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def CreateOrganizationRole(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateOrganizationRole(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetOrganizationRole(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListOrganizationRoles(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeleteOrganizationRole(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_RolesServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -101,6 +156,31 @@ def add_RolesServiceServicer_to_server(servicer, server):
             'DeleteRole': grpc.unary_unary_rpc_method_handler(
                     servicer.DeleteRole,
                     request_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.DeleteRoleRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'CreateOrganizationRole': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateOrganizationRole,
+                    request_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.CreateOrganizationRoleRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.CreateOrganizationRoleResponse.SerializeToString,
+            ),
+            'UpdateOrganizationRole': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateOrganizationRole,
+                    request_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.UpdateOrganizationRoleRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.UpdateOrganizationRoleResponse.SerializeToString,
+            ),
+            'GetOrganizationRole': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetOrganizationRole,
+                    request_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.GetOrganizationRoleRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.GetOrganizationRoleResponse.SerializeToString,
+            ),
+            'ListOrganizationRoles': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListOrganizationRoles,
+                    request_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.ListOrganizationRolesRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.ListOrganizationRolesResponse.SerializeToString,
+            ),
+            'DeleteOrganizationRole': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteOrganizationRole,
+                    request_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.DeleteOrganizationRoleRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
     }
@@ -194,6 +274,91 @@ class RolesService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.roles.RolesService/DeleteRole',
             scalekit_dot_v1_dot_roles_dot_roles__pb2.DeleteRoleRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def CreateOrganizationRole(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.roles.RolesService/CreateOrganizationRole',
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.CreateOrganizationRoleRequest.SerializeToString,
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.CreateOrganizationRoleResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def UpdateOrganizationRole(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.roles.RolesService/UpdateOrganizationRole',
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.UpdateOrganizationRoleRequest.SerializeToString,
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.UpdateOrganizationRoleResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetOrganizationRole(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.roles.RolesService/GetOrganizationRole',
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.GetOrganizationRoleRequest.SerializeToString,
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.GetOrganizationRoleResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListOrganizationRoles(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.roles.RolesService/ListOrganizationRoles',
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.ListOrganizationRolesRequest.SerializeToString,
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.ListOrganizationRolesResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DeleteOrganizationRole(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.roles.RolesService/DeleteOrganizationRole',
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.DeleteOrganizationRoleRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

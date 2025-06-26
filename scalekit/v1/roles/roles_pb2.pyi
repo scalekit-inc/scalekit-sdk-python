@@ -18,18 +18,18 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class Role(_message.Message):
-    __slots__ = ("id", "name", "displayName", "description", "default")
+    __slots__ = ("id", "name", "display_name", "description", "default")
     ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
-    DISPLAYNAME_FIELD_NUMBER: _ClassVar[int]
+    DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     DEFAULT_FIELD_NUMBER: _ClassVar[int]
     id: str
     name: str
-    displayName: str
+    display_name: str
     description: str
     default: bool
-    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., displayName: _Optional[str] = ..., description: _Optional[str] = ..., default: bool = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., default: bool = ...) -> None: ...
 
 class CreateRole(_message.Message):
     __slots__ = ("name", "display_name", "description", "default")
@@ -116,3 +116,67 @@ class DeleteRoleRequest(_message.Message):
     env_id: str
     id: str
     def __init__(self, env_id: _Optional[str] = ..., id: _Optional[str] = ...) -> None: ...
+
+class CreateOrganizationRoleRequest(_message.Message):
+    __slots__ = ("org_id", "role")
+    ORG_ID_FIELD_NUMBER: _ClassVar[int]
+    ROLE_FIELD_NUMBER: _ClassVar[int]
+    org_id: str
+    role: CreateRole
+    def __init__(self, org_id: _Optional[str] = ..., role: _Optional[_Union[CreateRole, _Mapping]] = ...) -> None: ...
+
+class CreateOrganizationRoleResponse(_message.Message):
+    __slots__ = ("role",)
+    ROLE_FIELD_NUMBER: _ClassVar[int]
+    role: Role
+    def __init__(self, role: _Optional[_Union[Role, _Mapping]] = ...) -> None: ...
+
+class GetOrganizationRoleRequest(_message.Message):
+    __slots__ = ("org_id", "id")
+    ORG_ID_FIELD_NUMBER: _ClassVar[int]
+    ID_FIELD_NUMBER: _ClassVar[int]
+    org_id: str
+    id: str
+    def __init__(self, org_id: _Optional[str] = ..., id: _Optional[str] = ...) -> None: ...
+
+class GetOrganizationRoleResponse(_message.Message):
+    __slots__ = ("role",)
+    ROLE_FIELD_NUMBER: _ClassVar[int]
+    role: Role
+    def __init__(self, role: _Optional[_Union[Role, _Mapping]] = ...) -> None: ...
+
+class ListOrganizationRolesRequest(_message.Message):
+    __slots__ = ("org_id",)
+    ORG_ID_FIELD_NUMBER: _ClassVar[int]
+    org_id: str
+    def __init__(self, org_id: _Optional[str] = ...) -> None: ...
+
+class ListOrganizationRolesResponse(_message.Message):
+    __slots__ = ("roles",)
+    ROLES_FIELD_NUMBER: _ClassVar[int]
+    roles: _containers.RepeatedCompositeFieldContainer[Role]
+    def __init__(self, roles: _Optional[_Iterable[_Union[Role, _Mapping]]] = ...) -> None: ...
+
+class UpdateOrganizationRoleRequest(_message.Message):
+    __slots__ = ("org_id", "id", "role")
+    ORG_ID_FIELD_NUMBER: _ClassVar[int]
+    ID_FIELD_NUMBER: _ClassVar[int]
+    ROLE_FIELD_NUMBER: _ClassVar[int]
+    org_id: str
+    id: str
+    role: UpdateRole
+    def __init__(self, org_id: _Optional[str] = ..., id: _Optional[str] = ..., role: _Optional[_Union[UpdateRole, _Mapping]] = ...) -> None: ...
+
+class UpdateOrganizationRoleResponse(_message.Message):
+    __slots__ = ("role",)
+    ROLE_FIELD_NUMBER: _ClassVar[int]
+    role: Role
+    def __init__(self, role: _Optional[_Union[Role, _Mapping]] = ...) -> None: ...
+
+class DeleteOrganizationRoleRequest(_message.Message):
+    __slots__ = ("org_id", "id")
+    ORG_ID_FIELD_NUMBER: _ClassVar[int]
+    ID_FIELD_NUMBER: _ClassVar[int]
+    org_id: str
+    id: str
+    def __init__(self, org_id: _Optional[str] = ..., id: _Optional[str] = ...) -> None: ...

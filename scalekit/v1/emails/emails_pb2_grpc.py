@@ -30,6 +30,16 @@ class EmailServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_emails_dot_emails__pb2.PatchEmailTemplateRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_emails_dot_emails__pb2.GetEmailTemplateResponse.FromString,
                 )
+        self.GetEmailConfiguration = channel.unary_unary(
+                '/scalekit.v1.emails.EmailService/GetEmailConfiguration',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_emails_dot_emails__pb2.GetEmailConfigurationResponse.FromString,
+                )
+        self.UpsertEmailConfiguration = channel.unary_unary(
+                '/scalekit.v1.emails.EmailService/UpsertEmailConfiguration',
+                request_serializer=scalekit_dot_v1_dot_emails_dot_emails__pb2.UpsertEmailConfigurationRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_emails_dot_emails__pb2.UpsertEmailConfigurationResponse.FromString,
+                )
         self.EnableEmailTemplate = channel.unary_unary(
                 '/scalekit.v1.emails.EmailService/EnableEmailTemplate',
                 request_serializer=scalekit_dot_v1_dot_emails_dot_emails__pb2.EnableEmailTemplateRequest.SerializeToString,
@@ -110,6 +120,18 @@ class EmailServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def UpdateEmailTemplate(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetEmailConfiguration(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpsertEmailConfiguration(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -205,6 +227,16 @@ def add_EmailServiceServicer_to_server(servicer, server):
                     servicer.UpdateEmailTemplate,
                     request_deserializer=scalekit_dot_v1_dot_emails_dot_emails__pb2.PatchEmailTemplateRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_emails_dot_emails__pb2.GetEmailTemplateResponse.SerializeToString,
+            ),
+            'GetEmailConfiguration': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetEmailConfiguration,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=scalekit_dot_v1_dot_emails_dot_emails__pb2.GetEmailConfigurationResponse.SerializeToString,
+            ),
+            'UpsertEmailConfiguration': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpsertEmailConfiguration,
+                    request_deserializer=scalekit_dot_v1_dot_emails_dot_emails__pb2.UpsertEmailConfigurationRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_emails_dot_emails__pb2.UpsertEmailConfigurationResponse.SerializeToString,
             ),
             'EnableEmailTemplate': grpc.unary_unary_rpc_method_handler(
                     servicer.EnableEmailTemplate,
@@ -324,6 +356,40 @@ class EmailService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.emails.EmailService/UpdateEmailTemplate',
             scalekit_dot_v1_dot_emails_dot_emails__pb2.PatchEmailTemplateRequest.SerializeToString,
             scalekit_dot_v1_dot_emails_dot_emails__pb2.GetEmailTemplateResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetEmailConfiguration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.emails.EmailService/GetEmailConfiguration',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            scalekit_dot_v1_dot_emails_dot_emails__pb2.GetEmailConfigurationResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def UpsertEmailConfiguration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.emails.EmailService/UpsertEmailConfiguration',
+            scalekit_dot_v1_dot_emails_dot_emails__pb2.UpsertEmailConfigurationRequest.SerializeToString,
+            scalekit_dot_v1_dot_emails_dot_emails__pb2.UpsertEmailConfigurationResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

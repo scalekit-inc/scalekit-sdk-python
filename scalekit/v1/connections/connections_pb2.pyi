@@ -4,6 +4,7 @@ from google.api import field_behavior_pb2 as _field_behavior_pb2
 from google.api import visibility_pb2 as _visibility_pb2
 from google.protobuf import duration_pb2 as _duration_pb2
 from google.protobuf import empty_pb2 as _empty_pb2
+from google.protobuf import struct_pb2 as _struct_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
 from google.protobuf import wrappers_pb2 as _wrappers_pb2
 from protoc_gen_openapiv2.options import annotations_pb2 as _annotations_pb2_1
@@ -382,7 +383,7 @@ class ListConnectionsResponse(_message.Message):
     def __init__(self, connections: _Optional[_Iterable[_Union[ListConnection, _Mapping]]] = ...) -> None: ...
 
 class ListConnection(_message.Message):
-    __slots__ = ("id", "provider", "type", "status", "enabled", "organization_id", "ui_button_title")
+    __slots__ = ("id", "provider", "type", "status", "enabled", "organization_id", "ui_button_title", "domains", "organization_name")
     ID_FIELD_NUMBER: _ClassVar[int]
     PROVIDER_FIELD_NUMBER: _ClassVar[int]
     TYPE_FIELD_NUMBER: _ClassVar[int]
@@ -390,6 +391,8 @@ class ListConnection(_message.Message):
     ENABLED_FIELD_NUMBER: _ClassVar[int]
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     UI_BUTTON_TITLE_FIELD_NUMBER: _ClassVar[int]
+    DOMAINS_FIELD_NUMBER: _ClassVar[int]
+    ORGANIZATION_NAME_FIELD_NUMBER: _ClassVar[int]
     id: str
     provider: ConnectionProvider
     type: ConnectionType
@@ -397,7 +400,57 @@ class ListConnection(_message.Message):
     enabled: bool
     organization_id: str
     ui_button_title: str
-    def __init__(self, id: _Optional[str] = ..., provider: _Optional[_Union[ConnectionProvider, str]] = ..., type: _Optional[_Union[ConnectionType, str]] = ..., status: _Optional[_Union[ConnectionStatus, str]] = ..., enabled: bool = ..., organization_id: _Optional[str] = ..., ui_button_title: _Optional[str] = ...) -> None: ...
+    domains: _containers.RepeatedScalarFieldContainer[str]
+    organization_name: str
+    def __init__(self, id: _Optional[str] = ..., provider: _Optional[_Union[ConnectionProvider, str]] = ..., type: _Optional[_Union[ConnectionType, str]] = ..., status: _Optional[_Union[ConnectionStatus, str]] = ..., enabled: bool = ..., organization_id: _Optional[str] = ..., ui_button_title: _Optional[str] = ..., domains: _Optional[_Iterable[str]] = ..., organization_name: _Optional[str] = ...) -> None: ...
+
+class ListOrganizationConnectionsRequest(_message.Message):
+    __slots__ = ("page_size", "page_token")
+    PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
+    PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    page_size: int
+    page_token: str
+    def __init__(self, page_size: _Optional[int] = ..., page_token: _Optional[str] = ...) -> None: ...
+
+class ListOrganizationConnectionsResponse(_message.Message):
+    __slots__ = ("next_page_token", "total_size", "prev_page_token", "connections")
+    NEXT_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    TOTAL_SIZE_FIELD_NUMBER: _ClassVar[int]
+    PREV_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    CONNECTIONS_FIELD_NUMBER: _ClassVar[int]
+    next_page_token: str
+    total_size: int
+    prev_page_token: str
+    connections: _containers.RepeatedCompositeFieldContainer[ListConnection]
+    def __init__(self, next_page_token: _Optional[str] = ..., total_size: _Optional[int] = ..., prev_page_token: _Optional[str] = ..., connections: _Optional[_Iterable[_Union[ListConnection, _Mapping]]] = ...) -> None: ...
+
+class SearchOrganizationConnectionsRequest(_message.Message):
+    __slots__ = ("query", "provider", "status", "connection_type", "page_size", "page_token")
+    QUERY_FIELD_NUMBER: _ClassVar[int]
+    PROVIDER_FIELD_NUMBER: _ClassVar[int]
+    STATUS_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_TYPE_FIELD_NUMBER: _ClassVar[int]
+    PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
+    PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    query: str
+    provider: ConnectionProvider
+    status: ConnectionStatus
+    connection_type: ConnectionType
+    page_size: int
+    page_token: str
+    def __init__(self, query: _Optional[str] = ..., provider: _Optional[_Union[ConnectionProvider, str]] = ..., status: _Optional[_Union[ConnectionStatus, str]] = ..., connection_type: _Optional[_Union[ConnectionType, str]] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ...) -> None: ...
+
+class SearchOrganizationConnectionsResponse(_message.Message):
+    __slots__ = ("next_page_token", "total_size", "prev_page_token", "connections")
+    NEXT_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    TOTAL_SIZE_FIELD_NUMBER: _ClassVar[int]
+    PREV_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    CONNECTIONS_FIELD_NUMBER: _ClassVar[int]
+    next_page_token: str
+    total_size: int
+    prev_page_token: str
+    connections: _containers.RepeatedCompositeFieldContainer[ListConnection]
+    def __init__(self, next_page_token: _Optional[str] = ..., total_size: _Optional[int] = ..., prev_page_token: _Optional[str] = ..., connections: _Optional[_Iterable[_Union[ListConnection, _Mapping]]] = ...) -> None: ...
 
 class ToggleEnvironmentConnectionRequest(_message.Message):
     __slots__ = ("connection_id",)

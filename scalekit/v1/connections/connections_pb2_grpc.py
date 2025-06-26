@@ -45,6 +45,16 @@ class ConnectionServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ListConnectionsRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ListConnectionsResponse.FromString,
                 )
+        self.ListOrganizationConnections = channel.unary_unary(
+                '/scalekit.v1.connections.ConnectionService/ListOrganizationConnections',
+                request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ListOrganizationConnectionsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ListOrganizationConnectionsResponse.FromString,
+                )
+        self.SearchOrganizationConnections = channel.unary_unary(
+                '/scalekit.v1.connections.ConnectionService/SearchOrganizationConnections',
+                request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.SearchOrganizationConnectionsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.SearchOrganizationConnectionsResponse.FromString,
+                )
         self.UpdateEnvironmentConnection = channel.unary_unary(
                 '/scalekit.v1.connections.ConnectionService/UpdateEnvironmentConnection',
                 request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.UpdateEnvironmentConnectionRequest.SerializeToString,
@@ -126,6 +136,18 @@ class ConnectionServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def ListConnections(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListOrganizationConnections(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def SearchOrganizationConnections(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -217,6 +239,16 @@ def add_ConnectionServiceServicer_to_server(servicer, server):
                     servicer.ListConnections,
                     request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ListConnectionsRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ListConnectionsResponse.SerializeToString,
+            ),
+            'ListOrganizationConnections': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListOrganizationConnections,
+                    request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ListOrganizationConnectionsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ListOrganizationConnectionsResponse.SerializeToString,
+            ),
+            'SearchOrganizationConnections': grpc.unary_unary_rpc_method_handler(
+                    servicer.SearchOrganizationConnections,
+                    request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.SearchOrganizationConnectionsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.SearchOrganizationConnectionsResponse.SerializeToString,
             ),
             'UpdateEnvironmentConnection': grpc.unary_unary_rpc_method_handler(
                     servicer.UpdateEnvironmentConnection,
@@ -372,6 +404,40 @@ class ConnectionService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connections.ConnectionService/ListConnections',
             scalekit_dot_v1_dot_connections_dot_connections__pb2.ListConnectionsRequest.SerializeToString,
             scalekit_dot_v1_dot_connections_dot_connections__pb2.ListConnectionsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListOrganizationConnections(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connections.ConnectionService/ListOrganizationConnections',
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.ListOrganizationConnectionsRequest.SerializeToString,
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.ListOrganizationConnectionsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def SearchOrganizationConnections(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connections.ConnectionService/SearchOrganizationConnections',
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.SearchOrganizationConnectionsRequest.SerializeToString,
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.SearchOrganizationConnectionsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

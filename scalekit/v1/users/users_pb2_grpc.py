@@ -15,16 +15,6 @@ class UserServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.CreateUser = channel.unary_unary(
-                '/scalekit.v1.users.UserService/CreateUser',
-                request_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.CreateUserRequest.SerializeToString,
-                response_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.CreateUserResponse.FromString,
-                )
-        self.UpdateUser = channel.unary_unary(
-                '/scalekit.v1.users.UserService/UpdateUser',
-                request_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.UpdateUserRequest.SerializeToString,
-                response_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.UpdateUserResponse.FromString,
-                )
         self.GetUser = channel.unary_unary(
                 '/scalekit.v1.users.UserService/GetUser',
                 request_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.GetUserRequest.SerializeToString,
@@ -32,25 +22,79 @@ class UserServiceStub(object):
                 )
         self.ListUsers = channel.unary_unary(
                 '/scalekit.v1.users.UserService/ListUsers',
-                request_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.ListUserRequest.SerializeToString,
-                response_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.ListUserResponse.FromString,
+                request_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.ListUsersRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.ListUsersResponse.FromString,
+                )
+        self.SearchUsers = channel.unary_unary(
+                '/scalekit.v1.users.UserService/SearchUsers',
+                request_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.SearchUsersRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.SearchUsersResponse.FromString,
+                )
+        self.SearchOrganizationUsers = channel.unary_unary(
+                '/scalekit.v1.users.UserService/SearchOrganizationUsers',
+                request_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.SearchOrganizationUsersRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.SearchOrganizationUsersResponse.FromString,
+                )
+        self.UpdateUser = channel.unary_unary(
+                '/scalekit.v1.users.UserService/UpdateUser',
+                request_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.UpdateUserRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.UpdateUserResponse.FromString,
                 )
         self.DeleteUser = channel.unary_unary(
                 '/scalekit.v1.users.UserService/DeleteUser',
                 request_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.DeleteUserRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
-        self.AddUserToOrganization = channel.unary_unary(
-                '/scalekit.v1.users.UserService/AddUserToOrganization',
-                request_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.AddUserRequest.SerializeToString,
-                response_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.AddUserResponse.FromString,
+        self.CreateMembership = channel.unary_unary(
+                '/scalekit.v1.users.UserService/CreateMembership',
+                request_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.CreateMembershipRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.CreateMembershipResponse.FromString,
+                )
+        self.DeleteMembership = channel.unary_unary(
+                '/scalekit.v1.users.UserService/DeleteMembership',
+                request_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.DeleteMembershipRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
+        self.UpdateMembership = channel.unary_unary(
+                '/scalekit.v1.users.UserService/UpdateMembership',
+                request_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.UpdateMembershipRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.UpdateMembershipResponse.FromString,
+                )
+        self.CreateUserAndMembership = channel.unary_unary(
+                '/scalekit.v1.users.UserService/CreateUserAndMembership',
+                request_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.CreateUserAndMembershipRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.CreateUserAndMembershipResponse.FromString,
+                )
+        self.ListOrganizationUsers = channel.unary_unary(
+                '/scalekit.v1.users.UserService/ListOrganizationUsers',
+                request_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.ListOrganizationUsersRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.ListOrganizationUsersResponse.FromString,
                 )
 
 
 class UserServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def CreateUser(self, request, context):
+    def GetUser(self, request, context):
+        """Users
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListUsers(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def SearchUsers(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def SearchOrganizationUsers(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -62,26 +106,41 @@ class UserServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def GetUser(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def ListUsers(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
     def DeleteUser(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def AddUserToOrganization(self, request, context):
+    def CreateMembership(self, request, context):
+        """Memberships
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeleteMembership(self, request, context):
+        """TODO Check cascade behaviour currently its ignored
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateMembership(self, request, context):
         """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def CreateUserAndMembership(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListOrganizationUsers(self, request, context):
+        """only memberships of the organization
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -89,16 +148,6 @@ class UserServiceServicer(object):
 
 def add_UserServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'CreateUser': grpc.unary_unary_rpc_method_handler(
-                    servicer.CreateUser,
-                    request_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.CreateUserRequest.FromString,
-                    response_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.CreateUserResponse.SerializeToString,
-            ),
-            'UpdateUser': grpc.unary_unary_rpc_method_handler(
-                    servicer.UpdateUser,
-                    request_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.UpdateUserRequest.FromString,
-                    response_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.UpdateUserResponse.SerializeToString,
-            ),
             'GetUser': grpc.unary_unary_rpc_method_handler(
                     servicer.GetUser,
                     request_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.GetUserRequest.FromString,
@@ -106,18 +155,53 @@ def add_UserServiceServicer_to_server(servicer, server):
             ),
             'ListUsers': grpc.unary_unary_rpc_method_handler(
                     servicer.ListUsers,
-                    request_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.ListUserRequest.FromString,
-                    response_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.ListUserResponse.SerializeToString,
+                    request_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.ListUsersRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.ListUsersResponse.SerializeToString,
+            ),
+            'SearchUsers': grpc.unary_unary_rpc_method_handler(
+                    servicer.SearchUsers,
+                    request_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.SearchUsersRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.SearchUsersResponse.SerializeToString,
+            ),
+            'SearchOrganizationUsers': grpc.unary_unary_rpc_method_handler(
+                    servicer.SearchOrganizationUsers,
+                    request_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.SearchOrganizationUsersRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.SearchOrganizationUsersResponse.SerializeToString,
+            ),
+            'UpdateUser': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateUser,
+                    request_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.UpdateUserRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.UpdateUserResponse.SerializeToString,
             ),
             'DeleteUser': grpc.unary_unary_rpc_method_handler(
                     servicer.DeleteUser,
                     request_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.DeleteUserRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
-            'AddUserToOrganization': grpc.unary_unary_rpc_method_handler(
-                    servicer.AddUserToOrganization,
-                    request_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.AddUserRequest.FromString,
-                    response_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.AddUserResponse.SerializeToString,
+            'CreateMembership': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateMembership,
+                    request_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.CreateMembershipRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.CreateMembershipResponse.SerializeToString,
+            ),
+            'DeleteMembership': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteMembership,
+                    request_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.DeleteMembershipRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'UpdateMembership': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateMembership,
+                    request_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.UpdateMembershipRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.UpdateMembershipResponse.SerializeToString,
+            ),
+            'CreateUserAndMembership': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateUserAndMembership,
+                    request_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.CreateUserAndMembershipRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.CreateUserAndMembershipResponse.SerializeToString,
+            ),
+            'ListOrganizationUsers': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListOrganizationUsers,
+                    request_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.ListOrganizationUsersRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.ListOrganizationUsersResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -128,40 +212,6 @@ def add_UserServiceServicer_to_server(servicer, server):
  # This class is part of an EXPERIMENTAL API.
 class UserService(object):
     """Missing associated documentation comment in .proto file."""
-
-    @staticmethod
-    def CreateUser(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.users.UserService/CreateUser',
-            scalekit_dot_v1_dot_users_dot_users__pb2.CreateUserRequest.SerializeToString,
-            scalekit_dot_v1_dot_users_dot_users__pb2.CreateUserResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def UpdateUser(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.users.UserService/UpdateUser',
-            scalekit_dot_v1_dot_users_dot_users__pb2.UpdateUserRequest.SerializeToString,
-            scalekit_dot_v1_dot_users_dot_users__pb2.UpdateUserResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def GetUser(request,
@@ -192,8 +242,59 @@ class UserService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.users.UserService/ListUsers',
-            scalekit_dot_v1_dot_users_dot_users__pb2.ListUserRequest.SerializeToString,
-            scalekit_dot_v1_dot_users_dot_users__pb2.ListUserResponse.FromString,
+            scalekit_dot_v1_dot_users_dot_users__pb2.ListUsersRequest.SerializeToString,
+            scalekit_dot_v1_dot_users_dot_users__pb2.ListUsersResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def SearchUsers(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.users.UserService/SearchUsers',
+            scalekit_dot_v1_dot_users_dot_users__pb2.SearchUsersRequest.SerializeToString,
+            scalekit_dot_v1_dot_users_dot_users__pb2.SearchUsersResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def SearchOrganizationUsers(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.users.UserService/SearchOrganizationUsers',
+            scalekit_dot_v1_dot_users_dot_users__pb2.SearchOrganizationUsersRequest.SerializeToString,
+            scalekit_dot_v1_dot_users_dot_users__pb2.SearchOrganizationUsersResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def UpdateUser(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.users.UserService/UpdateUser',
+            scalekit_dot_v1_dot_users_dot_users__pb2.UpdateUserRequest.SerializeToString,
+            scalekit_dot_v1_dot_users_dot_users__pb2.UpdateUserResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -215,7 +316,7 @@ class UserService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def AddUserToOrganization(request,
+    def CreateMembership(request,
             target,
             options=(),
             channel_credentials=None,
@@ -225,8 +326,76 @@ class UserService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.users.UserService/AddUserToOrganization',
-            scalekit_dot_v1_dot_users_dot_users__pb2.AddUserRequest.SerializeToString,
-            scalekit_dot_v1_dot_users_dot_users__pb2.AddUserResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.users.UserService/CreateMembership',
+            scalekit_dot_v1_dot_users_dot_users__pb2.CreateMembershipRequest.SerializeToString,
+            scalekit_dot_v1_dot_users_dot_users__pb2.CreateMembershipResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DeleteMembership(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.users.UserService/DeleteMembership',
+            scalekit_dot_v1_dot_users_dot_users__pb2.DeleteMembershipRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def UpdateMembership(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.users.UserService/UpdateMembership',
+            scalekit_dot_v1_dot_users_dot_users__pb2.UpdateMembershipRequest.SerializeToString,
+            scalekit_dot_v1_dot_users_dot_users__pb2.UpdateMembershipResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def CreateUserAndMembership(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.users.UserService/CreateUserAndMembership',
+            scalekit_dot_v1_dot_users_dot_users__pb2.CreateUserAndMembershipRequest.SerializeToString,
+            scalekit_dot_v1_dot_users_dot_users__pb2.CreateUserAndMembershipResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListOrganizationUsers(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.users.UserService/ListOrganizationUsers',
+            scalekit_dot_v1_dot_users_dot_users__pb2.ListOrganizationUsersRequest.SerializeToString,
+            scalekit_dot_v1_dot_users_dot_users__pb2.ListOrganizationUsersResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

@@ -30,6 +30,11 @@ class DirectoryServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.UpdateDirectoryRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.UpdateDirectoryResponse.FromString,
                 )
+        self.AssignGroupsForDirectory = channel.unary_unary(
+                '/scalekit.v1.directories.DirectoryService/AssignGroupsForDirectory',
+                request_serializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.AssignGroupsForDirectoryRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
         self.AssignRoles = channel.unary_unary(
                 '/scalekit.v1.directories.DirectoryService/AssignRoles',
                 request_serializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.AssignRolesRequest.SerializeToString,
@@ -70,6 +75,11 @@ class DirectoryServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.ListDirectoryGroupsRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.ListDirectoryGroupsResponse.FromString,
                 )
+        self.ListDirectoryGroupsSummary = channel.unary_unary(
+                '/scalekit.v1.directories.DirectoryService/ListDirectoryGroupsSummary',
+                request_serializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.ListDirectoryGroupsSummaryRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.ListDirectoryGroupsResponse.FromString,
+                )
         self.CreateDirectorySecret = channel.unary_unary(
                 '/scalekit.v1.directories.DirectoryService/CreateDirectorySecret',
                 request_serializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.CreateDirectorySecretRequest.SerializeToString,
@@ -79,6 +89,11 @@ class DirectoryServiceStub(object):
                 '/scalekit.v1.directories.DirectoryService/RegenerateDirectorySecret',
                 request_serializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.RegenerateDirectorySecretRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.RegenerateDirectorySecretResponse.FromString,
+                )
+        self.TriggerDirectorySync = channel.unary_unary(
+                '/scalekit.v1.directories.DirectoryService/TriggerDirectorySync',
+                request_serializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.TriggerDirectorySyncRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
 
 
@@ -98,6 +113,12 @@ class DirectoryServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def UpdateDirectory(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def AssignGroupsForDirectory(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -151,6 +172,12 @@ class DirectoryServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ListDirectoryGroupsSummary(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def CreateDirectorySecret(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -158,6 +185,12 @@ class DirectoryServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def RegenerateDirectorySecret(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def TriggerDirectorySync(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -180,6 +213,11 @@ def add_DirectoryServiceServicer_to_server(servicer, server):
                     servicer.UpdateDirectory,
                     request_deserializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.UpdateDirectoryRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.UpdateDirectoryResponse.SerializeToString,
+            ),
+            'AssignGroupsForDirectory': grpc.unary_unary_rpc_method_handler(
+                    servicer.AssignGroupsForDirectory,
+                    request_deserializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.AssignGroupsForDirectoryRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'AssignRoles': grpc.unary_unary_rpc_method_handler(
                     servicer.AssignRoles,
@@ -221,6 +259,11 @@ def add_DirectoryServiceServicer_to_server(servicer, server):
                     request_deserializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.ListDirectoryGroupsRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.ListDirectoryGroupsResponse.SerializeToString,
             ),
+            'ListDirectoryGroupsSummary': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListDirectoryGroupsSummary,
+                    request_deserializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.ListDirectoryGroupsSummaryRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.ListDirectoryGroupsResponse.SerializeToString,
+            ),
             'CreateDirectorySecret': grpc.unary_unary_rpc_method_handler(
                     servicer.CreateDirectorySecret,
                     request_deserializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.CreateDirectorySecretRequest.FromString,
@@ -230,6 +273,11 @@ def add_DirectoryServiceServicer_to_server(servicer, server):
                     servicer.RegenerateDirectorySecret,
                     request_deserializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.RegenerateDirectorySecretRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.RegenerateDirectorySecretResponse.SerializeToString,
+            ),
+            'TriggerDirectorySync': grpc.unary_unary_rpc_method_handler(
+                    servicer.TriggerDirectorySync,
+                    request_deserializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.TriggerDirectorySyncRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -289,6 +337,23 @@ class DirectoryService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.directories.DirectoryService/UpdateDirectory',
             scalekit_dot_v1_dot_directories_dot_directories__pb2.UpdateDirectoryRequest.SerializeToString,
             scalekit_dot_v1_dot_directories_dot_directories__pb2.UpdateDirectoryResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def AssignGroupsForDirectory(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.directories.DirectoryService/AssignGroupsForDirectory',
+            scalekit_dot_v1_dot_directories_dot_directories__pb2.AssignGroupsForDirectoryRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -429,6 +494,23 @@ class DirectoryService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
+    def ListDirectoryGroupsSummary(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.directories.DirectoryService/ListDirectoryGroupsSummary',
+            scalekit_dot_v1_dot_directories_dot_directories__pb2.ListDirectoryGroupsSummaryRequest.SerializeToString,
+            scalekit_dot_v1_dot_directories_dot_directories__pb2.ListDirectoryGroupsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
     def CreateDirectorySecret(request,
             target,
             options=(),
@@ -459,5 +541,22 @@ class DirectoryService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.directories.DirectoryService/RegenerateDirectorySecret',
             scalekit_dot_v1_dot_directories_dot_directories__pb2.RegenerateDirectorySecretRequest.SerializeToString,
             scalekit_dot_v1_dot_directories_dot_directories__pb2.RegenerateDirectorySecretResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def TriggerDirectorySync(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.directories.DirectoryService/TriggerDirectorySync',
+            scalekit_dot_v1_dot_directories_dot_directories__pb2.TriggerDirectorySyncRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

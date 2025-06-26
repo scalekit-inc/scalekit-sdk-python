@@ -26,7 +26,7 @@ from scalekit.v1.commons import commons_pb2 as scalekit_dot_v1_dot_commons_dot_c
 from scalekit.v1.options import options_pb2 as scalekit_dot_v1_dot_options_dot_options__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1dscalekit/v1/roles/roles.proto\x12\x11scalekit.v1.roles\x1a\x1b\x62uf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1bgoogle/api/visibility.proto\x1a\x19google/protobuf/any.proto\x1a\x1egoogle/protobuf/duration.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a.protoc-gen-openapiv2/options/annotations.proto\x1a!scalekit/v1/commons/commons.proto\x1a!scalekit/v1/options/options.proto\"\xbf\x01\n\x04Role\x12\x1f\n\x02id\x18\x01 \x01(\tB\x0f\xbaH\x0cr\n\x10\x01\x18 :\x04roleR\x02id\x12 \n\x04name\x18\x02 \x01(\tB\x0c\xbaH\tr\x04\x10\x01\x18\x64\xc8\x01\x01R\x04name\x12.\n\x0b\x64isplayName\x18\x03 \x01(\tB\x0c\xbaH\tr\x04\x10\x01\x18\x64\xc8\x01\x01R\x0b\x64isplayName\x12*\n\x0b\x64\x65scription\x18\x04 \x01(\tB\x08\xbaH\x05r\x03\x18\xd0\x0fR\x0b\x64\x65scription\x12\x18\n\x07\x64\x65\x66\x61ult\x18\x05 \x01(\x08R\x07\x64\x65\x66\x61ult\"\xe1\x01\n\nCreateRole\x12\x36\n\x04name\x18\x02 \x01(\tB\"\xbaH\x1fr\x1a\x10\x01\x18\x64\x32\x14^[a-zA-Z0-9_]{1,64}$\xc8\x01\x01R\x04name\x12/\n\x0c\x64isplay_name\x18\x03 \x01(\tB\x0c\xbaH\tr\x04\x10\x01\x18\x64\xc8\x01\x01R\x0b\x64isplayName\x12/\n\x0b\x64\x65scription\x18\x04 \x01(\tB\x08\xbaH\x05r\x03\x18\xd0\x0fH\x00R\x0b\x64\x65scription\x88\x01\x01\x12\x1d\n\x07\x64\x65\x66\x61ult\x18\x05 \x01(\x08H\x01R\x07\x64\x65\x66\x61ult\x88\x01\x01\x42\x0e\n\x0c_descriptionB\n\n\x08_default\"u\n\x11\x43reateRoleRequest\x12%\n\x06\x65nv_id\x18\x01 \x01(\tB\x0e\xbaH\x0br\t\x10\x01\x18 :\x03\x65nvR\x05\x65nvId\x12\x39\n\x04role\x18\x02 \x01(\x0b\x32\x1d.scalekit.v1.roles.CreateRoleB\x06\xbaH\x03\xc8\x01\x01R\x04role\"A\n\x12\x43reateRoleResponse\x12+\n\x04role\x18\x01 \x01(\x0b\x32\x17.scalekit.v1.roles.RoleR\x04role\"[\n\x0eGetRoleRequest\x12%\n\x06\x65nv_id\x18\x01 \x01(\tB\x0e\xbaH\x0br\t\x10\x01\x18 :\x03\x65nvR\x05\x65nvId\x12\"\n\x02id\x18\x02 \x01(\tB\x12\xbaH\x0fr\n\x10\x01\x18 :\x04role\xc8\x01\x01R\x02id\">\n\x0fGetRoleResponse\x12+\n\x04role\x18\x01 \x01(\x0b\x32\x17.scalekit.v1.roles.RoleR\x04role\"4\n\x10ListRolesRequest\x12 \n\x06\x65nv_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x00\x18 R\x05\x65nvId\"B\n\x11ListRolesResponse\x12-\n\x05roles\x18\x01 \x03(\x0b\x32\x17.scalekit.v1.roles.RoleR\x05roles\"\xbe\x01\n\nUpdateRole\x12\x31\n\x0c\x64isplay_name\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18\x64H\x00R\x0b\x64isplayName\x88\x01\x01\x12\x31\n\x0b\x64\x65scription\x18\x02 \x01(\tB\n\xbaH\x07r\x05\x10\x01\x18\xd0\x0fH\x01R\x0b\x64\x65scription\x88\x01\x01\x12\x1d\n\x07\x64\x65\x66\x61ult\x18\x03 \x01(\x08H\x02R\x07\x64\x65\x66\x61ult\x88\x01\x01\x42\x0f\n\r_display_nameB\x0e\n\x0c_descriptionB\n\n\x08_default\"\x99\x01\n\x11UpdateRoleRequest\x12%\n\x06\x65nv_id\x18\x01 \x01(\tB\x0e\xbaH\x0br\t\x10\x01\x18 :\x03\x65nvR\x05\x65nvId\x12\"\n\x02id\x18\x02 \x01(\tB\x12\xbaH\x0fr\n\x10\x01\x18 :\x04role\xc8\x01\x01R\x02id\x12\x39\n\x04role\x18\x03 \x01(\x0b\x32\x1d.scalekit.v1.roles.UpdateRoleB\x06\xbaH\x03\xc8\x01\x01R\x04role\"A\n\x12UpdateRoleResponse\x12+\n\x04role\x18\x01 \x01(\x0b\x32\x17.scalekit.v1.roles.RoleR\x04role\"^\n\x11\x44\x65leteRoleRequest\x12%\n\x06\x65nv_id\x18\x01 \x01(\tB\x0e\xbaH\x0br\t\x10\x01\x18 :\x03\x65nvR\x05\x65nvId\x12\"\n\x02id\x18\x02 \x01(\tB\x12\xbaH\x0fr\n\x10\x01\x18 :\x04role\xc8\x01\x01R\x02id2\xd3\x07\n\x0cRolesService\x12\xc1\x01\n\nCreateRole\x12$.scalekit.v1.roles.CreateRoleRequest\x1a%.scalekit.v1.roles.CreateRoleResponse\"f\x82\xb5\x18\x02\x18P\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02K\"#/api/v1/environments/{env_id}/roles:\x04roleZ\x1e\"\x1c/api/v1/environments/-/roles\x12\xcb\x01\n\nUpdateRole\x12$.scalekit.v1.roles.UpdateRoleRequest\x1a%.scalekit.v1.roles.UpdateRoleResponse\"p\x82\xb5\x18\x02\x18P\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02U\x1a(/api/v1/environments/{env_id}/roles/{id}:\x04roleZ#\x1a!/api/v1/environments/-/roles/{id}\x12\xbc\x01\n\x07GetRole\x12!.scalekit.v1.roles.GetRoleRequest\x1a\".scalekit.v1.roles.GetRoleResponse\"j\x82\xb5\x18\x02\x18P\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02O\x12(/api/v1/environments/{env_id}/roles/{id}Z#\x12!/api/v1/environments/-/roles/{id}\x12\xb8\x01\n\tListRoles\x12#.scalekit.v1.roles.ListRolesRequest\x1a$.scalekit.v1.roles.ListRolesResponse\"`\x82\xb5\x18\x02\x18p\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02\x45\x12#/api/v1/environments/{env_id}/rolesZ\x1e\x12\x1c/api/v1/environments/-/roles\x12\xb6\x01\n\nDeleteRole\x12$.scalekit.v1.roles.DeleteRoleRequest\x1a\x16.google.protobuf.Empty\"j\x82\xb5\x18\x02\x18P\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02O*(/api/v1/environments/{env_id}/roles/{id}Z#*!/api/v1/environments/-/roles/{id}B1Z/github.com/scalekit-inc/scalekit/pkg/grpc/rolesb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1dscalekit/v1/roles/roles.proto\x12\x11scalekit.v1.roles\x1a\x1b\x62uf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1bgoogle/api/visibility.proto\x1a\x19google/protobuf/any.proto\x1a\x1egoogle/protobuf/duration.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a.protoc-gen-openapiv2/options/annotations.proto\x1a!scalekit/v1/commons/commons.proto\x1a!scalekit/v1/options/options.proto\"\xc0\x01\n\x04Role\x12\x1f\n\x02id\x18\x01 \x01(\tB\x0f\xbaH\x0cr\n\x10\x01\x18 :\x04roleR\x02id\x12 \n\x04name\x18\x02 \x01(\tB\x0c\xbaH\tr\x04\x10\x01\x18\x64\xc8\x01\x01R\x04name\x12/\n\x0c\x64isplay_name\x18\x03 \x01(\tB\x0c\xbaH\tr\x04\x10\x01\x18\x64\xc8\x01\x01R\x0b\x64isplayName\x12*\n\x0b\x64\x65scription\x18\x04 \x01(\tB\x08\xbaH\x05r\x03\x18\xd0\x0fR\x0b\x64\x65scription\x12\x18\n\x07\x64\x65\x66\x61ult\x18\x05 \x01(\x08R\x07\x64\x65\x66\x61ult\"\xf2\x03\n\nCreateRole\x12t\n\x04name\x18\x02 \x01(\tB`\x92\x41;2&Unique Name of the Organization\'s RoleJ\x11\"org_viewer_role\"\xbaH\x1fr\x1a\x10\x01\x18\x64\x32\x14^[a-zA-Z0-9_]{1,64}$\xc8\x01\x01R\x04name\x12w\n\x0c\x64isplay_name\x18\x03 \x01(\tBT\x92\x41\x45\x32\'Display Name of the Organization\'s RoleJ\x1a\"Organization Viewer Role\"\xbaH\tr\x04\x10\x01\x18\x64\xc8\x01\x01R\x0b\x64isplayName\x12\xa0\x01\n\x0b\x64\x65scription\x18\x04 \x01(\tBy\x92\x41n2&Description of the Organization\'s RoleJD\"Organization Viewer Role will be used only for viewing the objects\"\xbaH\x05r\x03\x18\xd0\x0fH\x00R\x0b\x64\x65scription\x88\x01\x01\x12\x36\n\x07\x64\x65\x66\x61ult\x18\x05 \x01(\x08\x42\x17\x92\x41\x14\x32\x0c\x44\x65\x66\x61ult RoleJ\x04trueH\x01R\x07\x64\x65\x66\x61ult\x88\x01\x01\x42\x0e\n\x0c_descriptionB\n\n\x08_default\"u\n\x11\x43reateRoleRequest\x12%\n\x06\x65nv_id\x18\x01 \x01(\tB\x0e\xbaH\x0br\t\x10\x01\x18 :\x03\x65nvR\x05\x65nvId\x12\x39\n\x04role\x18\x02 \x01(\x0b\x32\x1d.scalekit.v1.roles.CreateRoleB\x06\xbaH\x03\xc8\x01\x01R\x04role\"A\n\x12\x43reateRoleResponse\x12+\n\x04role\x18\x01 \x01(\x0b\x32\x17.scalekit.v1.roles.RoleR\x04role\"[\n\x0eGetRoleRequest\x12%\n\x06\x65nv_id\x18\x01 \x01(\tB\x0e\xbaH\x0br\t\x10\x01\x18 :\x03\x65nvR\x05\x65nvId\x12\"\n\x02id\x18\x02 \x01(\tB\x12\xbaH\x0fr\n\x10\x01\x18 :\x04role\xc8\x01\x01R\x02id\">\n\x0fGetRoleResponse\x12+\n\x04role\x18\x01 \x01(\x0b\x32\x17.scalekit.v1.roles.RoleR\x04role\"4\n\x10ListRolesRequest\x12 \n\x06\x65nv_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x00\x18 R\x05\x65nvId\"B\n\x11ListRolesResponse\x12-\n\x05roles\x18\x01 \x03(\x0b\x32\x17.scalekit.v1.roles.RoleR\x05roles\"\x91\x03\n\nUpdateRole\x12y\n\x0c\x64isplay_name\x18\x01 \x01(\tBQ\x92\x41\x45\x32\'Display Name of the Organization\'s RoleJ\x1a\"Organization Viewer Role\"\xbaH\x06r\x04\x10\x01\x18\x64H\x00R\x0b\x64isplayName\x88\x01\x01\x12\xa2\x01\n\x0b\x64\x65scription\x18\x02 \x01(\tB{\x92\x41n2&Description of the Organization\'s RoleJD\"Organization Viewer Role will be used only for viewing the objects\"\xbaH\x07r\x05\x10\x01\x18\xd0\x0fH\x01R\x0b\x64\x65scription\x88\x01\x01\x12\x36\n\x07\x64\x65\x66\x61ult\x18\x03 \x01(\x08\x42\x17\x92\x41\x14\x32\x0c\x44\x65\x66\x61ult RoleJ\x04trueH\x02R\x07\x64\x65\x66\x61ult\x88\x01\x01\x42\x0f\n\r_display_nameB\x0e\n\x0c_descriptionB\n\n\x08_default\"\x99\x01\n\x11UpdateRoleRequest\x12%\n\x06\x65nv_id\x18\x01 \x01(\tB\x0e\xbaH\x0br\t\x10\x01\x18 :\x03\x65nvR\x05\x65nvId\x12\"\n\x02id\x18\x02 \x01(\tB\x12\xbaH\x0fr\n\x10\x01\x18 :\x04role\xc8\x01\x01R\x02id\x12\x39\n\x04role\x18\x03 \x01(\x0b\x32\x1d.scalekit.v1.roles.UpdateRoleB\x06\xbaH\x03\xc8\x01\x01R\x04role\"A\n\x12UpdateRoleResponse\x12+\n\x04role\x18\x01 \x01(\x0b\x32\x17.scalekit.v1.roles.RoleR\x04role\"^\n\x11\x44\x65leteRoleRequest\x12%\n\x06\x65nv_id\x18\x01 \x01(\tB\x0e\xbaH\x0br\t\x10\x01\x18 :\x03\x65nvR\x05\x65nvId\x12\"\n\x02id\x18\x02 \x01(\tB\x12\xbaH\x0fr\n\x10\x01\x18 :\x04role\xc8\x01\x01R\x02id\"\xdf\x01\n\x1d\x43reateOrganizationRoleRequest\x12\x65\n\x06org_id\x18\x01 \x01(\tBN\x92\x41=2$Unique identifier to an OrganizationJ\x15\"org_121312434123312\"\xbaH\x0br\t\x10\x01\x18 :\x03orgR\x05orgId\x12W\n\x04role\x18\x02 \x01(\x0b\x32\x1d.scalekit.v1.roles.CreateRoleB$\x92\x41\x1b\x32\x19Organization role details\xbaH\x03\xc8\x01\x01R\x04role\"M\n\x1e\x43reateOrganizationRoleResponse\x12+\n\x04role\x18\x01 \x01(\x0b\x32\x17.scalekit.v1.roles.RoleR\x04role\"\xdf\x01\n\x1aGetOrganizationRoleRequest\x12\x65\n\x06org_id\x18\x01 \x01(\tBN\x92\x41=2$Unique identifier to an OrganizationJ\x15\"org_121312434123312\"\xbaH\x0br\t\x10\x01\x18 :\x03orgR\x05orgId\x12Z\n\x02id\x18\x02 \x01(\tBJ\x92\x41\x35\x32\x1bUnique identifier to a roleJ\x16\"role_121312434123312\"\xbaH\x0fr\n\x10\x01\x18 :\x04role\xc8\x01\x01R\x02id\"J\n\x1bGetOrganizationRoleResponse\x12+\n\x04role\x18\x01 \x01(\x0b\x32\x17.scalekit.v1.roles.RoleR\x04role\"\xeb\x02\n\x1cListOrganizationRolesRequest\x12h\n\x06org_id\x18\x01 \x01(\tBQ\x92\x41=2$Unique identifier to an OrganizationJ\x15\"org_121312434123312\"\xbaH\x0er\t\x10\x01\x18 :\x03org\xc8\x01\x01R\x05orgId:\xe0\x01\x92\x41\xdc\x01\n\xb6\x01*\x17List Organization Roles2\x91\x01Retrieve a paginated list of all organizations within the environment. Use the page_token from the response to access subsequent pages of results\xd2\x01\x06org_id2!{\"org_id\" : \"org_8756865685762\" }\"j\n\x1dListOrganizationRolesResponse\x12I\n\x05roles\x18\x01 \x03(\x0b\x32\x17.scalekit.v1.roles.RoleB\x1a\x92\x41\x17\x32\x15List of roles objectsR\x05roles\"\xbb\x02\n\x1dUpdateOrganizationRoleRequest\x12\x65\n\x06org_id\x18\x01 \x01(\tBN\x92\x41=2$Unique identifier to an OrganizationJ\x15\"org_121312434123312\"\xbaH\x0br\t\x10\x01\x18 :\x03orgR\x05orgId\x12Z\n\x02id\x18\x02 \x01(\tBJ\x92\x41\x35\x32\x1bUnique identifier to a roleJ\x16\"role_121312434123312\"\xbaH\x0fr\n\x10\x01\x18 :\x04role\xc8\x01\x01R\x02id\x12W\n\x04role\x18\x03 \x01(\x0b\x32\x1d.scalekit.v1.roles.UpdateRoleB$\x92\x41\x1b\x32\x19Organization role details\xbaH\x03\xc8\x01\x01R\x04role\"M\n\x1eUpdateOrganizationRoleResponse\x12+\n\x04role\x18\x01 \x01(\x0b\x32\x17.scalekit.v1.roles.RoleR\x04role\"\xe2\x01\n\x1d\x44\x65leteOrganizationRoleRequest\x12\x65\n\x06org_id\x18\x01 \x01(\tBN\x92\x41=2$Unique identifier to an OrganizationJ\x15\"org_121312434123312\"\xbaH\x0br\t\x10\x01\x18 :\x03orgR\x05orgId\x12Z\n\x02id\x18\x02 \x01(\tBJ\x92\x41\x35\x32\x1bUnique identifier to a roleJ\x16\"role_121312434123312\"\xbaH\x0fr\n\x10\x01\x18 :\x04role\xc8\x01\x01R\x02id2\xab\x18\n\x0cRolesService\x12\xc1\x01\n\nCreateRole\x12$.scalekit.v1.roles.CreateRoleRequest\x1a%.scalekit.v1.roles.CreateRoleResponse\"f\x82\xb5\x18\x02\x18P\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02K\"#/api/v1/environments/{env_id}/roles:\x04roleZ\x1e\"\x1c/api/v1/environments/-/roles\x12\xcb\x01\n\nUpdateRole\x12$.scalekit.v1.roles.UpdateRoleRequest\x1a%.scalekit.v1.roles.UpdateRoleResponse\"p\x82\xb5\x18\x02\x18P\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02U\x1a(/api/v1/environments/{env_id}/roles/{id}:\x04roleZ#\x1a!/api/v1/environments/-/roles/{id}\x12\xbc\x01\n\x07GetRole\x12!.scalekit.v1.roles.GetRoleRequest\x1a\".scalekit.v1.roles.GetRoleResponse\"j\x82\xb5\x18\x02\x18P\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02O\x12(/api/v1/environments/{env_id}/roles/{id}Z#\x12!/api/v1/environments/-/roles/{id}\x12\xb8\x01\n\tListRoles\x12#.scalekit.v1.roles.ListRolesRequest\x1a$.scalekit.v1.roles.ListRolesResponse\"`\x82\xb5\x18\x02\x18p\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02\x45\x12#/api/v1/environments/{env_id}/rolesZ\x1e\x12\x1c/api/v1/environments/-/roles\x12\xb6\x01\n\nDeleteRole\x12$.scalekit.v1.roles.DeleteRoleRequest\x1a\x16.google.protobuf.Empty\"j\x82\xb5\x18\x02\x18P\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02O*(/api/v1/environments/{env_id}/roles/{id}Z#*!/api/v1/environments/-/roles/{id}\x12\xaf\x03\n\x16\x43reateOrganizationRole\x12\x30.scalekit.v1.roles.CreateOrganizationRoleRequest\x1a\x31.scalekit.v1.roles.CreateOrganizationRoleResponse\"\xaf\x02\x92\x41\xe4\x01\n\x05Roles\x12\x1e\x43reate a new Organization Role\x1aSCreate a new organization role to represent a specific role within the organizationJf\n\x03\x32\x30\x31\x12_\n&Organization Role created successfully\x12\x35\n3\x1a\x31.scalekit.v1.roles.CreateOrganizationRoleResponse\x82\xb5\x18\x02\x18T\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02,\"$/api/v1/organizations/{org_id}/roles:\x04role\x12\xa7\x03\n\x16UpdateOrganizationRole\x12\x30.scalekit.v1.roles.UpdateOrganizationRoleRequest\x1a\x31.scalekit.v1.roles.UpdateOrganizationRoleResponse\"\xa7\x02\x92\x41\xd7\x01\n\x05Roles\x12$Update an existing Organization Role\x1a@Update an existing organization role using its unique identifierJf\n\x03\x32\x30\x30\x12_\n&Organization Role updated successfully\x12\x35\n3\x1a\x31.scalekit.v1.roles.UpdateOrganizationRoleResponse\x82\xb5\x18\x02\x18T\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02\x31\x1a)/api/v1/organizations/{org_id}/roles/{id}:\x04role\x12\xaf\x03\n\x13GetOrganizationRole\x12-.scalekit.v1.roles.GetOrganizationRoleRequest\x1a..scalekit.v1.roles.GetOrganizationRoleResponse\"\xb8\x02\x92\x41\xee\x01\n\x05Roles\x12\x1aRetrieve Organization Role\x1aZFetch detailed information about a specific organization role using its unique identifier.Jm\n\x03\x32\x30\x30\x12\x66\n0Successfully retrieved organization role details\x12\x32\n0\x1a..scalekit.v1.roles.GetOrganizationRoleResponse\x82\xb5\x18\x02\x18t\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02+\x12)/api/v1/organizations/{org_id}/roles/{id}\x12\xfb\x03\n\x15ListOrganizationRoles\x12/.scalekit.v1.roles.ListOrganizationRolesRequest\x1a\x30.scalekit.v1.roles.ListOrganizationRolesResponse\"\xfe\x02\x92\x41\xb9\x02\n\x05Roles\x12\x1bList All Organization Roles\x1a\x8a\x01Retrieve a paginated list of all roles within the organization. Use the page_token from the response to access subsequent pages of resultsJ\x85\x01\n\x03\x32\x30\x30\x12~\nFSuccessfully retrieved the list of roles within the given organization\x12\x34\n2\x1a\x30.scalekit.v1.roles.ListOrganizationRolesResponse\x82\xb5\x18\x02\x18t\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02&\x12$/api/v1/organizations/{org_id}/roles\x12\xbd\x02\n\x16\x44\x65leteOrganizationRole\x12\x30.scalekit.v1.roles.DeleteOrganizationRoleRequest\x1a\x16.google.protobuf.Empty\"\xd8\x01\x92\x41\x8e\x01\n\x05Roles\x12\x1b\x44\x65lete an Organization Role\x1aIRemove an existing role from the organization using its unique identifierJ\x1d\n\x03\x32\x30\x30\x12\x16\n\x14\x44\x65leted Successfully\x82\xb5\x18\x02\x18T\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02+*)/api/v1/organizations/{org_id}/roles/{id}\x1a\n\x92\x41\x07\n\x05RolesB1Z/github.com/scalekit-inc/scalekit/pkg/grpc/rolesb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -38,16 +38,18 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_ROLE'].fields_by_name['id']._serialized_options = b'\272H\014r\n\020\001\030 :\004role'
   _globals['_ROLE'].fields_by_name['name']._loaded_options = None
   _globals['_ROLE'].fields_by_name['name']._serialized_options = b'\272H\tr\004\020\001\030d\310\001\001'
-  _globals['_ROLE'].fields_by_name['displayName']._loaded_options = None
-  _globals['_ROLE'].fields_by_name['displayName']._serialized_options = b'\272H\tr\004\020\001\030d\310\001\001'
+  _globals['_ROLE'].fields_by_name['display_name']._loaded_options = None
+  _globals['_ROLE'].fields_by_name['display_name']._serialized_options = b'\272H\tr\004\020\001\030d\310\001\001'
   _globals['_ROLE'].fields_by_name['description']._loaded_options = None
   _globals['_ROLE'].fields_by_name['description']._serialized_options = b'\272H\005r\003\030\320\017'
   _globals['_CREATEROLE'].fields_by_name['name']._loaded_options = None
-  _globals['_CREATEROLE'].fields_by_name['name']._serialized_options = b'\272H\037r\032\020\001\030d2\024^[a-zA-Z0-9_]{1,64}$\310\001\001'
+  _globals['_CREATEROLE'].fields_by_name['name']._serialized_options = b'\222A;2&Unique Name of the Organization\'s RoleJ\021\"org_viewer_role\"\272H\037r\032\020\001\030d2\024^[a-zA-Z0-9_]{1,64}$\310\001\001'
   _globals['_CREATEROLE'].fields_by_name['display_name']._loaded_options = None
-  _globals['_CREATEROLE'].fields_by_name['display_name']._serialized_options = b'\272H\tr\004\020\001\030d\310\001\001'
+  _globals['_CREATEROLE'].fields_by_name['display_name']._serialized_options = b'\222AE2\'Display Name of the Organization\'s RoleJ\032\"Organization Viewer Role\"\272H\tr\004\020\001\030d\310\001\001'
   _globals['_CREATEROLE'].fields_by_name['description']._loaded_options = None
-  _globals['_CREATEROLE'].fields_by_name['description']._serialized_options = b'\272H\005r\003\030\320\017'
+  _globals['_CREATEROLE'].fields_by_name['description']._serialized_options = b'\222An2&Description of the Organization\'s RoleJD\"Organization Viewer Role will be used only for viewing the objects\"\272H\005r\003\030\320\017'
+  _globals['_CREATEROLE'].fields_by_name['default']._loaded_options = None
+  _globals['_CREATEROLE'].fields_by_name['default']._serialized_options = b'\222A\0242\014Default RoleJ\004true'
   _globals['_CREATEROLEREQUEST'].fields_by_name['env_id']._loaded_options = None
   _globals['_CREATEROLEREQUEST'].fields_by_name['env_id']._serialized_options = b'\272H\013r\t\020\001\030 :\003env'
   _globals['_CREATEROLEREQUEST'].fields_by_name['role']._loaded_options = None
@@ -59,9 +61,11 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_LISTROLESREQUEST'].fields_by_name['env_id']._loaded_options = None
   _globals['_LISTROLESREQUEST'].fields_by_name['env_id']._serialized_options = b'\272H\006r\004\020\000\030 '
   _globals['_UPDATEROLE'].fields_by_name['display_name']._loaded_options = None
-  _globals['_UPDATEROLE'].fields_by_name['display_name']._serialized_options = b'\272H\006r\004\020\001\030d'
+  _globals['_UPDATEROLE'].fields_by_name['display_name']._serialized_options = b'\222AE2\'Display Name of the Organization\'s RoleJ\032\"Organization Viewer Role\"\272H\006r\004\020\001\030d'
   _globals['_UPDATEROLE'].fields_by_name['description']._loaded_options = None
-  _globals['_UPDATEROLE'].fields_by_name['description']._serialized_options = b'\272H\007r\005\020\001\030\320\017'
+  _globals['_UPDATEROLE'].fields_by_name['description']._serialized_options = b'\222An2&Description of the Organization\'s RoleJD\"Organization Viewer Role will be used only for viewing the objects\"\272H\007r\005\020\001\030\320\017'
+  _globals['_UPDATEROLE'].fields_by_name['default']._loaded_options = None
+  _globals['_UPDATEROLE'].fields_by_name['default']._serialized_options = b'\222A\0242\014Default RoleJ\004true'
   _globals['_UPDATEROLEREQUEST'].fields_by_name['env_id']._loaded_options = None
   _globals['_UPDATEROLEREQUEST'].fields_by_name['env_id']._serialized_options = b'\272H\013r\t\020\001\030 :\003env'
   _globals['_UPDATEROLEREQUEST'].fields_by_name['id']._loaded_options = None
@@ -72,6 +76,32 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_DELETEROLEREQUEST'].fields_by_name['env_id']._serialized_options = b'\272H\013r\t\020\001\030 :\003env'
   _globals['_DELETEROLEREQUEST'].fields_by_name['id']._loaded_options = None
   _globals['_DELETEROLEREQUEST'].fields_by_name['id']._serialized_options = b'\272H\017r\n\020\001\030 :\004role\310\001\001'
+  _globals['_CREATEORGANIZATIONROLEREQUEST'].fields_by_name['org_id']._loaded_options = None
+  _globals['_CREATEORGANIZATIONROLEREQUEST'].fields_by_name['org_id']._serialized_options = b'\222A=2$Unique identifier to an OrganizationJ\025\"org_121312434123312\"\272H\013r\t\020\001\030 :\003org'
+  _globals['_CREATEORGANIZATIONROLEREQUEST'].fields_by_name['role']._loaded_options = None
+  _globals['_CREATEORGANIZATIONROLEREQUEST'].fields_by_name['role']._serialized_options = b'\222A\0332\031Organization role details\272H\003\310\001\001'
+  _globals['_GETORGANIZATIONROLEREQUEST'].fields_by_name['org_id']._loaded_options = None
+  _globals['_GETORGANIZATIONROLEREQUEST'].fields_by_name['org_id']._serialized_options = b'\222A=2$Unique identifier to an OrganizationJ\025\"org_121312434123312\"\272H\013r\t\020\001\030 :\003org'
+  _globals['_GETORGANIZATIONROLEREQUEST'].fields_by_name['id']._loaded_options = None
+  _globals['_GETORGANIZATIONROLEREQUEST'].fields_by_name['id']._serialized_options = b'\222A52\033Unique identifier to a roleJ\026\"role_121312434123312\"\272H\017r\n\020\001\030 :\004role\310\001\001'
+  _globals['_LISTORGANIZATIONROLESREQUEST'].fields_by_name['org_id']._loaded_options = None
+  _globals['_LISTORGANIZATIONROLESREQUEST'].fields_by_name['org_id']._serialized_options = b'\222A=2$Unique identifier to an OrganizationJ\025\"org_121312434123312\"\272H\016r\t\020\001\030 :\003org\310\001\001'
+  _globals['_LISTORGANIZATIONROLESREQUEST']._loaded_options = None
+  _globals['_LISTORGANIZATIONROLESREQUEST']._serialized_options = b'\222A\334\001\n\266\001*\027List Organization Roles2\221\001Retrieve a paginated list of all organizations within the environment. Use the page_token from the response to access subsequent pages of results\322\001\006org_id2!{\"org_id\" : \"org_8756865685762\" }'
+  _globals['_LISTORGANIZATIONROLESRESPONSE'].fields_by_name['roles']._loaded_options = None
+  _globals['_LISTORGANIZATIONROLESRESPONSE'].fields_by_name['roles']._serialized_options = b'\222A\0272\025List of roles objects'
+  _globals['_UPDATEORGANIZATIONROLEREQUEST'].fields_by_name['org_id']._loaded_options = None
+  _globals['_UPDATEORGANIZATIONROLEREQUEST'].fields_by_name['org_id']._serialized_options = b'\222A=2$Unique identifier to an OrganizationJ\025\"org_121312434123312\"\272H\013r\t\020\001\030 :\003org'
+  _globals['_UPDATEORGANIZATIONROLEREQUEST'].fields_by_name['id']._loaded_options = None
+  _globals['_UPDATEORGANIZATIONROLEREQUEST'].fields_by_name['id']._serialized_options = b'\222A52\033Unique identifier to a roleJ\026\"role_121312434123312\"\272H\017r\n\020\001\030 :\004role\310\001\001'
+  _globals['_UPDATEORGANIZATIONROLEREQUEST'].fields_by_name['role']._loaded_options = None
+  _globals['_UPDATEORGANIZATIONROLEREQUEST'].fields_by_name['role']._serialized_options = b'\222A\0332\031Organization role details\272H\003\310\001\001'
+  _globals['_DELETEORGANIZATIONROLEREQUEST'].fields_by_name['org_id']._loaded_options = None
+  _globals['_DELETEORGANIZATIONROLEREQUEST'].fields_by_name['org_id']._serialized_options = b'\222A=2$Unique identifier to an OrganizationJ\025\"org_121312434123312\"\272H\013r\t\020\001\030 :\003org'
+  _globals['_DELETEORGANIZATIONROLEREQUEST'].fields_by_name['id']._loaded_options = None
+  _globals['_DELETEORGANIZATIONROLEREQUEST'].fields_by_name['id']._serialized_options = b'\222A52\033Unique identifier to a roleJ\026\"role_121312434123312\"\272H\017r\n\020\001\030 :\004role\310\001\001'
+  _globals['_ROLESSERVICE']._loaded_options = None
+  _globals['_ROLESSERVICE']._serialized_options = b'\222A\007\n\005Roles'
   _globals['_ROLESSERVICE'].methods_by_name['CreateRole']._loaded_options = None
   _globals['_ROLESSERVICE'].methods_by_name['CreateRole']._serialized_options = b'\202\265\030\002\030P\372\322\344\223\002\t\022\007PREVIEW\202\323\344\223\002K\"#/api/v1/environments/{env_id}/roles:\004roleZ\036\"\034/api/v1/environments/-/roles'
   _globals['_ROLESSERVICE'].methods_by_name['UpdateRole']._loaded_options = None
@@ -82,30 +112,58 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_ROLESSERVICE'].methods_by_name['ListRoles']._serialized_options = b'\202\265\030\002\030p\372\322\344\223\002\t\022\007PREVIEW\202\323\344\223\002E\022#/api/v1/environments/{env_id}/rolesZ\036\022\034/api/v1/environments/-/roles'
   _globals['_ROLESSERVICE'].methods_by_name['DeleteRole']._loaded_options = None
   _globals['_ROLESSERVICE'].methods_by_name['DeleteRole']._serialized_options = b'\202\265\030\002\030P\372\322\344\223\002\t\022\007PREVIEW\202\323\344\223\002O*(/api/v1/environments/{env_id}/roles/{id}Z#*!/api/v1/environments/-/roles/{id}'
+  _globals['_ROLESSERVICE'].methods_by_name['CreateOrganizationRole']._loaded_options = None
+  _globals['_ROLESSERVICE'].methods_by_name['CreateOrganizationRole']._serialized_options = b'\222A\344\001\n\005Roles\022\036Create a new Organization Role\032SCreate a new organization role to represent a specific role within the organizationJf\n\003201\022_\n&Organization Role created successfully\0225\n3\0321.scalekit.v1.roles.CreateOrganizationRoleResponse\202\265\030\002\030T\372\322\344\223\002\t\022\007PREVIEW\202\323\344\223\002,\"$/api/v1/organizations/{org_id}/roles:\004role'
+  _globals['_ROLESSERVICE'].methods_by_name['UpdateOrganizationRole']._loaded_options = None
+  _globals['_ROLESSERVICE'].methods_by_name['UpdateOrganizationRole']._serialized_options = b'\222A\327\001\n\005Roles\022$Update an existing Organization Role\032@Update an existing organization role using its unique identifierJf\n\003200\022_\n&Organization Role updated successfully\0225\n3\0321.scalekit.v1.roles.UpdateOrganizationRoleResponse\202\265\030\002\030T\372\322\344\223\002\t\022\007PREVIEW\202\323\344\223\0021\032)/api/v1/organizations/{org_id}/roles/{id}:\004role'
+  _globals['_ROLESSERVICE'].methods_by_name['GetOrganizationRole']._loaded_options = None
+  _globals['_ROLESSERVICE'].methods_by_name['GetOrganizationRole']._serialized_options = b'\222A\356\001\n\005Roles\022\032Retrieve Organization Role\032ZFetch detailed information about a specific organization role using its unique identifier.Jm\n\003200\022f\n0Successfully retrieved organization role details\0222\n0\032..scalekit.v1.roles.GetOrganizationRoleResponse\202\265\030\002\030t\372\322\344\223\002\t\022\007PREVIEW\202\323\344\223\002+\022)/api/v1/organizations/{org_id}/roles/{id}'
+  _globals['_ROLESSERVICE'].methods_by_name['ListOrganizationRoles']._loaded_options = None
+  _globals['_ROLESSERVICE'].methods_by_name['ListOrganizationRoles']._serialized_options = b'\222A\271\002\n\005Roles\022\033List All Organization Roles\032\212\001Retrieve a paginated list of all roles within the organization. Use the page_token from the response to access subsequent pages of resultsJ\205\001\n\003200\022~\nFSuccessfully retrieved the list of roles within the given organization\0224\n2\0320.scalekit.v1.roles.ListOrganizationRolesResponse\202\265\030\002\030t\372\322\344\223\002\t\022\007PREVIEW\202\323\344\223\002&\022$/api/v1/organizations/{org_id}/roles'
+  _globals['_ROLESSERVICE'].methods_by_name['DeleteOrganizationRole']._loaded_options = None
+  _globals['_ROLESSERVICE'].methods_by_name['DeleteOrganizationRole']._serialized_options = b'\222A\216\001\n\005Roles\022\033Delete an Organization Role\032IRemove an existing role from the organization using its unique identifierJ\035\n\003200\022\026\n\024Deleted Successfully\202\265\030\002\030T\372\322\344\223\002\t\022\007PREVIEW\202\323\344\223\002+*)/api/v1/organizations/{org_id}/roles/{id}'
   _globals['_ROLE']._serialized_start=443
-  _globals['_ROLE']._serialized_end=634
-  _globals['_CREATEROLE']._serialized_start=637
-  _globals['_CREATEROLE']._serialized_end=862
-  _globals['_CREATEROLEREQUEST']._serialized_start=864
-  _globals['_CREATEROLEREQUEST']._serialized_end=981
-  _globals['_CREATEROLERESPONSE']._serialized_start=983
-  _globals['_CREATEROLERESPONSE']._serialized_end=1048
-  _globals['_GETROLEREQUEST']._serialized_start=1050
-  _globals['_GETROLEREQUEST']._serialized_end=1141
-  _globals['_GETROLERESPONSE']._serialized_start=1143
-  _globals['_GETROLERESPONSE']._serialized_end=1205
-  _globals['_LISTROLESREQUEST']._serialized_start=1207
-  _globals['_LISTROLESREQUEST']._serialized_end=1259
-  _globals['_LISTROLESRESPONSE']._serialized_start=1261
-  _globals['_LISTROLESRESPONSE']._serialized_end=1327
-  _globals['_UPDATEROLE']._serialized_start=1330
-  _globals['_UPDATEROLE']._serialized_end=1520
-  _globals['_UPDATEROLEREQUEST']._serialized_start=1523
-  _globals['_UPDATEROLEREQUEST']._serialized_end=1676
-  _globals['_UPDATEROLERESPONSE']._serialized_start=1678
-  _globals['_UPDATEROLERESPONSE']._serialized_end=1743
-  _globals['_DELETEROLEREQUEST']._serialized_start=1745
-  _globals['_DELETEROLEREQUEST']._serialized_end=1839
-  _globals['_ROLESSERVICE']._serialized_start=1842
-  _globals['_ROLESSERVICE']._serialized_end=2821
+  _globals['_ROLE']._serialized_end=635
+  _globals['_CREATEROLE']._serialized_start=638
+  _globals['_CREATEROLE']._serialized_end=1136
+  _globals['_CREATEROLEREQUEST']._serialized_start=1138
+  _globals['_CREATEROLEREQUEST']._serialized_end=1255
+  _globals['_CREATEROLERESPONSE']._serialized_start=1257
+  _globals['_CREATEROLERESPONSE']._serialized_end=1322
+  _globals['_GETROLEREQUEST']._serialized_start=1324
+  _globals['_GETROLEREQUEST']._serialized_end=1415
+  _globals['_GETROLERESPONSE']._serialized_start=1417
+  _globals['_GETROLERESPONSE']._serialized_end=1479
+  _globals['_LISTROLESREQUEST']._serialized_start=1481
+  _globals['_LISTROLESREQUEST']._serialized_end=1533
+  _globals['_LISTROLESRESPONSE']._serialized_start=1535
+  _globals['_LISTROLESRESPONSE']._serialized_end=1601
+  _globals['_UPDATEROLE']._serialized_start=1604
+  _globals['_UPDATEROLE']._serialized_end=2005
+  _globals['_UPDATEROLEREQUEST']._serialized_start=2008
+  _globals['_UPDATEROLEREQUEST']._serialized_end=2161
+  _globals['_UPDATEROLERESPONSE']._serialized_start=2163
+  _globals['_UPDATEROLERESPONSE']._serialized_end=2228
+  _globals['_DELETEROLEREQUEST']._serialized_start=2230
+  _globals['_DELETEROLEREQUEST']._serialized_end=2324
+  _globals['_CREATEORGANIZATIONROLEREQUEST']._serialized_start=2327
+  _globals['_CREATEORGANIZATIONROLEREQUEST']._serialized_end=2550
+  _globals['_CREATEORGANIZATIONROLERESPONSE']._serialized_start=2552
+  _globals['_CREATEORGANIZATIONROLERESPONSE']._serialized_end=2629
+  _globals['_GETORGANIZATIONROLEREQUEST']._serialized_start=2632
+  _globals['_GETORGANIZATIONROLEREQUEST']._serialized_end=2855
+  _globals['_GETORGANIZATIONROLERESPONSE']._serialized_start=2857
+  _globals['_GETORGANIZATIONROLERESPONSE']._serialized_end=2931
+  _globals['_LISTORGANIZATIONROLESREQUEST']._serialized_start=2934
+  _globals['_LISTORGANIZATIONROLESREQUEST']._serialized_end=3297
+  _globals['_LISTORGANIZATIONROLESRESPONSE']._serialized_start=3299
+  _globals['_LISTORGANIZATIONROLESRESPONSE']._serialized_end=3405
+  _globals['_UPDATEORGANIZATIONROLEREQUEST']._serialized_start=3408
+  _globals['_UPDATEORGANIZATIONROLEREQUEST']._serialized_end=3723
+  _globals['_UPDATEORGANIZATIONROLERESPONSE']._serialized_start=3725
+  _globals['_UPDATEORGANIZATIONROLERESPONSE']._serialized_end=3802
+  _globals['_DELETEORGANIZATIONROLEREQUEST']._serialized_start=3805
+  _globals['_DELETEORGANIZATIONROLEREQUEST']._serialized_end=4031
+  _globals['_ROLESSERVICE']._serialized_start=4034
+  _globals['_ROLESSERVICE']._serialized_end=7149
 # @@protoc_insertion_point(module_scope)

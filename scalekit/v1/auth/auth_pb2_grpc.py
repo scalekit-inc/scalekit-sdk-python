@@ -25,19 +25,54 @@ class AuthServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.DiscoveryAuthMethodRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.DiscoveryAuthMethodResponse.FromString,
                 )
+        self.VerifyPasswordLessOtp = channel.unary_unary(
+                '/scalekit.v1.auth.AuthService/VerifyPasswordLessOtp',
+                request_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.VerifyPasswordLessRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.VerifyPasswordLessResponse.FromString,
+                )
+        self.ResendPasswordless = channel.unary_unary(
+                '/scalekit.v1.auth.AuthService/ResendPasswordless',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
+        self.ListUserOrganizations = channel.unary_unary(
+                '/scalekit.v1.auth.AuthService/ListUserOrganizations',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.ListUserOrganizationsResponse.FromString,
+                )
+        self.SignupOrganization = channel.unary_unary(
+                '/scalekit.v1.auth.AuthService/SignupOrganization',
+                request_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.SignupOrganizationRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.SignupOrganizationResponse.FromString,
+                )
+        self.GetAuthState = channel.unary_unary(
+                '/scalekit.v1.auth.AuthService/GetAuthState',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.GetAuthStateResponse.FromString,
+                )
+        self.Logout = channel.unary_unary(
+                '/scalekit.v1.auth.AuthService/Logout',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
+        self.GetActiveSession = channel.unary_unary(
+                '/scalekit.v1.auth.AuthService/GetActiveSession',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
         self.GetAuthCustomizations = channel.unary_unary(
                 '/scalekit.v1.auth.AuthService/GetAuthCustomizations',
                 request_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.GetAuthCustomizationsRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.GetAuthCustomizationsResponse.FromString,
                 )
-        self.VerifyPasswordLessOtp = channel.unary_unary(
-                '/scalekit.v1.auth.AuthService/VerifyPasswordLessOtp',
-                request_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.VerifyPasswordLessRequest.SerializeToString,
-                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                )
-        self.ResendPasswordless = channel.unary_unary(
-                '/scalekit.v1.auth.AuthService/ResendPasswordless',
+        self.GetAuthFeatures = channel.unary_unary(
+                '/scalekit.v1.auth.AuthService/GetAuthFeatures',
                 request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.GetAuthFeaturesResponse.FromString,
+                )
+        self.UpdateLoginUserDetails = channel.unary_unary(
+                '/scalekit.v1.auth.AuthService/UpdateLoginUserDetails',
+                request_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.UpdateLoginUserDetailsRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
 
@@ -57,12 +92,6 @@ class AuthServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def GetAuthCustomizations(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
     def VerifyPasswordLessOtp(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -70,6 +99,54 @@ class AuthServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def ResendPasswordless(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListUserOrganizations(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def SignupOrganization(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetAuthState(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def Logout(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetActiveSession(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetAuthCustomizations(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetAuthFeatures(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateLoginUserDetails(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -88,19 +165,54 @@ def add_AuthServiceServicer_to_server(servicer, server):
                     request_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.DiscoveryAuthMethodRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.DiscoveryAuthMethodResponse.SerializeToString,
             ),
+            'VerifyPasswordLessOtp': grpc.unary_unary_rpc_method_handler(
+                    servicer.VerifyPasswordLessOtp,
+                    request_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.VerifyPasswordLessRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.VerifyPasswordLessResponse.SerializeToString,
+            ),
+            'ResendPasswordless': grpc.unary_unary_rpc_method_handler(
+                    servicer.ResendPasswordless,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'ListUserOrganizations': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListUserOrganizations,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.ListUserOrganizationsResponse.SerializeToString,
+            ),
+            'SignupOrganization': grpc.unary_unary_rpc_method_handler(
+                    servicer.SignupOrganization,
+                    request_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.SignupOrganizationRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.SignupOrganizationResponse.SerializeToString,
+            ),
+            'GetAuthState': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetAuthState,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.GetAuthStateResponse.SerializeToString,
+            ),
+            'Logout': grpc.unary_unary_rpc_method_handler(
+                    servicer.Logout,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'GetActiveSession': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetActiveSession,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
             'GetAuthCustomizations': grpc.unary_unary_rpc_method_handler(
                     servicer.GetAuthCustomizations,
                     request_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.GetAuthCustomizationsRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.GetAuthCustomizationsResponse.SerializeToString,
             ),
-            'VerifyPasswordLessOtp': grpc.unary_unary_rpc_method_handler(
-                    servicer.VerifyPasswordLessOtp,
-                    request_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.VerifyPasswordLessRequest.FromString,
-                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-            ),
-            'ResendPasswordless': grpc.unary_unary_rpc_method_handler(
-                    servicer.ResendPasswordless,
+            'GetAuthFeatures': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetAuthFeatures,
                     request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.GetAuthFeaturesResponse.SerializeToString,
+            ),
+            'UpdateLoginUserDetails': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateLoginUserDetails,
+                    request_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.UpdateLoginUserDetailsRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
     }
@@ -148,6 +260,125 @@ class AuthService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
+    def VerifyPasswordLessOtp(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.auth.AuthService/VerifyPasswordLessOtp',
+            scalekit_dot_v1_dot_auth_dot_auth__pb2.VerifyPasswordLessRequest.SerializeToString,
+            scalekit_dot_v1_dot_auth_dot_auth__pb2.VerifyPasswordLessResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ResendPasswordless(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.auth.AuthService/ResendPasswordless',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListUserOrganizations(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.auth.AuthService/ListUserOrganizations',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            scalekit_dot_v1_dot_auth_dot_auth__pb2.ListUserOrganizationsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def SignupOrganization(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.auth.AuthService/SignupOrganization',
+            scalekit_dot_v1_dot_auth_dot_auth__pb2.SignupOrganizationRequest.SerializeToString,
+            scalekit_dot_v1_dot_auth_dot_auth__pb2.SignupOrganizationResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetAuthState(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.auth.AuthService/GetAuthState',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            scalekit_dot_v1_dot_auth_dot_auth__pb2.GetAuthStateResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def Logout(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.auth.AuthService/Logout',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetActiveSession(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.auth.AuthService/GetActiveSession',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
     def GetAuthCustomizations(request,
             target,
             options=(),
@@ -165,7 +396,7 @@ class AuthService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def VerifyPasswordLessOtp(request,
+    def GetAuthFeatures(request,
             target,
             options=(),
             channel_credentials=None,
@@ -175,14 +406,14 @@ class AuthService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.auth.AuthService/VerifyPasswordLessOtp',
-            scalekit_dot_v1_dot_auth_dot_auth__pb2.VerifyPasswordLessRequest.SerializeToString,
-            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.auth.AuthService/GetAuthFeatures',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            scalekit_dot_v1_dot_auth_dot_auth__pb2.GetAuthFeaturesResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def ResendPasswordless(request,
+    def UpdateLoginUserDetails(request,
             target,
             options=(),
             channel_credentials=None,
@@ -192,8 +423,8 @@ class AuthService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.auth.AuthService/ResendPasswordless',
-            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.auth.AuthService/UpdateLoginUserDetails',
+            scalekit_dot_v1_dot_auth_dot_auth__pb2.UpdateLoginUserDetailsRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
