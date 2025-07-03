@@ -12,7 +12,7 @@ setup(
         "PyJWT>=2.8,<2.10",
         "cffi>=1.15.1",
         "cryptography==44.0.1",
-        "setuptools~=70.3",
+        "setuptools>=78.1.1",
         "grpcio-status>=1.64,<1.67",
         "protoc-gen-openapiv2>=0.0.1",
         "googleapis-common-protos>=1.56.1,<1.66.0",
