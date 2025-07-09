@@ -118,7 +118,7 @@ class ScalekitClient:
         :type                 : ``` obj ```
 
         :returns:
-            dict with user, id token & access token
+            dict with user, id token, access token & refresh token
         """
         try:
             response = self.core_client.authenticate(
@@ -136,11 +136,12 @@ class ScalekitClient:
             response = json.loads(response.content)
             id_token = response["id_token"]
             access_token = response["access_token"]
+            refresh_token = response.get("refresh_token")
             # Validate id_token
             claims = self.__validate_token(id_token, {"verify_aud": False})
             user = {}
-            connection_id = claims['amr'][0]
-            organization_id = claims['oid']
+            connection_id = claims.get('amr', [])[0] if claims.get('amr', []) else None
+            organization_id = claims.get('oid')
             for k, v in claims.items():
                 if id_token_claim_to_user_map.get(k, None):
                     user[id_token_claim_to_user_map[k]] = v
@@ -149,6 +150,7 @@ class ScalekitClient:
                 "user": user,
                 "id_token": id_token,
                 "access_token": access_token,
+                "refresh_token": refresh_token,
                 "connection_id": connection_id,
                 "organization_id": organization_id
             }
