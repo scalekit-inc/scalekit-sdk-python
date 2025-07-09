@@ -118,7 +118,7 @@ class ScalekitClient:
         :type                 : ``` obj ```
 
         :returns:
-            dict with user, id token, access token & refresh token
+            dict with user, id token, optionally access token & refresh token
         """
         try:
             response = self.core_client.authenticate(
