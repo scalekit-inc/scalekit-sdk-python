@@ -159,7 +159,7 @@ class ScalekitClient:
         except Exception as exp:
             raise exp
 
-    def validate_access_token(self, token: str) -> bool:
+    def validate_access_token(self, token: str, options: Optional[Dict] = None, audience = None) -> bool:
         """
         Method to validate access token
 
@@ -169,8 +169,10 @@ class ScalekitClient:
         :returns:
             bool
         """
+        options = options if options else {}
+        options["verify_aud"] = False if not audience else True
         try:
-            self.__validate_token(token)
+            self.__validate_token(token, options=options, audience=audience)
             return True
         except jwt.exceptions.InvalidTokenError:
             return False
