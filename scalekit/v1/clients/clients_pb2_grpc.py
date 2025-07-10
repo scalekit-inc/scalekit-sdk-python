@@ -75,35 +75,40 @@ class ClientServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.DeleteOrganizationClientRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
-        self.CreateApplication = channel.unary_unary(
-                '/scalekit.v1.clients.ClientService/CreateApplication',
-                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateApplicationRequest.SerializeToString,
-                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateApplicationResponse.FromString,
+        self.CreateResource = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/CreateResource',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateResourceRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateResourceResponse.FromString,
                 )
-        self.GetApplication = channel.unary_unary(
-                '/scalekit.v1.clients.ClientService/GetApplication',
-                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetApplicationRequest.SerializeToString,
-                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetApplicationResponse.FromString,
+        self.GetResource = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/GetResource',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetResourceRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetResourceResponse.FromString,
                 )
-        self.ListApplications = channel.unary_unary(
-                '/scalekit.v1.clients.ClientService/ListApplications',
-                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListApplicationsRequest.SerializeToString,
-                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListApplicationsResponse.FromString,
+        self.ListResources = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/ListResources',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListResourcesRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListResourcesResponse.FromString,
                 )
-        self.UpdateApplication = channel.unary_unary(
-                '/scalekit.v1.clients.ClientService/UpdateApplication',
-                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateApplicationRequest.SerializeToString,
-                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateApplicationResponse.FromString,
+        self.UpdateResource = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/UpdateResource',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateResourceRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateResourceResponse.FromString,
                 )
-        self.CreateApplicationClient = channel.unary_unary(
-                '/scalekit.v1.clients.ClientService/CreateApplicationClient',
-                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateApplicationClientRequest.SerializeToString,
-                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateApplicationClientResponse.FromString,
+        self.DeleteResourceProvider = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/DeleteResourceProvider',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.DeleteResourceProviderRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetResourceResponse.FromString,
                 )
-        self.GetApplicationClient = channel.unary_unary(
-                '/scalekit.v1.clients.ClientService/GetApplicationClient',
-                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetApplicationClientRequest.SerializeToString,
-                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetApplicationClientResponse.FromString,
+        self.CreateResourceClient = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/CreateResourceClient',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateResourceClientRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateResourceClientResponse.FromString,
+                )
+        self.GetResourceClient = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/GetResourceClient',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetResourceClientRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetResourceClientResponse.FromString,
                 )
         self.RegisterClient = channel.unary_unary(
                 '/scalekit.v1.clients.ClientService/RegisterClient',
@@ -202,37 +207,43 @@ class ClientServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def CreateApplication(self, request, context):
+    def CreateResource(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def GetApplication(self, request, context):
+    def GetResource(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def ListApplications(self, request, context):
+    def ListResources(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def UpdateApplication(self, request, context):
+    def UpdateResource(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def CreateApplicationClient(self, request, context):
+    def DeleteResourceProvider(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def GetApplicationClient(self, request, context):
+    def CreateResourceClient(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetResourceClient(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -325,35 +336,40 @@ def add_ClientServiceServicer_to_server(servicer, server):
                     request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.DeleteOrganizationClientRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
-            'CreateApplication': grpc.unary_unary_rpc_method_handler(
-                    servicer.CreateApplication,
-                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateApplicationRequest.FromString,
-                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateApplicationResponse.SerializeToString,
+            'CreateResource': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateResource,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateResourceRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateResourceResponse.SerializeToString,
             ),
-            'GetApplication': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetApplication,
-                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetApplicationRequest.FromString,
-                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetApplicationResponse.SerializeToString,
+            'GetResource': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetResource,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetResourceRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetResourceResponse.SerializeToString,
             ),
-            'ListApplications': grpc.unary_unary_rpc_method_handler(
-                    servicer.ListApplications,
-                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListApplicationsRequest.FromString,
-                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListApplicationsResponse.SerializeToString,
+            'ListResources': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListResources,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListResourcesRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListResourcesResponse.SerializeToString,
             ),
-            'UpdateApplication': grpc.unary_unary_rpc_method_handler(
-                    servicer.UpdateApplication,
-                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateApplicationRequest.FromString,
-                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateApplicationResponse.SerializeToString,
+            'UpdateResource': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateResource,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateResourceRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateResourceResponse.SerializeToString,
             ),
-            'CreateApplicationClient': grpc.unary_unary_rpc_method_handler(
-                    servicer.CreateApplicationClient,
-                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateApplicationClientRequest.FromString,
-                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateApplicationClientResponse.SerializeToString,
+            'DeleteResourceProvider': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteResourceProvider,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.DeleteResourceProviderRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetResourceResponse.SerializeToString,
             ),
-            'GetApplicationClient': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetApplicationClient,
-                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetApplicationClientRequest.FromString,
-                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetApplicationClientResponse.SerializeToString,
+            'CreateResourceClient': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateResourceClient,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateResourceClientRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateResourceClientResponse.SerializeToString,
+            ),
+            'GetResourceClient': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetResourceClient,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetResourceClientRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetResourceClientResponse.SerializeToString,
             ),
             'RegisterClient': grpc.unary_unary_rpc_method_handler(
                     servicer.RegisterClient,
@@ -590,7 +606,7 @@ class ClientService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def CreateApplication(request,
+    def CreateResource(request,
             target,
             options=(),
             channel_credentials=None,
@@ -600,14 +616,14 @@ class ClientService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/CreateApplication',
-            scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateApplicationRequest.SerializeToString,
-            scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateApplicationResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/CreateResource',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateResourceRequest.SerializeToString,
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateResourceResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def GetApplication(request,
+    def GetResource(request,
             target,
             options=(),
             channel_credentials=None,
@@ -617,14 +633,14 @@ class ClientService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/GetApplication',
-            scalekit_dot_v1_dot_clients_dot_clients__pb2.GetApplicationRequest.SerializeToString,
-            scalekit_dot_v1_dot_clients_dot_clients__pb2.GetApplicationResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/GetResource',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.GetResourceRequest.SerializeToString,
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.GetResourceResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def ListApplications(request,
+    def ListResources(request,
             target,
             options=(),
             channel_credentials=None,
@@ -634,14 +650,14 @@ class ClientService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/ListApplications',
-            scalekit_dot_v1_dot_clients_dot_clients__pb2.ListApplicationsRequest.SerializeToString,
-            scalekit_dot_v1_dot_clients_dot_clients__pb2.ListApplicationsResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/ListResources',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.ListResourcesRequest.SerializeToString,
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.ListResourcesResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def UpdateApplication(request,
+    def UpdateResource(request,
             target,
             options=(),
             channel_credentials=None,
@@ -651,14 +667,14 @@ class ClientService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/UpdateApplication',
-            scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateApplicationRequest.SerializeToString,
-            scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateApplicationResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/UpdateResource',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateResourceRequest.SerializeToString,
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateResourceResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def CreateApplicationClient(request,
+    def DeleteResourceProvider(request,
             target,
             options=(),
             channel_credentials=None,
@@ -668,14 +684,14 @@ class ClientService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/CreateApplicationClient',
-            scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateApplicationClientRequest.SerializeToString,
-            scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateApplicationClientResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/DeleteResourceProvider',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.DeleteResourceProviderRequest.SerializeToString,
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.GetResourceResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def GetApplicationClient(request,
+    def CreateResourceClient(request,
             target,
             options=(),
             channel_credentials=None,
@@ -685,9 +701,26 @@ class ClientService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/GetApplicationClient',
-            scalekit_dot_v1_dot_clients_dot_clients__pb2.GetApplicationClientRequest.SerializeToString,
-            scalekit_dot_v1_dot_clients_dot_clients__pb2.GetApplicationClientResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/CreateResourceClient',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateResourceClientRequest.SerializeToString,
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateResourceClientResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetResourceClient(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/GetResourceClient',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.GetResourceClientRequest.SerializeToString,
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.GetResourceClientResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

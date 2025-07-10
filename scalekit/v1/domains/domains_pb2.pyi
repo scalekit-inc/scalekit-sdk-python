@@ -19,10 +19,19 @@ class VerificationStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     PENDING: _ClassVar[VerificationStatus]
     VERIFIED: _ClassVar[VerificationStatus]
     FAILED: _ClassVar[VerificationStatus]
+
+class DomainType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    DOMAIN_TYPE_UNSPECIFIED: _ClassVar[DomainType]
+    HOME_REALM_DISCOVERY: _ClassVar[DomainType]
+    JIT_PROVISIONING_DOMAIN: _ClassVar[DomainType]
 VERIFICATION_STATUS_UNSPECIFIED: VerificationStatus
 PENDING: VerificationStatus
 VERIFIED: VerificationStatus
 FAILED: VerificationStatus
+DOMAIN_TYPE_UNSPECIFIED: DomainType
+HOME_REALM_DISCOVERY: DomainType
+JIT_PROVISIONING_DOMAIN: DomainType
 
 class CreateDomainRequest(_message.Message):
     __slots__ = ("organization_id", "external_id", "connection_id", "domain")
@@ -43,10 +52,12 @@ class CreateDomainResponse(_message.Message):
     def __init__(self, domain: _Optional[_Union[Domain, _Mapping]] = ...) -> None: ...
 
 class CreateDomain(_message.Message):
-    __slots__ = ("domain",)
+    __slots__ = ("domain", "domain_type")
     DOMAIN_FIELD_NUMBER: _ClassVar[int]
+    DOMAIN_TYPE_FIELD_NUMBER: _ClassVar[int]
     domain: str
-    def __init__(self, domain: _Optional[str] = ...) -> None: ...
+    domain_type: DomainType
+    def __init__(self, domain: _Optional[str] = ..., domain_type: _Optional[_Union[DomainType, str]] = ...) -> None: ...
 
 class UpdateDomainRequest(_message.Message):
     __slots__ = ("organization_id", "external_id", "connection_id", "id", "domain")
@@ -149,7 +160,7 @@ class ListAuthorizedDomainResponse(_message.Message):
     def __init__(self, domains: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class Domain(_message.Message):
-    __slots__ = ("id", "domain", "environment_id", "organization_id", "connection_id", "txt_record_key", "txt_record_secret", "verification_status", "create_time", "update_time", "created_by")
+    __slots__ = ("id", "domain", "environment_id", "organization_id", "connection_id", "txt_record_key", "txt_record_secret", "verification_status", "create_time", "update_time", "created_by", "domain_type")
     ID_FIELD_NUMBER: _ClassVar[int]
     DOMAIN_FIELD_NUMBER: _ClassVar[int]
     ENVIRONMENT_ID_FIELD_NUMBER: _ClassVar[int]
@@ -161,6 +172,7 @@ class Domain(_message.Message):
     CREATE_TIME_FIELD_NUMBER: _ClassVar[int]
     UPDATE_TIME_FIELD_NUMBER: _ClassVar[int]
     CREATED_BY_FIELD_NUMBER: _ClassVar[int]
+    DOMAIN_TYPE_FIELD_NUMBER: _ClassVar[int]
     id: str
     domain: str
     environment_id: str
@@ -172,4 +184,5 @@ class Domain(_message.Message):
     create_time: _timestamp_pb2.Timestamp
     update_time: _timestamp_pb2.Timestamp
     created_by: str
-    def __init__(self, id: _Optional[str] = ..., domain: _Optional[str] = ..., environment_id: _Optional[str] = ..., organization_id: _Optional[str] = ..., connection_id: _Optional[str] = ..., txt_record_key: _Optional[str] = ..., txt_record_secret: _Optional[str] = ..., verification_status: _Optional[_Union[VerificationStatus, str]] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., created_by: _Optional[str] = ...) -> None: ...
+    domain_type: DomainType
+    def __init__(self, id: _Optional[str] = ..., domain: _Optional[str] = ..., environment_id: _Optional[str] = ..., organization_id: _Optional[str] = ..., connection_id: _Optional[str] = ..., txt_record_key: _Optional[str] = ..., txt_record_secret: _Optional[str] = ..., verification_status: _Optional[_Union[VerificationStatus, str]] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., created_by: _Optional[str] = ..., domain_type: _Optional[_Union[DomainType, str]] = ...) -> None: ...

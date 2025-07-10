@@ -462,9 +462,9 @@ class UserManagement(_message.Message):
     org_user_relationship: OrgUserRelationshipType
     enable_max_users_limit: _wrappers_pb2.BoolValue
     max_users_limit: _wrappers_pb2.Int32Value
-    invitation_expiry: _wrappers_pb2.Int32Value
+    invitation_expiry: _wrappers_pb2.UInt32Value
     organization_meta_name: _wrappers_pb2.StringValue
-    def __init__(self, allow_duplicate_user_identities: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., allow_multiple_memberships: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., allow_organization_signup: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., org_user_relationship: _Optional[_Union[OrgUserRelationshipType, str]] = ..., enable_max_users_limit: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., max_users_limit: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., invitation_expiry: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., organization_meta_name: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ...) -> None: ...
+    def __init__(self, allow_duplicate_user_identities: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., allow_multiple_memberships: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., allow_organization_signup: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., org_user_relationship: _Optional[_Union[OrgUserRelationshipType, str]] = ..., enable_max_users_limit: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., max_users_limit: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., invitation_expiry: _Optional[_Union[_wrappers_pb2.UInt32Value, _Mapping]] = ..., organization_meta_name: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ...) -> None: ...
 
 class GetContextRequest(_message.Message):
     __slots__ = ("environment_id",)
@@ -493,13 +493,15 @@ class GetCurrentSessionRequest(_message.Message):
     def __init__(self, id: _Optional[str] = ...) -> None: ...
 
 class GetCurrentSessionResponse(_message.Message):
-    __slots__ = ("session_expiry", "access_token_expiry", "organization_id", "subject")
+    __slots__ = ("session_expiry", "access_token_expiry", "organization_id", "subject", "email")
     SESSION_EXPIRY_FIELD_NUMBER: _ClassVar[int]
     ACCESS_TOKEN_EXPIRY_FIELD_NUMBER: _ClassVar[int]
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     SUBJECT_FIELD_NUMBER: _ClassVar[int]
+    EMAIL_FIELD_NUMBER: _ClassVar[int]
     session_expiry: _timestamp_pb2.Timestamp
     access_token_expiry: _timestamp_pb2.Timestamp
     organization_id: str
     subject: str
-    def __init__(self, session_expiry: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., access_token_expiry: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., organization_id: _Optional[str] = ..., subject: _Optional[str] = ...) -> None: ...
+    email: str
+    def __init__(self, session_expiry: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., access_token_expiry: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., organization_id: _Optional[str] = ..., subject: _Optional[str] = ..., email: _Optional[str] = ...) -> None: ...

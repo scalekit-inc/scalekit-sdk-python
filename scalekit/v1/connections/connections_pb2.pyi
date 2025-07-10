@@ -425,20 +425,22 @@ class ListOrganizationConnectionsResponse(_message.Message):
     def __init__(self, next_page_token: _Optional[str] = ..., total_size: _Optional[int] = ..., prev_page_token: _Optional[str] = ..., connections: _Optional[_Iterable[_Union[ListConnection, _Mapping]]] = ...) -> None: ...
 
 class SearchOrganizationConnectionsRequest(_message.Message):
-    __slots__ = ("query", "provider", "status", "connection_type", "page_size", "page_token")
+    __slots__ = ("query", "provider", "status", "connection_type", "enabled", "page_size", "page_token")
     QUERY_FIELD_NUMBER: _ClassVar[int]
     PROVIDER_FIELD_NUMBER: _ClassVar[int]
     STATUS_FIELD_NUMBER: _ClassVar[int]
     CONNECTION_TYPE_FIELD_NUMBER: _ClassVar[int]
+    ENABLED_FIELD_NUMBER: _ClassVar[int]
     PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
     PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
     query: str
     provider: ConnectionProvider
     status: ConnectionStatus
     connection_type: ConnectionType
+    enabled: bool
     page_size: int
     page_token: str
-    def __init__(self, query: _Optional[str] = ..., provider: _Optional[_Union[ConnectionProvider, str]] = ..., status: _Optional[_Union[ConnectionStatus, str]] = ..., connection_type: _Optional[_Union[ConnectionType, str]] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ...) -> None: ...
+    def __init__(self, query: _Optional[str] = ..., provider: _Optional[_Union[ConnectionProvider, str]] = ..., status: _Optional[_Union[ConnectionStatus, str]] = ..., connection_type: _Optional[_Union[ConnectionType, str]] = ..., enabled: bool = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ...) -> None: ...
 
 class SearchOrganizationConnectionsResponse(_message.Message):
     __slots__ = ("next_page_token", "total_size", "prev_page_token", "connections")

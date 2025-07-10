@@ -65,6 +65,16 @@ class RolesServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.DeleteOrganizationRoleRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
+        self.GetRoleUsersCount = channel.unary_unary(
+                '/scalekit.v1.roles.RolesService/GetRoleUsersCount',
+                request_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.GetRoleUsersCountRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.GetRoleUsersCountResponse.FromString,
+                )
+        self.UpdateDefaultRoles = channel.unary_unary(
+                '/scalekit.v1.roles.RolesService/UpdateDefaultRoles',
+                request_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.UpdateDefaultRolesRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.UpdateDefaultRolesResponse.FromString,
+                )
 
 
 class RolesServiceServicer(object):
@@ -130,6 +140,18 @@ class RolesServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetRoleUsersCount(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateDefaultRoles(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_RolesServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -182,6 +204,16 @@ def add_RolesServiceServicer_to_server(servicer, server):
                     servicer.DeleteOrganizationRole,
                     request_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.DeleteOrganizationRoleRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'GetRoleUsersCount': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetRoleUsersCount,
+                    request_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.GetRoleUsersCountRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.GetRoleUsersCountResponse.SerializeToString,
+            ),
+            'UpdateDefaultRoles': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateDefaultRoles,
+                    request_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.UpdateDefaultRolesRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.UpdateDefaultRolesResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -360,5 +392,39 @@ class RolesService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.roles.RolesService/DeleteOrganizationRole',
             scalekit_dot_v1_dot_roles_dot_roles__pb2.DeleteOrganizationRoleRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetRoleUsersCount(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.roles.RolesService/GetRoleUsersCount',
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.GetRoleUsersCountRequest.SerializeToString,
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.GetRoleUsersCountResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def UpdateDefaultRoles(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.roles.RolesService/UpdateDefaultRoles',
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.UpdateDefaultRolesRequest.SerializeToString,
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.UpdateDefaultRolesResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
