@@ -26,7 +26,7 @@ from scalekit.common.scalekit import (
 from scalekit.constants.user import id_token_claim_to_user_map
 
 AUTHORIZE_ENDPOINT = "oauth/authorize"
-LOGOUT_ENDPOINT = "end_session" 
+LOGOUT_ENDPOINT = "oidc/logout" 
 webhook_tolerance_in_seconds = timedelta(minutes=5)
 webhook_signature_version = "v1"
 
