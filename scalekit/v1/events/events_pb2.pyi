@@ -67,6 +67,13 @@ class ObjectType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     Domain: _ClassVar[ObjectType]
     EmailServer: _ClassVar[ObjectType]
     Email: _ClassVar[ObjectType]
+    AuthRequest: _ClassVar[ObjectType]
+    SAMLRequest: _ClassVar[ObjectType]
+    SAMLResponse: _ClassVar[ObjectType]
+    TokenClaims: _ClassVar[ObjectType]
+    OIDCReqParams: _ClassVar[ObjectType]
+    OIDCRespClaims: _ClassVar[ObjectType]
+    OIDCAuthRequest: _ClassVar[ObjectType]
 ACTOR_UNSPECIFIED: EventActor
 HUMAN: EventActor
 MACHINE: EventActor
@@ -104,6 +111,13 @@ Job: ObjectType
 Domain: ObjectType
 EmailServer: ObjectType
 Email: ObjectType
+AuthRequest: ObjectType
+SAMLRequest: ObjectType
+SAMLResponse: ObjectType
+TokenClaims: ObjectType
+OIDCReqParams: ObjectType
+OIDCRespClaims: ObjectType
+OIDCAuthRequest: ObjectType
 
 class SendCustomEventRequest(_message.Message):
     __slots__ = ("event_type", "event")
@@ -279,18 +293,20 @@ class IEventFilter(_message.Message):
     def __init__(self, event_types: _Optional[_Iterable[str]] = ..., start_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., end_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., tenant_id: _Optional[str] = ..., target: _Optional[_Union[Target, _Mapping]] = ..., source: _Optional[_Union[Source, str]] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
 
 class EventFilter(_message.Message):
-    __slots__ = ("event_types", "start_time", "end_time", "organization_id", "source")
+    __slots__ = ("event_types", "start_time", "end_time", "organization_id", "source", "auth_request_id")
     EVENT_TYPES_FIELD_NUMBER: _ClassVar[int]
     START_TIME_FIELD_NUMBER: _ClassVar[int]
     END_TIME_FIELD_NUMBER: _ClassVar[int]
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     SOURCE_FIELD_NUMBER: _ClassVar[int]
+    AUTH_REQUEST_ID_FIELD_NUMBER: _ClassVar[int]
     event_types: _containers.RepeatedScalarFieldContainer[str]
     start_time: _timestamp_pb2.Timestamp
     end_time: _timestamp_pb2.Timestamp
     organization_id: str
     source: Source
-    def __init__(self, event_types: _Optional[_Iterable[str]] = ..., start_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., end_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., organization_id: _Optional[str] = ..., source: _Optional[_Union[Source, str]] = ...) -> None: ...
+    auth_request_id: str
+    def __init__(self, event_types: _Optional[_Iterable[str]] = ..., start_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., end_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., organization_id: _Optional[str] = ..., source: _Optional[_Union[Source, str]] = ..., auth_request_id: _Optional[str] = ...) -> None: ...
 
 class ScalekitEvent(_message.Message):
     __slots__ = ("spec_version", "id", "type", "occurred_at", "environment_id", "organization_id", "object", "data")

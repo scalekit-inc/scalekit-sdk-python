@@ -25,17 +25,39 @@ class Intent(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
 
 class AuthState(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
-    AUTHENTICATION: _ClassVar[AuthState]
+    AUTH_STATE_UNSPECIFIED: _ClassVar[AuthState]
+    AUTHENTICATION_IN_PROGRESS: _ClassVar[AuthState]
     ORGANIZATION_SWITCHER: _ClassVar[AuthState]
-    ORGANIZATION_SWITCHER_SIGNUP: _ClassVar[AuthState]
+    ORGANIZATION_SELECTED: _ClassVar[AuthState]
     ORGANIZATION_SIGNUP: _ClassVar[AuthState]
+    ORGANIZATION_SWITCHER_SIGNUP: _ClassVar[AuthState]
+    OTP_VERIFICATION_PENDING: _ClassVar[AuthState]
+    MAGIC_LINK_SENT: _ClassVar[AuthState]
+    LINK_SENT_OTP_VERIFICATION_PENDING: _ClassVar[AuthState]
+    OTP_VERIFIED: _ClassVar[AuthState]
+    LINK_VERIFIED: _ClassVar[AuthState]
+    SSO_AUTHENTICATED: _ClassVar[AuthState]
+    ORG_USER_CREATED: _ClassVar[AuthState]
+    AUTHENTICATION_COMPLETED: _ClassVar[AuthState]
+    AUTHENTICATION_FAILED: _ClassVar[AuthState]
 INTENT_UNSPECIFIED: Intent
 sign_in: Intent
 sign_up: Intent
-AUTHENTICATION: AuthState
+AUTH_STATE_UNSPECIFIED: AuthState
+AUTHENTICATION_IN_PROGRESS: AuthState
 ORGANIZATION_SWITCHER: AuthState
-ORGANIZATION_SWITCHER_SIGNUP: AuthState
+ORGANIZATION_SELECTED: AuthState
 ORGANIZATION_SIGNUP: AuthState
+ORGANIZATION_SWITCHER_SIGNUP: AuthState
+OTP_VERIFICATION_PENDING: AuthState
+MAGIC_LINK_SENT: AuthState
+LINK_SENT_OTP_VERIFICATION_PENDING: AuthState
+OTP_VERIFIED: AuthState
+LINK_VERIFIED: AuthState
+SSO_AUTHENTICATED: AuthState
+ORG_USER_CREATED: AuthState
+AUTHENTICATION_COMPLETED: AuthState
+AUTHENTICATION_FAILED: AuthState
 
 class ListAuthMethodsResponse(_message.Message):
     __slots__ = ("auth_methods",)

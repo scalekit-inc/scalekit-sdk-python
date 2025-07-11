@@ -15,6 +15,7 @@ from scalekit.m2m_client import M2MClient
 from scalekit.organization import OrganizationClient
 from scalekit.directory import DirectoryClient
 from scalekit.users import UserClient
+from scalekit.role import RoleClient
 from scalekit.common.scalekit import (
     AuthorizationUrlOptions,
     CodeAuthenticationOptions,
@@ -25,7 +26,7 @@ from scalekit.common.scalekit import (
 from scalekit.constants.user import id_token_claim_to_user_map
 
 AUTHORIZE_ENDPOINT = "oauth/authorize"
-LOGOUT_ENDPOINT = "end_session" 
+LOGOUT_ENDPOINT = "oidc/logout" 
 webhook_tolerance_in_seconds = timedelta(minutes=5)
 webhook_signature_version = "v1"
 
@@ -61,6 +62,7 @@ class ScalekitClient:
             self.directory = DirectoryClient(self.core_client)
             self.m2m_client = M2MClient(self.core_client)
             self.users = UserClient(self.core_client)
+            self.roles = RoleClient(self.core_client)
         except Exception as exp:
             raise exp
 

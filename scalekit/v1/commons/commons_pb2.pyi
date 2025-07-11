@@ -82,7 +82,7 @@ SCALEKIT: IdentityProviderType
 ADFS: IdentityProviderType
 
 class OrganizationMembership(_message.Message):
-    __slots__ = ("organization_id", "join_time", "membership_status", "roles", "name", "primary_identity_provider", "metadata")
+    __slots__ = ("organization_id", "join_time", "membership_status", "roles", "name", "metadata", "display_name")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -95,24 +95,26 @@ class OrganizationMembership(_message.Message):
     MEMBERSHIP_STATUS_FIELD_NUMBER: _ClassVar[int]
     ROLES_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
-    PRIMARY_IDENTITY_PROVIDER_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
+    DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     organization_id: str
     join_time: _timestamp_pb2.Timestamp
     membership_status: MembershipStatus
     roles: _containers.RepeatedCompositeFieldContainer[Role]
     name: str
-    primary_identity_provider: IdentityProviderType
     metadata: _containers.ScalarMap[str, str]
-    def __init__(self, organization_id: _Optional[str] = ..., join_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., membership_status: _Optional[_Union[MembershipStatus, str]] = ..., roles: _Optional[_Iterable[_Union[Role, _Mapping]]] = ..., name: _Optional[str] = ..., primary_identity_provider: _Optional[_Union[IdentityProviderType, str]] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    display_name: str
+    def __init__(self, organization_id: _Optional[str] = ..., join_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., membership_status: _Optional[_Union[MembershipStatus, str]] = ..., roles: _Optional[_Iterable[_Union[Role, _Mapping]]] = ..., name: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., display_name: _Optional[str] = ...) -> None: ...
 
 class Role(_message.Message):
-    __slots__ = ("id", "name")
+    __slots__ = ("id", "name", "display_name")
     ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
+    DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     id: str
     name: str
-    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ...) -> None: ...
+    display_name: str
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., display_name: _Optional[str] = ...) -> None: ...
 
 class UserProfile(_message.Message):
     __slots__ = ("id", "first_name", "last_name", "name", "locale", "email_verified", "phone_number", "metadata", "custom_attributes")
