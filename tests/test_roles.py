@@ -10,9 +10,6 @@ class TestRoles(BaseTest):
 
     def setUp(self):
         """ """
-        self.env_id = os.getenv('testEnv')
-        if not self.env_id:
-            raise ValueError("testEnv environment variable is not set")
         self.role_id = None
         self.faker = Faker()
 
@@ -30,10 +27,7 @@ class TestRoles(BaseTest):
             default_member=False
         )
         
-        response = self.scalekit_client.roles.create_role(
-            env_id=self.env_id, 
-            role=role
-        )
+        response = self.scalekit_client.roles.create_role(role=role)
         self.assertEqual(response[1].code().name, "OK")
         self.assertTrue(response[0] is not None)
         self.assertEqual(response[0].role.name, role_name)
@@ -57,10 +51,7 @@ class TestRoles(BaseTest):
         )
         print("CreateRole", role)
         
-        response = self.scalekit_client.roles.create_role(
-            env_id=self.env_id, 
-            role=role
-        )
+        response = self.scalekit_client.roles.create_role(role=role)
         print("CreateRole response", response)
         self.assertEqual(response[1].code().name, "OK")
         self.assertTrue(response[0] is not None)
@@ -80,16 +71,10 @@ class TestRoles(BaseTest):
             description="Test role for get operation"
         )
         
-        create_response = self.scalekit_client.roles.create_role(
-            env_id=self.env_id, 
-            role=role
-        )
+        create_response = self.scalekit_client.roles.create_role(role=role)
         self.role_id = create_response[0].role.id
 
-        response = self.scalekit_client.roles.get_role(
-            env_id=self.env_id, 
-            role_id=self.role_id
-        )
+        response = self.scalekit_client.roles.get_role(role_id=self.role_id)
         self.assertEqual(response[1].code().name, "OK")
         self.assertTrue(response[0] is not None)
         self.assertEqual(response[0].role.id, self.role_id)
@@ -108,13 +93,10 @@ class TestRoles(BaseTest):
             description="Test role for list operation"
         )
         
-        create_response = self.scalekit_client.roles.create_role(
-            env_id=self.env_id, 
-            role=role
-        )
+        create_response = self.scalekit_client.roles.create_role(role=role)
         self.role_id = create_response[0].role.id
 
-        response = self.scalekit_client.roles.list_roles(env_id=self.env_id)
+        response = self.scalekit_client.roles.list_roles()
         self.assertEqual(response[1].code().name, "OK")
         self.assertTrue(response[0] is not None)
         self.assertTrue(len(response[0].roles) > 0)
@@ -141,10 +123,7 @@ class TestRoles(BaseTest):
             description="Original description"
         )
         
-        create_response = self.scalekit_client.roles.create_role(
-            env_id=self.env_id, 
-            role=role
-        )
+        create_response = self.scalekit_client.roles.create_role(role=role)
         self.role_id = create_response[0].role.id
         print("CreateRole for update response", create_response)
 
@@ -161,7 +140,6 @@ class TestRoles(BaseTest):
         print("UpdateRole", update_role)
         
         response = self.scalekit_client.roles.update_role(
-            env_id=self.env_id,
             role_id=self.role_id,
             role=update_role
         )
@@ -186,10 +164,7 @@ class TestRoles(BaseTest):
             description="Original description"
         )
         
-        create_response = self.scalekit_client.roles.create_role(
-            env_id=self.env_id, 
-            role=role
-        )
+        create_response = self.scalekit_client.roles.create_role(role=role)
         self.role_id = create_response[0].role.id
 
         # Update only display name
@@ -197,7 +172,6 @@ class TestRoles(BaseTest):
         update_role = UpdateRole(display_name=updated_display_name)
         
         response = self.scalekit_client.roles.update_role(
-            env_id=self.env_id,
             role_id=self.role_id,
             role=update_role
         )
@@ -218,24 +192,15 @@ class TestRoles(BaseTest):
             description="Test role for deletion"
         )
         
-        create_response = self.scalekit_client.roles.create_role(
-            env_id=self.env_id, 
-            role=role
-        )
+        create_response = self.scalekit_client.roles.create_role(role=role)
         self.role_id = create_response[0].role.id
 
-        response = self.scalekit_client.roles.delete_role(
-            env_id=self.env_id,
-            role_id=self.role_id
-        )
+        response = self.scalekit_client.roles.delete_role(role_id=self.role_id)
         self.assertEqual(response[1].code().name, "OK")
 
         # Verify role is deleted by trying to get it
         try:
-            self.scalekit_client.roles.get_role(
-                env_id=self.env_id,
-                role_id=self.role_id
-            )
+            self.scalekit_client.roles.get_role(role_id=self.role_id)
             self.fail("Role should have been deleted")
         except Exception as exp:
             # Expected behavior - role should not be found
@@ -252,10 +217,7 @@ class TestRoles(BaseTest):
             description="First test role"
         )
         
-        create_response1 = self.scalekit_client.roles.create_role(
-            env_id=self.env_id, 
-            role=role1
-        )
+        create_response1 = self.scalekit_client.roles.create_role(role=role1)
         role1_id = create_response1[0].role.id
 
         # Create second role for reassignment
@@ -266,15 +228,11 @@ class TestRoles(BaseTest):
             description="Second test role for reassignment"
         )
         
-        create_response2 = self.scalekit_client.roles.create_role(
-            env_id=self.env_id, 
-            role=role2
-        )
+        create_response2 = self.scalekit_client.roles.create_role(role=role2)
         role2_id = create_response2[0].role.id
 
         # Delete first role with reassignment to second role
         response = self.scalekit_client.roles.delete_role(
-            env_id=self.env_id,
             role_id=role1_id,
             reassign_role_id=role2_id
         )
@@ -282,28 +240,19 @@ class TestRoles(BaseTest):
 
         # Verify first role is deleted
         try:
-            self.scalekit_client.roles.get_role(
-                env_id=self.env_id,
-                role_id=role1_id
-            )
+            self.scalekit_client.roles.get_role(role_id=role1_id)
             self.fail("Role should have been deleted")
         except Exception as exp:
             # Expected behavior - role should not be found
             self.assertTrue("not found" in str(exp) or "does not exist" in str(exp))
 
         # Verify second role still exists
-        get_response = self.scalekit_client.roles.get_role(
-            env_id=self.env_id,
-            role_id=role2_id
-        )
+        get_response = self.scalekit_client.roles.get_role(role_id=role2_id)
         self.assertEqual(get_response[1].code().name, "OK")
         self.assertEqual(get_response[0].role.id, role2_id)
 
         # Clean up second role
-        self.scalekit_client.roles.delete_role(
-            env_id=self.env_id,
-            role_id=role2_id
-        )
+        self.scalekit_client.roles.delete_role(role_id=role2_id)
 
     def test_create_role_validation(self):
         """ Method to test role creation validation """
@@ -314,10 +263,7 @@ class TestRoles(BaseTest):
         )
         
         try:
-            self.scalekit_client.roles.create_role(
-                env_id=self.env_id, 
-                role=role
-            )
+            self.scalekit_client.roles.create_role(role=role)
             self.fail("Should have failed due to missing name")
         except Exception as exp:
             # Expected behavior - validation error
@@ -340,38 +286,26 @@ class TestRoles(BaseTest):
         )
         
         # Create first role
-        create_response1 = self.scalekit_client.roles.create_role(
-            env_id=self.env_id, 
-            role=role1
-        )
+        create_response1 = self.scalekit_client.roles.create_role(role=role1)
         self.assertEqual(create_response1[1].code().name, "OK")
         role1_id = create_response1[0].role.id
 
         # Try to create second role with same name
         try:
-            self.scalekit_client.roles.create_role(
-                env_id=self.env_id, 
-                role=role2
-            )
+            self.scalekit_client.roles.create_role(role=role2)
             self.fail("Should have failed due to duplicate name")
         except Exception as exp:
             # Expected behavior - duplicate name error
             self.assertTrue("already exists" in str(exp) or "duplicate" in str(exp) or "unique" in str(exp))
 
         # Clean up first role
-        self.scalekit_client.roles.delete_role(
-            env_id=self.env_id,
-            role_id=role1_id
-        )
+        self.scalekit_client.roles.delete_role(role_id=role1_id)
 
     def tearDown(self):
         """ Method to clean up """
         if self.role_id:
             try:
-                self.scalekit_client.roles.delete_role(
-                    env_id=self.env_id,
-                    role_id=self.role_id
-                )
+                self.scalekit_client.roles.delete_role(role_id=self.role_id)
             except Exception:
                 # Role might already be deleted or not exist
                 pass 
