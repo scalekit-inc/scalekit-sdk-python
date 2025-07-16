@@ -24,14 +24,11 @@ class RoleClient:
 
     def create_role(
         self, 
-        env_id: str, 
         role: CreateRole
     ) -> CreateRoleResponse:
         """
-        Method to create a new role in the environment
+        Method to create a new role
 
-        :param env_id         : Environment id to create role for
-        :type                 : ``` str ```
         :param role           : CreateRole object with expected values for role creation
         :type                 : ``` obj ```
 
@@ -40,18 +37,13 @@ class RoleClient:
         """
         return self.core_client.grpc_exec(
             self.role_service.CreateRole.with_call,
-            CreateRoleRequest(
-                env_id=env_id,
-                role=role
-            ),
+            CreateRoleRequest(role=role),
         )
 
-    def get_role(self, env_id: str, role_id: str) -> GetRoleResponse:
+    def get_role(self, role_id: str) -> GetRoleResponse:
         """
         Method to get role by ID
 
-        :param env_id         : Environment id
-        :type                 : ``` str ```
         :param role_id        : Role id to get role details
         :type                 : ``` str ```
 
@@ -60,38 +52,29 @@ class RoleClient:
         """
         return self.core_client.grpc_exec(
             self.role_service.GetRole.with_call,
-            GetRoleRequest(
-                env_id=env_id,
-                id=role_id
-            ),
+            GetRoleRequest(id=role_id),
         )
 
-    def list_roles(self, env_id: str) -> ListRolesResponse:
+    def list_roles(self) -> ListRolesResponse:
         """
-        Method to list all roles in environment
-
-        :param env_id         : Environment id to list roles for
-        :type                 : ``` str ```
+        Method to list all roles
 
         :returns:
             List Roles Response
         """
         return self.core_client.grpc_exec(
             self.role_service.ListRoles.with_call,
-            ListRolesRequest(env_id=env_id),
+            ListRolesRequest(),
         )
 
     def update_role(
         self, 
-        env_id: str, 
         role_id: str, 
         role: UpdateRole
     ) -> UpdateRoleResponse:
         """
         Method to update an existing role by ID
 
-        :param env_id         : Environment id
-        :type                 : ``` str ```
         :param role_id        : Role id to update
         :type                 : ``` str ```
         :param role           : UpdateRole object with expected values for role update
@@ -103,7 +86,6 @@ class RoleClient:
         return self.core_client.grpc_exec(
             self.role_service.UpdateRole.with_call,
             UpdateRoleRequest(
-                env_id=env_id,
                 id=role_id,
                 role=role
             ),
@@ -111,15 +93,12 @@ class RoleClient:
 
     def delete_role(
         self, 
-        env_id: str, 
         role_id: str, 
         reassign_role_id: Optional[str] = None
     ):
         """
         Method to delete role by ID
 
-        :param env_id         : Environment id
-        :type                 : ``` str ```
         :param role_id        : Role id to be deleted
         :type                 : ``` str ```
         :param reassign_role_id: Role ID to reassign users to when deleting this role
@@ -128,16 +107,31 @@ class RoleClient:
         :returns:
             None
         """
-        request = DeleteRoleRequest(
-            env_id=env_id,
-            id=role_id
-        )
+        request = DeleteRoleRequest(id=role_id)
         if reassign_role_id:
             request.reassign_role_id = reassign_role_id
             
         return self.core_client.grpc_exec(
             self.role_service.DeleteRole.with_call,
             request,
+        )
+
+    def get_role_users_count(
+        self, 
+        role_id: str
+    ) -> GetRoleUsersCountResponse:
+        """
+        Method to get the count of users associated with a role
+
+        :param role_id        : Role id to get user count for
+        :type                 : ``` str ```
+
+        :returns:
+            Get Role Users Count Response
+        """
+        return self.core_client.grpc_exec(
+            self.role_service.GetRoleUsersCount.with_call,
+            GetRoleUsersCountRequest(id=role_id),
         )
 
  
