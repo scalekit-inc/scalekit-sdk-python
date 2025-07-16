@@ -301,6 +301,27 @@ class TestRoles(BaseTest):
         # Clean up first role
         self.scalekit_client.roles.delete_role(role_id=role1_id)
 
+    def test_get_role_users_count(self):
+        """ Method to test get role users count """
+        role_name = f"test_role_{self.faker.unique.random_number()}"
+        display_name = f"Test Role {self.faker.unique.random_number()}"
+        
+        role = CreateRole(
+            name=role_name,
+            display_name=display_name,
+            description="Test role for user count"
+        )
+        
+        create_response = self.scalekit_client.roles.create_role(role=role)
+        self.role_id = create_response[0].role.id
+
+        # Get user count for the role
+        response = self.scalekit_client.roles.get_role_users_count(role_id=self.role_id)
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertTrue(response[0] is not None)
+        self.assertIsInstance(response[0].count, int)
+        self.assertGreaterEqual(response[0].count, 0)
+
     def tearDown(self):
         """ Method to clean up """
         if self.role_id:

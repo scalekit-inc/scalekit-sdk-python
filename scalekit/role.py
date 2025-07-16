@@ -116,4 +116,22 @@ class RoleClient:
             request,
         )
 
+    def get_role_users_count(
+        self, 
+        role_id: str
+    ) -> GetRoleUsersCountResponse:
+        """
+        Method to get the count of users associated with a role
+
+        :param role_id        : Role id to get user count for
+        :type                 : ``` str ```
+
+        :returns:
+            Get Role Users Count Response
+        """
+        return self.core_client.grpc_exec(
+            self.role_service.GetRoleUsersCount.with_call,
+            GetRoleUsersCountRequest(id=role_id),
+        )
+
  
