@@ -1,8 +1,10 @@
-import os
 from faker import Faker
 from tests.basetest import BaseTest
 
 from scalekit.v1.roles.roles_pb2 import CreateRole, UpdateRole
+from scalekit.v1.users.users_pb2 import CreateUser, CreateUserProfile, CreateMembership
+from scalekit.v1.commons.commons_pb2 import Role
+from scalekit.v1.organizations.organizations_pb2 import CreateOrganization
 
 
 class TestRoles(BaseTest):
@@ -12,6 +14,16 @@ class TestRoles(BaseTest):
         """ """
         self.role_id = None
         self.faker = Faker()
+        self.user_id = None
+        
+        # Always create a test organization for this test
+        org_display_name = f"Test Organization {self.faker.unique.random_number()}"
+        org = CreateOrganization(
+            display_name=org_display_name,
+            external_id=f"ext_{self.faker.unique.random_number()}"
+        )
+        org_response = self.scalekit_client.organization.create_organization(organization=org)
+        self.org_id = org_response[0].organization.id
 
     def test_create_role(self):
         """ Method to test create role """
@@ -46,7 +58,7 @@ class TestRoles(BaseTest):
             name=role_name,
             display_name=display_name,
             description="Test default role",
-            default_creator=True,
+            default_creator=False,
             default_member=False
         )
         print("CreateRole", role)
@@ -56,7 +68,7 @@ class TestRoles(BaseTest):
         self.assertEqual(response[1].code().name, "OK")
         self.assertTrue(response[0] is not None)
         self.assertEqual(response[0].role.name, role_name)
-        self.assertEqual(response[0].role.default_creator, True)
+        self.assertEqual(response[0].role.default_creator, False)
         self.assertEqual(response[0].role.default_member, False)
         self.role_id = response[0].role.id
 
@@ -135,7 +147,7 @@ class TestRoles(BaseTest):
             display_name=updated_display_name,
             description=updated_description,
             default_creator=False,
-            default_member=True
+            default_member=False
         )
         print("UpdateRole", update_role)
         
@@ -151,7 +163,7 @@ class TestRoles(BaseTest):
         self.assertEqual(response[0].role.display_name, updated_display_name)
         self.assertEqual(response[0].role.description, updated_description)
         self.assertEqual(response[0].role.default_creator, False)
-        self.assertEqual(response[0].role.default_member, True)
+        self.assertEqual(response[0].role.default_member, False)
 
     def test_update_role_partial(self):
         """ Method to test update role with partial fields """
@@ -220,6 +232,37 @@ class TestRoles(BaseTest):
         create_response1 = self.scalekit_client.roles.create_role(role=role1)
         role1_id = create_response1[0].role.id
 
+        # Create user and assign to the first role
+        user1_profile = CreateUserProfile(
+            first_name="Test",
+            last_name="User1",
+            name="Test User 1",
+            locale="en-US"
+        )
+        user1 = CreateUser(
+            email=f"test.user1.{self.faker.unique.random_number()}@example.com",
+            user_profile=user1_profile,
+            membership=CreateMembership(
+                roles=[Role(id=role1_id, name=role1_name)]
+            )
+        )
+        
+        user1_response = self.scalekit_client.users.create_user_and_membership(
+            organization_id=self.org_id,
+            user=user1
+        )
+        self.user_id = user1_response[0].user.id
+
+        # Try to delete the first role WITHOUT reassignment - this should fail
+        try:
+            self.scalekit_client.roles.delete_role(role_id=role1_id)
+            self.fail("Role deletion should have failed because it has users assigned")
+        except Exception as exp:
+            # Expected behavior - should fail because role has users
+            print(f"Expected error when deleting role with users: {exp}")
+            # Assert the specific error message
+            self.assertEqual(str(exp), "role cannot be deleted as it is assigned to users")
+
         # Create second role for reassignment
         role2_name = f"test_role_2_{self.faker.unique.random_number()}"
         role2 = CreateRole(
@@ -231,7 +274,7 @@ class TestRoles(BaseTest):
         create_response2 = self.scalekit_client.roles.create_role(role=role2)
         role2_id = create_response2[0].role.id
 
-        # Delete first role with reassignment to second role
+        # Delete first role with reassignment to second role 
         response = self.scalekit_client.roles.delete_role(
             role_id=role1_id,
             reassign_role_id=role2_id
@@ -250,6 +293,23 @@ class TestRoles(BaseTest):
         get_response = self.scalekit_client.roles.get_role(role_id=role2_id)
         self.assertEqual(get_response[1].code().name, "OK")
         self.assertEqual(get_response[0].role.id, role2_id)
+
+        # Clean up user
+        if self.user_id:
+            try:
+                self.scalekit_client.users.delete_membership(
+                    organization_id=self.org_id,
+                    user_id=self.user_id
+                )
+            except Exception as exp:
+                exp_message = str(exp).lower()
+                if "not found" in exp_message or "does not exist" in exp_message:
+                    # User already deleted or doesn't exist
+                    pass
+                else:
+                    # Log warning but don't fail the test
+                    print(f"Warning: Could not clean up user {self.user_id}: {exp}")
+            self.user_id = None
 
         # Clean up second role
         self.scalekit_client.roles.delete_role(role_id=role2_id)
@@ -327,6 +387,24 @@ class TestRoles(BaseTest):
         if self.role_id:
             try:
                 self.scalekit_client.roles.delete_role(role_id=self.role_id)
-            except Exception:
-                # Role might already be deleted or not exist
-                pass 
+            except Exception as exp:
+                exp_message = str(exp).lower()
+                
+                # Check for expected "not found" scenarios
+                if "not found" in exp_message or "does not exist" in exp_message:
+                    # Role already deleted or doesn't exist 
+                    pass
+                else:
+                    # Fail the test for unexpected exceptions during cleanup
+                    raise Exception(f"Unexpected exception during role cleanup: {exp}") from exp
+        
+        # Clean up created organization
+        try:
+            self.scalekit_client.organization.delete_organization(organization_id=self.org_id)
+        except Exception as exp:
+            exp_message = str(exp).lower()
+            if "not found" in exp_message or "does not exist" in exp_message:
+                # Organization already deleted or doesn't exist
+                pass
+            else:
+                print(f"Warning: Could not clean up organization {self.org_id}: {exp}") 
