@@ -463,6 +463,13 @@ class TestUsers(BaseTest):
         self.assertEqual(response[1].code().name, "OK")
         self.assertTrue(response[0] is not None)
         self.assertEqual(response[0].user.external_id, external_id)
+        
+        # Assert the updated user profile
+        updated_user_profile = response[0].user.user_profile
+        self.assertEqual(updated_user_profile.first_name, "Updated")
+        self.assertEqual(updated_user_profile.last_name, "User")
+        self.assertEqual(updated_user_profile.name, "Updated User")
+        self.assertEqual(updated_user_profile.locale, "en-US")
        
     def test_delete_membership(self):
         """ Method to test delete membership """
