@@ -505,3 +505,38 @@ class GetCurrentSessionResponse(_message.Message):
     subject: str
     email: str
     def __init__(self, session_expiry: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., access_token_expiry: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., organization_id: _Optional[str] = ..., subject: _Optional[str] = ..., email: _Optional[str] = ...) -> None: ...
+
+class ResourceMetadata(_message.Message):
+    __slots__ = ("type", "identifiers")
+    class ResourceType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+        __slots__ = ()
+        organization: _ClassVar[ResourceMetadata.ResourceType]
+        connection: _ClassVar[ResourceMetadata.ResourceType]
+        auth_request: _ClassVar[ResourceMetadata.ResourceType]
+    organization: ResourceMetadata.ResourceType
+    connection: ResourceMetadata.ResourceType
+    auth_request: ResourceMetadata.ResourceType
+    TYPE_FIELD_NUMBER: _ClassVar[int]
+    IDENTIFIERS_FIELD_NUMBER: _ClassVar[int]
+    type: ResourceMetadata.ResourceType
+    identifiers: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, type: _Optional[_Union[ResourceMetadata.ResourceType, str]] = ..., identifiers: _Optional[_Iterable[str]] = ...) -> None: ...
+
+class ScalekitResourceRequest(_message.Message):
+    __slots__ = ("resources",)
+    RESOURCES_FIELD_NUMBER: _ClassVar[int]
+    resources: _containers.RepeatedCompositeFieldContainer[ResourceMetadata]
+    def __init__(self, resources: _Optional[_Iterable[_Union[ResourceMetadata, _Mapping]]] = ...) -> None: ...
+
+class ScalekitResourceResponse(_message.Message):
+    __slots__ = ("resources",)
+    class ResourcesEntry(_message.Message):
+        __slots__ = ("key", "value")
+        KEY_FIELD_NUMBER: _ClassVar[int]
+        VALUE_FIELD_NUMBER: _ClassVar[int]
+        key: str
+        value: _struct_pb2.Struct
+        def __init__(self, key: _Optional[str] = ..., value: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
+    RESOURCES_FIELD_NUMBER: _ClassVar[int]
+    resources: _containers.MessageMap[str, _struct_pb2.Struct]
+    def __init__(self, resources: _Optional[_Mapping[str, _struct_pb2.Struct]] = ...) -> None: ...

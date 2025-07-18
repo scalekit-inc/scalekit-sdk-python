@@ -117,3 +117,27 @@ class M2MClient:
             DeleteOrganizationClientSecretRequest(
                 organization_id=organization_id, client_id=client_id, secret_id=secret_id)
         )
+
+    def list_organization_clients(
+        self, organization_id: str, page_size: Optional[int] = None, page_token: Optional[str] = None
+    ) -> ListOrganizationClientsResponse:
+        """
+        Method to list organization clients
+
+        :param organization_id  : Organization id to list clients for
+        :type                   : ``` str ```
+        :param page_size        : Page size for pagination (between 10 and 100)
+        :type                   : ``` int ```
+        :param page_token       : Page token for pagination
+        :type                   : ``` str ```
+        :returns:
+            List Organization Clients Response
+        """
+        return self.core_client.grpc_exec(
+            self.client_service.ListOrganizationClients.with_call,
+            ListOrganizationClientsRequest(
+                organization_id=organization_id,
+                page_size=page_size,
+                page_token=page_token
+            )
+        )
