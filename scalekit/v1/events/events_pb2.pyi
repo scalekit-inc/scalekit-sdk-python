@@ -74,6 +74,8 @@ class ObjectType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     OIDCReqParams: _ClassVar[ObjectType]
     OIDCRespClaims: _ClassVar[ObjectType]
     OIDCAuthRequest: _ClassVar[ObjectType]
+    SSOError: _ClassVar[ObjectType]
+    GenericError: _ClassVar[ObjectType]
 ACTOR_UNSPECIFIED: EventActor
 HUMAN: EventActor
 MACHINE: EventActor
@@ -118,6 +120,8 @@ TokenClaims: ObjectType
 OIDCReqParams: ObjectType
 OIDCRespClaims: ObjectType
 OIDCAuthRequest: ObjectType
+SSOError: ObjectType
+GenericError: ObjectType
 
 class SendCustomEventRequest(_message.Message):
     __slots__ = ("event_type", "event")

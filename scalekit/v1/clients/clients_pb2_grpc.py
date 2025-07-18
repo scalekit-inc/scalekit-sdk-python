@@ -75,6 +75,11 @@ class ClientServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.DeleteOrganizationClientRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
+        self.ListOrganizationClients = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/ListOrganizationClients',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListOrganizationClientsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListOrganizationClientsResponse.FromString,
+                )
         self.CreateResource = channel.unary_unary(
                 '/scalekit.v1.clients.ClientService/CreateResource',
                 request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateResourceRequest.SerializeToString,
@@ -94,6 +99,11 @@ class ClientServiceStub(object):
                 '/scalekit.v1.clients.ClientService/UpdateResource',
                 request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateResourceRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateResourceResponse.FromString,
+                )
+        self.DeleteResource = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/DeleteResource',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.DeleteResourceRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
         self.DeleteResourceProvider = channel.unary_unary(
                 '/scalekit.v1.clients.ClientService/DeleteResourceProvider',
@@ -124,6 +134,16 @@ class ClientServiceStub(object):
                 '/scalekit.v1.clients.ClientService/ListScopes',
                 request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListScopesRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListScopesResponse.FromString,
+                )
+        self.UpdateScope = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/UpdateScope',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateScopeRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateScopeResponse.FromString,
+                )
+        self.DeleteScope = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/DeleteScope',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.DeleteScopeRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
         self.GetConsentDetails = channel.unary_unary(
                 '/scalekit.v1.clients.ClientService/GetConsentDetails',
@@ -207,6 +227,12 @@ class ClientServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ListOrganizationClients(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def CreateResource(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -226,6 +252,12 @@ class ClientServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def UpdateResource(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeleteResource(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -262,6 +294,18 @@ class ClientServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def ListScopes(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateScope(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeleteScope(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -336,6 +380,11 @@ def add_ClientServiceServicer_to_server(servicer, server):
                     request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.DeleteOrganizationClientRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
+            'ListOrganizationClients': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListOrganizationClients,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListOrganizationClientsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListOrganizationClientsResponse.SerializeToString,
+            ),
             'CreateResource': grpc.unary_unary_rpc_method_handler(
                     servicer.CreateResource,
                     request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateResourceRequest.FromString,
@@ -355,6 +404,11 @@ def add_ClientServiceServicer_to_server(servicer, server):
                     servicer.UpdateResource,
                     request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateResourceRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateResourceResponse.SerializeToString,
+            ),
+            'DeleteResource': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteResource,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.DeleteResourceRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'DeleteResourceProvider': grpc.unary_unary_rpc_method_handler(
                     servicer.DeleteResourceProvider,
@@ -385,6 +439,16 @@ def add_ClientServiceServicer_to_server(servicer, server):
                     servicer.ListScopes,
                     request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListScopesRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListScopesResponse.SerializeToString,
+            ),
+            'UpdateScope': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateScope,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateScopeRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateScopeResponse.SerializeToString,
+            ),
+            'DeleteScope': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteScope,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.DeleteScopeRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'GetConsentDetails': grpc.unary_unary_rpc_method_handler(
                     servicer.GetConsentDetails,
@@ -606,6 +670,23 @@ class ClientService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
+    def ListOrganizationClients(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/ListOrganizationClients',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.ListOrganizationClientsRequest.SerializeToString,
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.ListOrganizationClientsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
     def CreateResource(request,
             target,
             options=(),
@@ -670,6 +751,23 @@ class ClientService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/UpdateResource',
             scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateResourceRequest.SerializeToString,
             scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateResourceResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DeleteResource(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/DeleteResource',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.DeleteResourceRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -772,6 +870,40 @@ class ClientService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/ListScopes',
             scalekit_dot_v1_dot_clients_dot_clients__pb2.ListScopesRequest.SerializeToString,
             scalekit_dot_v1_dot_clients_dot_clients__pb2.ListScopesResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def UpdateScope(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/UpdateScope',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateScopeRequest.SerializeToString,
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateScopeResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DeleteScope(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/DeleteScope',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.DeleteScopeRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
