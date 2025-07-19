@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 from cryptography.hazmat.primitives import serialization
 from grpc_status import rpc_status
 from scalekit.common.scalekit import GrantType
+from scalekit.common.scalekit import ClientException
 from scalekit.v1.errdetails.errdetails_pb2 import ErrorInfo
 
 TRequest = TypeVar("TRequest")
@@ -31,7 +32,7 @@ class CoreClient:
     api_version = "20250718"
     user_agent = f"{sdk_version} Python/{platform.python_version()} ({platform.system()}; {platform.architecture()}"
 
-    def __init__(self, env_url, client_id, client_secret):
+    def __init__(self, env_url, client_id, client_secret, error_handling_strategy):
         """
         Initializer for Core client
 
@@ -54,6 +55,7 @@ class CoreClient:
         self.grpc_secure_channel = None
         self.__authenticate_client()
         self.__grpc_secure_channel()
+        self.error_handling = error_handling_strategy
 
     def __grpc_secure_channel(self):
         """
@@ -157,7 +159,12 @@ class CoreClient:
                                 for fv in info.validation_error_info.field_violations:
                                     messages.append(f"{fv.field}: {fv.description}")
 
-                raise Exception("\n".join(messages))
+                if self.error_handling.value == 'grpc':
+                    raise ClientException(messages, status_code).as_grpc()
+                elif self.error_handling.value == 'http':
+                    raise ClientException(messages, status_code).as_http()
+                else:
+                    raise Exception("\n".join(messages))
         except Exception as exp:
             raise exp
 

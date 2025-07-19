@@ -72,3 +72,53 @@ class LogoutUrlOptions:
         self.id_token_hint = id_token_hint
         self.post_logout_redirect_uri = post_logout_redirect_uri
         self.state = state
+
+
+class ErrorHandlingStrategy(Enum):
+    """ Enum for error handling strategies """
+    GRPC = "grpc"
+    HTTP = "http"
+    DEFAULT = "messages"
+
+
+class ClientException(Exception):
+    def __init__(self, messages: list, grpc_status_code):
+        self.messages = messages
+        self.status_code = grpc_status_code
+        self.http_status = GrpcToHttpStatus[grpc_status_code.name]
+        super().__init__(str(messages))
+
+    def as_grpc(self):
+        return Exception(self.status_code, self.messages)
+
+    def as_http(self):
+        return Exception(self.http_status, self.messages)
+
+
+class GrpcToHttpStatus(Enum):
+    OK = (200, "OK")
+    INVALID_ARGUMENT = (400, "Bad Request - Invalid Argument")
+    FAILED_PRECONDITION = (400, "Bad Request - Failed Precondition")
+    OUT_OF_RANGE = (400, "Bad Request - Out of Range")
+    UNAUTHENTICATED = (401, "Unauthorized")
+    PERMISSION_DENIED = (403, "Forbidden")
+    NOT_FOUND = (404, "Not Found")
+    ALREADY_EXISTS = (409, "Conflict - Already Exists")
+    ABORTED = (409, "Conflict - Aborted")
+    RESOURCE_EXHAUSTED = (429, "Too Many Requests")
+    CANCELLED = (499, "Client Closed Request")
+    UNKNOWN = (500, "Internal Server Error")
+    INTERNAL = (500, "Internal Server Error")
+    DATA_LOSS = (500, "Internal Server Error - Data Loss")
+    UNIMPLEMENTED = (501, "Not Implemented")
+    UNAVAILABLE = (503, "Service Unavailable")
+    DEADLINE_EXCEEDED = (504, "Gateway Timeout")
+
+    def code(self):
+        return self.value[0]
+
+    def description(self):
+        return self.value[1]
+
+    def __str__(self):
+        return f"{self.code()}: {self.description()}"
