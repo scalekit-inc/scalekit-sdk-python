@@ -22,6 +22,7 @@ from scalekit.common.scalekit import (
     GrantType,
     IdpInitiatedLoginClaims,
     LogoutUrlOptions,
+    ErrorHandlingStrategy as EHS
 )
 from scalekit.constants.user import id_token_claim_to_user_map
 
@@ -38,24 +39,28 @@ class WebhookVerificationError(Exception):
 class ScalekitClient:
     """ Class definition for scalekit client """
 
-    def __init__(self, env_url: str, client_id: str, client_secret: str):
+    def __init__(self, env_url: str, client_id: str, client_secret: str, error_handling_strategy: EHS = EHS.DEFAULT):
         """
         Initializer for Scalekit base class
 
-        :param env_url        : Environment URL
-        :type                 : ``` str ```
-        :param client_id      : Client ID
-        :type                 : ``` str ```
-        :param client_secret  : Client Secret
-        :type                 : ``` str ```
+        :param env_url                  :   Environment URL
+        :type                           :   ``` str ```
+        :param client_id                :   Client ID
+        :type                           :   ``` str ```
+        :param client_secret            :   Client Secret
+        :type                           :   ``` str ```
+        :param error_handling_strategy  :   Error handling strategy
+        :type                           :   ``` ErrorHandlingStrategy ```
 
         :returns:
             None
         """
         try:
             self.core_client = CoreClient(
-                env_url=env_url, client_id=client_id, client_secret=client_secret
-            )
+                env_url=env_url,
+                client_id=client_id,
+                client_secret=client_secret,
+                error_handling_strategy=error_handling_strategy)
             self.domain = DomainClient(self.core_client)
             self.connection = ConnectionClient(self.core_client)
             self.organization = OrganizationClient(self.core_client)
