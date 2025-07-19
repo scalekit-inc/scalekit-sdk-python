@@ -74,25 +74,18 @@ class LogoutUrlOptions:
         self.state = state
 
 
-class ErrorHandlingStrategy(Enum):
-    """ Enum for error handling strategies """
-    GRPC = "grpc"
-    HTTP = "http"
-    DEFAULT = "messages"
-
-
-class ClientException(Exception):
-    def __init__(self, messages: list, grpc_status_code):
-        self.messages = messages
-        self.status_code = grpc_status_code
-        self.http_status = GrpcToHttpStatus[grpc_status_code.name]
+class ScalekitException(Exception):
+    def __init__(self, messages: list, grpc_status):
+        self.grpc_status = grpc_status
+        self.http_status = GrpcToHttpStatus[grpc_status.name]
+        self.err_details = messages
         super().__init__(str(messages))
 
-    def as_grpc(self):
-        return Exception(self.status_code, self.messages)
-
-    def as_http(self):
-        return Exception(self.http_status, self.messages)
+    def __str__(self):
+        return (f"ScalekitException: \n"
+                f"gRPC - {self.grpc_status.name}: {self.grpc_status.value}\n"
+                f"HTTP - {self.http_status.description()}: {self.http_status.code()}\n"
+                f"Error Details: {self.err_details}")
 
 
 class GrpcToHttpStatus(Enum):
