@@ -270,6 +270,14 @@ class UpdateOrganizationSessionSettingsResponse(_message.Message):
     session_settings: OrganizationSessionSettings
     def __init__(self, environment_id: _Optional[str] = ..., organization_id: _Optional[str] = ..., session_settings: _Optional[_Union[OrganizationSessionSettings, _Mapping]] = ...) -> None: ...
 
+class OrganizationUserManagementSettings(_message.Message):
+    __slots__ = ("jit_provisioning_with_sso_enabled", "sync_user_profile_on_signin")
+    JIT_PROVISIONING_WITH_SSO_ENABLED_FIELD_NUMBER: _ClassVar[int]
+    SYNC_USER_PROFILE_ON_SIGNIN_FIELD_NUMBER: _ClassVar[int]
+    jit_provisioning_with_sso_enabled: _wrappers_pb2.BoolValue
+    sync_user_profile_on_signin: _wrappers_pb2.BoolValue
+    def __init__(self, jit_provisioning_with_sso_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., sync_user_profile_on_signin: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ...) -> None: ...
+
 class OrganizationSessionSettings(_message.Message):
     __slots__ = ("absolute_session_timeout", "session_management_enabled", "idle_session_timeout", "idle_session_enabled")
     ABSOLUTE_SESSION_TIMEOUT_FIELD_NUMBER: _ClassVar[int]
@@ -339,3 +347,29 @@ class OrganizationSettingsFeature(_message.Message):
     name: str
     enabled: bool
     def __init__(self, name: _Optional[str] = ..., enabled: bool = ...) -> None: ...
+
+class UpdateUserManagementSettingsRequest(_message.Message):
+    __slots__ = ("organization_id", "settings")
+    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
+    SETTINGS_FIELD_NUMBER: _ClassVar[int]
+    organization_id: str
+    settings: OrganizationUserManagementSettings
+    def __init__(self, organization_id: _Optional[str] = ..., settings: _Optional[_Union[OrganizationUserManagementSettings, _Mapping]] = ...) -> None: ...
+
+class UpdateUserManagementSettingsResponse(_message.Message):
+    __slots__ = ("settings",)
+    SETTINGS_FIELD_NUMBER: _ClassVar[int]
+    settings: OrganizationUserManagementSettings
+    def __init__(self, settings: _Optional[_Union[OrganizationUserManagementSettings, _Mapping]] = ...) -> None: ...
+
+class GetOrganizationUserManagementSettingsRequest(_message.Message):
+    __slots__ = ("organization_id",)
+    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
+    organization_id: str
+    def __init__(self, organization_id: _Optional[str] = ...) -> None: ...
+
+class GetOrganizationUserManagementSettingsResponse(_message.Message):
+    __slots__ = ("settings",)
+    SETTINGS_FIELD_NUMBER: _ClassVar[int]
+    settings: OrganizationUserManagementSettings
+    def __init__(self, settings: _Optional[_Union[OrganizationUserManagementSettings, _Mapping]] = ...) -> None: ...

@@ -112,20 +112,22 @@ class DeleteDomainRequest(_message.Message):
     def __init__(self, id: _Optional[str] = ..., organization_id: _Optional[str] = ..., external_id: _Optional[str] = ..., connection_id: _Optional[str] = ...) -> None: ...
 
 class ListDomainRequest(_message.Message):
-    __slots__ = ("organization_id", "external_id", "connection_id", "include", "page_size", "page_number")
+    __slots__ = ("organization_id", "external_id", "connection_id", "include", "page_size", "page_number", "domain_type")
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     EXTERNAL_ID_FIELD_NUMBER: _ClassVar[int]
     CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
     INCLUDE_FIELD_NUMBER: _ClassVar[int]
     PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
     PAGE_NUMBER_FIELD_NUMBER: _ClassVar[int]
+    DOMAIN_TYPE_FIELD_NUMBER: _ClassVar[int]
     organization_id: str
     external_id: str
     connection_id: str
     include: str
     page_size: _wrappers_pb2.Int32Value
     page_number: _wrappers_pb2.Int32Value
-    def __init__(self, organization_id: _Optional[str] = ..., external_id: _Optional[str] = ..., connection_id: _Optional[str] = ..., include: _Optional[str] = ..., page_size: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., page_number: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ...) -> None: ...
+    domain_type: DomainType
+    def __init__(self, organization_id: _Optional[str] = ..., external_id: _Optional[str] = ..., connection_id: _Optional[str] = ..., include: _Optional[str] = ..., page_size: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., page_number: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., domain_type: _Optional[_Union[DomainType, str]] = ...) -> None: ...
 
 class VerifyDomainRequest(_message.Message):
     __slots__ = ("organization_id", "external_id", "id")

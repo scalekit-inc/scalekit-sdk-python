@@ -15,11 +15,6 @@ class ConnectionServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.GetProviders = channel.unary_unary(
-                '/scalekit.v1.connections.ConnectionService/GetProviders',
-                request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.GetProvidersRequest.SerializeToString,
-                response_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.GetProvidersResponse.FromString,
-                )
         self.CreateEnvironmentConnection = channel.unary_unary(
                 '/scalekit.v1.connections.ConnectionService/CreateEnvironmentConnection',
                 request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.CreateEnvironmentConnectionRequest.SerializeToString,
@@ -29,6 +24,11 @@ class ConnectionServiceStub(object):
                 '/scalekit.v1.connections.ConnectionService/CreateConnection',
                 request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.CreateConnectionRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.CreateConnectionResponse.FromString,
+                )
+        self.AssignDomainsToConnection = channel.unary_unary(
+                '/scalekit.v1.connections.ConnectionService/AssignDomainsToConnection',
+                request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.AssignDomainsToConnectionRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.AssignDomainsToConnectionResponse.FromString,
                 )
         self.GetEnvironmentConnection = channel.unary_unary(
                 '/scalekit.v1.connections.ConnectionService/GetEnvironmentConnection',
@@ -100,16 +100,15 @@ class ConnectionServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.GetConnectionTestResultRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.GetConnectionTestResultResponse.FromString,
                 )
+        self.ListAppConnections = channel.unary_unary(
+                '/scalekit.v1.connections.ConnectionService/ListAppConnections',
+                request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ListAppConnectionsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ListAppConnectionsResponse.FromString,
+                )
 
 
 class ConnectionServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
-
-    def GetProviders(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
 
     def CreateEnvironmentConnection(self, request, context):
         """Missing associated documentation comment in .proto file."""
@@ -118,6 +117,12 @@ class ConnectionServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def CreateConnection(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def AssignDomainsToConnection(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -207,14 +212,15 @@ class ConnectionServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ListAppConnections(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_ConnectionServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'GetProviders': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetProviders,
-                    request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.GetProvidersRequest.FromString,
-                    response_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.GetProvidersResponse.SerializeToString,
-            ),
             'CreateEnvironmentConnection': grpc.unary_unary_rpc_method_handler(
                     servicer.CreateEnvironmentConnection,
                     request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.CreateEnvironmentConnectionRequest.FromString,
@@ -224,6 +230,11 @@ def add_ConnectionServiceServicer_to_server(servicer, server):
                     servicer.CreateConnection,
                     request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.CreateConnectionRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.CreateConnectionResponse.SerializeToString,
+            ),
+            'AssignDomainsToConnection': grpc.unary_unary_rpc_method_handler(
+                    servicer.AssignDomainsToConnection,
+                    request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.AssignDomainsToConnectionRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.AssignDomainsToConnectionResponse.SerializeToString,
             ),
             'GetEnvironmentConnection': grpc.unary_unary_rpc_method_handler(
                     servicer.GetEnvironmentConnection,
@@ -295,6 +306,11 @@ def add_ConnectionServiceServicer_to_server(servicer, server):
                     request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.GetConnectionTestResultRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.GetConnectionTestResultResponse.SerializeToString,
             ),
+            'ListAppConnections': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListAppConnections,
+                    request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ListAppConnectionsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ListAppConnectionsResponse.SerializeToString,
+            ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
             'scalekit.v1.connections.ConnectionService', rpc_method_handlers)
@@ -304,23 +320,6 @@ def add_ConnectionServiceServicer_to_server(servicer, server):
  # This class is part of an EXPERIMENTAL API.
 class ConnectionService(object):
     """Missing associated documentation comment in .proto file."""
-
-    @staticmethod
-    def GetProviders(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connections.ConnectionService/GetProviders',
-            scalekit_dot_v1_dot_connections_dot_connections__pb2.GetProvidersRequest.SerializeToString,
-            scalekit_dot_v1_dot_connections_dot_connections__pb2.GetProvidersResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def CreateEnvironmentConnection(request,
@@ -353,6 +352,23 @@ class ConnectionService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connections.ConnectionService/CreateConnection',
             scalekit_dot_v1_dot_connections_dot_connections__pb2.CreateConnectionRequest.SerializeToString,
             scalekit_dot_v1_dot_connections_dot_connections__pb2.CreateConnectionResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def AssignDomainsToConnection(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connections.ConnectionService/AssignDomainsToConnection',
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.AssignDomainsToConnectionRequest.SerializeToString,
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.AssignDomainsToConnectionResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -591,5 +607,22 @@ class ConnectionService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connections.ConnectionService/GetConnectionTestResult',
             scalekit_dot_v1_dot_connections_dot_connections__pb2.GetConnectionTestResultRequest.SerializeToString,
             scalekit_dot_v1_dot_connections_dot_connections__pb2.GetConnectionTestResultResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListAppConnections(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connections.ConnectionService/ListAppConnections',
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.ListAppConnectionsRequest.SerializeToString,
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.ListAppConnectionsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

@@ -7,7 +7,7 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class ErrorInfo(_message.Message):
-    __slots__ = ("error_code", "debug_info", "help_info", "localized_message_info", "resource_info", "request_info", "validation_error_info")
+    __slots__ = ("error_code", "debug_info", "help_info", "localized_message_info", "resource_info", "request_info", "validation_error_info", "tool_error_info")
     ERROR_CODE_FIELD_NUMBER: _ClassVar[int]
     DEBUG_INFO_FIELD_NUMBER: _ClassVar[int]
     HELP_INFO_FIELD_NUMBER: _ClassVar[int]
@@ -15,6 +15,7 @@ class ErrorInfo(_message.Message):
     RESOURCE_INFO_FIELD_NUMBER: _ClassVar[int]
     REQUEST_INFO_FIELD_NUMBER: _ClassVar[int]
     VALIDATION_ERROR_INFO_FIELD_NUMBER: _ClassVar[int]
+    TOOL_ERROR_INFO_FIELD_NUMBER: _ClassVar[int]
     error_code: str
     debug_info: DebugInfo
     help_info: HelpInfo
@@ -22,7 +23,8 @@ class ErrorInfo(_message.Message):
     resource_info: ResourceInfo
     request_info: RequestInfo
     validation_error_info: ValidationErrorInfo
-    def __init__(self, error_code: _Optional[str] = ..., debug_info: _Optional[_Union[DebugInfo, _Mapping]] = ..., help_info: _Optional[_Union[HelpInfo, _Mapping]] = ..., localized_message_info: _Optional[_Union[LocalizedMessageInfo, _Mapping]] = ..., resource_info: _Optional[_Union[ResourceInfo, _Mapping]] = ..., request_info: _Optional[_Union[RequestInfo, _Mapping]] = ..., validation_error_info: _Optional[_Union[ValidationErrorInfo, _Mapping]] = ...) -> None: ...
+    tool_error_info: ToolErrorInfo
+    def __init__(self, error_code: _Optional[str] = ..., debug_info: _Optional[_Union[DebugInfo, _Mapping]] = ..., help_info: _Optional[_Union[HelpInfo, _Mapping]] = ..., localized_message_info: _Optional[_Union[LocalizedMessageInfo, _Mapping]] = ..., resource_info: _Optional[_Union[ResourceInfo, _Mapping]] = ..., request_info: _Optional[_Union[RequestInfo, _Mapping]] = ..., validation_error_info: _Optional[_Union[ValidationErrorInfo, _Mapping]] = ..., tool_error_info: _Optional[_Union[ToolErrorInfo, _Mapping]] = ...) -> None: ...
 
 class DebugInfo(_message.Message):
     __slots__ = ("stack_entries", "detail")
@@ -87,3 +89,11 @@ class LocalizedMessageInfo(_message.Message):
     locale: str
     message: str
     def __init__(self, locale: _Optional[str] = ..., message: _Optional[str] = ...) -> None: ...
+
+class ToolErrorInfo(_message.Message):
+    __slots__ = ("execution_id", "tool_message")
+    EXECUTION_ID_FIELD_NUMBER: _ClassVar[int]
+    TOOL_MESSAGE_FIELD_NUMBER: _ClassVar[int]
+    execution_id: str
+    tool_message: str
+    def __init__(self, execution_id: _Optional[str] = ..., tool_message: _Optional[str] = ...) -> None: ...

@@ -75,11 +75,11 @@ class AuthMethod(_message.Message):
     CODE_CHALLENGE_LENGTH_FIELD_NUMBER: _ClassVar[int]
     connection_id: str
     connection_type: _connections_pb2.ConnectionType
-    provider: _connections_pb2.ConnectionProvider
+    provider: str
     auth_initiation_uri: str
     passwordless_type: _connections_pb2.PasswordlessType
     code_challenge_length: int
-    def __init__(self, connection_id: _Optional[str] = ..., connection_type: _Optional[_Union[_connections_pb2.ConnectionType, str]] = ..., provider: _Optional[_Union[_connections_pb2.ConnectionProvider, str]] = ..., auth_initiation_uri: _Optional[str] = ..., passwordless_type: _Optional[_Union[_connections_pb2.PasswordlessType, str]] = ..., code_challenge_length: _Optional[int] = ...) -> None: ...
+    def __init__(self, connection_id: _Optional[str] = ..., connection_type: _Optional[_Union[_connections_pb2.ConnectionType, str]] = ..., provider: _Optional[str] = ..., auth_initiation_uri: _Optional[str] = ..., passwordless_type: _Optional[_Union[_connections_pb2.PasswordlessType, str]] = ..., code_challenge_length: _Optional[int] = ...) -> None: ...
 
 class DiscoveryAuthMethodRequest(_message.Message):
     __slots__ = ("discovery_request",)

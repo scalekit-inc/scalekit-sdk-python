@@ -90,6 +90,16 @@ class OrganizationServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.DeleteOrganizationSessionSettingsRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
+        self.UpdateUserManagementSettings = channel.unary_unary(
+                '/scalekit.v1.organizations.OrganizationService/UpdateUserManagementSettings',
+                request_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.UpdateUserManagementSettingsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.UpdateUserManagementSettingsResponse.FromString,
+                )
+        self.GetOrganizationUserManagementSetting = channel.unary_unary(
+                '/scalekit.v1.organizations.OrganizationService/GetOrganizationUserManagementSetting',
+                request_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationUserManagementSettingsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationUserManagementSettingsResponse.FromString,
+                )
 
 
 class OrganizationServiceServicer(object):
@@ -188,6 +198,19 @@ class OrganizationServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def UpdateUserManagementSettings(self, request, context):
+        """Update user management setting for an organization
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetOrganizationUserManagementSetting(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_OrganizationServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -265,6 +288,16 @@ def add_OrganizationServiceServicer_to_server(servicer, server):
                     servicer.DeleteOrganizationSessionSettings,
                     request_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.DeleteOrganizationSessionSettingsRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'UpdateUserManagementSettings': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateUserManagementSettings,
+                    request_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.UpdateUserManagementSettingsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.UpdateUserManagementSettingsResponse.SerializeToString,
+            ),
+            'GetOrganizationUserManagementSetting': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetOrganizationUserManagementSetting,
+                    request_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationUserManagementSettingsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationUserManagementSettingsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -528,5 +561,39 @@ class OrganizationService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.organizations.OrganizationService/DeleteOrganizationSessionSettings',
             scalekit_dot_v1_dot_organizations_dot_organizations__pb2.DeleteOrganizationSessionSettingsRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def UpdateUserManagementSettings(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.organizations.OrganizationService/UpdateUserManagementSettings',
+            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.UpdateUserManagementSettingsRequest.SerializeToString,
+            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.UpdateUserManagementSettingsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetOrganizationUserManagementSetting(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.organizations.OrganizationService/GetOrganizationUserManagementSetting',
+            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationUserManagementSettingsRequest.SerializeToString,
+            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationUserManagementSettingsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
