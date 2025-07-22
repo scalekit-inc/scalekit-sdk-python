@@ -24,8 +24,8 @@ class ConnectedAccountsClient:
 
     def list_connected_accounts(
         self,
-        organization_id: str,
-        user_id: str,
+        organization_id: Optional[str] = None,
+        user_id: Optional[str] = None,
         connector: Optional[str] = None,
         identifier: Optional[str] = None,
         provider: Optional[str] = None,
@@ -68,11 +68,11 @@ class ConnectedAccountsClient:
 
     def create_connected_account(
         self,
-        organization_id: str,
-        user_id: str,
         connector: str,
         identifier: str,
-        connected_account: CreateConnectedAccount
+        connected_account: CreateConnectedAccount,
+        organization_id: Optional[str] = None,
+        user_id: Optional[str] = None
     ) -> CreateConnectedAccountResponse:
         """
         Method to create a connected account
@@ -104,11 +104,11 @@ class ConnectedAccountsClient:
 
     def update_connected_account(
         self,
-        organization_id: str,
-        user_id: str,
         connector: str,
         identifier: str,
-        connected_account: UpdateConnectedAccount
+        connected_account: UpdateConnectedAccount,
+        organization_id: Optional[str] = None,
+        user_id: Optional[str] = None
     ) -> UpdateConnectedAccountResponse:
         """
         Method to update a connected account
@@ -140,10 +140,10 @@ class ConnectedAccountsClient:
 
     def delete_connected_account(
         self,
-        organization_id: str,
-        user_id: str,
         connector: str,
-        identifier: str
+        identifier: str,
+        organization_id: Optional[str] = None,
+        user_id: Optional[str] = None
     ) -> DeleteConnectedAccountResponse:
         """
         Method to delete a connected account
@@ -172,10 +172,10 @@ class ConnectedAccountsClient:
 
     def get_magic_link_for_connected_account(
         self,
-        organization_id: str,
-        user_id: str,
         connector: str,
-        identifier: str
+        identifier: str,
+        organization_id: Optional[str] = None,
+        user_id: Optional[str] = None
     ) -> GetMagicLinkForConnectedAccountResponse:
         """
         Method to get magic link for a connected account
@@ -204,10 +204,10 @@ class ConnectedAccountsClient:
 
     def get_connected_account_by_identifier(
         self,
-        organization_id: str,
-        user_id: str,
         connector: str,
-        identifier: str
+        identifier: str,
+        organization_id: Optional[str] = None,
+        user_id: Optional[str] = None
     ) -> GetConnectedAccountByIdentifierResponse:
         """
         Method to get connected account by identifier
