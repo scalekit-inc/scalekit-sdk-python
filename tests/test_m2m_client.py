@@ -253,6 +253,93 @@ class TestM2MClient(BaseTest):
         self.assertIsNotNone(client_secret)
         self.assertIsNotNone(token)
 
+    def test_list_organization_clients(self):
+        """ Method to test list organization clients """
+        organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
+        org_response = self.scalekit_client.organization.create_organization(organization=organization)
+        self.org_id = org_response[0].organization.id
+
+        # Create multiple clients for testing pagination
+        client_ids = []
+        for i in range(3):
+            m2m_client = OrganizationClient(
+                name=f"Test Client {i} - {Faker().company()}",
+                description=f"Test Description {i} - {Faker().sentence()}",
+                custom_claims=[{"key": "wksp_id", "value": f"wks_{Faker().credit_card_number()}"}],
+                scopes=["write", "read"],
+                audience=["my-own-api"],
+                expiry=3600
+            )
+            create_response = self.scalekit_client.m2m_client.create_organization_client(
+                organization_id=self.org_id, m2m_client=m2m_client
+            )
+            client_ids.append(create_response[0].client.client_id)
+
+        # Test basic listing without pagination parameters
+        response = self.scalekit_client.m2m_client.list_organization_clients(
+            organization_id=self.org_id
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertTrue(response[0] is not None)
+        self.assertTrue(len(response[0].clients) >= 3)
+        self.assertTrue(response[0].total_size >= 3)
+        
+        # Verify clients are in the response
+        response_client_ids = [client.client_id for client in response[0].clients]
+        for client_id in client_ids:
+            self.assertIn(client_id, response_client_ids)
+
+        # Test with page_size parameter
+        paginated_response = self.scalekit_client.m2m_client.list_organization_clients(
+            organization_id=self.org_id, page_size=2
+        )
+        self.assertEqual(paginated_response[1].code().name, "OK")
+        self.assertTrue(paginated_response[0] is not None)
+        self.assertTrue(len(paginated_response[0].clients) <= 2)
+        self.assertTrue(paginated_response[0].total_size >= 3)
+
+        # Test pagination if next_page_token is available
+        if paginated_response[0].next_page_token:
+            next_page_response = self.scalekit_client.m2m_client.list_organization_clients(
+                organization_id=self.org_id,
+                page_size=2,
+                page_token=paginated_response[0].next_page_token
+            )
+            self.assertEqual(next_page_response[1].code().name, "OK")
+            self.assertTrue(next_page_response[0] is not None)
+
+        # Cleanup created clients
+        for client_id in client_ids:
+            try:
+                self.scalekit_client.m2m_client.delete_organization_client(
+                    organization_id=self.org_id, client_id=client_id
+                )
+            except Exception:
+                pass  # Ignore cleanup errors
+
+    def test_list_organization_clients_empty(self):
+        """ Method to test list organization clients for empty organization """
+        organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
+        org_response = self.scalekit_client.organization.create_organization(organization=organization)
+        self.org_id = org_response[0].organization.id
+
+        response = self.scalekit_client.m2m_client.list_organization_clients(
+            organization_id=self.org_id
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertTrue(response[0] is not None)
+        self.assertEqual(len(response[0].clients), 0)
+        self.assertEqual(response[0].total_size, 0)
+
+    def test_list_organization_clients_invalid_org(self):
+        """ Method to test list organization clients with invalid organization id """
+        try:
+            self.scalekit_client.m2m_client.list_organization_clients(
+                organization_id=f"org_{Faker().credit_card_number()}"
+            )
+        except Exception as exp:
+            self.assertEqual(exp.args[0], "'NoneType' object has no attribute 'message'")
+
     def __generate_token_for_org(self):
         organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
         org_response = self.scalekit_client.organization.create_organization(organization=organization)

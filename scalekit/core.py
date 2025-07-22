@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 from cryptography.hazmat.primitives import serialization
 from grpc_status import rpc_status
 from scalekit.common.scalekit import GrantType
+from scalekit.common.scalekit import ScalekitException
 from scalekit.v1.errdetails.errdetails_pb2 import ErrorInfo
 
 TRequest = TypeVar("TRequest")
@@ -27,8 +28,8 @@ class WithCall(Protocol):
 class CoreClient:
     """Class definition for Core Client"""
 
-    sdk_version = "Scalekit-Python/2.2.1"
-    api_version = "20250710"
+    sdk_version = "Scalekit-Python/2.2.2"
+    api_version = "20250718"
     user_agent = f"{sdk_version} Python/{platform.python_version()} ({platform.system()}; {platform.architecture()}"
 
     def __init__(self, env_url, client_id, client_secret):
@@ -157,7 +158,7 @@ class CoreClient:
                                 for fv in info.validation_error_info.field_violations:
                                     messages.append(f"{fv.field}: {fv.description}")
 
-                raise Exception("\n".join(messages))
+                raise ScalekitException(messages, status_code)
         except Exception as exp:
             raise exp
 

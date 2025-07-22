@@ -56,8 +56,7 @@ class ScalekitClient:
         """
         try:
             self.core_client = CoreClient(
-                env_url=env_url, client_id=client_id, client_secret=client_secret
-            )
+                env_url=env_url, client_id=client_id, client_secret=client_secret)
             self.domain = DomainClient(self.core_client)
             self.connection = ConnectionClient(self.core_client)
             self.organization = OrganizationClient(self.core_client)
