@@ -1,6 +1,8 @@
 from typing import Optional, Dict, Any
 from scalekit.tool_request import ToolRequest
 from scalekit.execute_tool_response import ExecuteToolResponse
+from scalekit.magic_link_response import MagicLinkResponse
+from scalekit.list_connected_accounts_response import ListConnectedAccountsResponse
 
 
 class ConnectClient:
@@ -70,7 +72,7 @@ class ConnectClient:
         # Convert proto to our ExecuteToolResponse class
         return ExecuteToolResponse.from_proto(proto_response)
     
-    def get_authorization_link(self, connector: str, identifier: str):
+    def get_authorization_link(self, connector: str, identifier: str) -> MagicLinkResponse:
         """
         Get authorization magic link for a connected account
         
@@ -80,19 +82,26 @@ class ConnectClient:
         :type: str
         
         :returns:
-            Magic link response
+            MagicLinkResponse containing magic link and expiry
         """
-        return self.connected_accounts.get_magic_link_for_connected_account(
+        # Call the existing connected_accounts method which returns (response, metadata) tuple
+        result_tuple = self.connected_accounts.get_magic_link_for_connected_account(
             connector=connector,
             identifier=identifier
         )
+        
+        # Extract the response[0] (the actual GetMagicLinkForConnectedAccountResponse proto object)
+        proto_response = result_tuple[0]
+        
+        # Convert proto to our MagicLinkResponse class
+        return MagicLinkResponse.from_proto(proto_response)
     
     def list_connected_accounts(
         self, 
         connector: Optional[str] = None,
         identifier: Optional[str] = None,
         provider: Optional[str] = None
-    ):
+    ) -> ListConnectedAccountsResponse:
         """
         List connected accounts with optional filtering
         
@@ -104,10 +113,17 @@ class ConnectClient:
         :type: str
         
         :returns:
-            List of connected accounts
+            ListConnectedAccountsResponse containing list of connected accounts
         """
-        return self.connected_accounts.list_connected_accounts(
+        # Call the existing connected_accounts method which returns (response, metadata) tuple
+        result_tuple = self.connected_accounts.list_connected_accounts(
             connector=connector,
             identifier=identifier,
             provider=provider
         )
+        
+        # Extract the response[0] (the actual ListConnectedAccountsResponse proto object)
+        proto_response = result_tuple[0]
+        
+        # Convert proto to our ListConnectedAccountsResponse class
+        return ListConnectedAccountsResponse.from_proto(proto_response)
