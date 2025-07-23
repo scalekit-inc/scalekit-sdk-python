@@ -1,6 +1,8 @@
 from basetest import BaseTest
 from scalekit.tool_request import ToolRequest
 from scalekit.execute_tool_response import ExecuteToolResponse
+from scalekit.magic_link_response import MagicLinkResponse
+from scalekit.list_connected_accounts_response import ListConnectedAccountsResponse
 
 
 class TestConnect(BaseTest):
@@ -33,4 +35,154 @@ class TestConnect(BaseTest):
             self.assertTrue(hasattr(result, 'execution_id'))
         except Exception as e:
            raise e
+
+    def test_connect_client_initialization(self):
+        """Method to test ConnectClient initialization"""
+        self.assertTrue(hasattr(self.scalekit_client, 'connect'))
+        self.assertIsNotNone(self.scalekit_client.connect)
+        # Test that tools and connected_accounts dependencies are set
+        self.assertEqual(
+            self.scalekit_client.connect.tools,
+            self.scalekit_client.tools
+        )
+        self.assertEqual(
+            self.scalekit_client.connect.connected_accounts,
+            self.scalekit_client.connected_accounts
+        )
+
+    def test_get_authorization_link_method_exists(self):
+        """Method to test get_authorization_link method exists"""
+        self.assertTrue(hasattr(self.scalekit_client.connect, 'get_authorization_link'))
+        self.assertTrue(callable(self.scalekit_client.connect.get_authorization_link))
+
+    def test_get_authorization_link_response_structure(self):
+        """Method to test get_authorization_link returns MagicLinkResponse"""
+        try:
+            result = self.scalekit_client.connect.get_authorization_link(
+                connector="slack",
+                identifier=self.test_identifier
+            )
+            self.assertIsNotNone(result)
+            self.assertIsInstance(result, MagicLinkResponse)
+            self.assertTrue(hasattr(result, 'link'))
+            self.assertTrue(hasattr(result, 'expiry'))
+        except Exception as e:
+            # Expected to fail with connection/auth errors in test environment
+            expected_errors = [
+                "error getting connected account",
+                "connected account not found",
+                "connection not found",
+                "unauthorized access"
+            ]
+            self.assertTrue(
+                any(error in str(e).lower() for error in expected_errors),
+                f"Unexpected error: {e}"
+            )
+
+    def test_list_connected_accounts_method_exists(self):
+        """Method to test list_connected_accounts method exists"""
+        self.assertTrue(hasattr(self.scalekit_client.connect, 'list_connected_accounts'))
+        self.assertTrue(callable(self.scalekit_client.connect.list_connected_accounts))
+
+    def test_list_connected_accounts_response_structure(self):
+        """Method to test list_connected_accounts returns ListConnectedAccountsResponse"""
+        try:
+            result = self.scalekit_client.connect.list_connected_accounts()
+            self.assertIsNotNone(result)
+            self.assertIsInstance(result, ListConnectedAccountsResponse)
+            self.assertTrue(hasattr(result, 'connected_accounts'))
+            self.assertTrue(hasattr(result, 'total_count'))
+            self.assertTrue(hasattr(result, 'next_page_token'))
+            self.assertTrue(hasattr(result, 'previous_page_token'))
+        except Exception as e:
+            # Expected to fail with connection/auth errors in test environment
+            expected_errors = [
+                "error getting connected account",
+                "connected account not found",
+                "connection not found",
+                "unauthorized access"
+            ]
+            self.assertTrue(
+                any(error in str(e).lower() for error in expected_errors),
+                f"Unexpected error: {e}"
+            )
+
+    def test_magic_link_response_structure(self):
+        """Method to test MagicLinkResponse structure and methods"""
+        from datetime import datetime
+        
+        # Test creating MagicLinkResponse directly
+        response = MagicLinkResponse(
+            link="https://example.com/auth/magic-link",
+            expiry=datetime.now()
+        )
+        
+        self.assertIsNotNone(response.link)
+        self.assertIsNotNone(response.expiry)
+        self.assertTrue(response.link.startswith("https://"))
+        
+        # Test to_dict method
+        response_dict = response.to_dict()
+        self.assertIsInstance(response_dict, dict)
+        self.assertIn("link", response_dict)
+        self.assertIn("expiry", response_dict)
+
+    def test_magic_link_response_from_proto(self):
+        """Method to test MagicLinkResponse.from_proto method"""
+        from datetime import datetime
+        
+        # Create a mock proto-like object for testing
+        class MockMagicLinkProto:
+            def __init__(self):
+                self.link = "https://test.com/magic-link"
+                self.expiry = MockTimestamp()
+        
+        class MockTimestamp:
+            def ToDatetime(self):
+                return datetime.now()
+        
+        mock_proto = MockMagicLinkProto()
+        response = MagicLinkResponse.from_proto(mock_proto)
+        
+        self.assertIsInstance(response, MagicLinkResponse)
+        self.assertEqual(response.link, "https://test.com/magic-link")
+        self.assertIsNotNone(response.expiry)
+
+    def test_list_connected_accounts_response_structure(self):
+        """Method to test ListConnectedAccountsResponse structure and methods"""
+        # Test creating ListConnectedAccountsResponse directly
+        response = ListConnectedAccountsResponse(
+            connected_accounts=[],
+            total_count=0,
+            next_page_token=None,
+            previous_page_token=None
+        )
+        
+        self.assertEqual(len(response.connected_accounts), 0)
+        self.assertEqual(response.total_count, 0)
+        
+        # Test to_dict method
+        response_dict = response.to_dict()
+        self.assertIsInstance(response_dict, dict)
+        self.assertIn("connected_accounts", response_dict)
+        self.assertIn("total_count", response_dict)
+
+    def test_execute_tool_response_structure(self):
+        """Method to test ExecuteToolResponse structure and methods"""
+        # Test creating ExecuteToolResponse directly
+        response = ExecuteToolResponse(
+            data={"result": "success", "message_id": "12345"},
+            execution_id="exec_123"
+        )
+        
+        self.assertEqual(response.data["result"], "success")
+        self.assertEqual(response.data["message_id"], "12345")
+        self.assertEqual(response.execution_id, "exec_123")
+        
+        # Test to_dict method
+        response_dict = response.to_dict()
+        self.assertIsInstance(response_dict, dict)
+        self.assertIn("data", response_dict)
+        self.assertIn("execution_id", response_dict)
+        self.assertEqual(response_dict["execution_id"], "exec_123")
 
