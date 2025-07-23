@@ -16,6 +16,9 @@ from scalekit.organization import OrganizationClient
 from scalekit.directory import DirectoryClient
 from scalekit.users import UserClient
 from scalekit.role import RoleClient
+from scalekit.connected_accounts import ConnectedAccountsClient
+from scalekit.tools import ToolsClient
+from scalekit.connect import ConnectClient
 from scalekit.common.scalekit import (
     AuthorizationUrlOptions,
     CodeAuthenticationOptions,
@@ -54,8 +57,7 @@ class ScalekitClient:
         """
         try:
             self.core_client = CoreClient(
-                env_url=env_url, client_id=client_id, client_secret=client_secret
-            )
+                env_url=env_url, client_id=client_id, client_secret=client_secret)
             self.domain = DomainClient(self.core_client)
             self.connection = ConnectionClient(self.core_client)
             self.organization = OrganizationClient(self.core_client)
@@ -63,6 +65,9 @@ class ScalekitClient:
             self.m2m_client = M2MClient(self.core_client)
             self.users = UserClient(self.core_client)
             self.roles = RoleClient(self.core_client)
+            self.connected_accounts = ConnectedAccountsClient(self.core_client)
+            self.tools = ToolsClient(self.core_client)
+            self.connect = ConnectClient(self.tools, self.connected_accounts)
         except Exception as exp:
             raise exp
 

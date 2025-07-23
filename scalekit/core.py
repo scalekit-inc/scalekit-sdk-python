@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 from cryptography.hazmat.primitives import serialization
 from grpc_status import rpc_status
 from scalekit.common.scalekit import GrantType
+from scalekit.common.scalekit import ScalekitException
 from scalekit.v1.errdetails.errdetails_pb2 import ErrorInfo
 
 TRequest = TypeVar("TRequest")
@@ -157,7 +158,7 @@ class CoreClient:
                                 for fv in info.validation_error_info.field_violations:
                                     messages.append(f"{fv.field}: {fv.description}")
 
-                raise Exception("\n".join(messages))
+                raise ScalekitException(messages, status_code)
         except Exception as exp:
             raise exp
 

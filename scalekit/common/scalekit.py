@@ -72,3 +72,46 @@ class LogoutUrlOptions:
         self.id_token_hint = id_token_hint
         self.post_logout_redirect_uri = post_logout_redirect_uri
         self.state = state
+
+
+class ScalekitException(Exception):
+    def __init__(self, messages: list, grpc_status):
+        self.grpc_status = grpc_status
+        self.http_status = GrpcToHttpStatus[grpc_status.name]
+        self.err_details = messages
+        super().__init__(str(messages))
+
+    def __str__(self):
+        return (f"ScalekitException: \n"
+                f"gRPC - {self.grpc_status.name}: {self.grpc_status.value}\n"
+                f"HTTP - {self.http_status.description()}: {self.http_status.code()}\n"
+                f"Error Details: {self.err_details}")
+
+
+class GrpcToHttpStatus(Enum):
+    OK = (200, "OK")
+    INVALID_ARGUMENT = (400, "Bad Request - Invalid Argument")
+    FAILED_PRECONDITION = (400, "Bad Request - Failed Precondition")
+    OUT_OF_RANGE = (400, "Bad Request - Out of Range")
+    UNAUTHENTICATED = (401, "Unauthorized")
+    PERMISSION_DENIED = (403, "Forbidden")
+    NOT_FOUND = (404, "Not Found")
+    ALREADY_EXISTS = (409, "Conflict - Already Exists")
+    ABORTED = (409, "Conflict - Aborted")
+    RESOURCE_EXHAUSTED = (429, "Too Many Requests")
+    CANCELLED = (499, "Client Closed Request")
+    UNKNOWN = (500, "Internal Server Error")
+    INTERNAL = (500, "Internal Server Error")
+    DATA_LOSS = (500, "Internal Server Error - Data Loss")
+    UNIMPLEMENTED = (501, "Not Implemented")
+    UNAVAILABLE = (503, "Service Unavailable")
+    DEADLINE_EXCEEDED = (504, "Gateway Timeout")
+
+    def code(self):
+        return self.value[0]
+
+    def description(self):
+        return self.value[1]
+
+    def __str__(self):
+        return f"{self.code()}: {self.description()}"
