@@ -1,5 +1,6 @@
 from typing import Optional, Dict, Any
 from scalekit.tool_request import ToolRequest
+from scalekit.execute_tool_response import ExecuteToolResponse
 
 
 class ConnectClient:
@@ -31,7 +32,7 @@ class ConnectClient:
         connector: Optional[str] = None,
         connected_account_id: Optional[str] = None,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> ExecuteToolResponse:
         """
         Execute a tool with the given parameters.
         
@@ -46,7 +47,7 @@ class ConnectClient:
             **kwargs: Additional optional parameters
             
         Returns:
-            Dict containing execution results
+            ExecuteToolResponse containing execution results
         """
         # Validate required parameters
         if not input_data:
@@ -56,12 +57,18 @@ class ConnectClient:
         if not identifier:
             raise ValueError("identifier is required")
         
-        # For now, use the existing tools.execute_tool with input_data as params
-        return self.tools.execute_tool(
+        # Call the existing tools.execute_tool which returns (response, metadata) tuple
+        result_tuple = self.tools.execute_tool(
             tool_name=tool_name,
             identifier=identifier,
             params=input_data
         )
+        
+        # Extract the response[0] (the actual ExecuteToolResponse proto object)
+        proto_response = result_tuple[0]
+        
+        # Convert proto to our ExecuteToolResponse class
+        return ExecuteToolResponse.from_proto(proto_response)
     
     def get_authorization_link(self, connector: str, identifier: str):
         """
