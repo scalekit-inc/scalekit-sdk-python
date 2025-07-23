@@ -18,6 +18,7 @@ from scalekit.users import UserClient
 from scalekit.role import RoleClient
 from scalekit.connected_accounts import ConnectedAccountsClient
 from scalekit.tools import ToolsClient
+from scalekit.connect import ConnectClient
 from scalekit.common.scalekit import (
     AuthorizationUrlOptions,
     CodeAuthenticationOptions,
@@ -66,6 +67,7 @@ class ScalekitClient:
             self.roles = RoleClient(self.core_client)
             self.connected_accounts = ConnectedAccountsClient(self.core_client)
             self.tools = ToolsClient(self.core_client)
+            self.connect = ConnectClient(self.tools, self.connected_accounts)
         except Exception as exp:
             raise exp
 
