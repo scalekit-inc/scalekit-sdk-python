@@ -24,6 +24,7 @@ from scalekit.common.scalekit import (
     LogoutUrlOptions,
 )
 from scalekit.constants.user import id_token_claim_to_user_map
+from scalekit.common.exceptions import ScalekitClientException
 
 AUTHORIZE_ENDPOINT = "oauth/authorize"
 LOGOUT_ENDPOINT = "oidc/logout" 
@@ -31,7 +32,7 @@ webhook_tolerance_in_seconds = timedelta(minutes=5)
 webhook_signature_version = "v1"
 
 
-class WebhookVerificationError(Exception):
+class WebhookVerificationError(ScalekitClientException):
     pass
 
 
@@ -62,7 +63,7 @@ class ScalekitClient:
             self.m2m_client = M2MClient(self.core_client)
             self.users = UserClient(self.core_client)
             self.roles = RoleClient(self.core_client)
-        except Exception as exp:
+        except ScalekitClientException as exp:
             raise exp
 
     def get_authorization_url(
@@ -102,7 +103,7 @@ class ScalekitClient:
             query_string = urlencode(valid_auth_params)
 
             return f"{self.core_client.env_url}/{AUTHORIZE_ENDPOINT}?{query_string}"
-        except Exception as exp:
+        except ScalekitClientException as exp:
             raise exp
 
     def authenticate_with_code(
@@ -157,7 +158,7 @@ class ScalekitClient:
                 "organization_id": organization_id
             }
 
-        except Exception as exp:
+        except ScalekitClientException as exp:
             raise exp
 
     def validate_access_token(self, token: str, options: Optional[Dict] = None, audience = None) -> bool:
@@ -201,8 +202,8 @@ class ScalekitClient:
             )
             response = json.loads(response.content)
             return response
-        except Exception as exp:
-            raise exp
+        except ScalekitClientException as exp:
+            raise
 
     def validate_access_token_and_get_claims(self, token: str, options: Optional[Dict] = None, audience = None) -> Dict[str, Any]:
         """
@@ -221,8 +222,8 @@ class ScalekitClient:
         try:
             claims = self.__validate_token(token, options=options, audience=audience)
             return claims
-        except Exception as exp:
-            raise exp        
+        except ScalekitClientException as exp:
+            raise exp
 
     def get_idp_initiated_login_claims(self, idp_initiated_login_token: str) -> IdpInitiatedLoginClaims:
         """
@@ -237,7 +238,7 @@ class ScalekitClient:
         try:
             claims = self.__validate_token(idp_initiated_login_token, {"verify_aud": False})
             return claims
-        except Exception as exp:
+        except ScalekitClientException as exp:
             raise exp
 
     def __validate_token(
@@ -383,7 +384,7 @@ class ScalekitClient:
                 "refresh_token": response["refresh_token"]
             }
 
-        except Exception as exp:
+        except ScalekitClientException as exp:
             raise exp
 
     def get_logout_url(self, options: LogoutUrlOptions) -> str:
@@ -407,5 +408,5 @@ class ScalekitClient:
             query_string = urlencode(valid_params)
 
             return f"{self.core_client.env_url}/{LOGOUT_ENDPOINT}?{query_string}"
-        except Exception as exp:
+        except ScalekitClientException as exp:
             raise exp

@@ -8,10 +8,9 @@ import platform
 from urllib.parse import urlparse
 
 from cryptography.hazmat.primitives import serialization
-from grpc_status import rpc_status
 from scalekit.common.scalekit import GrantType
-from scalekit.common.scalekit import ScalekitException
-from scalekit.v1.errdetails.errdetails_pb2 import ErrorInfo
+from scalekit.common.exceptions import scalekit_exception
+from scalekit.common.exceptions import ScalekitClientException
 
 TRequest = TypeVar("TRequest")
 TResponse = TypeVar("TResponse")
@@ -87,7 +86,7 @@ class CoreClient:
 
         response = self.authenticate(data=json.dumps(params))
         if response.status_code != 200:
-            raise Exception(response.content)
+            raise ScalekitClientException(response.content)
         response = json.loads(response.content)
         self.access_token = response["access_token"]
 
@@ -106,7 +105,7 @@ class CoreClient:
             verify=True,
         )
         if response.status_code != 200:
-            raise Exception(response.content)
+            raise ScalekitClientException(response)
         return response
 
     def get_jwks(self):
@@ -130,38 +129,6 @@ class CoreClient:
 
             self.keys[kid] = pem_key.decode("utf-8")
 
-    def grpc_exec(
-        self,
-        func: WithCall,
-        data: TRequest,
-        retry=1,
-    ) -> TResponse:
-        try:
-            resp = func(
-                data,
-                metadata=tuple(self.get_headers().items()),
-            )
-            return resp
-        except grpc.RpcError as exp:
-            if retry > 0:
-                return self.grpc_exec(func, data, retry=retry - 1)
-            else:
-                status_code = exp.code()
-                status = rpc_status.from_call(exp)
-                messages = [status.message]
-                if status_code == grpc.StatusCode.INVALID_ARGUMENT:
-                    for detail in status.details:
-                        if detail.Is(ErrorInfo.DESCRIPTOR):
-                            info = ErrorInfo()
-                            detail.Unpack(info)
-                            if info.validation_error_info:
-                                for fv in info.validation_error_info.field_violations:
-                                    messages.append(f"{fv.field}: {fv.description}")
-
-                raise ScalekitException(messages, status_code)
-        except Exception as exp:
-            raise exp
-
     def get_headers(self, headers: Optional[dict] = None) -> dict:
         """
         Method to get user defined headers and returns collated header params
@@ -181,3 +148,23 @@ class CoreClient:
         if headers:
             return {**default_headers, **headers}
         return default_headers
+
+    def grpc_exec(
+        self,
+        func: WithCall,
+        data: TRequest,
+        retry=1,
+    ) -> TResponse:
+        try:
+            resp = func(
+                data,
+                metadata=tuple(self.get_headers().items()),
+            )
+            return resp
+        except grpc.RpcError as exp:
+            if retry > 0:
+                return self.grpc_exec(func, data, retry=retry - 1)
+            else:
+                raise scalekit_exception(exp)
+        except Exception as exp:
+            raise exp
