@@ -67,18 +67,8 @@ class ScalekitException(Exception):
 
 class WebhookVerificationError(ScalekitException):
     """ Exception raised for webhook verification failure """
-    def __init__(self, error: str):
+    def __init__(self, error):
         super().__init__(error)
-        self._http_status = HTTP_STATUS.get('BAD_REQUEST')
-        self._error_code = 'BAD_REQUEST'
-        self._err_details = error
-
-    def __str__(self):
-        border = "=" * 40
-        return (f"\n{border}\n"
-                f"Error Code: {self._error_code}\n"
-                f"HTTP: ({self._http_status.name}: {self._http_status.value})\n"
-                f"Error Details: {self._err_details}\n{border}\n")
 
     @property
     def http_status(self):
@@ -97,18 +87,8 @@ class WebhookVerificationError(ScalekitException):
 
 class ScalekitValidateTokenFailureException(ScalekitException):
     """ Exception raised for token validation failure """
-    def __init__(self, error: InvalidTokenError):
+    def __init__(self, error):
         super().__init__(error)
-        self._http_status = HTTP_STATUS.get('UNAUTHORIZED')
-        self._error_code = type(error).__name__
-        self._err_details = error
-
-    def __str__(self):
-        border = "=" * 40
-        return (f"\n{border}\n"
-                f"Error Code: {self._error_code}\n"
-                f"HTTP: ({self._http_status.name}: {self._http_status.value})\n"
-                f"Error Details: {self._err_details}\n{border}\n")
 
     @property
     def http_status(self):
