@@ -63,23 +63,6 @@ class ScalekitException(Exception):
     """ Base class for all scalekit exceptions """
     def __init__(self, error):
         super().__init__(error)
-        self._http_status = None
-        self._err_details = None
-        self._error_code = None
-
-    @property
-    def http_status(self):
-        """ Getter for HTTP status code """
-        return self._http_status
-
-    def error_code(self):
-        """ Getter for Error code """
-        return self._error_code
-
-    @property
-    def err_details(self):
-        """ Getter for Error details object """
-        return self._err_details
 
 
 class WebhookVerificationError(ScalekitException):
@@ -97,6 +80,20 @@ class WebhookVerificationError(ScalekitException):
                 f"HTTP: ({self._http_status.name}: {self._http_status.value})\n"
                 f"Error Details: {self._err_details}\n{border}\n")
 
+    @property
+    def http_status(self):
+        """ Getter for HTTP status code """
+        return self._http_status
+
+    def error_code(self):
+        """ Getter for Error code """
+        return self._error_code
+
+    @property
+    def err_details(self):
+        """ Getter for Error details object """
+        return self._err_details
+
 
 class ScalekitValidateTokenFailureException(ScalekitException):
     """ Exception raised for token validation failure """
@@ -112,6 +109,20 @@ class ScalekitValidateTokenFailureException(ScalekitException):
                 f"Error Code: {self._error_code}\n"
                 f"HTTP: ({self._http_status.name}: {self._http_status.value})\n"
                 f"Error Details: {self._err_details}\n{border}\n")
+
+    @property
+    def http_status(self):
+        """ Getter for HTTP status code """
+        return self._http_status
+
+    def error_code(self):
+        """ Getter for Error code """
+        return self._error_code
+
+    @property
+    def err_details(self):
+        """ Getter for Error details object """
+        return self._err_details
 
 
 class ScalekitServerException(ScalekitException):
@@ -196,6 +207,20 @@ class ScalekitServerException(ScalekitException):
                     f"GRPC: ({self._grpc_status.name}: {self._grpc_status.value})\n"
                     f"HTTP: ({self._http_status.name}: {self._http_status.value})\n"
                     f"Error Details: {self._err_details}\n{border}\n")
+
+    @property
+    def http_status(self):
+        """ Getter for HTTP status code """
+        return self._http_status
+
+    def error_code(self):
+        """ Getter for Error code """
+        return self._error_code
+
+    @property
+    def err_details(self):
+        """ Getter for Error details object """
+        return self._err_details
 
     @property
     def grpc_status(self):
