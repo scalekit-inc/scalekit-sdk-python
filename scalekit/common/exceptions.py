@@ -63,16 +63,9 @@ class ScalekitException(Exception):
     """ Base class for all scalekit exceptions """
     def __init__(self, error):
         super().__init__(error)
-        self._grpc_status = None
         self._http_status = None
-        self._message = None
         self._err_details = None
         self._error_code = None
-
-    @property
-    def grpc_status(self):
-        """ Getter for GRPC status code """
-        return self._grpc_status
 
     @property
     def http_status(self):
@@ -82,11 +75,6 @@ class ScalekitException(Exception):
     def error_code(self):
         """ Getter for Error code """
         return self._error_code
-
-    @property
-    def message(self):
-        """ Getter for Exception message """
-        return self._message
 
     @property
     def err_details(self):
@@ -99,16 +87,13 @@ class WebhookVerificationError(ScalekitException):
     def __init__(self, error: str):
         super().__init__(error)
         self._http_status = HTTP_STATUS.get('BAD_REQUEST')
-        self._grpc_status = HTTP_TO_GRPC.get(HTTPStatus.BAD_REQUEST)
         self._error_code = 'BAD_REQUEST'
         self._err_details = error
-        self._message = f"Webhook Verification failed: {str(error)}"
 
     def __str__(self):
         border = "=" * 40
         return (f"\n{border}\n"
                 f"Error Code: {self._error_code}\n"
-                f"GRPC: ({self._grpc_status.name}: {self._grpc_status.value})\n"
                 f"HTTP: ({self._http_status.name}: {self._http_status.value})\n"
                 f"Error Details: {self._err_details}\n{border}\n")
 
@@ -118,16 +103,13 @@ class ScalekitValidateTokenFailureException(ScalekitException):
     def __init__(self, error: InvalidTokenError):
         super().__init__(error)
         self._http_status = HTTP_STATUS.get('UNAUTHORIZED')
-        self._grpc_status = HTTP_TO_GRPC.get(HTTPStatus.UNAUTHORIZED)
         self._error_code = type(error).__name__
-        self._err_details = str(error)
-        self._message = f"Token validation failed: {str(error)}"
+        self._err_details = error
 
     def __str__(self):
         border = "=" * 40
         return (f"\n{border}\n"
                 f"Error Code: {self._error_code}\n"
-                f"GRPC: ({self._grpc_status.name}: {self._grpc_status.value})\n"
                 f"HTTP: ({self._http_status.name}: {self._http_status.value})\n"
                 f"Error Details: {self._err_details}\n{border}\n")
 
@@ -214,6 +196,16 @@ class ScalekitServerException(ScalekitException):
                     f"GRPC: ({self._grpc_status.name}: {self._grpc_status.value})\n"
                     f"HTTP: ({self._http_status.name}: {self._http_status.value})\n"
                     f"Error Details: {self._err_details}\n{border}\n")
+
+    @property
+    def grpc_status(self):
+        """ Getter for GRPC status code """
+        return self._grpc_status
+
+    @property
+    def message(self):
+        """ Getter for Exception message """
+        return self._message
 
 
 class ScalekitBadRequestException(ScalekitServerException):

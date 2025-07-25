@@ -295,8 +295,6 @@ class ScalekitClient:
 
         try:
             timestamp = self.__verify_timestamp(webhook_timestamp)
-        except WebhookVerificationError as exp:
-            raise exp
         except Exception as exp:
             raise exp
 
