@@ -9,8 +9,7 @@ from urllib.parse import urlparse
 
 from cryptography.hazmat.primitives import serialization
 from scalekit.common.scalekit import GrantType
-from scalekit.common.exceptions import scalekit_exception
-from scalekit.common.exceptions import ScalekitClientException
+from scalekit.common.exceptions import ScalekitServerException, ScalekitException
 
 TRequest = TypeVar("TRequest")
 TResponse = TypeVar("TResponse")
@@ -86,7 +85,7 @@ class CoreClient:
 
         response = self.authenticate(data=json.dumps(params))
         if response.status_code != 200:
-            raise ScalekitClientException(response.content)
+            raise ScalekitServerException.promote(response)
         response = json.loads(response.content)
         self.access_token = response["access_token"]
 
@@ -105,7 +104,7 @@ class CoreClient:
             verify=True,
         )
         if response.status_code != 200:
-            raise ScalekitClientException(response)
+            raise ScalekitServerException.promote(response)
         return response
 
     def get_jwks(self):
@@ -165,6 +164,6 @@ class CoreClient:
             if retry > 0:
                 return self.grpc_exec(func, data, retry=retry - 1)
             else:
-                raise scalekit_exception(exp)
+                raise ScalekitServerException.promote(exp)
         except Exception as exp:
-            raise exp
+            raise ScalekitException(exp)

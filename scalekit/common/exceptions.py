@@ -1,8 +1,11 @@
+from typing import Dict, Any
 
 import grpc
 from grpc import StatusCode
 from http import HTTPStatus
 from grpc_status import rpc_status
+from requests.models import Response
+from jwt.exceptions import InvalidTokenError
 from scalekit.v1.errdetails.errdetails_pb2 import ErrorInfo
 
 
@@ -26,40 +29,45 @@ GRPC_TO_HTTP = {
     StatusCode.DEADLINE_EXCEEDED: HTTPStatus.GATEWAY_TIMEOUT,
 }
 
+HTTP_TO_GRPC = {
+    HTTPStatus.OK: StatusCode.OK,
+    HTTPStatus.BAD_REQUEST: StatusCode.INVALID_ARGUMENT,
+    HTTPStatus.UNAUTHORIZED: StatusCode.UNAUTHENTICATED,
+    HTTPStatus.FORBIDDEN: StatusCode.PERMISSION_DENIED,
+    HTTPStatus.NOT_FOUND: StatusCode.NOT_FOUND,
+    HTTPStatus.CONFLICT: StatusCode.ALREADY_EXISTS,
+    HTTPStatus.TOO_MANY_REQUESTS: StatusCode.RESOURCE_EXHAUSTED,
+    HTTPStatus.INTERNAL_SERVER_ERROR: StatusCode.INTERNAL,
+    HTTPStatus.NOT_IMPLEMENTED: StatusCode.UNIMPLEMENTED,
+    HTTPStatus.SERVICE_UNAVAILABLE: StatusCode.UNAVAILABLE,
+    HTTPStatus.GATEWAY_TIMEOUT: StatusCode.DEADLINE_EXCEEDED,
+}
 
-class ScalekitClientException(Exception):
-    """ Base class for all scalekit client exceptions """
-    pass
+
+HTTP_STATUS = {
+    'OK': HTTPStatus.OK,
+    'BAD_REQUEST': HTTPStatus.BAD_REQUEST,
+    'UNAUTHORIZED': HTTPStatus.UNAUTHORIZED,
+    'FORBIDDEN': HTTPStatus.FORBIDDEN,
+    'NOT_FOUND': HTTPStatus.NOT_FOUND,
+    'CONFLICT': HTTPStatus.CONFLICT,
+    'TOO_MANY_REQUESTS': HTTPStatus.TOO_MANY_REQUESTS,
+    'INTERNAL_SERVER_ERROR': HTTPStatus.INTERNAL_SERVER_ERROR,
+    'NOT_IMPLEMENTED': HTTPStatus.NOT_IMPLEMENTED,
+    'SERVICE_UNAVAILABLE': HTTPStatus.SERVICE_UNAVAILABLE,
+    'GATEWAY_TIMEOUT': HTTPStatus.GATEWAY_TIMEOUT,
+}
 
 
-class ScalekitServerException(grpc.RpcError):
-    """ Common base class for all scalekit exceptions """
-    def __init__(self, exception: grpc.RpcError):
-        self._grpc_status = exception.code()
-        self._http_status = GRPC_TO_HTTP.get(self._grpc_status)
-        self._message = rpc_status.from_call(exception).message
-        self._err_details = rpc_status.from_call(exception).details
+class ScalekitException(Exception):
+    """ Base class for all scalekit exceptions """
+    def __init__(self, error):
+        super().__init__(error)
+        self._grpc_status = None
+        self._http_status = None
+        self._message = None
+        self._err_details = None
         self._error_code = None
-
-        self._unpacked_details = list()
-        for detail in self._err_details:
-            info = ErrorInfo()
-            detail.Unpack(info)
-            self._unpacked_details.append(info)
-            if not self._error_code:
-                self._error_code = info.error_code
-
-    def __str__(self):
-        border = "=" * 40
-        details_str = str(self._unpacked_details)
-        if details_str.startswith("[") and "\n" in details_str:
-            details_str = details_str.replace("[", "[\n", 1)
-        return (f"\n{border}\n"
-                f"Error Code: {self._error_code}\n"
-                f"GRPC: ({self._grpc_status.name}: {self._grpc_status.value})\n"
-                f"HTTP: ({self._http_status.name}: {self._http_status.value})\n"
-                f"Error Details:\n"
-                f"{self._message}: {details_str}\n{border}\n")
 
     @property
     def grpc_status(self):
@@ -86,112 +94,189 @@ class ScalekitServerException(grpc.RpcError):
         return self._err_details
 
 
-class ScalekitInvalidArgumentException(ScalekitServerException):
-    """ Common base class for all non-exit exceptions. """
-    def __init__(self, exception):
-        super().__init__(exception)
+class WebhookVerificationError(ScalekitException):
+    """ Exception raised for webhook verification failure """
+    def __init__(self, error: str):
+        super().__init__(error)
+        self._http_status = HTTP_STATUS.get('BAD_REQUEST')
+        self._grpc_status = HTTP_TO_GRPC.get(HTTPStatus.BAD_REQUEST)
+        self._error_code = 'BAD_REQUEST'
+        self._err_details = error
+        self._message = f"Webhook Verification failed: {str(error)}"
+
+    def __str__(self):
+        border = "=" * 40
+        return (f"\n{border}\n"
+                f"Error Code: {self._error_code}\n"
+                f"GRPC: ({self._grpc_status.name}: {self._grpc_status.value})\n"
+                f"HTTP: ({self._http_status.name}: {self._http_status.value})\n"
+                f"Error Details: {self._err_details}\n{border}\n")
 
 
-class ScalekitFailedPreconditionException(ScalekitServerException):
-    def __init__(self, exception):
-        super().__init__(exception)
+class ScalekitValidateTokenFailureException(ScalekitException):
+    """ Exception raised for token validation failure """
+    def __init__(self, error: InvalidTokenError):
+        super().__init__(error)
+        self._http_status = HTTP_STATUS.get('UNAUTHORIZED')
+        self._grpc_status = HTTP_TO_GRPC.get(HTTPStatus.UNAUTHORIZED)
+        self._error_code = type(error).__name__
+        self._err_details = str(error)
+        self._message = f"Token validation failed: {str(error)}"
+
+    def __str__(self):
+        border = "=" * 40
+        return (f"\n{border}\n"
+                f"Error Code: {self._error_code}\n"
+                f"GRPC: ({self._grpc_status.name}: {self._grpc_status.value})\n"
+                f"HTTP: ({self._http_status.name}: {self._http_status.value})\n"
+                f"Error Details: {self._err_details}\n{border}\n")
+
+
+class ScalekitServerException(ScalekitException):
+    """ Base class for all scalekit server exceptions """
+    def __init__(self, error: Response | grpc.RpcError):
+        super().__init__(error)
+        self._unpacked_details = list()
+        if isinstance(error, Response):
+            self._http_status = HTTP_STATUS.get(error.reason.upper())
+            self._grpc_status = HTTP_TO_GRPC.get(error.status_code)
+            self._error_code = error.reason
+            self._err_details = error.text
+            self._message = None
+        elif isinstance(error, grpc.RpcError):
+            self._grpc_status = error.code()
+            self._http_status = GRPC_TO_HTTP.get(self._grpc_status)
+            self._message = rpc_status.from_call(error).message
+            self._err_details = rpc_status.from_call(error).details
+            self._error_code = None
+
+            for detail in self._err_details:
+                info = ErrorInfo()
+                detail.Unpack(info)
+                self._unpacked_details.append(info)
+                if not self._error_code:
+                    self._error_code = info.error_code
+
+    @staticmethod
+    def promote(error: Response | grpc.RpcError):
+        """ Promote a ScalekitServerException (Response or RpcError) to a specific error type """
+        grpc_status = HTTP_TO_GRPC.get(error.status_code) if isinstance(error, Response) else error.code()
+
+        if grpc_status == StatusCode.INVALID_ARGUMENT:
+            return ScalekitBadRequestException(error)
+        elif grpc_status == StatusCode.FAILED_PRECONDITION:
+            return ScalekitBadRequestException(error)
+        elif grpc_status == StatusCode.OUT_OF_RANGE:
+            return ScalekitBadRequestException(error)
+        elif grpc_status == StatusCode.UNAUTHENTICATED:
+            return ScalekitUnauthorizedException(error)
+        elif grpc_status == StatusCode.PERMISSION_DENIED:
+            return ScalekitForbiddenException(error)
+        elif grpc_status == StatusCode.NOT_FOUND:
+            return ScalekitNotFoundException(error)
+        elif grpc_status == StatusCode.ALREADY_EXISTS:
+            return ScalekitConflictException(error)
+        elif grpc_status == StatusCode.ABORTED:
+            return ScalekitConflictException(error)
+        elif grpc_status == StatusCode.RESOURCE_EXHAUSTED:
+            return ScalekitTooManyRequestsException(error)
+        elif grpc_status == StatusCode.CANCELLED:
+            return ScalekitCancelledException(error)
+        elif grpc_status == StatusCode.DATA_LOSS:
+            return ScalekitInternalServerException(error)
+        elif grpc_status == StatusCode.UNKNOWN:
+            return ScalekitInternalServerException(error)
+        elif grpc_status == StatusCode.INTERNAL:
+            return ScalekitInternalServerException(error)
+        elif grpc_status == StatusCode.UNIMPLEMENTED:
+            return ScalekitNotImplementedException(error)
+        elif grpc_status == StatusCode.UNAVAILABLE:
+            return ScalekitServiceUnavailableException(error)
+        elif grpc_status == StatusCode.DEADLINE_EXCEEDED:
+            return ScalekitGatewayTimeoutException(error)
+
+    def __str__(self):
+        if self._unpacked_details:
+            border = "=" * 40
+            details_str = str(self._unpacked_details)
+            if details_str.startswith("[") and "\n" in details_str:
+                details_str = details_str.replace("[", "[\n", 1)
+            return (f"\n{border}\n"
+                    f"Error Code: {self._error_code}\n"
+                    f"GRPC: ({self._grpc_status.name}: {self._grpc_status.value})\n"
+                    f"HTTP: ({self._http_status.name}: {self._http_status.value})\n"
+                    f"Error Details:\n"
+                    f"{self._message}: {details_str}\n{border}\n")
+        else:
+            border = "=" * 40
+            return (f"\n{border}\n"
+                    f"Error Code: {self._error_code}\n"
+                    f"GRPC: ({self._grpc_status.name}: {self._grpc_status.value})\n"
+                    f"HTTP: ({self._http_status.name}: {self._http_status.value})\n"
+                    f"Error Details: {self._err_details}\n{border}\n")
+
+
+class ScalekitBadRequestException(ScalekitServerException):
+    """ Scalekit Exception raised for bad requests """
+    def __init__(self, error: Response | grpc.RpcError):
+        super().__init__(error)
+
+
+class ScalekitUnauthorizedException(ScalekitServerException):
+    """ Scalekit Exception raised for unauthorized access """
+    def __init__(self, error: Response | grpc.RpcError):
+        super().__init__(error)
+
+
+class ScalekitForbiddenException(ScalekitServerException):
+    """ Scalekit Exception raised for forbidden access """
+    def __init__(self, error: Response | grpc.RpcError):
+        super().__init__(error)
 
 
 class ScalekitNotFoundException(ScalekitServerException):
-    def __init__(self, exception):
-        super().__init__(exception)
-
-
-class ScalekitUnauthenticatedException(ScalekitServerException):
-    def __init__(self, exception):
-        super().__init__(exception)
-
-
-class ScalekitPermissionDeniedException(ScalekitServerException):
-    def __init__(self, exception):
-        super().__init__(exception)
-
-
-class ScalekitInternalServerException(ScalekitServerException):
-    def __init__(self, exception):
-        super().__init__(exception)
-
-
-class ScalekitServiceUnavailableException(ScalekitServerException):
-    def __init__(self, exception):
-        super().__init__(exception)
+    """ Scalekit Exception raised when a resource is not found """
+    def __init__(self, error: Response | grpc.RpcError):
+        super().__init__(error)
 
 
 class ScalekitConflictException(ScalekitServerException):
-    def __init__(self, exception):
-        super().__init__(exception)
+    """ Scalekit Exception raised for conflicts, such as duplicate resources """
+    def __init__(self, error: Response | grpc.RpcError):
+        super().__init__(error)
 
 
-class ScalekitResourceExhaustedException(ScalekitServerException):
-    def __init__(self, exception):
-        super().__init__(exception)
+class ScalekitTooManyRequestsException(ScalekitServerException):
+    """ Scalekit Exception raised when too many requests are made in a short time """
+    def __init__(self, error: Response | grpc.RpcError):
+        super().__init__(error)
 
 
-class ScalekitUnknownException(ScalekitServerException):
-    def __init__(self, exception):
-        super().__init__(exception)
+class ScalekitInternalServerException(ScalekitServerException):
+    """ Scalekit Exception raised for internal server errors """
+    def __init__(self, error: Response | grpc.RpcError):
+        super().__init__(error)
 
 
-class ScalekitUnimplementedException(ScalekitServerException):
-    def __init__(self, exception):
-        super().__init__(exception)
+class ScalekitNotImplementedException(ScalekitServerException):
+    """ Scalekit Exception raised when a feature is not implemented """
+    def __init__(self, error: Response | grpc.RpcError):
+        super().__init__(error)
 
 
-class ScalekitDeadlineExceededException(ScalekitServerException):
-    def __init__(self, exception):
-        super().__init__(exception)
+class ScalekitServiceUnavailableException(ScalekitServerException):
+    """ Scalekit Exception raised when the service is unavailable """
+    def __init__(self, error: Response | grpc.RpcError):
+        super().__init__(error)
 
 
-class ScalekitDataLossException(ScalekitServerException):
-    def __init__(self, exception):
-        super().__init__(exception)
-
-
-class ScalekitOutOfRangeException(ScalekitServerException):
-    def __init__(self, exception):
-        super().__init__(exception)
+class ScalekitGatewayTimeoutException(ScalekitServerException):
+    """ Scalekit Exception raised when a gateway timeout occurs """
+    def __init__(self, error: Response | grpc.RpcError):
+        super().__init__(error)
 
 
 class ScalekitCancelledException(ScalekitServerException):
-    def __init__(self, exception):
-        super().__init__(exception)
-
-
-def scalekit_exception(grpc_error: grpc.RpcError) -> ScalekitServerException:
-    grpc_status = grpc_error.code()
-
-    if grpc_status == StatusCode.INVALID_ARGUMENT:
-        return ScalekitInvalidArgumentException(grpc_error)
-    elif grpc_status == StatusCode.FAILED_PRECONDITION:
-        return ScalekitFailedPreconditionException(grpc_error)
-    elif grpc_status == StatusCode.OUT_OF_RANGE:
-        return ScalekitOutOfRangeException(grpc_error)
-    elif grpc_status == StatusCode.UNAUTHENTICATED:
-        return ScalekitUnauthenticatedException(grpc_error)
-    elif grpc_status == StatusCode.PERMISSION_DENIED:
-        return ScalekitPermissionDeniedException(grpc_error)
-    elif grpc_status == StatusCode.NOT_FOUND:
-        return ScalekitNotFoundException(grpc_error)
-    elif grpc_status == StatusCode.ALREADY_EXISTS or grpc_status == StatusCode.ABORTED:
-        return ScalekitConflictException(grpc_error)
-    elif grpc_status == StatusCode.RESOURCE_EXHAUSTED:
-        return ScalekitResourceExhaustedException(grpc_error)
-    elif grpc_status == StatusCode.CANCELLED:
-        return ScalekitCancelledException(grpc_error)
-    elif grpc_status == StatusCode.DATA_LOSS:
-        return ScalekitDataLossException(grpc_error)
-    elif grpc_status == StatusCode.UNKNOWN:
-        return ScalekitUnknownException(grpc_error)
-    elif grpc_status == StatusCode.INTERNAL:
-        return ScalekitInternalServerException(grpc_error)
-    elif grpc_status == StatusCode.UNIMPLEMENTED:
-        return ScalekitUnimplementedException(grpc_error)
-    elif grpc_status == StatusCode.UNAVAILABLE:
-        return ScalekitServiceUnavailableException(grpc_error)
-    elif grpc_status == StatusCode.DEADLINE_EXCEEDED:
-        return ScalekitDeadlineExceededException(grpc_error)
+    """ Scalekit Exception raised when an operation is cancelled """
+    def __init__(self, error: Response | grpc.RpcError):
+        super().__init__(error)
