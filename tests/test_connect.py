@@ -37,6 +37,34 @@ class TestConnect(BaseTest):
         except Exception as e:
            raise e
 
+    def test_execute_tool_invalid_tool(self):
+        """Method to test execute_tool with invalid tool name"""
+        tool_input = {
+            "max_results": 1,
+        }
+        
+        # Test with invalid tool name - should raise an exception
+        with self.assertRaises(Exception) as context:
+            self.scalekit_client.connect.execute_tool(
+                tool_input=tool_input,
+                tool_name="GMAIL.INVALID_TOOL",
+                identifier=self.test_identifier,
+            )
+        
+        # Verify the error contains expected invalid tool error message
+        error_message = str(context.exception).lower()
+        expected_errors = [
+            "invalid tool",
+            "tool not found", 
+            "failed to get tool",
+            "invalid argument"
+        ]
+        
+        self.assertTrue(
+            any(error in error_message for error in expected_errors),
+            f"Expected invalid tool error, but got: {context.exception}"
+        )
+
     def test_connect_client_initialization(self):
         """Method to test ConnectClient initialization"""
         self.assertTrue(hasattr(self.scalekit_client, 'connect'))

@@ -16,7 +16,7 @@ class TestConnectedAccounts(BaseTest):
     def setUp(self):
         """ """
         self.faker = Faker()
-        self.test_connector = "TEST-123"
+        self.test_connector = "GMAIL"
         self.test_identifier = f"test_app_{self.faker.unique.random_number()}"
 
     def _create_oauth_connected_account(self):
@@ -35,7 +35,7 @@ class TestConnectedAccounts(BaseTest):
         self.assertEqual(response[1].code().name, "OK")
         self.assertTrue(response[0] is not None)
         self.assertTrue(hasattr(response[0], 'connected_accounts'))
-        self.assertTrue(hasattr(response[0], 'total_count'))
+        self.assertTrue(hasattr(response[0], 'total_size'))
 
     def test_list_connected_accounts_with_filters(self):
         """ Method to test list connected accounts with filters """

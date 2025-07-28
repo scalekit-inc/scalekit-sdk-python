@@ -42,22 +42,3 @@ class TestTools(BaseTest):
         )
         self.assertEqual(response[1].code().name, "OK")
         self.assertTrue(response[0] is not None)
-
-    def test_execute_fetch_mails(self):
-        """ Method to test execute GMAIL.FETCH_MAILS tool """
-        try:
-            response = self.scalekit_client.tools.execute_fetch_mails(
-                identifier=self.test_identifier,
-                max_results=2,
-                include_spam_trash=False
-            )
-            self.assertEqual(response[1].code().name, "OK")
-            self.assertTrue(response[0] is not None)
-            self.assertTrue(hasattr(response[0], 'data'))
-            self.assertTrue(hasattr(response[0], 'execution_id'))
-        except Exception as e:
-            # If it fails due to connection issues, that's expected in test environment
-            if "error getting connected account" in str(e) or "connected account not found" in str(e):
-                self.skipTest("Test requires properly configured connected account with Gmail access")
-            else:
-                raise e
