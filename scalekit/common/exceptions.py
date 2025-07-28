@@ -83,8 +83,11 @@ class ScalekitServerException(ScalekitException):
         super().__init__(error)
         self._unpacked_details = list()
         if isinstance(error, Response):
-            self._http_status = HTTP_STATUS.get(error.reason.upper())
-            self._grpc_status = HTTP_TO_GRPC.get(error.status_code)
+            if error.reason and isinstance(error.reason, str):
+                self._http_status = HTTP_STATUS.get(error.reason.upper(), HTTPStatus.INTERNAL_SERVER_ERROR)
+            else:
+                self._http_status = HTTP_STATUS.get(HTTPStatus.INTERNAL_SERVER_ERROR)
+            self._grpc_status = HTTP_TO_GRPC.get(error.status_code, StatusCode.UNKNOWN)
             self._error_code = error.reason
             self._err_details = error.text
             self._message = None
@@ -139,6 +142,8 @@ class ScalekitServerException(ScalekitException):
             return ScalekitServiceUnavailableException(error)
         elif grpc_status == StatusCode.DEADLINE_EXCEEDED:
             return ScalekitGatewayTimeoutException(error)
+        else:
+            return ScalekitUnknownException(error)
 
     def __str__(self):
         if self._unpacked_details:
@@ -247,5 +252,10 @@ class ScalekitGatewayTimeoutException(ScalekitServerException):
 
 class ScalekitCancelledException(ScalekitServerException):
     """ Scalekit Exception raised when an operation is cancelled """
+    def __init__(self, error: Response | grpc.RpcError):
+        super().__init__(error)
+
+
+class ScalekitUnknownException(ScalekitServerException):
     def __init__(self, error: Response | grpc.RpcError):
         super().__init__(error)
