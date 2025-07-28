@@ -70,39 +70,11 @@ class WebhookVerificationError(ScalekitException):
     def __init__(self, error):
         super().__init__(error)
 
-    @property
-    def http_status(self):
-        """ Getter for HTTP status code """
-        return self._http_status
-
-    def error_code(self):
-        """ Getter for Error code """
-        return self._error_code
-
-    @property
-    def err_details(self):
-        """ Getter for Error details object """
-        return self._err_details
-
 
 class ScalekitValidateTokenFailureException(ScalekitException):
     """ Exception raised for token validation failure """
     def __init__(self, error):
         super().__init__(error)
-
-    @property
-    def http_status(self):
-        """ Getter for HTTP status code """
-        return self._http_status
-
-    def error_code(self):
-        """ Getter for Error code """
-        return self._error_code
-
-    @property
-    def err_details(self):
-        """ Getter for Error details object """
-        return self._err_details
 
 
 class ScalekitServerException(ScalekitException):
