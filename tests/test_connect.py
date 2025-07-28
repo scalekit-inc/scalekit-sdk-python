@@ -1,8 +1,5 @@
 from basetest import BaseTest
-from scalekit.tool_request import ToolRequest
-from scalekit.execute_tool_response import ExecuteToolResponse
-from scalekit.magic_link_response import MagicLinkResponse
-from scalekit.list_connected_accounts_response import ListConnectedAccountsResponse
+from scalekit.connect.types import ExecuteToolResponse, MagicLinkResponse, ListConnectedAccountsResponse
 
 
 class TestConnect(BaseTest):
@@ -10,21 +7,25 @@ class TestConnect(BaseTest):
 
     def setUp(self):
         """Setup test parameters"""
-        self.test_identifier = "avinash.kamath@scalekit.com"
-        self.test_tool_name = "SLACK.SEND_MESSAGE"
+        self.test_identifier = "default"
+        self.test_tool_name = "GMAIL.FETCH_MAILS"
+
+        # response = self.scalekit_client.connect.get_authorization_link(identifier = self.test_identifier, connector="GMAIL")
+        # print(f"Authorization link: {response.link}")
+        # input("Press Enter to continue...")
 
 
-    def test_execute_tool_with_slack_send_message(self):
+
+
+    def test_execute_tool(self):
         """Method to test execute_tool with SLACK.SEND_MESSAGE"""
-        input_data = {
-            "channel": "#connect",
-            "text": "Hello from Scalekit SDK test!",
-            "username": "Scalekit Bot"
+        tool_input = {
+            "max_results": 1,
         }
         
         try:
             result = self.scalekit_client.connect.execute_tool(
-                input_data=input_data,
+                tool_input=tool_input,
                 tool_name=self.test_tool_name,
                 identifier=self.test_identifier,
             )

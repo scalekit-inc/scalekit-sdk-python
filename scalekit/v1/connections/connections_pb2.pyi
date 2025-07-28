@@ -422,7 +422,7 @@ class ListConnectionsResponse(_message.Message):
     def __init__(self, connections: _Optional[_Iterable[_Union[ListConnection, _Mapping]]] = ...) -> None: ...
 
 class ListConnection(_message.Message):
-    __slots__ = ("id", "provider", "type", "status", "enabled", "organization_id", "ui_button_title", "domains", "organization_name", "provider_key")
+    __slots__ = ("id", "provider", "type", "status", "enabled", "organization_id", "ui_button_title", "domains", "organization_name", "provider_key", "key_id", "created_at")
     ID_FIELD_NUMBER: _ClassVar[int]
     PROVIDER_FIELD_NUMBER: _ClassVar[int]
     TYPE_FIELD_NUMBER: _ClassVar[int]
@@ -433,6 +433,8 @@ class ListConnection(_message.Message):
     DOMAINS_FIELD_NUMBER: _ClassVar[int]
     ORGANIZATION_NAME_FIELD_NUMBER: _ClassVar[int]
     PROVIDER_KEY_FIELD_NUMBER: _ClassVar[int]
+    KEY_ID_FIELD_NUMBER: _ClassVar[int]
+    CREATED_AT_FIELD_NUMBER: _ClassVar[int]
     id: str
     provider: ConnectionProvider
     type: ConnectionType
@@ -443,7 +445,9 @@ class ListConnection(_message.Message):
     domains: _containers.RepeatedScalarFieldContainer[str]
     organization_name: str
     provider_key: str
-    def __init__(self, id: _Optional[str] = ..., provider: _Optional[_Union[ConnectionProvider, str]] = ..., type: _Optional[_Union[ConnectionType, str]] = ..., status: _Optional[_Union[ConnectionStatus, str]] = ..., enabled: bool = ..., organization_id: _Optional[str] = ..., ui_button_title: _Optional[str] = ..., domains: _Optional[_Iterable[str]] = ..., organization_name: _Optional[str] = ..., provider_key: _Optional[str] = ...) -> None: ...
+    key_id: str
+    created_at: _timestamp_pb2.Timestamp
+    def __init__(self, id: _Optional[str] = ..., provider: _Optional[_Union[ConnectionProvider, str]] = ..., type: _Optional[_Union[ConnectionType, str]] = ..., status: _Optional[_Union[ConnectionStatus, str]] = ..., enabled: bool = ..., organization_id: _Optional[str] = ..., ui_button_title: _Optional[str] = ..., domains: _Optional[_Iterable[str]] = ..., organization_name: _Optional[str] = ..., provider_key: _Optional[str] = ..., key_id: _Optional[str] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
 class ListOrganizationConnectionsRequest(_message.Message):
     __slots__ = ("page_size", "page_token")
@@ -578,20 +582,22 @@ class OAuthConnectionConfig(_message.Message):
     def __init__(self, authorize_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., token_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., user_info_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_id: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_secret: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., scopes: _Optional[_Iterable[str]] = ..., redirect_uri: _Optional[str] = ..., pkce_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., prompt: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., use_platform_creds: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., access_type: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ...) -> None: ...
 
 class PasswordLessConfig(_message.Message):
-    __slots__ = ("type", "frequency", "validity", "enforce_same_browser_origin", "code_challenge_length", "code_challenge_type")
+    __slots__ = ("type", "frequency", "validity", "enforce_same_browser_origin", "code_challenge_length", "code_challenge_type", "regenerate_passwordless_credentials_on_resend")
     TYPE_FIELD_NUMBER: _ClassVar[int]
     FREQUENCY_FIELD_NUMBER: _ClassVar[int]
     VALIDITY_FIELD_NUMBER: _ClassVar[int]
     ENFORCE_SAME_BROWSER_ORIGIN_FIELD_NUMBER: _ClassVar[int]
     CODE_CHALLENGE_LENGTH_FIELD_NUMBER: _ClassVar[int]
     CODE_CHALLENGE_TYPE_FIELD_NUMBER: _ClassVar[int]
+    REGENERATE_PASSWORDLESS_CREDENTIALS_ON_RESEND_FIELD_NUMBER: _ClassVar[int]
     type: PasswordlessType
     frequency: _wrappers_pb2.UInt32Value
     validity: _wrappers_pb2.UInt32Value
     enforce_same_browser_origin: _wrappers_pb2.BoolValue
     code_challenge_length: _wrappers_pb2.UInt32Value
     code_challenge_type: CodeChallengeType
-    def __init__(self, type: _Optional[_Union[PasswordlessType, str]] = ..., frequency: _Optional[_Union[_wrappers_pb2.UInt32Value, _Mapping]] = ..., validity: _Optional[_Union[_wrappers_pb2.UInt32Value, _Mapping]] = ..., enforce_same_browser_origin: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., code_challenge_length: _Optional[_Union[_wrappers_pb2.UInt32Value, _Mapping]] = ..., code_challenge_type: _Optional[_Union[CodeChallengeType, str]] = ...) -> None: ...
+    regenerate_passwordless_credentials_on_resend: _wrappers_pb2.BoolValue
+    def __init__(self, type: _Optional[_Union[PasswordlessType, str]] = ..., frequency: _Optional[_Union[_wrappers_pb2.UInt32Value, _Mapping]] = ..., validity: _Optional[_Union[_wrappers_pb2.UInt32Value, _Mapping]] = ..., enforce_same_browser_origin: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., code_challenge_length: _Optional[_Union[_wrappers_pb2.UInt32Value, _Mapping]] = ..., code_challenge_type: _Optional[_Union[CodeChallengeType, str]] = ..., regenerate_passwordless_credentials_on_resend: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ...) -> None: ...
 
 class StaticAuthConfig(_message.Message):
     __slots__ = ("static_config",)

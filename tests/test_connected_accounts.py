@@ -6,7 +6,6 @@ from scalekit.v1.connected_accounts.connected_accounts_pb2 import (
     UpdateConnectedAccount,
     AuthorizationDetails,
     OauthToken,
-    StaticAuth
 )
 from google.protobuf import struct_pb2
 

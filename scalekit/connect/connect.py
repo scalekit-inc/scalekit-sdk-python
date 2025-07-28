@@ -1,8 +1,8 @@
 from typing import Optional, Dict, Any
-from scalekit.tool_request import ToolRequest
-from scalekit.execute_tool_response import ExecuteToolResponse
-from scalekit.magic_link_response import MagicLinkResponse
-from scalekit.list_connected_accounts_response import ListConnectedAccountsResponse
+from scalekit.connect.models.requests.tool_request import ToolRequest
+from scalekit.connect.models.responses.execute_tool_response import ExecuteToolResponse
+from scalekit.connect.models.responses.magic_link_response import MagicLinkResponse
+from scalekit.connect.models.responses.list_connected_accounts_response import ListConnectedAccountsResponse
 
 
 class ConnectClient:
@@ -26,7 +26,7 @@ class ConnectClient:
 
     def execute_tool(
         self,
-        input_data: Dict[str, Any],
+        tool_input: Dict[str, Any],
         tool_name: str,
         identifier: str,
         tool_request: Optional[ToolRequest] = None,
@@ -39,7 +39,7 @@ class ConnectClient:
         Execute a tool with the given parameters.
         
         Args:
-            input_data: Input data for the tool execution (required)
+            tool_input: Input data for the tool execution (required)
             tool_name: Name of the tool to execute (required)
             identifier: Unique identifier for this execution (required)
             tool_request: Optional ToolRequest configuration object
@@ -52,8 +52,8 @@ class ConnectClient:
             ExecuteToolResponse containing execution results
         """
         # Validate required parameters
-        if not input_data:
-            raise ValueError("input_data is required")
+        if not tool_input:
+            raise ValueError("tool_input is required")
         if not tool_name:
             raise ValueError("tool_name is required")
         if not identifier:
@@ -63,7 +63,7 @@ class ConnectClient:
         result_tuple = self.tools.execute_tool(
             tool_name=tool_name,
             identifier=identifier,
-            params=input_data
+            params=tool_input
         )
         
         # Extract the response[0] (the actual ExecuteToolResponse proto object)
