@@ -1,4 +1,3 @@
-from typing import Dict, Any
 
 import grpc
 from grpc import StatusCode
@@ -85,7 +84,7 @@ class ScalekitServerException(ScalekitException):
             if error.reason and isinstance(error.reason, str):
                 self._http_status = HTTP_STATUS.get(error.reason.upper(), HTTPStatus.INTERNAL_SERVER_ERROR)
             else:
-                self._http_status = HTTP_STATUS.get(HTTPStatus.INTERNAL_SERVER_ERROR)
+                self._http_status = HTTP_STATUS.get('INTERNAL_SERVER_ERROR')
             self._grpc_status = HTTP_TO_GRPC.get(error.status_code, StatusCode.UNKNOWN)
             self._error_code = error.reason
             self._err_details = error.text
@@ -169,6 +168,7 @@ class ScalekitServerException(ScalekitException):
         """ Getter for HTTP status code """
         return self._http_status
 
+    @property
     def error_code(self):
         """ Getter for Error code """
         return self._error_code
