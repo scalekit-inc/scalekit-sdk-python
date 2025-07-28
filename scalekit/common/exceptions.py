@@ -5,7 +5,6 @@ from grpc import StatusCode
 from http import HTTPStatus
 from grpc_status import rpc_status
 from requests.models import Response
-from jwt.exceptions import InvalidTokenError
 from scalekit.v1.errdetails.errdetails_pb2 import ErrorInfo
 
 
