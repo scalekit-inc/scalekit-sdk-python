@@ -88,7 +88,7 @@ class TestConnect(BaseTest):
         """Method to test get_authorization_link returns MagicLinkResponse"""
         try:
             result = self.scalekit_client.connect.get_authorization_link(
-                connector="slack",
+                connection_name="GMAIL",
                 identifier=self.test_identifier
             )
             self.assertIsNotNone(result)

@@ -28,11 +28,12 @@ class ConnectClient:
         self,
         tool_input: Dict[str, Any],
         tool_name: str,
-        identifier: str,
+        identifier: Optional[str] = None,
         tool_request: Optional[ToolRequest] = None,
         context: Optional[Dict[str, Any]] = None,
-        connector: Optional[str] = None,
+        connection_name: Optional[str] = None,
         connected_account_id: Optional[str] = None,
+        connection_id: Optional[str] = None,
         **kwargs
     ) -> ExecuteToolResponse:
         """
@@ -44,8 +45,9 @@ class ConnectClient:
             identifier: Unique identifier for this execution (required)
             tool_request: Optional ToolRequest configuration object
             context: Optional context dictionary
-            connector: Optional connector string
+            connection_name: Optional connector string
             connected_account_id: Optional connected account ID string
+            connection_id: Optional connection ID string
             **kwargs: Additional optional parameters
             
         Returns:
@@ -72,13 +74,21 @@ class ConnectClient:
         # Convert proto to our ExecuteToolResponse class
         return ExecuteToolResponse.from_proto(proto_response)
     
-    def get_authorization_link(self, connector: str, identifier: str) -> MagicLinkResponse:
+    def get_authorization_link(
+            self,
+            identifier: Optional[str] = None,
+            connection_name: Optional[str] = None,
+            connected_account_id: Optional[str] = None,
+            **kwargs
+    ) -> MagicLinkResponse:
         """
         Get authorization magic link for a connected account
         
-        :param connector: Connector identifier
+        :param connection_name: Connector identifier
         :type: str
         :param identifier: Connected account identifier
+        :type: str
+        :param connected_account_id: Connected account ID (optional)
         :type: str
         
         :returns:
@@ -86,7 +96,7 @@ class ConnectClient:
         """
         # Call the existing connected_accounts method which returns (response, metadata) tuple
         result_tuple = self.connected_accounts.get_magic_link_for_connected_account(
-            connector=connector,
+            connector=connection_name,
             identifier=identifier
         )
         
@@ -98,14 +108,15 @@ class ConnectClient:
     
     def list_connected_accounts(
         self, 
-        connector: Optional[str] = None,
+        connection_name: Optional[str] = None,
         identifier: Optional[str] = None,
-        provider: Optional[str] = None
+        provider: Optional[str] = None,
+        **kwargs
     ) -> ListConnectedAccountsResponse:
         """
         List connected accounts with optional filtering
         
-        :param connector: Connector identifier (optional)
+        :param connection_name: Connector identifier (optional)
         :type: str
         :param identifier: Identifier filter (optional)
         :type: str
@@ -117,7 +128,7 @@ class ConnectClient:
         """
         # Call the existing connected_accounts method which returns (response, metadata) tuple
         result_tuple = self.connected_accounts.list_connected_accounts(
-            connector=connector,
+            connector=connection_name,
             identifier=identifier,
             provider=provider
         )
