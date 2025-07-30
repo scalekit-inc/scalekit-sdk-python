@@ -19,6 +19,7 @@ from scalekit.role import RoleClient
 from scalekit.connected_accounts import ConnectedAccountsClient
 from scalekit.tools import ToolsClient
 from scalekit.connect import ConnectClient
+from scalekit.passwordless import PasswordlessClient
 from scalekit.common.scalekit import (
     AuthorizationUrlOptions,
     CodeAuthenticationOptions,
@@ -27,15 +28,13 @@ from scalekit.common.scalekit import (
     LogoutUrlOptions,
 )
 from scalekit.constants.user import id_token_claim_to_user_map
+from scalekit.common.exceptions import (WebhookVerificationError,
+                                        ScalekitValidateTokenFailureException)
 
 AUTHORIZE_ENDPOINT = "oauth/authorize"
 LOGOUT_ENDPOINT = "oidc/logout" 
 webhook_tolerance_in_seconds = timedelta(minutes=5)
 webhook_signature_version = "v1"
-
-
-class WebhookVerificationError(Exception):
-    pass
 
 
 class ScalekitClient:
@@ -68,6 +67,7 @@ class ScalekitClient:
             self.connected_accounts = ConnectedAccountsClient(self.core_client)
             self.tools = ToolsClient(self.core_client)
             self.connect = ConnectClient(self.tools, self.connected_accounts)
+            self.passwordless = PasswordlessClient(self.core_client)
         except Exception as exp:
             raise exp
 
@@ -163,6 +163,8 @@ class ScalekitClient:
                 "organization_id": organization_id
             }
 
+        except jwt.exceptions.InvalidTokenError as exp:
+            raise ScalekitValidateTokenFailureException(exp)
         except Exception as exp:
             raise exp
 
@@ -227,8 +229,10 @@ class ScalekitClient:
         try:
             claims = self.__validate_token(token, options=options, audience=audience)
             return claims
+        except jwt.exceptions.InvalidTokenError as exp:
+            raise ScalekitValidateTokenFailureException(exp)
         except Exception as exp:
-            raise exp        
+            raise exp
 
     def get_idp_initiated_login_claims(self, idp_initiated_login_token: str) -> IdpInitiatedLoginClaims:
         """
@@ -243,6 +247,8 @@ class ScalekitClient:
         try:
             claims = self.__validate_token(idp_initiated_login_token, {"verify_aud": False})
             return claims
+        except jwt.exceptions.InvalidTokenError as exp:
+            raise ScalekitValidateTokenFailureException(exp)
         except Exception as exp:
             raise exp
 
@@ -339,10 +345,10 @@ class ScalekitClient:
             raise WebhookVerificationError("Invalid Signature Headers")
 
         if timestamp < (now - webhook_tolerance_in_seconds):
-            raise Exception("Message timestamp too old")
+            raise WebhookVerificationError("Message timestamp too old")
 
         if timestamp > (now + webhook_tolerance_in_seconds):
-            raise Exception("Message timestamp too new")
+            raise WebhookVerificationError("Message timestamp too new")
 
         return timestamp
 
