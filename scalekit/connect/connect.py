@@ -1,8 +1,5 @@
 from typing import Optional, Dict, Any
-from scalekit.connect.models.requests.tool_request import ToolRequest
-from scalekit.connect.models.responses.execute_tool_response import ExecuteToolResponse
-from scalekit.connect.models.responses.magic_link_response import MagicLinkResponse
-from scalekit.connect.models.responses.list_connected_accounts_response import ListConnectedAccountsResponse
+from scalekit.connect.types import ToolRequest,ExecuteToolResponse,MagicLinkResponse,ListConnectedAccountsResponse
 
 
 class ConnectClient:
