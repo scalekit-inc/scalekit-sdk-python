@@ -59,16 +59,16 @@ class ListConnectedAccountsRequest(_message.Message):
     def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., connector: _Optional[str] = ..., identifier: _Optional[str] = ..., provider: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ...) -> None: ...
 
 class ListConnectedAccountsResponse(_message.Message):
-    __slots__ = ("connected_accounts", "total_count", "next_page_token", "previous_page_token")
+    __slots__ = ("connected_accounts", "total_size", "next_page_token", "prev_page_token")
     CONNECTED_ACCOUNTS_FIELD_NUMBER: _ClassVar[int]
-    TOTAL_COUNT_FIELD_NUMBER: _ClassVar[int]
+    TOTAL_SIZE_FIELD_NUMBER: _ClassVar[int]
     NEXT_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
-    PREVIOUS_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    PREV_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
     connected_accounts: _containers.RepeatedCompositeFieldContainer[ConnectedAccountForList]
-    total_count: int
+    total_size: int
     next_page_token: str
-    previous_page_token: str
-    def __init__(self, connected_accounts: _Optional[_Iterable[_Union[ConnectedAccountForList, _Mapping]]] = ..., total_count: _Optional[int] = ..., next_page_token: _Optional[str] = ..., previous_page_token: _Optional[str] = ...) -> None: ...
+    prev_page_token: str
+    def __init__(self, connected_accounts: _Optional[_Iterable[_Union[ConnectedAccountForList, _Mapping]]] = ..., total_size: _Optional[int] = ..., next_page_token: _Optional[str] = ..., prev_page_token: _Optional[str] = ...) -> None: ...
 
 class CreateConnectedAccountRequest(_message.Message):
     __slots__ = ("organization_id", "user_id", "connector", "identifier", "connected_account")

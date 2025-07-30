@@ -16,6 +16,9 @@ from scalekit.organization import OrganizationClient
 from scalekit.directory import DirectoryClient
 from scalekit.users import UserClient
 from scalekit.role import RoleClient
+from scalekit.connected_accounts import ConnectedAccountsClient
+from scalekit.tools import ToolsClient
+from scalekit.connect import ConnectClient
 from scalekit.passwordless import PasswordlessClient
 from scalekit.common.scalekit import (
     AuthorizationUrlOptions,
@@ -61,6 +64,9 @@ class ScalekitClient:
             self.m2m_client = M2MClient(self.core_client)
             self.users = UserClient(self.core_client)
             self.roles = RoleClient(self.core_client)
+            self.connected_accounts = ConnectedAccountsClient(self.core_client)
+            self.tools = ToolsClient(self.core_client)
+            self.connect = ConnectClient(self.tools, self.connected_accounts)
             self.passwordless = PasswordlessClient(self.core_client)
         except Exception as exp:
             raise exp

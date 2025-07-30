@@ -92,16 +92,16 @@ class ListProvidersRequest(_message.Message):
     def __init__(self, identifier: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ...) -> None: ...
 
 class ListProvidersResponse(_message.Message):
-    __slots__ = ("providers", "next_page_token", "page_size", "previous_page_token")
+    __slots__ = ("providers", "next_page_token", "total_size", "prev_page_token")
     PROVIDERS_FIELD_NUMBER: _ClassVar[int]
     NEXT_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
-    PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
-    PREVIOUS_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    TOTAL_SIZE_FIELD_NUMBER: _ClassVar[int]
+    PREV_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
     providers: _containers.RepeatedCompositeFieldContainer[Provider]
     next_page_token: str
-    page_size: int
-    previous_page_token: str
-    def __init__(self, providers: _Optional[_Iterable[_Union[Provider, _Mapping]]] = ..., next_page_token: _Optional[str] = ..., page_size: _Optional[int] = ..., previous_page_token: _Optional[str] = ...) -> None: ...
+    total_size: int
+    prev_page_token: str
+    def __init__(self, providers: _Optional[_Iterable[_Union[Provider, _Mapping]]] = ..., next_page_token: _Optional[str] = ..., total_size: _Optional[int] = ..., prev_page_token: _Optional[str] = ...) -> None: ...
 
 class DeleteProviderRequest(_message.Message):
     __slots__ = ("identifier",)
