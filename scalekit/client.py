@@ -26,15 +26,13 @@ from scalekit.common.scalekit import (
     TokenValidationOptions,
 )
 from scalekit.constants.user import id_token_claim_to_user_map
+from scalekit.common.exceptions import (WebhookVerificationError,
+                                        ScalekitValidateTokenFailureException)
 
 AUTHORIZE_ENDPOINT = "oauth/authorize"
 LOGOUT_ENDPOINT = "oidc/logout" 
 webhook_tolerance_in_seconds = timedelta(minutes=5)
 webhook_signature_version = "v1"
-
-
-class WebhookVerificationError(Exception):
-    pass
 
 
 class ScalekitClient:
@@ -56,8 +54,7 @@ class ScalekitClient:
         """
         try:
             self.core_client = CoreClient(
-                env_url=env_url, client_id=client_id, client_secret=client_secret
-            )
+                env_url=env_url, client_id=client_id, client_secret=client_secret)
             self.domain = DomainClient(self.core_client)
             self.connection = ConnectionClient(self.core_client)
             self.organization = OrganizationClient(self.core_client)
@@ -161,6 +158,8 @@ class ScalekitClient:
                 "organization_id": organization_id
             }
 
+        except jwt.exceptions.InvalidTokenError as exp:
+            raise ScalekitValidateTokenFailureException(exp)
         except Exception as exp:
             raise exp
 
@@ -208,7 +207,8 @@ class ScalekitClient:
             response = json.loads(response.content)
             return response
         except Exception as exp:
-            raise exp
+            from scalekit.common.exceptions import ScalekitException
+            raise ScalekitException(str(exp))
 
     def validate_access_token_and_get_claims(self, token: str, options: Optional[TokenValidationOptions] = None, audience = None) -> Dict[str, Any]:
         """
@@ -228,8 +228,11 @@ class ScalekitClient:
         try:
             claims = self.__validate_token(token, options=options, audience=audience)
             return claims
+        except jwt.exceptions.InvalidTokenError as exp:
+            raise ScalekitValidateTokenFailureException(exp)
         except Exception as exp:
-            raise exp        
+            from scalekit.common.exceptions import ScalekitException
+            raise ScalekitException(str(exp))
 
     def get_idp_initiated_login_claims(self, idp_initiated_login_token: str, options: Optional[TokenValidationOptions] = None, audience = None) -> IdpInitiatedLoginClaims:
         """
@@ -248,8 +251,11 @@ class ScalekitClient:
         try:
             claims = self.__validate_token(idp_initiated_login_token, options=options, audience=audience)
             return claims
+        except jwt.exceptions.InvalidTokenError as exp:
+            raise ScalekitValidateTokenFailureException(exp)
         except Exception as exp:
-            raise exp
+            from scalekit.common.exceptions import ScalekitException
+            raise ScalekitException(str(exp))
 
     def __validate_token(
         self, token: str, options: Optional[TokenValidationOptions] = None, audience: Optional[str] = None
@@ -312,7 +318,8 @@ class ScalekitClient:
         missing_scopes = [scope for scope in required_scopes if scope not in scopes]
         
         if missing_scopes:
-            raise Exception(f"Token missing required scopes: {', '.join(missing_scopes)}")
+            from scalekit.common.exceptions import ScalekitValidateTokenFailureException
+            raise ScalekitValidateTokenFailureException(f"Token missing required scopes: {', '.join(missing_scopes)}")
         
         return True
 
@@ -404,10 +411,10 @@ class ScalekitClient:
             raise WebhookVerificationError("Invalid Signature Headers")
 
         if timestamp < (now - webhook_tolerance_in_seconds):
-            raise Exception("Message timestamp too old")
+            raise WebhookVerificationError("Message timestamp too old")
 
         if timestamp > (now + webhook_tolerance_in_seconds):
-            raise Exception("Message timestamp too new")
+            raise WebhookVerificationError("Message timestamp too new")
 
         return timestamp
 
