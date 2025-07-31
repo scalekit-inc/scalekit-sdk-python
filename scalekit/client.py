@@ -143,7 +143,7 @@ class ScalekitClient:
             access_token = response["access_token"]
             refresh_token = response.get("refresh_token")
             # Validate id_token
-            claims = self.__validate_token(id_token, validation_options=None)
+            claims = self.__validate_token(id_token, options=None)
             user = {}
             amr_claims = claims.get('amr', [])
             connection_id = amr_claims[0] if amr_claims else None
@@ -164,7 +164,7 @@ class ScalekitClient:
         except Exception as exp:
             raise exp
 
-    def validate_access_token(self, token: str, options: Optional[TokenValidationOptions] = None) -> bool:
+    def validate_access_token(self, token: str, options: Optional[TokenValidationOptions] = None, audience = None) -> bool:
         """
         Method to validate access token
 
@@ -172,12 +172,14 @@ class ScalekitClient:
         :type        : ``` str ```
         :param options : Optional validation options for issuer, audience, and scopes
         :type        : ``` TokenValidationOptions ```
+        :param audience : audience for validation (deprecated, use options.audience instead)
+        :type        : ``` str ```
 
         :returns:
             bool
         """
         try:
-            self.__validate_token(token, validation_options=options)
+            self.__validate_token(token, options=options, audience=audience)
             return True
         except jwt.exceptions.InvalidTokenError:
             return False
@@ -208,7 +210,7 @@ class ScalekitClient:
         except Exception as exp:
             raise exp
 
-    def validate_access_token_and_get_claims(self, token: str, options: Optional[TokenValidationOptions] = None) -> Dict[str, Any]:
+    def validate_access_token_and_get_claims(self, token: str, options: Optional[TokenValidationOptions] = None, audience = None) -> Dict[str, Any]:
         """
         Method to validate access token and get claims
 
@@ -216,18 +218,20 @@ class ScalekitClient:
         :type        : ``` str ```
         :param options : Optional validation options for issuer, audience, and scopes
         :type        : ``` TokenValidationOptions ```
+        :param audience : audience for validation (deprecated, use options.audience instead)
+        :type        : ``` str ```
 
         :returns:
             claims
         """
         
         try:
-            claims = self.__validate_token(token, validation_options=options)
+            claims = self.__validate_token(token, options=options, audience=audience)
             return claims
         except Exception as exp:
             raise exp        
 
-    def get_idp_initiated_login_claims(self, idp_initiated_login_token: str, options: Optional[TokenValidationOptions] = None) -> IdpInitiatedLoginClaims:
+    def get_idp_initiated_login_claims(self, idp_initiated_login_token: str, options: Optional[TokenValidationOptions] = None, audience = None) -> IdpInitiatedLoginClaims:
         """
         Method to get IDP initiated login claims
 
@@ -235,56 +239,54 @@ class ScalekitClient:
         :type        : ``` str ```
         :param options : Optional validation options for issuer and audience
         :type        : ``` TokenValidationOptions ```
+        :param audience : audience for validation (deprecated, use options.audience instead)
+        :type        : ``` str ```
 
         :returns:
             ``` IdpInitiatedLoginClaims ```
         """
         try:
-            claims = self.__validate_token(idp_initiated_login_token, validation_options=options)
+            claims = self.__validate_token(idp_initiated_login_token, options=options, audience=audience)
             return claims
         except Exception as exp:
             raise exp
 
     def __validate_token(
-        self, token: str, options: Optional[Dict] = None, audience: Optional[str] = None, validation_options: Optional[TokenValidationOptions] = None
+        self, token: str, options: Optional[TokenValidationOptions] = None, audience: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Method to validate token
 
         :param token : token
         :type        : ``` str ```
-        :param options : jwt decode options
-        :type        : ``` Dict ```
+        :param options : validation options for issuer, audience, and scopes
+        :type        : ``` TokenValidationOptions ```
         :param audience : audience for validation
         :type        : ``` str ```
-        :param validation_options : validation options for issuer, audience, and scopes
-        :type        : ``` TokenValidationOptions ```
 
         :returns:
             payload
         """
         # Convert TokenValidationOptions to jwt decode options if provided
-        if validation_options:
-            if validation_options.issuer:
-                options = options or {}
-                options["issuer"] = validation_options.issuer
-            if validation_options.audience:
-                audience = validation_options.audience[0] if len(validation_options.audience) == 1 else validation_options.audience
-                options = options or {}
-                options["verify_aud"] = True
+        jwt_options = {}
+        if options:
+            if options.issuer:
+                jwt_options["issuer"] = options.issuer
+            if options.audience:
+                audience = options.audience[0] if len(options.audience) == 1 else options.audience
+                jwt_options["verify_aud"] = True
             elif audience is None:
-                options = options or {}
-                options["verify_aud"] = False
+                jwt_options["verify_aud"] = False
         
         self.core_client.get_jwks()
         kid = jwt.get_unverified_header(token)["kid"]
         key = self.core_client.keys[kid]
 
-        payload = jwt.decode(token, key=key, algorithms="RS256", options=options, audience=audience)
+        payload = jwt.decode(token, key=key, algorithms="RS256", options=jwt_options, audience=audience)
         
         # Validate scopes if required
-        if validation_options and validation_options.required_scopes and validation_options.required_scopes:
-            self.verify_scopes(token, validation_options.required_scopes)
+        if options and options.required_scopes and options.required_scopes:
+            self.verify_scopes(token, options.required_scopes)
         
         return payload
 
@@ -325,9 +327,7 @@ class ScalekitClient:
             list[str]: Array of scopes found in the token
         """
         scopes = payload.get("scopes", [])
-        if isinstance(scopes, list):
-            return [scope for scope in scopes if scope and scope.strip()]
-        return []
+        return [scope for scope in scopes if scope and scope.strip()]
 
     def verify_webhook_payload(self, secret: str, headers: Dict[str, str], payload: [str | bytes]) -> bool:
         """
