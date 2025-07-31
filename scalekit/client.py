@@ -279,19 +279,22 @@ class ScalekitClient:
             if options.issuer:
                 jwt_options["issuer"] = options.issuer
             if options.audience:
-                audience = options.audience[0] if len(options.audience) == 1 else options.audience
+                jwt_options["audience"] = options.audience
                 jwt_options["verify_aud"] = True
-            elif audience is None:
+            elif audience is not None:
+                jwt_options["audience"] = [audience]
+                jwt_options["verify_aud"] = True
+            else:
                 jwt_options["verify_aud"] = False
         
         self.core_client.get_jwks()
         kid = jwt.get_unverified_header(token)["kid"]
         key = self.core_client.keys[kid]
 
-        payload = jwt.decode(token, key=key, algorithms="RS256", options=jwt_options, audience=audience)
+        payload = jwt.decode(token, key=key, algorithms="RS256", options=jwt_options)
         
         # Validate scopes if required
-        if options and options.required_scopes and options.required_scopes:
+        if options and options.required_scopes:
             self.verify_scopes(token, options.required_scopes)
         
         return payload
