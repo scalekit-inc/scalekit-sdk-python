@@ -207,8 +207,7 @@ class ScalekitClient:
             response = json.loads(response.content)
             return response
         except Exception as exp:
-            from scalekit.common.exceptions import ScalekitException
-            raise ScalekitException(str(exp))
+            raise exp
 
     def validate_access_token_and_get_claims(self, token: str, options: Optional[TokenValidationOptions] = None, audience = None) -> Dict[str, Any]:
         """
@@ -231,8 +230,7 @@ class ScalekitClient:
         except jwt.exceptions.InvalidTokenError as exp:
             raise ScalekitValidateTokenFailureException(exp)
         except Exception as exp:
-            from scalekit.common.exceptions import ScalekitException
-            raise ScalekitException(str(exp))
+            raise exp
 
     def get_idp_initiated_login_claims(self, idp_initiated_login_token: str, options: Optional[TokenValidationOptions] = None, audience = None) -> IdpInitiatedLoginClaims:
         """
@@ -254,8 +252,7 @@ class ScalekitClient:
         except jwt.exceptions.InvalidTokenError as exp:
             raise ScalekitValidateTokenFailureException(exp)
         except Exception as exp:
-            from scalekit.common.exceptions import ScalekitException
-            raise ScalekitException(str(exp))
+            raise exp
 
     def __validate_token(
         self, token: str, options: Optional[TokenValidationOptions] = None, audience: Optional[str] = None
@@ -321,7 +318,6 @@ class ScalekitClient:
         missing_scopes = [scope for scope in required_scopes if scope not in scopes]
         
         if missing_scopes:
-            from scalekit.common.exceptions import ScalekitValidateTokenFailureException
             raise ScalekitValidateTokenFailureException(f"Token missing required scopes: {', '.join(missing_scopes)}")
         
         return True
