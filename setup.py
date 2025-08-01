@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="scalekit-sdk-python",
-    version="2.3.0",
+    version="2.3.1",
     packages=find_packages(),
     install_requires=[
         "grpcio>=1.64.1",
