@@ -182,6 +182,8 @@ class ScalekitClient:
             return True
         except jwt.exceptions.InvalidTokenError:
             return False
+        except ScalekitValidateTokenFailureException:
+            raise
 
     def generate_client_token(self, client_id: str, client_secret: str) -> str:
         """
