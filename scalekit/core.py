@@ -26,7 +26,7 @@ class WithCall(Protocol):
 class CoreClient:
     """Class definition for Core Client"""
 
-    sdk_version = "Scalekit-Python/2.2.2"
+    sdk_version = "Scalekit-Python/2.3.0"
     api_version = "20250718"
     user_agent = f"{sdk_version} Python/{platform.python_version()} ({platform.system()}; {platform.architecture()}"
 
