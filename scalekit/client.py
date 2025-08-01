@@ -180,8 +180,8 @@ class ScalekitClient:
         try:
             self.__validate_token(token, options=options, audience=audience)
             return True
-        except jwt.exceptions.InvalidTokenError:
-            return False
+        except jwt.exceptions.InvalidTokenError as e:
+            raise ScalekitValidateTokenFailureException(f"JWT validation failed: {str(e)}")
         except ScalekitValidateTokenFailureException:
             raise
 
