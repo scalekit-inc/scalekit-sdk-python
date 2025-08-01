@@ -289,12 +289,11 @@ class ScalekitClient:
         self.core_client.get_jwks()
         kid = jwt.get_unverified_header(token)["kid"]
         key = self.core_client.keys[kid]
-        # The options dictionary is for boolean flags, not the values themselves.
+
         decode_opts = {
             "verify_aud": jwt_options.pop("verify_aud", False)
         }
 
-        # pyjwt expects issuer and audience as top-level arguments
         payload = jwt.decode(
             token,
             key=key,
@@ -303,7 +302,6 @@ class ScalekitClient:
             **jwt_options,
         )
         
-        # Validate scopes if required
         if options and options.required_scopes:
             self.verify_scopes(token, options.required_scopes)
         
@@ -331,13 +329,7 @@ class ScalekitClient:
         missing_scopes = [scope for scope in required_scopes if scope not in scopes]
         
         if missing_scopes:
-            # Enhanced error message with detailed scope information
             error_msg = f"Scope validation failed. Missing required scopes: [{', '.join(missing_scopes)}]. "
-            if scopes:
-                error_msg += f"Token contains scopes: [{', '.join(scopes)}]. "
-            else:
-                error_msg += "Token contains no scopes. "
-            error_msg += f"Required scopes: [{', '.join(required_scopes)}]"
             raise ScalekitValidateTokenFailureException(error_msg)
         return True
 
