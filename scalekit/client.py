@@ -180,8 +180,8 @@ class ScalekitClient:
         try:
             self.__validate_token(token, options=options, audience=audience)
             return True
-        except jwt.exceptions.InvalidTokenError:
-            return False
+        except jwt.exceptions.InvalidTokenError as e:
+            raise ScalekitValidateTokenFailureException(f"JWT validation failed: {str(e)}")
         except ScalekitValidateTokenFailureException:
             raise
 
@@ -290,9 +290,18 @@ class ScalekitClient:
         kid = jwt.get_unverified_header(token)["kid"]
         key = self.core_client.keys[kid]
 
-        payload = jwt.decode(token, key=key, algorithms="RS256", options=jwt_options)
+        decode_opts = {
+            "verify_aud": jwt_options.pop("verify_aud", False)
+        }
+
+        payload = jwt.decode(
+            token,
+            key=key,
+            algorithms=["RS256"],
+            options=decode_opts,
+            **jwt_options,
+        )
         
-        # Validate scopes if required
         if options and options.required_scopes:
             self.verify_scopes(token, options.required_scopes)
         
@@ -320,8 +329,8 @@ class ScalekitClient:
         missing_scopes = [scope for scope in required_scopes if scope not in scopes]
         
         if missing_scopes:
-            raise ScalekitValidateTokenFailureException(f"Token missing required scopes: {', '.join(missing_scopes)}")
-        
+            error_msg = f"Scope validation failed. Missing required scopes: [{', '.join(missing_scopes)}]. "
+            raise ScalekitValidateTokenFailureException(error_msg)
         return True
 
     def __extract_scopes_from_payload(self, payload: Dict[str, Any]) -> list[str]:
