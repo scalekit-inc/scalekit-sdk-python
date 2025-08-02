@@ -178,12 +178,10 @@ class ScalekitClient:
             bool
         """
         try:
-            self.__validate_token(token, options=options, audience=audience)
+            self.validate_token(token, options=options, audience=audience)
             return True
-        except jwt.exceptions.InvalidTokenError:
+        except Exception:
             return False
-        except ScalekitValidateTokenFailureException:
-            raise
 
     def generate_client_token(self, client_id: str, client_secret: str) -> str:
         """
@@ -227,7 +225,7 @@ class ScalekitClient:
         """
         
         try:
-            claims = self.__validate_token(token, options=options, audience=audience)
+            claims = self.validate_token(token, options=options, audience=audience)
             return claims
         except jwt.exceptions.InvalidTokenError as exp:
             raise ScalekitValidateTokenFailureException(exp)
@@ -249,14 +247,14 @@ class ScalekitClient:
             ``` IdpInitiatedLoginClaims ```
         """
         try:
-            claims = self.__validate_token(idp_initiated_login_token, options=options, audience=audience)
+            claims = self.validate_token(idp_initiated_login_token, options=options, audience=audience)
             return claims
         except jwt.exceptions.InvalidTokenError as exp:
             raise ScalekitValidateTokenFailureException(exp)
         except Exception as exp:
             raise exp
 
-    def __validate_token(
+    def validate_token(
         self, token: str, options: Optional[TokenValidationOptions] = None, audience: Optional[str] = None
     ) -> Dict[str, Any]:
         """
@@ -277,6 +275,7 @@ class ScalekitClient:
         if options:
             if options.issuer:
                 jwt_options["issuer"] = options.issuer
+                jwt_options["verify_iss"] = True
             if options.audience:
                 jwt_options["audience"] = options.audience
                 jwt_options["verify_aud"] = True
@@ -290,7 +289,18 @@ class ScalekitClient:
         kid = jwt.get_unverified_header(token)["kid"]
         key = self.core_client.keys[kid]
 
-        payload = jwt.decode(token, key=key, algorithms="RS256", options=jwt_options)
+        decode_opts = {
+            "verify_iss": jwt_options.pop("verify_iss", False),
+            "verify_aud": jwt_options.pop("verify_aud", False)
+        }
+
+        payload = jwt.decode(
+            token,
+            key=key,
+            algorithms=["RS256"],
+            options=decode_opts,
+            **jwt_options,
+        )
         
         # Validate scopes if required
         if options and options.required_scopes:
