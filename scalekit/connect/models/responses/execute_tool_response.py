@@ -1,6 +1,6 @@
 from typing import Optional, Dict, Any
 from pydantic import BaseModel, Field
-from google.protobuf import struct_pb2
+from google.protobuf.json_format import MessageToDict
 
 
 class ExecuteToolResponse(BaseModel):
@@ -29,8 +29,8 @@ class ExecuteToolResponse(BaseModel):
         # Convert protobuf Struct to dict
         data = None
         if proto_response.data:
-            data = dict(proto_response.data)
-            
+            data = MessageToDict(proto_response.data)
+
         return cls(
             data=data,
             execution_id=proto_response.execution_id if proto_response.execution_id else None
