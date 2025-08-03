@@ -1,5 +1,5 @@
 from typing import Optional, Dict, Any
-from scalekit.connect.types import ToolRequest,ExecuteToolResponse,MagicLinkResponse,ListConnectedAccountsResponse
+from scalekit.connect.types import ToolRequest,ExecuteToolResponse,MagicLinkResponse,ListConnectedAccountsResponse,DeleteConnectedAccountResponse,GetConnectedAccountAuthResponse
 
 
 class ConnectClient:
@@ -135,3 +135,73 @@ class ConnectClient:
         
         # Convert proto to our ListConnectedAccountsResponse class
         return ListConnectedAccountsResponse.from_proto(proto_response)
+    
+    def delete_connected_account(
+        self,
+        connection_name: str,
+        identifier: str,
+        **kwargs
+    ) -> DeleteConnectedAccountResponse:
+        """
+        Delete a connected account
+        
+        :param connection_name: Connector identifier (required)
+        :type: str
+        :param identifier: Connected account identifier (required)
+        :type: str
+        
+        :returns:
+            DeleteConnectedAccountResponse containing deletion status
+        """
+        # Validate required parameters
+        if not connection_name:
+            raise ValueError("connection_name is required")
+        if not identifier:
+            raise ValueError("identifier is required")
+            
+        # Call the existing connected_accounts method which returns (response, metadata) tuple
+        result_tuple = self.connected_accounts.delete_connected_account(
+            connector=connection_name,
+            identifier=identifier
+        )
+        
+        # Extract the response[0] (the actual DeleteConnectedAccountResponse proto object)
+        proto_response = result_tuple[0]
+        
+        # Convert proto to our DeleteConnectedAccountResponse class
+        return DeleteConnectedAccountResponse.from_proto(proto_response)
+    
+    def get_connected_account_auth(
+        self,
+        connection_name: str,
+        identifier: str,
+        **kwargs
+    ) -> GetConnectedAccountAuthResponse:
+        """
+        Get connected account authorization details by identifier
+        
+        :param connection_name: Connector identifier (required)
+        :type: str
+        :param identifier: Connected account identifier (required)
+        :type: str
+        
+        :returns:
+            GetConnectedAccountAuthResponse containing connected account details
+        """
+        # Validate required parameters
+        if not connection_name:
+            raise ValueError("connection_name is required")
+        if not identifier:
+            raise ValueError("identifier is required")
+            
+        # Call the existing connected_accounts method which returns (response, metadata) tuple
+        result_tuple = self.connected_accounts.get_connected_account_by_identifier(
+            connector=connection_name,
+            identifier=identifier
+        )
+        
+        # Extract the response[0] (the actual GetConnectedAccountByIdentifierResponse proto object)
+        proto_response = result_tuple[0]
+        
+        # Convert proto to our GetConnectedAccountAuthResponse class
+        return GetConnectedAccountAuthResponse.from_proto(proto_response)
