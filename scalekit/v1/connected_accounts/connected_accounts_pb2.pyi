@@ -91,18 +91,20 @@ class CreateConnectedAccountResponse(_message.Message):
     def __init__(self, connected_account: _Optional[_Union[ConnectedAccount, _Mapping]] = ...) -> None: ...
 
 class UpdateConnectedAccountRequest(_message.Message):
-    __slots__ = ("organization_id", "user_id", "connector", "identifier", "connected_account")
+    __slots__ = ("organization_id", "user_id", "connector", "identifier", "id", "connected_account")
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     USER_ID_FIELD_NUMBER: _ClassVar[int]
     CONNECTOR_FIELD_NUMBER: _ClassVar[int]
     IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
+    ID_FIELD_NUMBER: _ClassVar[int]
     CONNECTED_ACCOUNT_FIELD_NUMBER: _ClassVar[int]
     organization_id: str
     user_id: str
     connector: str
     identifier: str
+    id: str
     connected_account: UpdateConnectedAccount
-    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., connector: _Optional[str] = ..., identifier: _Optional[str] = ..., connected_account: _Optional[_Union[UpdateConnectedAccount, _Mapping]] = ...) -> None: ...
+    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., connector: _Optional[str] = ..., identifier: _Optional[str] = ..., id: _Optional[str] = ..., connected_account: _Optional[_Union[UpdateConnectedAccount, _Mapping]] = ...) -> None: ...
 
 class UpdateConnectedAccountResponse(_message.Message):
     __slots__ = ("connected_account",)
@@ -111,32 +113,42 @@ class UpdateConnectedAccountResponse(_message.Message):
     def __init__(self, connected_account: _Optional[_Union[ConnectedAccount, _Mapping]] = ...) -> None: ...
 
 class DeleteConnectedAccountRequest(_message.Message):
-    __slots__ = ("organization_id", "user_id", "connector", "identifier")
+    __slots__ = ("organization_id", "user_id", "connector", "identifier", "id")
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     USER_ID_FIELD_NUMBER: _ClassVar[int]
     CONNECTOR_FIELD_NUMBER: _ClassVar[int]
     IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
+    ID_FIELD_NUMBER: _ClassVar[int]
     organization_id: str
     user_id: str
     connector: str
     identifier: str
-    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., connector: _Optional[str] = ..., identifier: _Optional[str] = ...) -> None: ...
+    id: str
+    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., connector: _Optional[str] = ..., identifier: _Optional[str] = ..., id: _Optional[str] = ...) -> None: ...
 
 class DeleteConnectedAccountResponse(_message.Message):
     __slots__ = ()
     def __init__(self) -> None: ...
 
 class GetMagicLinkForConnectedAccountRequest(_message.Message):
-    __slots__ = ("organization_id", "user_id", "connector", "identifier")
+    __slots__ = ("organization_id", "user_id", "connector", "identifier", "id")
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     USER_ID_FIELD_NUMBER: _ClassVar[int]
     CONNECTOR_FIELD_NUMBER: _ClassVar[int]
     IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
+    ID_FIELD_NUMBER: _ClassVar[int]
     organization_id: str
     user_id: str
     connector: str
     identifier: str
-    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., connector: _Optional[str] = ..., identifier: _Optional[str] = ...) -> None: ...
+    id: str
+    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., connector: _Optional[str] = ..., identifier: _Optional[str] = ..., id: _Optional[str] = ...) -> None: ...
+
+class GetMagicLinkForConnectedAccountRedirectRequest(_message.Message):
+    __slots__ = ("redirect_to",)
+    REDIRECT_TO_FIELD_NUMBER: _ClassVar[int]
+    redirect_to: str
+    def __init__(self, redirect_to: _Optional[str] = ...) -> None: ...
 
 class GetMagicLinkForConnectedAccountResponse(_message.Message):
     __slots__ = ("link", "expiry")
@@ -146,17 +158,27 @@ class GetMagicLinkForConnectedAccountResponse(_message.Message):
     expiry: _timestamp_pb2.Timestamp
     def __init__(self, link: _Optional[str] = ..., expiry: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
+class GetMagicLinkForConnectedAccountRedirectResponse(_message.Message):
+    __slots__ = ("redirect_to", "expiry")
+    REDIRECT_TO_FIELD_NUMBER: _ClassVar[int]
+    EXPIRY_FIELD_NUMBER: _ClassVar[int]
+    redirect_to: str
+    expiry: _timestamp_pb2.Timestamp
+    def __init__(self, redirect_to: _Optional[str] = ..., expiry: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+
 class GetConnectedAccountByIdentifierRequest(_message.Message):
-    __slots__ = ("organization_id", "user_id", "connector", "identifier")
+    __slots__ = ("organization_id", "user_id", "connector", "identifier", "id")
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     USER_ID_FIELD_NUMBER: _ClassVar[int]
     CONNECTOR_FIELD_NUMBER: _ClassVar[int]
     IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
+    ID_FIELD_NUMBER: _ClassVar[int]
     organization_id: str
     user_id: str
     connector: str
     identifier: str
-    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., connector: _Optional[str] = ..., identifier: _Optional[str] = ...) -> None: ...
+    id: str
+    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., connector: _Optional[str] = ..., identifier: _Optional[str] = ..., id: _Optional[str] = ...) -> None: ...
 
 class GetConnectedAccountByIdentifierResponse(_message.Message):
     __slots__ = ("connected_account",)
@@ -165,7 +187,7 @@ class GetConnectedAccountByIdentifierResponse(_message.Message):
     def __init__(self, connected_account: _Optional[_Union[ConnectedAccount, _Mapping]] = ...) -> None: ...
 
 class ConnectedAccount(_message.Message):
-    __slots__ = ("identifier", "provider", "status", "authorization_type", "authorization_details", "token_expires_at", "updated_at", "connector", "last_used_at")
+    __slots__ = ("identifier", "provider", "status", "authorization_type", "authorization_details", "token_expires_at", "updated_at", "connector", "last_used_at", "id", "connection_id")
     IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
     PROVIDER_FIELD_NUMBER: _ClassVar[int]
     STATUS_FIELD_NUMBER: _ClassVar[int]
@@ -175,6 +197,8 @@ class ConnectedAccount(_message.Message):
     UPDATED_AT_FIELD_NUMBER: _ClassVar[int]
     CONNECTOR_FIELD_NUMBER: _ClassVar[int]
     LAST_USED_AT_FIELD_NUMBER: _ClassVar[int]
+    ID_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
     identifier: str
     provider: str
     status: ConnectorStatus
@@ -184,7 +208,9 @@ class ConnectedAccount(_message.Message):
     updated_at: _timestamp_pb2.Timestamp
     connector: str
     last_used_at: _timestamp_pb2.Timestamp
-    def __init__(self, identifier: _Optional[str] = ..., provider: _Optional[str] = ..., status: _Optional[_Union[ConnectorStatus, str]] = ..., authorization_type: _Optional[_Union[ConnectorType, str]] = ..., authorization_details: _Optional[_Union[AuthorizationDetails, _Mapping]] = ..., token_expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., connector: _Optional[str] = ..., last_used_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+    id: str
+    connection_id: str
+    def __init__(self, identifier: _Optional[str] = ..., provider: _Optional[str] = ..., status: _Optional[_Union[ConnectorStatus, str]] = ..., authorization_type: _Optional[_Union[ConnectorType, str]] = ..., authorization_details: _Optional[_Union[AuthorizationDetails, _Mapping]] = ..., token_expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., connector: _Optional[str] = ..., last_used_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., id: _Optional[str] = ..., connection_id: _Optional[str] = ...) -> None: ...
 
 class CreateConnectedAccount(_message.Message):
     __slots__ = ("authorization_details",)
@@ -199,7 +225,7 @@ class UpdateConnectedAccount(_message.Message):
     def __init__(self, authorization_details: _Optional[_Union[AuthorizationDetails, _Mapping]] = ...) -> None: ...
 
 class ConnectedAccountForList(_message.Message):
-    __slots__ = ("identifier", "provider", "status", "authorization_type", "token_expires_at", "updated_at", "connector", "last_used_at")
+    __slots__ = ("identifier", "provider", "status", "authorization_type", "token_expires_at", "updated_at", "connector", "last_used_at", "id", "connection_id")
     IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
     PROVIDER_FIELD_NUMBER: _ClassVar[int]
     STATUS_FIELD_NUMBER: _ClassVar[int]
@@ -208,6 +234,8 @@ class ConnectedAccountForList(_message.Message):
     UPDATED_AT_FIELD_NUMBER: _ClassVar[int]
     CONNECTOR_FIELD_NUMBER: _ClassVar[int]
     LAST_USED_AT_FIELD_NUMBER: _ClassVar[int]
+    ID_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
     identifier: str
     provider: str
     status: ConnectorStatus
@@ -216,7 +244,9 @@ class ConnectedAccountForList(_message.Message):
     updated_at: _timestamp_pb2.Timestamp
     connector: str
     last_used_at: _timestamp_pb2.Timestamp
-    def __init__(self, identifier: _Optional[str] = ..., provider: _Optional[str] = ..., status: _Optional[_Union[ConnectorStatus, str]] = ..., authorization_type: _Optional[_Union[ConnectorType, str]] = ..., token_expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., connector: _Optional[str] = ..., last_used_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+    id: str
+    connection_id: str
+    def __init__(self, identifier: _Optional[str] = ..., provider: _Optional[str] = ..., status: _Optional[_Union[ConnectorStatus, str]] = ..., authorization_type: _Optional[_Union[ConnectorType, str]] = ..., token_expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., connector: _Optional[str] = ..., last_used_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., id: _Optional[str] = ..., connection_id: _Optional[str] = ...) -> None: ...
 
 class AuthorizationDetails(_message.Message):
     __slots__ = ("oauth_token", "static_auth")

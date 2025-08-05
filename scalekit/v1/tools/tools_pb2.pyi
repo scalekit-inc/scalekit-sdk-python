@@ -82,14 +82,22 @@ class ListToolsResponse(_message.Message):
     def __init__(self, next_page_token: _Optional[str] = ..., total_size: _Optional[int] = ..., prev_page_token: _Optional[str] = ..., tool_names: _Optional[_Iterable[str]] = ..., tools: _Optional[_Iterable[_Union[Tool, _Mapping]]] = ...) -> None: ...
 
 class ExecuteToolRequest(_message.Message):
-    __slots__ = ("tool_name", "identifier", "params")
+    __slots__ = ("tool_name", "identifier", "params", "connected_account_id", "connector", "organization_id", "user_id")
     TOOL_NAME_FIELD_NUMBER: _ClassVar[int]
     IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
     PARAMS_FIELD_NUMBER: _ClassVar[int]
+    CONNECTED_ACCOUNT_ID_FIELD_NUMBER: _ClassVar[int]
+    CONNECTOR_FIELD_NUMBER: _ClassVar[int]
+    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
+    USER_ID_FIELD_NUMBER: _ClassVar[int]
     tool_name: str
     identifier: str
     params: _struct_pb2.Struct
-    def __init__(self, tool_name: _Optional[str] = ..., identifier: _Optional[str] = ..., params: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
+    connected_account_id: str
+    connector: str
+    organization_id: str
+    user_id: str
+    def __init__(self, tool_name: _Optional[str] = ..., identifier: _Optional[str] = ..., params: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., connected_account_id: _Optional[str] = ..., connector: _Optional[str] = ..., organization_id: _Optional[str] = ..., user_id: _Optional[str] = ...) -> None: ...
 
 class ExecuteToolResponse(_message.Message):
     __slots__ = ("data", "execution_id")

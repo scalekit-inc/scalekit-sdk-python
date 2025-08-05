@@ -26,16 +26,16 @@ class ListAuthLogRequest(_message.Message):
     def __init__(self, page_size: _Optional[int] = ..., page_token: _Optional[str] = ..., email: _Optional[str] = ..., status: _Optional[str] = ..., start_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., end_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
 class ListAuthLogResponse(_message.Message):
-    __slots__ = ("next_page_token", "previous_page_token", "total_size", "authRequests")
+    __slots__ = ("next_page_token", "prev_page_token", "total_size", "authRequests")
     NEXT_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
-    PREVIOUS_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    PREV_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
     TOTAL_SIZE_FIELD_NUMBER: _ClassVar[int]
     AUTHREQUESTS_FIELD_NUMBER: _ClassVar[int]
     next_page_token: str
-    previous_page_token: str
+    prev_page_token: str
     total_size: int
     authRequests: _containers.RepeatedCompositeFieldContainer[AuthLogRequest]
-    def __init__(self, next_page_token: _Optional[str] = ..., previous_page_token: _Optional[str] = ..., total_size: _Optional[int] = ..., authRequests: _Optional[_Iterable[_Union[AuthLogRequest, _Mapping]]] = ...) -> None: ...
+    def __init__(self, next_page_token: _Optional[str] = ..., prev_page_token: _Optional[str] = ..., total_size: _Optional[int] = ..., authRequests: _Optional[_Iterable[_Union[AuthLogRequest, _Mapping]]] = ...) -> None: ...
 
 class AuthLogRequest(_message.Message):
     __slots__ = ("organization_id", "environment_id", "connection_id", "auth_request_id", "email", "connection_type", "connection_provider", "status", "timestamp")

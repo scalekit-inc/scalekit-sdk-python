@@ -14,34 +14,42 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class Provider(_message.Message):
-    __slots__ = ("id", "identifier", "display_name", "description", "categories", "auth_patterns")
+    __slots__ = ("id", "identifier", "display_name", "description", "categories", "auth_patterns", "icon_src", "display_priority")
     ID_FIELD_NUMBER: _ClassVar[int]
     IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     CATEGORIES_FIELD_NUMBER: _ClassVar[int]
     AUTH_PATTERNS_FIELD_NUMBER: _ClassVar[int]
+    ICON_SRC_FIELD_NUMBER: _ClassVar[int]
+    DISPLAY_PRIORITY_FIELD_NUMBER: _ClassVar[int]
     id: str
     identifier: str
     display_name: str
     description: str
     categories: _containers.RepeatedScalarFieldContainer[str]
     auth_patterns: _struct_pb2.ListValue
-    def __init__(self, id: _Optional[str] = ..., identifier: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., categories: _Optional[_Iterable[str]] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ...) -> None: ...
+    icon_src: str
+    display_priority: int
+    def __init__(self, id: _Optional[str] = ..., identifier: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., categories: _Optional[_Iterable[str]] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., icon_src: _Optional[str] = ..., display_priority: _Optional[int] = ...) -> None: ...
 
 class CreateProvider(_message.Message):
-    __slots__ = ("identifier", "display_name", "description", "categories", "auth_patterns")
+    __slots__ = ("identifier", "display_name", "description", "categories", "auth_patterns", "icon_src", "display_priority")
     IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     CATEGORIES_FIELD_NUMBER: _ClassVar[int]
     AUTH_PATTERNS_FIELD_NUMBER: _ClassVar[int]
+    ICON_SRC_FIELD_NUMBER: _ClassVar[int]
+    DISPLAY_PRIORITY_FIELD_NUMBER: _ClassVar[int]
     identifier: str
     display_name: str
     description: str
     categories: _containers.RepeatedScalarFieldContainer[str]
     auth_patterns: _struct_pb2.ListValue
-    def __init__(self, identifier: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., categories: _Optional[_Iterable[str]] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ...) -> None: ...
+    icon_src: str
+    display_priority: int
+    def __init__(self, identifier: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., categories: _Optional[_Iterable[str]] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., icon_src: _Optional[str] = ..., display_priority: _Optional[int] = ...) -> None: ...
 
 class CreateProviderRequest(_message.Message):
     __slots__ = ("provider",)
@@ -56,16 +64,20 @@ class CreateProviderResponse(_message.Message):
     def __init__(self, provider: _Optional[_Union[Provider, _Mapping]] = ...) -> None: ...
 
 class UpdateProvider(_message.Message):
-    __slots__ = ("display_name", "description", "categories", "auth_patterns")
+    __slots__ = ("display_name", "description", "categories", "auth_patterns", "icon_src", "display_priority")
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     CATEGORIES_FIELD_NUMBER: _ClassVar[int]
     AUTH_PATTERNS_FIELD_NUMBER: _ClassVar[int]
+    ICON_SRC_FIELD_NUMBER: _ClassVar[int]
+    DISPLAY_PRIORITY_FIELD_NUMBER: _ClassVar[int]
     display_name: str
     description: str
     categories: _containers.RepeatedScalarFieldContainer[str]
     auth_patterns: _struct_pb2.ListValue
-    def __init__(self, display_name: _Optional[str] = ..., description: _Optional[str] = ..., categories: _Optional[_Iterable[str]] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ...) -> None: ...
+    icon_src: str
+    display_priority: int
+    def __init__(self, display_name: _Optional[str] = ..., description: _Optional[str] = ..., categories: _Optional[_Iterable[str]] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., icon_src: _Optional[str] = ..., display_priority: _Optional[int] = ...) -> None: ...
 
 class UpdateProviderRequest(_message.Message):
     __slots__ = ("identifier", "provider")

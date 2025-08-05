@@ -76,6 +76,11 @@ class ObjectType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     OIDCAuthRequest: _ClassVar[ObjectType]
     SSOError: _ClassVar[ObjectType]
     GenericError: _ClassVar[ObjectType]
+    RefreshTokens: _ClassVar[ObjectType]
+    EndSessionRequest: _ClassVar[ObjectType]
+    LogoutTokenClaims: _ClassVar[ObjectType]
+    OAuthResponse: _ClassVar[ObjectType]
+    SKErrors: _ClassVar[ObjectType]
 ACTOR_UNSPECIFIED: EventActor
 HUMAN: EventActor
 MACHINE: EventActor
@@ -122,6 +127,11 @@ OIDCRespClaims: ObjectType
 OIDCAuthRequest: ObjectType
 SSOError: ObjectType
 GenericError: ObjectType
+RefreshTokens: ObjectType
+EndSessionRequest: ObjectType
+LogoutTokenClaims: ObjectType
+OAuthResponse: ObjectType
+SKErrors: ObjectType
 
 class SendCustomEventRequest(_message.Message):
     __slots__ = ("event_type", "event")

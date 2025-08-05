@@ -44,6 +44,11 @@ class ConnectedAccountServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetConnectedAccountByIdentifierRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetConnectedAccountByIdentifierResponse.FromString,
                 )
+        self.GetMagicLinkForConnectedAccountWithRedirect = channel.unary_unary(
+                '/scalekit.v1.connected_accounts.ConnectedAccountService/GetMagicLinkForConnectedAccountWithRedirect',
+                request_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetMagicLinkForConnectedAccountRedirectRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetMagicLinkForConnectedAccountRedirectResponse.FromString,
+                )
 
 
 class ConnectedAccountServiceServicer(object):
@@ -81,8 +86,13 @@ class ConnectedAccountServiceServicer(object):
 
     def GetConnectedAccountAuth(self, request, context):
         """this will return the auth details for a connected account by its identifier
-        TODO Should we return auth details in list calls? if yes then this is not needed
         """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetMagicLinkForConnectedAccountWithRedirect(self, request, context):
+        """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -119,6 +129,11 @@ def add_ConnectedAccountServiceServicer_to_server(servicer, server):
                     servicer.GetConnectedAccountAuth,
                     request_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetConnectedAccountByIdentifierRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetConnectedAccountByIdentifierResponse.SerializeToString,
+            ),
+            'GetMagicLinkForConnectedAccountWithRedirect': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetMagicLinkForConnectedAccountWithRedirect,
+                    request_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetMagicLinkForConnectedAccountRedirectRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetMagicLinkForConnectedAccountRedirectResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -229,5 +244,22 @@ class ConnectedAccountService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connected_accounts.ConnectedAccountService/GetConnectedAccountAuth',
             scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetConnectedAccountByIdentifierRequest.SerializeToString,
             scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetConnectedAccountByIdentifierResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetMagicLinkForConnectedAccountWithRedirect(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connected_accounts.ConnectedAccountService/GetMagicLinkForConnectedAccountWithRedirect',
+            scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetMagicLinkForConnectedAccountRedirectRequest.SerializeToString,
+            scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetMagicLinkForConnectedAccountRedirectResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
