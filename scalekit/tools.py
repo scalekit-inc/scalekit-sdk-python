@@ -61,7 +61,8 @@ class ToolsClient:
         self,
         tool_name: str,
         identifier: str,
-        params: Optional[dict] = None
+        params: Optional[dict] = None,
+        connected_account_id: Optional[str] = None
     ) -> ExecuteToolResponse:
         """
         Method to execute a tool using a connected account
@@ -72,6 +73,8 @@ class ToolsClient:
         :type                   : ``` str ```
         :param params           : Parameters for tool execution
         :type                   : ``` dict ```
+        :param connected_account_id : ID of the connected account to use for tool execution
+        :type                   : ``` str ```
 
         :returns:
             Execute Tool Response
@@ -88,6 +91,7 @@ class ToolsClient:
             ExecuteToolRequest(
                 tool_name=tool_name,
                 identifier=identifier,
-                params=params_struct
+                params=params_struct,
+                connected_account_id=connected_account_id
             ),
         )

@@ -108,7 +108,8 @@ class ConnectedAccountsClient:
         identifier: str,
         connected_account: UpdateConnectedAccount,
         organization_id: Optional[str] = None,
-        user_id: Optional[str] = None
+        user_id: Optional[str] = None,
+        connected_account_id: Optional[str] = None
     ) -> UpdateConnectedAccountResponse:
         """
         Method to update a connected account
@@ -123,6 +124,8 @@ class ConnectedAccountsClient:
         :type                   : ``` str ```
         :param connected_account: Updated connected account details
         :type                   : ``` UpdateConnectedAccount ```
+        :param connected_account_id : ID of the connected account to update
+        :type                   : ``` str ```
 
         :returns:
             Update Connected Account Response
@@ -134,7 +137,8 @@ class ConnectedAccountsClient:
                 user_id=user_id,
                 connector=connector,
                 identifier=identifier,
-                connected_account=connected_account
+                connected_account=connected_account,
+                id=connected_account_id
             ),
         )
 
@@ -143,7 +147,8 @@ class ConnectedAccountsClient:
         connector: str,
         identifier: str,
         organization_id: Optional[str] = None,
-        user_id: Optional[str] = None
+        user_id: Optional[str] = None,
+        connected_account_id: Optional[str] = None
     ) -> DeleteConnectedAccountResponse:
         """
         Method to delete a connected account
@@ -156,6 +161,8 @@ class ConnectedAccountsClient:
         :type                   : ``` str ```
         :param identifier       : Identifier for the connector
         :type                   : ``` str ```
+        :param connected_account_id : ID of the connected account to delete
+        :type                   : ``` str ```
 
         :returns:
             Delete Connected Account Response
@@ -166,7 +173,8 @@ class ConnectedAccountsClient:
                 organization_id=organization_id,
                 user_id=user_id,
                 connector=connector,
-                identifier=identifier
+                identifier=identifier,
+                id=connected_account_id
             ),
         )
 
@@ -175,7 +183,8 @@ class ConnectedAccountsClient:
         connector: str,
         identifier: str,
         organization_id: Optional[str] = None,
-        user_id: Optional[str] = None
+        user_id: Optional[str] = None,
+        connected_account_id: Optional[str] = None
     ) -> GetMagicLinkForConnectedAccountResponse:
         """
         Method to get magic link for a connected account
@@ -188,6 +197,8 @@ class ConnectedAccountsClient:
         :type                   : ``` str ```
         :param identifier       : Identifier for the connector
         :type                   : ``` str ```
+        :param connected_account_id : ID of the connected account
+        :type                   : ``` str ```
 
         :returns:
             Get Magic Link For Connected Account Response
@@ -198,7 +209,8 @@ class ConnectedAccountsClient:
                 organization_id=organization_id,
                 user_id=user_id,
                 connector=connector,
-                identifier=identifier
+                identifier=identifier,
+                id=connected_account_id
             ),
         )
 
@@ -207,7 +219,8 @@ class ConnectedAccountsClient:
         connector: str,
         identifier: str,
         organization_id: Optional[str] = None,
-        user_id: Optional[str] = None
+        user_id: Optional[str] = None,
+        connected_account_id: Optional[str] = None
     ) -> GetConnectedAccountByIdentifierResponse:
         """
         Method to get connected account by identifier
@@ -220,6 +233,8 @@ class ConnectedAccountsClient:
         :type                   : ``` str ```
         :param identifier       : Identifier for the connector
         :type                   : ``` str ```
+        :param connected_account_id : ID of the connected account
+        :type                   : ``` str ```
 
         :returns:
             Get Connected Account By Identifier Response
@@ -230,6 +245,7 @@ class ConnectedAccountsClient:
                 organization_id=organization_id,
                 user_id=user_id,
                 connector=connector,
-                identifier=identifier
+                identifier=identifier,
+                id=connected_account_id
             ),
         )

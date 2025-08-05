@@ -27,10 +27,7 @@ class ConnectClient:
         tool_name: str,
         identifier: Optional[str] = None,
         tool_request: Optional[ToolRequest] = None,
-        context: Optional[Dict[str, Any]] = None,
-        connection_name: Optional[str] = None,
         connected_account_id: Optional[str] = None,
-        connection_id: Optional[str] = None,
         **kwargs
     ) -> ExecuteToolResponse:
         """
@@ -41,10 +38,7 @@ class ConnectClient:
             tool_name: Name of the tool to execute (required)
             identifier: Unique identifier for this execution (required)
             tool_request: Optional ToolRequest configuration object
-            context: Optional context dictionary
-            connection_name: Optional connector string
             connected_account_id: Optional connected account ID string
-            connection_id: Optional connection ID string
             **kwargs: Additional optional parameters
             
         Returns:
@@ -62,7 +56,8 @@ class ConnectClient:
         result_tuple = self.tools.execute_tool(
             tool_name=tool_name,
             identifier=identifier,
-            params=tool_input
+            params=tool_input,
+            connected_account_id=connected_account_id
         )
         
         # Extract the response[0] (the actual ExecuteToolResponse proto object)
@@ -94,7 +89,8 @@ class ConnectClient:
         # Call the existing connected_accounts method which returns (response, metadata) tuple
         result_tuple = self.connected_accounts.get_magic_link_for_connected_account(
             connector=connection_name,
-            identifier=identifier
+            identifier=identifier,
+            connected_account_id=connected_account_id
         )
         
         # Extract the response[0] (the actual GetMagicLinkForConnectedAccountResponse proto object)
@@ -140,6 +136,7 @@ class ConnectClient:
         self,
         connection_name: str,
         identifier: str,
+        connected_account_id: Optional[str] = None,
         **kwargs
     ) -> DeleteConnectedAccountResponse:
         """
@@ -148,6 +145,8 @@ class ConnectClient:
         :param connection_name: Connector identifier (required)
         :type: str
         :param identifier: Connected account identifier (required)
+        :type: str
+        :param connected_account_id: Connected account ID (optional)
         :type: str
         
         :returns:
@@ -162,7 +161,8 @@ class ConnectClient:
         # Call the existing connected_accounts method which returns (response, metadata) tuple
         result_tuple = self.connected_accounts.delete_connected_account(
             connector=connection_name,
-            identifier=identifier
+            identifier=identifier,
+            connected_account_id=connected_account_id
         )
         
         # Extract the response[0] (the actual DeleteConnectedAccountResponse proto object)
@@ -175,6 +175,7 @@ class ConnectClient:
         self,
         connection_name: str,
         identifier: str,
+        connected_account_id: Optional[str] = None,
         **kwargs
     ) -> GetConnectedAccountAuthResponse:
         """
@@ -183,6 +184,8 @@ class ConnectClient:
         :param connection_name: Connector identifier (required)
         :type: str
         :param identifier: Connected account identifier (required)
+        :type: str
+        :param connected_account_id: Connected account ID (optional)
         :type: str
         
         :returns:
@@ -197,7 +200,8 @@ class ConnectClient:
         # Call the existing connected_accounts method which returns (response, metadata) tuple
         result_tuple = self.connected_accounts.get_connected_account_by_identifier(
             connector=connection_name,
-            identifier=identifier
+            identifier=identifier,
+            connected_account_id=connected_account_id
         )
         
         # Extract the response[0] (the actual GetConnectedAccountByIdentifierResponse proto object)
