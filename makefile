@@ -46,3 +46,7 @@ generate_init_files:
 cleanup:
 	@echo "Step 7: Cleaning up generated folders..."
 	rm -rf $(GOOGLE_DIR) $(PROTO_DIR) $(PROTOC_DIR)
+
+test:
+	@echo "Running all tests..."
+	python -m unittest discover -s tests -p "test_*.py" -v

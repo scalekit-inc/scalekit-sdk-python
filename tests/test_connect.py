@@ -240,26 +240,37 @@ class TestConnect(BaseTest):
 
     def test_delete_connected_account_response_structure(self):
         """Method to test delete_connected_account returns DeleteConnectedAccountResponse"""
+        from scalekit.v1.connected_accounts.connected_accounts_pb2 import CreateConnectedAccount, AuthorizationDetails, OauthToken
+        import uuid
+        
+        # Generate unique identifier for this test
+        test_id = f"test_delete_{uuid.uuid4().hex[:8]}"
+        
         try:
+            # First create a connected account to delete
+            oauth_token = OauthToken(
+                access_token="test_access_token",
+                refresh_token="test_refresh_token",
+                scopes=["read", "write"]
+            )
+            auth_details = AuthorizationDetails(oauth_token=oauth_token)
+            connected_account = CreateConnectedAccount(authorization_details=auth_details)
+            
+            create_response = self.scalekit_client.connected_accounts.create_connected_account(
+                connector="GMAIL",
+                identifier=test_id,
+                connected_account=connected_account
+            )
+            
+            # Now delete the created connected account
             result = self.scalekit_client.connect.delete_connected_account(
                 connection_name="GMAIL",
-                identifier=self.test_identifier
+                identifier=test_id
             )
             self.assertIsNotNone(result)
             self.assertIsInstance(result, DeleteConnectedAccountResponse)
         except Exception as e:
-            # Expected to fail with connection/auth errors in test environment
-            expected_errors = [
-                "error deleting connected account",
-                "connected account not found", 
-                "connection not found",
-                "unauthorized access",
-                "invalid argument"
-            ]
-            self.assertTrue(
-                any(error in str(e).lower() for error in expected_errors),
-                f"Unexpected error: {e}"
-            )
+            raise e
 
     def test_get_connected_account_auth_method_exists(self):
         """Method to test get_connected_account_auth method exists"""
@@ -445,27 +456,41 @@ class TestConnect(BaseTest):
 
     def test_delete_connected_account_with_connected_account_id(self):
         """Method to test delete_connected_account with connected_account_id parameter"""
+        from scalekit.v1.connected_accounts.connected_accounts_pb2 import CreateConnectedAccount, AuthorizationDetails, OauthToken
+        import uuid
+        
+        # Generate unique identifier for this test
+        test_id = f"test_delete_id_{uuid.uuid4().hex[:8]}"
+        
         try:
+            # First create a connected account to delete
+            oauth_token = OauthToken(
+                access_token="test_access_token_id",
+                refresh_token="test_refresh_token_id",
+                scopes=["read", "write"]
+            )
+            auth_details = AuthorizationDetails(oauth_token=oauth_token)
+            connected_account = CreateConnectedAccount(authorization_details=auth_details)
+            
+            create_response = self.scalekit_client.connected_accounts.create_connected_account(
+                connector="GMAIL",
+                identifier=test_id,
+                connected_account=connected_account
+            )
+            
+            # Extract the connected_account_id from the create response
+            created_account_id = create_response[0].connected_account.id
+            
+            # Now delete the created connected account using the connected_account_id
             result = self.scalekit_client.connect.delete_connected_account(
                 connection_name="GMAIL",
-                identifier=self.test_identifier,
-                connected_account_id="ca_test123"
+                identifier=test_id,
+                connected_account_id=created_account_id
             )
             self.assertIsNotNone(result)
             self.assertIsInstance(result, DeleteConnectedAccountResponse)
         except Exception as e:
-            # Expected to fail with connection/auth errors in test environment
-            expected_errors = [
-                "error deleting connected account",
-                "connected account not found", 
-                "connection not found",
-                "unauthorized access",
-                "invalid argument"
-            ]
-            self.assertTrue(
-                any(error in str(e).lower() for error in expected_errors),
-                f"Unexpected error: {e}"
-            )
+            raise e
 
     def test_get_connected_account_auth_with_connected_account_id(self):
         """Method to test get_connected_account_auth with connected_account_id parameter"""

@@ -7,6 +7,7 @@ from scalekit.v1.connected_accounts.connected_accounts_pb2 import ConnectedAccou
 class ConnectedAccountInfo(BaseModel):
     """Connected account information"""
     
+    id: Optional[str] = Field(None, description="Unique connected account ID")
     identifier: Optional[str] = Field(None, description="Connected account identifier")
     provider: Optional[str] = Field(None, description="Provider name")
     status: Optional[str] = Field(None, description="Connection status")
@@ -59,6 +60,7 @@ class ConnectedAccountInfo(BaseModel):
                 authorization_details["static_auth"] = MessageToDict(static_auth.details)
 
         return cls(
+            id=proto_account.id if proto_account.id else None,
             identifier=proto_account.identifier,
             provider=proto_account.provider,
             status=str(proto_account.status).split('.')[-1] if proto_account.status else None,
