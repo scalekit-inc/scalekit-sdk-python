@@ -188,62 +188,45 @@ class TestConnect(BaseTest):
         self.assertIn("execution_id", response_dict)
         self.assertEqual(response_dict["execution_id"], "exec_123")
 
-    # def test_delete_connected_account_method_exists(self):
-    #     """Method to test delete_connected_account method exists"""
-    #     self.assertTrue(hasattr(self.scalekit_client.connect, 'delete_connected_account'))
-    #     self.assertTrue(callable(self.scalekit_client.connect.delete_connected_account))
-    #
-    # def test_delete_connected_account_validation(self):
-    #     """Method to test delete_connected_account parameter validation"""
-    #     # Test missing connection_name
-    #     with self.assertRaises(ValueError) as context:
-    #         self.scalekit_client.connect.delete_connected_account(
-    #             connection_name="",
-    #             identifier=self.test_identifier
-    #         )
-    #     self.assertIn("connection_name is required", str(context.exception))
-    #
-    #     # Test missing identifier
-    #     with self.assertRaises(ValueError) as context:
-    #         self.scalekit_client.connect.delete_connected_account(
-    #             connection_name="GMAIL",
-    #             identifier=""
-    #         )
-    #     self.assertIn("identifier is required", str(context.exception))
-    #
-    # def test_delete_connected_account_response_structure(self):
-    #     """Method to test delete_connected_account returns DeleteConnectedAccountResponse"""
-    #     from scalekit.v1.connected_accounts.connected_accounts_pb2 import CreateConnectedAccount, AuthorizationDetails, OauthToken
-    #     import uuid
-    #
-    #     # Generate unique identifier for this test
-    #     test_id = f"test_delete_{uuid.uuid4().hex[:8]}"
-    #
-    #     try:
-    #         # First create a connected account to delete
-    #         oauth_token = OauthToken(
-    #             access_token="test_access_token",
-    #             refresh_token="test_refresh_token",
-    #             scopes=["read", "write"]
-    #         )
-    #         auth_details = AuthorizationDetails(oauth_token=oauth_token)
-    #         connected_account = CreateConnectedAccount(authorization_details=auth_details)
-    #
-    #         create_response = self.scalekit_client.connected_accounts.create_connected_account(
-    #             connector="GMAIL",
-    #             identifier=test_id,
-    #             connected_account=connected_account
-    #         )
-    #
-    #         # Now delete the created connected account
-    #         result = self.scalekit_client.connect.delete_connected_account(
-    #             connection_name="GMAIL",
-    #             identifier=test_id
-    #         )
-    #         self.assertIsNotNone(result)
-    #         self.assertIsInstance(result, DeleteConnectedAccountResponse)
-    #     except Exception as e:
-    #         raise e
+    def test_delete_connected_account_method_exists(self):
+        """Method to test delete_connected_account method exists"""
+        self.assertTrue(hasattr(self.scalekit_client.connect, 'delete_connected_account'))
+        self.assertTrue(callable(self.scalekit_client.connect.delete_connected_account))
+
+
+    def test_delete_connected_account(self):
+        """Method to test delete_connected_account returns DeleteConnectedAccountResponse"""
+        from scalekit.v1.connected_accounts.connected_accounts_pb2 import CreateConnectedAccount, AuthorizationDetails, OauthToken
+        import uuid
+
+        # Generate unique identifier for this test
+        test_id = f"test_delete_{uuid.uuid4().hex[:8]}"
+
+        try:
+            # First create a connected account to delete
+            oauth_token = OauthToken(
+                access_token="test_access_token",
+                refresh_token="test_refresh_token",
+                scopes=["read", "write"]
+            )
+            auth_details = AuthorizationDetails(oauth_token=oauth_token)
+            connected_account = CreateConnectedAccount(authorization_details=auth_details)
+
+            self.scalekit_client.connected_accounts.create_connected_account(
+                connector="GMAIL",
+                identifier=test_id,
+                connected_account=connected_account
+            )
+
+            # Now delete the created connected account
+            result = self.scalekit_client.connect.delete_connected_account(
+                connection_name="GMAIL",
+                identifier=test_id
+            )
+            self.assertIsNotNone(result)
+            self.assertIsInstance(result, DeleteConnectedAccountResponse)
+        except Exception as e:
+            raise e
 
     def test_get_connected_account_auth_method_exists(self):
         """Method to test get_connected_account_auth method exists"""
@@ -264,26 +247,6 @@ class TestConnect(BaseTest):
         except Exception as e:
             raise e
 
-    # def test_delete_connected_account_response_structure(self):
-    #     """Method to test DeleteConnectedAccountResponse structure and methods"""
-    #     # Test creating DeleteConnectedAccountResponse directly
-    #     response = DeleteConnectedAccountResponse()
-    #
-    #     # Test to_dict method
-    #     response_dict = response.to_dict()
-    #     self.assertIsInstance(response_dict, dict)
-    #     self.assertEqual(response_dict, {})
-
-    # def test_delete_connected_account_response_from_proto(self):
-    #     """Method to test DeleteConnectedAccountResponse.from_proto method"""
-    #     # Create a mock proto-like object for testing
-    #     class MockDeleteProto:
-    #         pass
-    #
-    #     mock_proto = MockDeleteProto()
-    #     response = DeleteConnectedAccountResponse.from_proto(mock_proto)
-    #
-    #     self.assertIsInstance(response, DeleteConnectedAccountResponse)
 
 
     def test_execute_tool_with_connected_account_id(self):
