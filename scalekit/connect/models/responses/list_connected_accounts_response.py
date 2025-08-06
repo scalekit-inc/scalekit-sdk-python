@@ -3,6 +3,8 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 from google.protobuf import timestamp_pb2
 
+from scalekit.v1.connected_accounts.connected_accounts_pb2 import ConnectorStatus, ConnectorType
+
 
 class ConnectedAccountForList(BaseModel):
     """Connected account item in list response with one-to-one mapping to proto ConnectedAccountForList"""
@@ -67,8 +69,8 @@ class ConnectedAccountForList(BaseModel):
         return cls(
             identifier=proto_account.identifier if proto_account.identifier else None,
             provider=proto_account.provider if proto_account.provider else None,
-            status=proto_account.status.name if proto_account.status else None,
-            authorization_type=proto_account.authorization_type.name if proto_account.authorization_type else None,
+            status= ConnectorStatus.Name(proto_account.status) if proto_account.status else None,
+            authorization_type=ConnectorType.Name(proto_account.authorization_type) if proto_account.authorization_type else None,
             token_expires_at=token_expires_at,
             updated_at=updated_at,
             connector=proto_account.connector if proto_account.connector else None,

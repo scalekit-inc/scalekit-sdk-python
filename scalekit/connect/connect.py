@@ -49,8 +49,6 @@ class ConnectClient:
             raise ValueError("tool_input is required")
         if not tool_name:
             raise ValueError("tool_name is required")
-        if not identifier:
-            raise ValueError("identifier is required")
         
         # Call the existing tools.execute_tool which returns (response, metadata) tuple
         result_tuple = self.tools.execute_tool(
@@ -134,8 +132,8 @@ class ConnectClient:
     
     def delete_connected_account(
         self,
-        connection_name: str,
-        identifier: str,
+        connection_name: Optional[str] = None,
+        identifier: Optional[str] = None,
         connected_account_id: Optional[str] = None,
         **kwargs
     ) -> DeleteConnectedAccountResponse:
@@ -152,11 +150,6 @@ class ConnectClient:
         :returns:
             DeleteConnectedAccountResponse containing deletion status
         """
-        # Validate required parameters
-        if not connection_name:
-            raise ValueError("connection_name is required")
-        if not identifier:
-            raise ValueError("identifier is required")
             
         # Call the existing connected_accounts method which returns (response, metadata) tuple
         result_tuple = self.connected_accounts.delete_connected_account(
@@ -173,8 +166,8 @@ class ConnectClient:
     
     def get_connected_account_auth(
         self,
-        connection_name: str,
-        identifier: str,
+        connection_name: Optional[str] = None,
+        identifier: Optional[str] = None,
         connected_account_id: Optional[str] = None,
         **kwargs
     ) -> GetConnectedAccountAuthResponse:
@@ -191,11 +184,8 @@ class ConnectClient:
         :returns:
             GetConnectedAccountAuthResponse containing connected account details
         """
-        # Validate required parameters
-        if not connection_name:
-            raise ValueError("connection_name is required")
-        if not identifier:
-            raise ValueError("identifier is required")
+
+
             
         # Call the existing connected_accounts method which returns (response, metadata) tuple
         result_tuple = self.connected_accounts.get_connected_account_by_identifier(

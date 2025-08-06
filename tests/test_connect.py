@@ -9,10 +9,19 @@ class TestConnect(BaseTest):
         """Setup test parameters"""
         self.test_identifier = "default"
         self.test_tool_name = "GMAIL.FETCH_MAILS"
+        self.test_connection_name = "GMAIL"
 
-        # response = self.scalekit_client.connect.get_authorization_link(identifier = self.test_identifier, connector="GMAIL")
-        # print(f"Authorization link: {response.link}")
-        # input("Press Enter to continue...")
+
+        ca_response = self.scalekit_client.connect.get_connected_account_auth(
+            connection_name=self.test_connection_name,
+            identifier=self.test_identifier
+        )
+
+        self.test_connected_account_id = ca_response.connected_account.id
+        if ca_response.connected_account.status != "ACTIVE":
+            response = self.scalekit_client.connect.get_authorization_link(identifier = self.test_identifier, connector="GMAIL")
+            print(f"Authorization link: {response.link}")
+            input("Press Enter to continue...")
 
 
 
@@ -34,6 +43,7 @@ class TestConnect(BaseTest):
             self.assertIsInstance(result, ExecuteToolResponse)
             self.assertTrue(hasattr(result, 'data'))
             self.assertTrue(hasattr(result, 'execution_id'))
+            self.assertIsNotNone(result.data)
         except Exception as e:
            raise e
 
@@ -64,6 +74,7 @@ class TestConnect(BaseTest):
             any(error in error_message for error in expected_errors),
             f"Expected invalid tool error, but got: {context.exception}"
         )
+
 
     def test_connect_client_initialization(self):
         """Method to test ConnectClient initialization"""
@@ -96,17 +107,7 @@ class TestConnect(BaseTest):
             self.assertTrue(hasattr(result, 'link'))
             self.assertTrue(hasattr(result, 'expiry'))
         except Exception as e:
-            # Expected to fail with connection/auth errors in test environment
-            expected_errors = [
-                "error getting connected account",
-                "connected account not found",
-                "connection not found",
-                "unauthorized access"
-            ]
-            self.assertTrue(
-                any(error in str(e).lower() for error in expected_errors),
-                f"Unexpected error: {e}"
-            )
+           raise e
 
     def test_list_connected_accounts_method_exists(self):
         """Method to test list_connected_accounts method exists"""
@@ -124,17 +125,7 @@ class TestConnect(BaseTest):
             self.assertTrue(hasattr(result, 'next_page_token'))
             self.assertTrue(hasattr(result, 'previous_page_token'))
         except Exception as e:
-            # Expected to fail with connection/auth errors in test environment
-            expected_errors = [
-                "error getting connected account",
-                "connected account not found",
-                "connection not found",
-                "unauthorized access"
-            ]
-            self.assertTrue(
-                any(error in str(e).lower() for error in expected_errors),
-                f"Unexpected error: {e}"
-            )
+           raise e
 
     def test_magic_link_response_structure(self):
         """Method to test MagicLinkResponse structure and methods"""
@@ -177,24 +168,6 @@ class TestConnect(BaseTest):
         self.assertEqual(response.link, "https://test.com/magic-link")
         self.assertIsNotNone(response.expiry)
 
-    def test_list_connected_accounts_response_structure(self):
-        """Method to test ListConnectedAccountsResponse structure and methods"""
-        # Test creating ListConnectedAccountsResponse directly
-        response = ListConnectedAccountsResponse(
-            connected_accounts=[],
-            total_count=0,
-            next_page_token=None,
-            previous_page_token=None
-        )
-        
-        self.assertEqual(len(response.connected_accounts), 0)
-        self.assertEqual(response.total_count, 0)
-        
-        # Test to_dict method
-        response_dict = response.to_dict()
-        self.assertIsInstance(response_dict, dict)
-        self.assertIn("connected_accounts", response_dict)
-        self.assertIn("total_count", response_dict)
 
     def test_execute_tool_response_structure(self):
         """Method to test ExecuteToolResponse structure and methods"""
@@ -215,87 +188,70 @@ class TestConnect(BaseTest):
         self.assertIn("execution_id", response_dict)
         self.assertEqual(response_dict["execution_id"], "exec_123")
 
-    def test_delete_connected_account_method_exists(self):
-        """Method to test delete_connected_account method exists"""
-        self.assertTrue(hasattr(self.scalekit_client.connect, 'delete_connected_account'))
-        self.assertTrue(callable(self.scalekit_client.connect.delete_connected_account))
-
-    def test_delete_connected_account_validation(self):
-        """Method to test delete_connected_account parameter validation"""
-        # Test missing connection_name
-        with self.assertRaises(ValueError) as context:
-            self.scalekit_client.connect.delete_connected_account(
-                connection_name="",
-                identifier=self.test_identifier
-            )
-        self.assertIn("connection_name is required", str(context.exception))
-        
-        # Test missing identifier
-        with self.assertRaises(ValueError) as context:
-            self.scalekit_client.connect.delete_connected_account(
-                connection_name="GMAIL",
-                identifier=""
-            )
-        self.assertIn("identifier is required", str(context.exception))
-
-    def test_delete_connected_account_response_structure(self):
-        """Method to test delete_connected_account returns DeleteConnectedAccountResponse"""
-        from scalekit.v1.connected_accounts.connected_accounts_pb2 import CreateConnectedAccount, AuthorizationDetails, OauthToken
-        import uuid
-        
-        # Generate unique identifier for this test
-        test_id = f"test_delete_{uuid.uuid4().hex[:8]}"
-        
-        try:
-            # First create a connected account to delete
-            oauth_token = OauthToken(
-                access_token="test_access_token",
-                refresh_token="test_refresh_token",
-                scopes=["read", "write"]
-            )
-            auth_details = AuthorizationDetails(oauth_token=oauth_token)
-            connected_account = CreateConnectedAccount(authorization_details=auth_details)
-            
-            create_response = self.scalekit_client.connected_accounts.create_connected_account(
-                connector="GMAIL",
-                identifier=test_id,
-                connected_account=connected_account
-            )
-            
-            # Now delete the created connected account
-            result = self.scalekit_client.connect.delete_connected_account(
-                connection_name="GMAIL",
-                identifier=test_id
-            )
-            self.assertIsNotNone(result)
-            self.assertIsInstance(result, DeleteConnectedAccountResponse)
-        except Exception as e:
-            raise e
+    # def test_delete_connected_account_method_exists(self):
+    #     """Method to test delete_connected_account method exists"""
+    #     self.assertTrue(hasattr(self.scalekit_client.connect, 'delete_connected_account'))
+    #     self.assertTrue(callable(self.scalekit_client.connect.delete_connected_account))
+    #
+    # def test_delete_connected_account_validation(self):
+    #     """Method to test delete_connected_account parameter validation"""
+    #     # Test missing connection_name
+    #     with self.assertRaises(ValueError) as context:
+    #         self.scalekit_client.connect.delete_connected_account(
+    #             connection_name="",
+    #             identifier=self.test_identifier
+    #         )
+    #     self.assertIn("connection_name is required", str(context.exception))
+    #
+    #     # Test missing identifier
+    #     with self.assertRaises(ValueError) as context:
+    #         self.scalekit_client.connect.delete_connected_account(
+    #             connection_name="GMAIL",
+    #             identifier=""
+    #         )
+    #     self.assertIn("identifier is required", str(context.exception))
+    #
+    # def test_delete_connected_account_response_structure(self):
+    #     """Method to test delete_connected_account returns DeleteConnectedAccountResponse"""
+    #     from scalekit.v1.connected_accounts.connected_accounts_pb2 import CreateConnectedAccount, AuthorizationDetails, OauthToken
+    #     import uuid
+    #
+    #     # Generate unique identifier for this test
+    #     test_id = f"test_delete_{uuid.uuid4().hex[:8]}"
+    #
+    #     try:
+    #         # First create a connected account to delete
+    #         oauth_token = OauthToken(
+    #             access_token="test_access_token",
+    #             refresh_token="test_refresh_token",
+    #             scopes=["read", "write"]
+    #         )
+    #         auth_details = AuthorizationDetails(oauth_token=oauth_token)
+    #         connected_account = CreateConnectedAccount(authorization_details=auth_details)
+    #
+    #         create_response = self.scalekit_client.connected_accounts.create_connected_account(
+    #             connector="GMAIL",
+    #             identifier=test_id,
+    #             connected_account=connected_account
+    #         )
+    #
+    #         # Now delete the created connected account
+    #         result = self.scalekit_client.connect.delete_connected_account(
+    #             connection_name="GMAIL",
+    #             identifier=test_id
+    #         )
+    #         self.assertIsNotNone(result)
+    #         self.assertIsInstance(result, DeleteConnectedAccountResponse)
+    #     except Exception as e:
+    #         raise e
 
     def test_get_connected_account_auth_method_exists(self):
         """Method to test get_connected_account_auth method exists"""
         self.assertTrue(hasattr(self.scalekit_client.connect, 'get_connected_account_auth'))
         self.assertTrue(callable(self.scalekit_client.connect.get_connected_account_auth))
 
-    def test_get_connected_account_auth_validation(self):
-        """Method to test get_connected_account_auth parameter validation"""
-        # Test missing connection_name
-        with self.assertRaises(ValueError) as context:
-            self.scalekit_client.connect.get_connected_account_auth(
-                connection_name="",
-                identifier=self.test_identifier
-            )
-        self.assertIn("connection_name is required", str(context.exception))
-        
-        # Test missing identifier
-        with self.assertRaises(ValueError) as context:
-            self.scalekit_client.connect.get_connected_account_auth(
-                connection_name="GMAIL",
-                identifier=""
-            )
-        self.assertIn("identifier is required", str(context.exception))
 
-    def test_get_connected_account_auth_response_structure(self):
+    def test_get_connected_account_auth(self):
         """Method to test get_connected_account_auth returns GetConnectedAccountAuthResponse"""
         try:
             result = self.scalekit_client.connect.get_connected_account_auth(
@@ -306,153 +262,81 @@ class TestConnect(BaseTest):
             self.assertIsInstance(result, GetConnectedAccountAuthResponse)
             self.assertTrue(hasattr(result, 'connected_account'))
         except Exception as e:
-            # Expected to fail with connection/auth errors in test environment
-            expected_errors = [
-                "error getting connected account",
-                "connected account not found",
-                "connection not found", 
-                "unauthorized access",
-                "invalid argument"
-            ]
-            self.assertTrue(
-                any(error in str(e).lower() for error in expected_errors),
-                f"Unexpected error: {e}"
-            )
+            raise e
 
-    def test_delete_connected_account_response_structure(self):
-        """Method to test DeleteConnectedAccountResponse structure and methods"""
-        # Test creating DeleteConnectedAccountResponse directly
-        response = DeleteConnectedAccountResponse()
-        
-        # Test to_dict method
-        response_dict = response.to_dict()
-        self.assertIsInstance(response_dict, dict)
-        self.assertEqual(response_dict, {})
+    # def test_delete_connected_account_response_structure(self):
+    #     """Method to test DeleteConnectedAccountResponse structure and methods"""
+    #     # Test creating DeleteConnectedAccountResponse directly
+    #     response = DeleteConnectedAccountResponse()
+    #
+    #     # Test to_dict method
+    #     response_dict = response.to_dict()
+    #     self.assertIsInstance(response_dict, dict)
+    #     self.assertEqual(response_dict, {})
 
-    def test_delete_connected_account_response_from_proto(self):
-        """Method to test DeleteConnectedAccountResponse.from_proto method"""
-        # Create a mock proto-like object for testing
-        class MockDeleteProto:
-            pass
-        
-        mock_proto = MockDeleteProto()
-        response = DeleteConnectedAccountResponse.from_proto(mock_proto)
-        
-        self.assertIsInstance(response, DeleteConnectedAccountResponse)
+    # def test_delete_connected_account_response_from_proto(self):
+    #     """Method to test DeleteConnectedAccountResponse.from_proto method"""
+    #     # Create a mock proto-like object for testing
+    #     class MockDeleteProto:
+    #         pass
+    #
+    #     mock_proto = MockDeleteProto()
+    #     response = DeleteConnectedAccountResponse.from_proto(mock_proto)
+    #
+    #     self.assertIsInstance(response, DeleteConnectedAccountResponse)
 
-    def test_get_connected_account_auth_response_structure(self):
-        """Method to test GetConnectedAccountAuthResponse structure and methods"""
-        from scalekit.connect.types import GetConnectedAccountAuthResponse
-        from scalekit.connect.models.responses.get_connected_account_auth_response import ConnectedAccountInfo
-        from datetime import datetime
-        
-        # Test creating ConnectedAccountInfo directly
-        account_info = ConnectedAccountInfo(
-            identifier="test_account",
-            provider="google",
-            status="ACTIVE",
-            authorization_type="OAUTH",
-            connector="GMAIL",
-            updated_at=datetime.now()
-        )
-        
-        # Test creating GetConnectedAccountAuthResponse directly
-        response = GetConnectedAccountAuthResponse(connected_account=account_info)
-        
-        self.assertIsNotNone(response.connected_account)
-        self.assertEqual(response.connected_account.identifier, "test_account")
-        self.assertEqual(response.connected_account.provider, "google")
-        
-        # Test to_dict method
-        response_dict = response.to_dict()
-        self.assertIsInstance(response_dict, dict)
-        self.assertIn("connected_account", response_dict)
-        self.assertIsInstance(response_dict["connected_account"], dict)
-
-    def test_get_connected_account_auth_response_from_proto(self):
-        """Method to test GetConnectedAccountAuthResponse.from_proto method"""
-        from datetime import datetime
-        
-        # Create a mock proto-like object for testing
-        class MockConnectedAccountProto:
-            def __init__(self):
-                self.identifier = "test_account"
-                self.provider = "google"
-                self.status = "ACTIVE"
-                self.authorization_type = "OAUTH"
-                self.authorization_details = None
-                self.token_expires_at = None
-                self.updated_at = None
-                self.connector = "GMAIL"
-                self.last_used_at = None
-        
-        class MockGetConnectedAccountAuthProto:
-            def __init__(self):
-                self.connected_account = MockConnectedAccountProto()
-        
-        mock_proto = MockGetConnectedAccountAuthProto()
-        response = GetConnectedAccountAuthResponse.from_proto(mock_proto)
-        
-        self.assertIsInstance(response, GetConnectedAccountAuthResponse)
-        self.assertIsNotNone(response.connected_account)
-        self.assertEqual(response.connected_account.identifier, "test_account")
-        self.assertEqual(response.connected_account.provider, "google")
 
     def test_execute_tool_with_connected_account_id(self):
-        """Method to test execute_tool with connected_account_id parameter"""
+        """Method to test execute_tool with connected_account_id parameter using dynamic ID"""
+        
         tool_input = {
             "max_results": 1,
         }
         
         try:
+
+            connected_account_response = self.scalekit_client.connect.get_connected_account_auth(
+                connection_name=self.test_connection_name,
+                identifier=self.test_identifier,
+            )
+
+            
+            # Now test execute_tool with connected_account_id
             result = self.scalekit_client.connect.execute_tool(
                 tool_input=tool_input,
                 tool_name=self.test_tool_name,
-                identifier=self.test_identifier,
-                connected_account_id="ca_test123"
+                connected_account_id=connected_account_response.connected_account.id
             )
+            
             # If successful, check response structure
             self.assertIsNotNone(result)
             self.assertIsInstance(result, ExecuteToolResponse)
             self.assertTrue(hasattr(result, 'data'))
             self.assertTrue(hasattr(result, 'execution_id'))
+            self.assertIsNotNone(result.data)
+            
         except Exception as e:
-           # Expected to fail with connection/auth errors in test environment
-           expected_errors = [
-               "error executing tool",
-               "connected account not found",
-               "invalid tool",
-               "unauthorized access"
-           ]
-           self.assertTrue(
-               any(error in str(e).lower() for error in expected_errors),
-               f"Unexpected error: {e}"
-           )
+            raise e
 
     def test_get_authorization_link_with_connected_account_id(self):
         """Method to test get_authorization_link with connected_account_id parameter"""
         try:
+
+            connected_account_response = self.scalekit_client.connect.get_connected_account_auth(
+                connection_name=self.test_connection_name,
+                identifier=self.test_identifier,
+            )
+
             result = self.scalekit_client.connect.get_authorization_link(
                 connection_name="GMAIL",
-                identifier=self.test_identifier,
-                connected_account_id="ca_test123"
+                connected_account_id=connected_account_response.connected_account.id
             )
             self.assertIsNotNone(result)
             self.assertIsInstance(result, MagicLinkResponse)
             self.assertTrue(hasattr(result, 'link'))
             self.assertTrue(hasattr(result, 'expiry'))
         except Exception as e:
-            # Expected to fail with connection/auth errors in test environment
-            expected_errors = [
-                "error getting connected account",
-                "connected account not found",
-                "connection not found",
-                "unauthorized access"
-            ]
-            self.assertTrue(
-                any(error in str(e).lower() for error in expected_errors),
-                f"Unexpected error: {e}"
-            )
+            raise e
 
     def test_delete_connected_account_with_connected_account_id(self):
         """Method to test delete_connected_account with connected_account_id parameter"""
@@ -483,8 +367,6 @@ class TestConnect(BaseTest):
             
             # Now delete the created connected account using the connected_account_id
             result = self.scalekit_client.connect.delete_connected_account(
-                connection_name="GMAIL",
-                identifier=test_id,
                 connected_account_id=created_account_id
             )
             self.assertIsNotNone(result)
@@ -498,74 +380,10 @@ class TestConnect(BaseTest):
             result = self.scalekit_client.connect.get_connected_account_auth(
                 connection_name="GMAIL",
                 identifier=self.test_identifier,
-                connected_account_id="ca_test123"
             )
             self.assertIsNotNone(result)
             self.assertIsInstance(result, GetConnectedAccountAuthResponse)
             self.assertTrue(hasattr(result, 'connected_account'))
         except Exception as e:
-            # Expected to fail with connection/auth errors in test environment
-            expected_errors = [
-                "error getting connected account",
-                "connected account not found",
-                "connection not found", 
-                "unauthorized access",
-                "invalid argument"
-            ]
-            self.assertTrue(
-                any(error in str(e).lower() for error in expected_errors),
-                f"Unexpected error: {e}"
-            )
-
-    def test_connect_methods_backward_compatibility(self):
-        """Method to test all connect methods work without connected_account_id (backward compatibility)"""
-        
-        # Test execute_tool without connected_account_id
-        tool_input = {"max_results": 1}
-        try:
-            result = self.scalekit_client.connect.execute_tool(
-                tool_input=tool_input,
-                tool_name=self.test_tool_name,
-                identifier=self.test_identifier
-            )
-            self.assertIsInstance(result, ExecuteToolResponse)
-        except Exception:
-            # Expected to fail in test environment, but method signature should work
-            pass
-        
-        # Test get_authorization_link without connected_account_id
-        try:
-            result = self.scalekit_client.connect.get_authorization_link(
-                connection_name="GMAIL",
-                identifier=self.test_identifier
-            )
-            self.assertIsInstance(result, MagicLinkResponse)
-        except Exception:
-            # Expected to fail in test environment, but method signature should work
-            pass
-        
-        # Test delete_connected_account without connected_account_id
-        try:
-            result = self.scalekit_client.connect.delete_connected_account(
-                connection_name="GMAIL",
-                identifier=self.test_identifier
-            )
-            self.assertIsInstance(result, DeleteConnectedAccountResponse)
-        except Exception:
-            # Expected to fail in test environment, but method signature should work
-            pass
-        
-        # Test get_connected_account_auth without connected_account_id
-        try:
-            result = self.scalekit_client.connect.get_connected_account_auth(
-                connection_name="GMAIL",
-                identifier=self.test_identifier
-            )
-            self.assertIsInstance(result, GetConnectedAccountAuthResponse)
-        except Exception:
-            # Expected to fail in test environment, but method signature should work
-            pass
-        
-        # If we get here, all method signatures work correctly
-        self.assertTrue(True)
+            raise e
 

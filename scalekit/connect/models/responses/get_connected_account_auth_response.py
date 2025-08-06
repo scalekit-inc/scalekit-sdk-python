@@ -1,7 +1,7 @@
 from typing import Optional, Dict, Any
 from datetime import datetime
 from pydantic import BaseModel, Field
-from scalekit.v1.connected_accounts.connected_accounts_pb2 import ConnectedAccount
+from scalekit.v1.connected_accounts.connected_accounts_pb2 import ConnectedAccount, ConnectorStatus, ConnectorType
 
 
 class ConnectedAccountInfo(BaseModel):
@@ -63,8 +63,8 @@ class ConnectedAccountInfo(BaseModel):
             id=proto_account.id if proto_account.id else None,
             identifier=proto_account.identifier,
             provider=proto_account.provider,
-            status=str(proto_account.status).split('.')[-1] if proto_account.status else None,
-            authorization_type=str(proto_account.authorization_type).split('.')[-1] if proto_account.authorization_type else None,
+            status= ConnectorStatus.Name(proto_account.status) if proto_account.status else None,
+            authorization_type=ConnectorType.Name(proto_account.authorization_type) if proto_account.authorization_type else None,
             authorization_details=authorization_details,
             token_expires_at=token_expires_at,
             updated_at=updated_at,
