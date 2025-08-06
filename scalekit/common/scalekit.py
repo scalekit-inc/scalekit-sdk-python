@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional
+from typing import Optional, List
 
 
 class GrantType(Enum):
@@ -64,11 +64,24 @@ class IdpInitiatedLoginClaims:
 class LogoutUrlOptions:
     """Options for logout URL generation"""
     def __init__(
-        self,
-        id_token_hint: Optional[str] = None,
-        post_logout_redirect_uri: Optional[str] = None,
-        state: Optional[str] = None
+            self,
+            id_token_hint: Optional[str] = None,
+            post_logout_redirect_uri: Optional[str] = None,
+            state: Optional[str] = None
     ):
         self.id_token_hint = id_token_hint
         self.post_logout_redirect_uri = post_logout_redirect_uri
         self.state = state
+
+
+class TokenValidationOptions:
+    """Options for token validation including issuer, audience, and scope validation"""
+    def __init__(
+            self,
+            issuer: Optional[str] = None,
+            audience: Optional[List[str]] = None,
+            required_scopes: Optional[List[str]] = None
+    ):
+        self.issuer = issuer
+        self.audience = audience
+        self.required_scopes = required_scopes
