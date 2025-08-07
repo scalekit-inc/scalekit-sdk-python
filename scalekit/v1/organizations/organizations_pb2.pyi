@@ -22,9 +22,11 @@ DESCRIPTOR: _descriptor.FileDescriptor
 
 class Feature(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
+    FEATURE_UNSPECIFIED: _ClassVar[Feature]
     UNSPECIFIED: _ClassVar[Feature]
     dir_sync: _ClassVar[Feature]
     sso: _ClassVar[Feature]
+FEATURE_UNSPECIFIED: Feature
 UNSPECIFIED: Feature
 dir_sync: Feature
 sso: Feature
@@ -271,12 +273,14 @@ class UpdateOrganizationSessionSettingsResponse(_message.Message):
     def __init__(self, environment_id: _Optional[str] = ..., organization_id: _Optional[str] = ..., session_settings: _Optional[_Union[OrganizationSessionSettings, _Mapping]] = ...) -> None: ...
 
 class OrganizationUserManagementSettings(_message.Message):
-    __slots__ = ("jit_provisioning_with_sso_enabled", "sync_user_profile_on_signin")
+    __slots__ = ("jit_provisioning_with_sso_enabled", "sync_user_profile_on_signin", "deprecated_placeholder")
     JIT_PROVISIONING_WITH_SSO_ENABLED_FIELD_NUMBER: _ClassVar[int]
     SYNC_USER_PROFILE_ON_SIGNIN_FIELD_NUMBER: _ClassVar[int]
+    DEPRECATED_PLACEHOLDER_FIELD_NUMBER: _ClassVar[int]
     jit_provisioning_with_sso_enabled: _wrappers_pb2.BoolValue
     sync_user_profile_on_signin: _wrappers_pb2.BoolValue
-    def __init__(self, jit_provisioning_with_sso_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., sync_user_profile_on_signin: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ...) -> None: ...
+    deprecated_placeholder: _struct_pb2.NullValue
+    def __init__(self, jit_provisioning_with_sso_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., sync_user_profile_on_signin: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., deprecated_placeholder: _Optional[_Union[_struct_pb2.NullValue, str]] = ...) -> None: ...
 
 class OrganizationSessionSettings(_message.Message):
     __slots__ = ("absolute_session_timeout", "session_management_enabled", "idle_session_timeout", "idle_session_enabled")

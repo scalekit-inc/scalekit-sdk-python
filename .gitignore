@@ -162,3 +162,6 @@ tags
 proto
 /.idea
 /.history
+
+# Claude Code documentation
+CLAUDE.md

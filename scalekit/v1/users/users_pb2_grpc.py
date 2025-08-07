@@ -70,6 +70,31 @@ class UserServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.ListOrganizationUsersRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.ListOrganizationUsersResponse.FromString,
                 )
+        self.ResendInvite = channel.unary_unary(
+                '/scalekit.v1.users.UserService/ResendInvite',
+                request_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.ResendInviteRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.ResendInviteResponse.FromString,
+                )
+        self.ListUserRoles = channel.unary_unary(
+                '/scalekit.v1.users.UserService/ListUserRoles',
+                request_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.ListUserRolesRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.ListUserRolesResponse.FromString,
+                )
+        self.AssignUserRoles = channel.unary_unary(
+                '/scalekit.v1.users.UserService/AssignUserRoles',
+                request_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.AssignUserRolesRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.AssignUserRolesResponse.FromString,
+                )
+        self.RemoveUserRole = channel.unary_unary(
+                '/scalekit.v1.users.UserService/RemoveUserRole',
+                request_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.RemoveUserRoleRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
+        self.ListUserPermissions = channel.unary_unary(
+                '/scalekit.v1.users.UserService/ListUserPermissions',
+                request_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.ListUserPermissionsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.ListUserPermissionsResponse.FromString,
+                )
 
 
 class UserServiceServicer(object):
@@ -145,6 +170,37 @@ class UserServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ResendInvite(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListUserRoles(self, request, context):
+        """User Role Management
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def AssignUserRoles(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def RemoveUserRole(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListUserPermissions(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_UserServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -202,6 +258,31 @@ def add_UserServiceServicer_to_server(servicer, server):
                     servicer.ListOrganizationUsers,
                     request_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.ListOrganizationUsersRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.ListOrganizationUsersResponse.SerializeToString,
+            ),
+            'ResendInvite': grpc.unary_unary_rpc_method_handler(
+                    servicer.ResendInvite,
+                    request_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.ResendInviteRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.ResendInviteResponse.SerializeToString,
+            ),
+            'ListUserRoles': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListUserRoles,
+                    request_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.ListUserRolesRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.ListUserRolesResponse.SerializeToString,
+            ),
+            'AssignUserRoles': grpc.unary_unary_rpc_method_handler(
+                    servicer.AssignUserRoles,
+                    request_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.AssignUserRolesRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.AssignUserRolesResponse.SerializeToString,
+            ),
+            'RemoveUserRole': grpc.unary_unary_rpc_method_handler(
+                    servicer.RemoveUserRole,
+                    request_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.RemoveUserRoleRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'ListUserPermissions': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListUserPermissions,
+                    request_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.ListUserPermissionsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.ListUserPermissionsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -397,5 +478,90 @@ class UserService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.users.UserService/ListOrganizationUsers',
             scalekit_dot_v1_dot_users_dot_users__pb2.ListOrganizationUsersRequest.SerializeToString,
             scalekit_dot_v1_dot_users_dot_users__pb2.ListOrganizationUsersResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ResendInvite(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.users.UserService/ResendInvite',
+            scalekit_dot_v1_dot_users_dot_users__pb2.ResendInviteRequest.SerializeToString,
+            scalekit_dot_v1_dot_users_dot_users__pb2.ResendInviteResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListUserRoles(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.users.UserService/ListUserRoles',
+            scalekit_dot_v1_dot_users_dot_users__pb2.ListUserRolesRequest.SerializeToString,
+            scalekit_dot_v1_dot_users_dot_users__pb2.ListUserRolesResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def AssignUserRoles(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.users.UserService/AssignUserRoles',
+            scalekit_dot_v1_dot_users_dot_users__pb2.AssignUserRolesRequest.SerializeToString,
+            scalekit_dot_v1_dot_users_dot_users__pb2.AssignUserRolesResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def RemoveUserRole(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.users.UserService/RemoveUserRole',
+            scalekit_dot_v1_dot_users_dot_users__pb2.RemoveUserRoleRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListUserPermissions(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.users.UserService/ListUserPermissions',
+            scalekit_dot_v1_dot_users_dot_users__pb2.ListUserPermissionsRequest.SerializeToString,
+            scalekit_dot_v1_dot_users_dot_users__pb2.ListUserPermissionsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

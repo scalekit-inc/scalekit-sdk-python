@@ -75,6 +75,66 @@ class RolesServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.UpdateDefaultRolesRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.UpdateDefaultRolesResponse.FromString,
                 )
+        self.UpdateDefaultOrganizationRoles = channel.unary_unary(
+                '/scalekit.v1.roles.RolesService/UpdateDefaultOrganizationRoles',
+                request_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.UpdateDefaultOrganizationRolesRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.UpdateDefaultOrganizationRolesResponse.FromString,
+                )
+        self.ListDependentRoles = channel.unary_unary(
+                '/scalekit.v1.roles.RolesService/ListDependentRoles',
+                request_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.ListDependentRolesRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.ListDependentRolesResponse.FromString,
+                )
+        self.DeleteRoleBase = channel.unary_unary(
+                '/scalekit.v1.roles.RolesService/DeleteRoleBase',
+                request_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.DeleteRoleBaseRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
+        self.CreatePermission = channel.unary_unary(
+                '/scalekit.v1.roles.RolesService/CreatePermission',
+                request_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.CreatePermissionRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.CreatePermissionResponse.FromString,
+                )
+        self.GetPermission = channel.unary_unary(
+                '/scalekit.v1.roles.RolesService/GetPermission',
+                request_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.GetPermissionRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.GetPermissionResponse.FromString,
+                )
+        self.UpdatePermission = channel.unary_unary(
+                '/scalekit.v1.roles.RolesService/UpdatePermission',
+                request_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.UpdatePermissionRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.UpdatePermissionResponse.FromString,
+                )
+        self.ListPermissions = channel.unary_unary(
+                '/scalekit.v1.roles.RolesService/ListPermissions',
+                request_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.ListPermissionsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.ListPermissionsResponse.FromString,
+                )
+        self.DeletePermission = channel.unary_unary(
+                '/scalekit.v1.roles.RolesService/DeletePermission',
+                request_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.DeletePermissionRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
+        self.ListRolePermissions = channel.unary_unary(
+                '/scalekit.v1.roles.RolesService/ListRolePermissions',
+                request_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.ListRolePermissionsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.ListRolePermissionsResponse.FromString,
+                )
+        self.AddPermissionsToRole = channel.unary_unary(
+                '/scalekit.v1.roles.RolesService/AddPermissionsToRole',
+                request_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.AddPermissionsToRoleRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.AddPermissionsToRoleResponse.FromString,
+                )
+        self.RemovePermissionFromRole = channel.unary_unary(
+                '/scalekit.v1.roles.RolesService/RemovePermissionFromRole',
+                request_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.RemovePermissionFromRoleRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
+        self.ListEffectiveRolePermissions = channel.unary_unary(
+                '/scalekit.v1.roles.RolesService/ListEffectiveRolePermissions',
+                request_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.ListEffectiveRolePermissionsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.ListEffectiveRolePermissionsResponse.FromString,
+                )
 
 
 class RolesServiceServicer(object):
@@ -152,6 +212,106 @@ class RolesServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def UpdateDefaultOrganizationRoles(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListDependentRoles(self, request, context):
+        """Role Hierarchy Management RPCs
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeleteRoleBase(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def CreatePermission(self, request, context):
+        """Permission Management RPCs
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetPermission(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdatePermission(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListPermissions(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeletePermission(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListRolePermissions(self, request, context):
+        """rpc BatchCreatePermissions(BatchCreatePermissionsRequest) returns (BatchCreatePermissionsResponse) {
+        option (scalekit.v1.options.auth_option) = {authentication_type: WORKSPACE_SESSION};
+
+        option (google.api.http) = {
+        post: "/api/v1/permissions/batch"
+        body: "*"
+        };
+
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        tags: "Permissions"
+        summary: "Batch Create/Update Permissions"
+        description: "Create or update multiple permissions in a single operation"
+
+        responses: {
+        key: "200"
+        value: {
+        description: "Batch operation completed successfully"
+        schema: {
+        json_schema: {ref: ".scalekit.v1.roles.BatchCreatePermissionsResponse"}
+        }
+        }
+        }
+        };
+        }
+
+        Role-Permission Management RPCs
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def AddPermissionsToRole(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def RemovePermissionFromRole(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListEffectiveRolePermissions(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_RolesServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -214,6 +374,66 @@ def add_RolesServiceServicer_to_server(servicer, server):
                     servicer.UpdateDefaultRoles,
                     request_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.UpdateDefaultRolesRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.UpdateDefaultRolesResponse.SerializeToString,
+            ),
+            'UpdateDefaultOrganizationRoles': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateDefaultOrganizationRoles,
+                    request_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.UpdateDefaultOrganizationRolesRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.UpdateDefaultOrganizationRolesResponse.SerializeToString,
+            ),
+            'ListDependentRoles': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListDependentRoles,
+                    request_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.ListDependentRolesRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.ListDependentRolesResponse.SerializeToString,
+            ),
+            'DeleteRoleBase': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteRoleBase,
+                    request_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.DeleteRoleBaseRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'CreatePermission': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreatePermission,
+                    request_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.CreatePermissionRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.CreatePermissionResponse.SerializeToString,
+            ),
+            'GetPermission': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetPermission,
+                    request_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.GetPermissionRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.GetPermissionResponse.SerializeToString,
+            ),
+            'UpdatePermission': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdatePermission,
+                    request_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.UpdatePermissionRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.UpdatePermissionResponse.SerializeToString,
+            ),
+            'ListPermissions': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListPermissions,
+                    request_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.ListPermissionsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.ListPermissionsResponse.SerializeToString,
+            ),
+            'DeletePermission': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeletePermission,
+                    request_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.DeletePermissionRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'ListRolePermissions': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListRolePermissions,
+                    request_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.ListRolePermissionsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.ListRolePermissionsResponse.SerializeToString,
+            ),
+            'AddPermissionsToRole': grpc.unary_unary_rpc_method_handler(
+                    servicer.AddPermissionsToRole,
+                    request_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.AddPermissionsToRoleRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.AddPermissionsToRoleResponse.SerializeToString,
+            ),
+            'RemovePermissionFromRole': grpc.unary_unary_rpc_method_handler(
+                    servicer.RemovePermissionFromRole,
+                    request_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.RemovePermissionFromRoleRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'ListEffectiveRolePermissions': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListEffectiveRolePermissions,
+                    request_deserializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.ListEffectiveRolePermissionsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_roles_dot_roles__pb2.ListEffectiveRolePermissionsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -426,5 +646,209 @@ class RolesService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.roles.RolesService/UpdateDefaultRoles',
             scalekit_dot_v1_dot_roles_dot_roles__pb2.UpdateDefaultRolesRequest.SerializeToString,
             scalekit_dot_v1_dot_roles_dot_roles__pb2.UpdateDefaultRolesResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def UpdateDefaultOrganizationRoles(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.roles.RolesService/UpdateDefaultOrganizationRoles',
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.UpdateDefaultOrganizationRolesRequest.SerializeToString,
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.UpdateDefaultOrganizationRolesResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListDependentRoles(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.roles.RolesService/ListDependentRoles',
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.ListDependentRolesRequest.SerializeToString,
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.ListDependentRolesResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DeleteRoleBase(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.roles.RolesService/DeleteRoleBase',
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.DeleteRoleBaseRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def CreatePermission(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.roles.RolesService/CreatePermission',
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.CreatePermissionRequest.SerializeToString,
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.CreatePermissionResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetPermission(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.roles.RolesService/GetPermission',
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.GetPermissionRequest.SerializeToString,
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.GetPermissionResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def UpdatePermission(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.roles.RolesService/UpdatePermission',
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.UpdatePermissionRequest.SerializeToString,
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.UpdatePermissionResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListPermissions(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.roles.RolesService/ListPermissions',
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.ListPermissionsRequest.SerializeToString,
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.ListPermissionsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DeletePermission(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.roles.RolesService/DeletePermission',
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.DeletePermissionRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListRolePermissions(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.roles.RolesService/ListRolePermissions',
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.ListRolePermissionsRequest.SerializeToString,
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.ListRolePermissionsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def AddPermissionsToRole(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.roles.RolesService/AddPermissionsToRole',
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.AddPermissionsToRoleRequest.SerializeToString,
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.AddPermissionsToRoleResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def RemovePermissionFromRole(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.roles.RolesService/RemovePermissionFromRole',
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.RemovePermissionFromRoleRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListEffectiveRolePermissions(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.roles.RolesService/ListEffectiveRolePermissions',
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.ListEffectiveRolePermissionsRequest.SerializeToString,
+            scalekit_dot_v1_dot_roles_dot_roles__pb2.ListEffectiveRolePermissionsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

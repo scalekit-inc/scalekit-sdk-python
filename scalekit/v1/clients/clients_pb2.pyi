@@ -6,6 +6,7 @@ from google.protobuf import any_pb2 as _any_pb2
 from google.protobuf import duration_pb2 as _duration_pb2
 from google.protobuf import empty_pb2 as _empty_pb2
 from google.protobuf import field_mask_pb2 as _field_mask_pb2
+from google.protobuf import struct_pb2 as _struct_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
 from google.protobuf import wrappers_pb2 as _wrappers_pb2
 from protoc_gen_openapiv2.options import annotations_pb2 as _annotations_pb2_1
@@ -48,7 +49,7 @@ class CreateResourceRequest(_message.Message):
     def __init__(self, resource: _Optional[_Union[CreateResource, _Mapping]] = ...) -> None: ...
 
 class CreateResource(_message.Message):
-    __slots__ = ("resource_type", "name", "description", "resource_uri", "access_token_expiry", "refresh_token_expiry", "disable_dynamic_client_registration", "logo_uri", "provider", "resource_id")
+    __slots__ = ("resource_type", "name", "description", "resource_uri", "access_token_expiry", "refresh_token_expiry", "disable_dynamic_client_registration", "logo_uri", "provider", "resource_id", "scopes")
     RESOURCE_TYPE_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
@@ -59,6 +60,7 @@ class CreateResource(_message.Message):
     LOGO_URI_FIELD_NUMBER: _ClassVar[int]
     PROVIDER_FIELD_NUMBER: _ClassVar[int]
     RESOURCE_ID_FIELD_NUMBER: _ClassVar[int]
+    SCOPES_FIELD_NUMBER: _ClassVar[int]
     resource_type: ResourceType
     name: str
     description: str
@@ -69,7 +71,8 @@ class CreateResource(_message.Message):
     logo_uri: str
     provider: str
     resource_id: str
-    def __init__(self, resource_type: _Optional[_Union[ResourceType, str]] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., resource_uri: _Optional[str] = ..., access_token_expiry: _Optional[int] = ..., refresh_token_expiry: _Optional[int] = ..., disable_dynamic_client_registration: bool = ..., logo_uri: _Optional[str] = ..., provider: _Optional[str] = ..., resource_id: _Optional[str] = ...) -> None: ...
+    scopes: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, resource_type: _Optional[_Union[ResourceType, str]] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., resource_uri: _Optional[str] = ..., access_token_expiry: _Optional[int] = ..., refresh_token_expiry: _Optional[int] = ..., disable_dynamic_client_registration: bool = ..., logo_uri: _Optional[str] = ..., provider: _Optional[str] = ..., resource_id: _Optional[str] = ..., scopes: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class ResourceClient(_message.Message):
     __slots__ = ("name", "description", "scopes", "audience", "custom_claims", "expiry", "redirect_uri")
@@ -148,7 +151,7 @@ class Application(_message.Message):
     def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., resource_id: _Optional[str] = ..., description: _Optional[str] = ..., application_type: _Optional[_Union[ResourceType, str]] = ..., disable_dynamic_client_registration: bool = ..., logo_uri: _Optional[str] = ..., access_token_expiry: _Optional[int] = ..., refresh_token_expiry: _Optional[int] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., provider: _Optional[str] = ...) -> None: ...
 
 class Resource(_message.Message):
-    __slots__ = ("id", "name", "resource_uri", "description", "resource_type", "disable_dynamic_client_registration", "logo_uri", "access_token_expiry", "refresh_token_expiry", "create_time", "update_time", "provider", "resource_id")
+    __slots__ = ("id", "name", "resource_uri", "description", "resource_type", "disable_dynamic_client_registration", "logo_uri", "access_token_expiry", "refresh_token_expiry", "create_time", "update_time", "provider", "protected_metadata", "protected_metadata_uri", "resource_id", "scopes")
     ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     RESOURCE_URI_FIELD_NUMBER: _ClassVar[int]
@@ -161,7 +164,10 @@ class Resource(_message.Message):
     CREATE_TIME_FIELD_NUMBER: _ClassVar[int]
     UPDATE_TIME_FIELD_NUMBER: _ClassVar[int]
     PROVIDER_FIELD_NUMBER: _ClassVar[int]
+    PROTECTED_METADATA_FIELD_NUMBER: _ClassVar[int]
+    PROTECTED_METADATA_URI_FIELD_NUMBER: _ClassVar[int]
     RESOURCE_ID_FIELD_NUMBER: _ClassVar[int]
+    SCOPES_FIELD_NUMBER: _ClassVar[int]
     id: str
     name: str
     resource_uri: str
@@ -174,8 +180,11 @@ class Resource(_message.Message):
     create_time: _timestamp_pb2.Timestamp
     update_time: _timestamp_pb2.Timestamp
     provider: str
+    protected_metadata: _struct_pb2.Struct
+    protected_metadata_uri: str
     resource_id: str
-    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., resource_uri: _Optional[str] = ..., description: _Optional[str] = ..., resource_type: _Optional[_Union[ResourceType, str]] = ..., disable_dynamic_client_registration: bool = ..., logo_uri: _Optional[str] = ..., access_token_expiry: _Optional[int] = ..., refresh_token_expiry: _Optional[int] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., provider: _Optional[str] = ..., resource_id: _Optional[str] = ...) -> None: ...
+    scopes: _containers.RepeatedCompositeFieldContainer[Scope]
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., resource_uri: _Optional[str] = ..., description: _Optional[str] = ..., resource_type: _Optional[_Union[ResourceType, str]] = ..., disable_dynamic_client_registration: bool = ..., logo_uri: _Optional[str] = ..., access_token_expiry: _Optional[int] = ..., refresh_token_expiry: _Optional[int] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., provider: _Optional[str] = ..., protected_metadata: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., protected_metadata_uri: _Optional[str] = ..., resource_id: _Optional[str] = ..., scopes: _Optional[_Iterable[_Union[Scope, _Mapping]]] = ...) -> None: ...
 
 class RegisterClientRequest(_message.Message):
     __slots__ = ("res_id", "client")
@@ -254,15 +263,17 @@ class ListResourcesResponse(_message.Message):
     def __init__(self, total_size: _Optional[int] = ..., next_page_token: _Optional[str] = ..., resources: _Optional[_Iterable[_Union[Resource, _Mapping]]] = ...) -> None: ...
 
 class UpdateResourceRequest(_message.Message):
-    __slots__ = ("resource_id", "resource")
+    __slots__ = ("resource_id", "resource", "update_mask")
     RESOURCE_ID_FIELD_NUMBER: _ClassVar[int]
     RESOURCE_FIELD_NUMBER: _ClassVar[int]
+    UPDATE_MASK_FIELD_NUMBER: _ClassVar[int]
     resource_id: str
     resource: UpdateResource
-    def __init__(self, resource_id: _Optional[str] = ..., resource: _Optional[_Union[UpdateResource, _Mapping]] = ...) -> None: ...
+    update_mask: _field_mask_pb2.FieldMask
+    def __init__(self, resource_id: _Optional[str] = ..., resource: _Optional[_Union[UpdateResource, _Mapping]] = ..., update_mask: _Optional[_Union[_field_mask_pb2.FieldMask, _Mapping]] = ...) -> None: ...
 
 class UpdateResource(_message.Message):
-    __slots__ = ("name", "description", "resource_uri", "access_token_expiry", "refresh_token_expiry", "disable_dynamic_client_registration", "logo_uri", "provider", "resource_id")
+    __slots__ = ("name", "description", "resource_uri", "access_token_expiry", "refresh_token_expiry", "disable_dynamic_client_registration", "logo_uri", "provider", "resource_id", "scopes")
     NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     RESOURCE_URI_FIELD_NUMBER: _ClassVar[int]
@@ -272,6 +283,7 @@ class UpdateResource(_message.Message):
     LOGO_URI_FIELD_NUMBER: _ClassVar[int]
     PROVIDER_FIELD_NUMBER: _ClassVar[int]
     RESOURCE_ID_FIELD_NUMBER: _ClassVar[int]
+    SCOPES_FIELD_NUMBER: _ClassVar[int]
     name: str
     description: str
     resource_uri: str
@@ -281,7 +293,8 @@ class UpdateResource(_message.Message):
     logo_uri: str
     provider: str
     resource_id: str
-    def __init__(self, name: _Optional[str] = ..., description: _Optional[str] = ..., resource_uri: _Optional[str] = ..., access_token_expiry: _Optional[int] = ..., refresh_token_expiry: _Optional[int] = ..., disable_dynamic_client_registration: bool = ..., logo_uri: _Optional[str] = ..., provider: _Optional[str] = ..., resource_id: _Optional[str] = ...) -> None: ...
+    scopes: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, name: _Optional[str] = ..., description: _Optional[str] = ..., resource_uri: _Optional[str] = ..., access_token_expiry: _Optional[int] = ..., refresh_token_expiry: _Optional[int] = ..., disable_dynamic_client_registration: bool = ..., logo_uri: _Optional[str] = ..., provider: _Optional[str] = ..., resource_id: _Optional[str] = ..., scopes: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class UpdateResourceResponse(_message.Message):
     __slots__ = ("resource",)
