@@ -177,7 +177,7 @@ class ConnectClient:
         # Convert proto to our DeleteConnectedAccountResponse class
         return DeleteConnectedAccountResponse.from_proto(proto_response)
     
-    def get_connected_account_auth(
+    def get_connected_account(
         self,
         connection_name: Optional[str] = None,
         identifier: Optional[str] = None,
@@ -233,7 +233,7 @@ class ConnectClient:
             
         return filtered
     
-    def premodifier(self, tool_names: ToolNames, **kwargs: Any):
+    def pre_modifier(self, tool_names: ToolNames, **kwargs: Any):
         """Decorator for pre-modification that registers with this Connect instance
         
         Usage:
@@ -248,7 +248,7 @@ class ConnectClient:
             return func
         return decorator
     
-    def postmodifier(self, tool_names: ToolNames, **kwargs: Any):
+    def post_modifier(self, tool_names: ToolNames, **kwargs: Any):
         """Decorator for post-modification that registers with this Connect instance
         
         Usage:

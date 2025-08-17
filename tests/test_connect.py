@@ -13,7 +13,7 @@ class TestConnect(BaseTest):
         self.test_connection_name = "GMAIL"
 
 
-        ca_response = self.scalekit_client.connect.get_connected_account_auth(
+        ca_response = self.scalekit_client.connect.get_connected_account(
             connection_name=self.test_connection_name,
             identifier=self.test_identifier
         )
@@ -232,13 +232,13 @@ class TestConnect(BaseTest):
     def test_get_connected_account_auth_method_exists(self):
         """Method to test get_connected_account_auth method exists"""
         self.assertTrue(hasattr(self.scalekit_client.connect, 'get_connected_account_auth'))
-        self.assertTrue(callable(self.scalekit_client.connect.get_connected_account_auth))
+        self.assertTrue(callable(self.scalekit_client.connect.get_connected_account))
 
 
     def test_get_connected_account_auth(self):
         """Method to test get_connected_account_auth returns GetConnectedAccountAuthResponse"""
         try:
-            result = self.scalekit_client.connect.get_connected_account_auth(
+            result = self.scalekit_client.connect.get_connected_account(
                 connection_name="GMAIL",
                 identifier=self.test_identifier
             )
@@ -259,7 +259,7 @@ class TestConnect(BaseTest):
         
         try:
 
-            connected_account_response = self.scalekit_client.connect.get_connected_account_auth(
+            connected_account_response = self.scalekit_client.connect.get_connected_account(
                 connection_name=self.test_connection_name,
                 identifier=self.test_identifier,
             )
@@ -286,7 +286,7 @@ class TestConnect(BaseTest):
         """Method to test get_authorization_link with connected_account_id parameter"""
         try:
 
-            connected_account_response = self.scalekit_client.connect.get_connected_account_auth(
+            connected_account_response = self.scalekit_client.connect.get_connected_account(
                 connection_name=self.test_connection_name,
                 identifier=self.test_identifier,
             )
@@ -341,7 +341,7 @@ class TestConnect(BaseTest):
     def test_get_connected_account_auth_with_connected_account_id(self):
         """Method to test get_connected_account_auth with connected_account_id parameter"""
         try:
-            result = self.scalekit_client.connect.get_connected_account_auth(
+            result = self.scalekit_client.connect.get_connected_account(
                 connection_name="GMAIL",
                 identifier=self.test_identifier,
             )
@@ -418,7 +418,7 @@ class TestConnect(BaseTest):
     def test_premodifier_decorator(self):
         """Test premodifier decorator functionality"""
         # Use the decorator to create a pre-modifier
-        @self.scalekit_client.connect.premodifier(tool_names="TEST_TOOL")
+        @self.scalekit_client.connect.pre_modifier(tool_names="TEST_TOOL")
         def test_pre_modifier(tool_name, data):
             data["modified"] = True
             return data
@@ -431,7 +431,7 @@ class TestConnect(BaseTest):
     def test_postmodifier_decorator(self):
         """Test postmodifier decorator functionality"""
         # Use the decorator to create a post-modifier
-        @self.scalekit_client.connect.postmodifier(tool_names="TEST_TOOL")
+        @self.scalekit_client.connect.post_modifier(tool_names="TEST_TOOL")
         def test_post_modifier(tool_name, data):
             data.test_modified = True
             return data
@@ -444,7 +444,7 @@ class TestConnect(BaseTest):
     def test_premodifier_with_parameters(self):
         """Test premodifier decorator with additional parameters"""
         # Use the decorator with additional parameters
-        @self.scalekit_client.connect.premodifier(tool_names="TEST_TOOL", priority=1, enabled=True)
+        @self.scalekit_client.connect.pre_modifier(tool_names="TEST_TOOL", priority=1, enabled=True)
         def test_pre_modifier_with_params(tool_name, data):
             return data
         
@@ -457,7 +457,7 @@ class TestConnect(BaseTest):
     def test_modifier_with_multiple_tool_names(self):
         """Test modifier with multiple tool names"""
         # Create modifier for multiple tools
-        @self.scalekit_client.connect.premodifier(tool_names=["TOOL1", "TOOL2", "TOOL3"])
+        @self.scalekit_client.connect.pre_modifier(tool_names=["TOOL1", "TOOL2", "TOOL3"])
         def multi_tool_modifier(tool_name, data):
             return data
         
@@ -472,13 +472,13 @@ class TestConnect(BaseTest):
         execution_order = []
         
         # Create multiple pre-modifiers
-        @self.scalekit_client.connect.premodifier(tool_names="ORDER_TEST")
+        @self.scalekit_client.connect.pre_modifier(tool_names="ORDER_TEST")
         def first_modifier(tool_name, data):
             execution_order.append("first")
             data["first"] = True
             return data
         
-        @self.scalekit_client.connect.premodifier(tool_names="ORDER_TEST")
+        @self.scalekit_client.connect.pre_modifier(tool_names="ORDER_TEST")
         def second_modifier(tool_name, data):
             execution_order.append("second")
             data["second"] = True
@@ -497,12 +497,12 @@ class TestConnect(BaseTest):
         )
         
         # Add modifier to first instance
-        @self.scalekit_client.connect.premodifier(tool_names="ISOLATION_TEST")
+        @self.scalekit_client.connect.pre_modifier(tool_names="ISOLATION_TEST")
         def first_instance_modifier(tool_name, data):
             return data
         
         # Add modifier to second instance
-        @second_connect.premodifier(tool_names="ISOLATION_TEST")
+        @second_connect.pre_modifier(tool_names="ISOLATION_TEST")
         def second_instance_modifier(tool_name, data):
             return data
         
