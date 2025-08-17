@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List, Dict, Any
 
 from scalekit.core import CoreClient
 from scalekit.v1.mcp.mcp_pb2 import *

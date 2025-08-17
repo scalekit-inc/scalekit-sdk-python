@@ -1,4 +1,5 @@
 from basetest import BaseTest
+from scalekit.connect.models.tool_mapping import ToolMapping
 from scalekit.connect.types import ExecuteToolResponse, MagicLinkResponse, ListConnectedAccountsResponse, DeleteConnectedAccountResponse, GetConnectedAccountAuthResponse
 from scalekit.connect.modifier import Modifier
 
@@ -513,4 +514,46 @@ class TestConnect(BaseTest):
         self.assertEqual(len(first_modifiers), 1)
         self.assertEqual(len(second_modifiers), 1)
         self.assertNotEqual(first_modifiers[0].func, second_modifiers[0].func)
+
+    def test_create_mcp_method_exists(self):
+        """Method to test create_mcp method exists"""
+        self.assertTrue(hasattr(self.scalekit_client.connect, 'create_mcp'))
+        self.assertTrue(callable(self.scalekit_client.connect.create_mcp))
+
+    def test_create_mcp_success(self):
+        """Method to test create_mcp creates MCP server successfully"""
+        import uuid
+        from scalekit.connect.types import CreateMcpResponse
+        
+        # Generate unique identifier for this test
+        test_identifier = 'default'
+        
+        # Define test MCP configuration
+        tool_mappings = [
+            ToolMapping(
+                tool_names=["gmail_fetch_mails", "gmail_send_mails"],
+                connection_name="GMAIL",
+            )
+        ]
+        
+        try:
+            # Create MCP server
+            result = self.scalekit_client.connect.create_mcp(
+                identifier=test_identifier,
+                tool_mappings=tool_mappings,
+            )
+            
+            # Verify response structure
+            self.assertIsNotNone(result)
+            self.assertIsInstance(result, CreateMcpResponse)
+            self.assertTrue(hasattr(result, 'id'))
+            self.assertTrue(hasattr(result, 'identifier'))
+            self.assertTrue(hasattr(result, 'url'))
+            print(result.url)
+            
+            # Verify the created MCP has expected values
+            self.assertIsNotNone(result.id)
+            
+        except Exception as e:
+            raise e
 
