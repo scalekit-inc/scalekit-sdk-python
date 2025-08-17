@@ -41,7 +41,7 @@ BEARER_TOKEN: ConnectorType
 CUSTOM: ConnectorType
 
 class ListConnectedAccountsRequest(_message.Message):
-    __slots__ = ("organization_id", "user_id", "connector", "identifier", "provider", "page_size", "page_token")
+    __slots__ = ("organization_id", "user_id", "connector", "identifier", "provider", "page_size", "page_token", "query")
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     USER_ID_FIELD_NUMBER: _ClassVar[int]
     CONNECTOR_FIELD_NUMBER: _ClassVar[int]
@@ -49,6 +49,7 @@ class ListConnectedAccountsRequest(_message.Message):
     PROVIDER_FIELD_NUMBER: _ClassVar[int]
     PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
     PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    QUERY_FIELD_NUMBER: _ClassVar[int]
     organization_id: str
     user_id: str
     connector: str
@@ -56,9 +57,32 @@ class ListConnectedAccountsRequest(_message.Message):
     provider: str
     page_size: int
     page_token: str
-    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., connector: _Optional[str] = ..., identifier: _Optional[str] = ..., provider: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ...) -> None: ...
+    query: str
+    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., connector: _Optional[str] = ..., identifier: _Optional[str] = ..., provider: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ..., query: _Optional[str] = ...) -> None: ...
 
 class ListConnectedAccountsResponse(_message.Message):
+    __slots__ = ("connected_accounts", "total_size", "next_page_token", "prev_page_token")
+    CONNECTED_ACCOUNTS_FIELD_NUMBER: _ClassVar[int]
+    TOTAL_SIZE_FIELD_NUMBER: _ClassVar[int]
+    NEXT_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    PREV_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    connected_accounts: _containers.RepeatedCompositeFieldContainer[ConnectedAccountForList]
+    total_size: int
+    next_page_token: str
+    prev_page_token: str
+    def __init__(self, connected_accounts: _Optional[_Iterable[_Union[ConnectedAccountForList, _Mapping]]] = ..., total_size: _Optional[int] = ..., next_page_token: _Optional[str] = ..., prev_page_token: _Optional[str] = ...) -> None: ...
+
+class SearchConnectedAccountsRequest(_message.Message):
+    __slots__ = ("query", "page_size", "page_token")
+    QUERY_FIELD_NUMBER: _ClassVar[int]
+    PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
+    PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    query: str
+    page_size: int
+    page_token: str
+    def __init__(self, query: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ...) -> None: ...
+
+class SearchConnectedAccountsResponse(_message.Message):
     __slots__ = ("connected_accounts", "total_size", "next_page_token", "prev_page_token")
     CONNECTED_ACCOUNTS_FIELD_NUMBER: _ClassVar[int]
     TOTAL_SIZE_FIELD_NUMBER: _ClassVar[int]

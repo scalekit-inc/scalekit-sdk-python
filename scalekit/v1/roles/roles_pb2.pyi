@@ -18,12 +18,11 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class Role(_message.Message):
-    __slots__ = ("id", "name", "display_name", "description", "default", "default_creator", "default_member", "extends", "permissions", "dependent_roles_count")
+    __slots__ = ("id", "name", "display_name", "description", "default_creator", "default_member", "extends", "permissions", "dependent_roles_count")
     ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
-    DEFAULT_FIELD_NUMBER: _ClassVar[int]
     DEFAULT_CREATOR_FIELD_NUMBER: _ClassVar[int]
     DEFAULT_MEMBER_FIELD_NUMBER: _ClassVar[int]
     EXTENDS_FIELD_NUMBER: _ClassVar[int]
@@ -33,13 +32,12 @@ class Role(_message.Message):
     name: str
     display_name: str
     description: str
-    default: bool
     default_creator: bool
     default_member: bool
     extends: str
     permissions: _containers.RepeatedCompositeFieldContainer[Permission]
     dependent_roles_count: int
-    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., default: bool = ..., default_creator: bool = ..., default_member: bool = ..., extends: _Optional[str] = ..., permissions: _Optional[_Iterable[_Union[Permission, _Mapping]]] = ..., dependent_roles_count: _Optional[int] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., default_creator: bool = ..., default_member: bool = ..., extends: _Optional[str] = ..., permissions: _Optional[_Iterable[_Union[Permission, _Mapping]]] = ..., dependent_roles_count: _Optional[int] = ...) -> None: ...
 
 class CreateRole(_message.Message):
     __slots__ = ("name", "display_name", "description", "extends", "permissions")
@@ -82,10 +80,12 @@ class CreateRoleResponse(_message.Message):
     def __init__(self, role: _Optional[_Union[Role, _Mapping]] = ...) -> None: ...
 
 class GetRoleRequest(_message.Message):
-    __slots__ = ("role_name",)
+    __slots__ = ("role_name", "include")
     ROLE_NAME_FIELD_NUMBER: _ClassVar[int]
+    INCLUDE_FIELD_NUMBER: _ClassVar[int]
     role_name: str
-    def __init__(self, role_name: _Optional[str] = ...) -> None: ...
+    include: str
+    def __init__(self, role_name: _Optional[str] = ..., include: _Optional[str] = ...) -> None: ...
 
 class GetRoleResponse(_message.Message):
     __slots__ = ("role",)
@@ -156,12 +156,14 @@ class CreateOrganizationRoleResponse(_message.Message):
     def __init__(self, role: _Optional[_Union[Role, _Mapping]] = ...) -> None: ...
 
 class GetOrganizationRoleRequest(_message.Message):
-    __slots__ = ("org_id", "role_name")
+    __slots__ = ("org_id", "role_name", "include")
     ORG_ID_FIELD_NUMBER: _ClassVar[int]
     ROLE_NAME_FIELD_NUMBER: _ClassVar[int]
+    INCLUDE_FIELD_NUMBER: _ClassVar[int]
     org_id: str
     role_name: str
-    def __init__(self, org_id: _Optional[str] = ..., role_name: _Optional[str] = ...) -> None: ...
+    include: str
+    def __init__(self, org_id: _Optional[str] = ..., role_name: _Optional[str] = ..., include: _Optional[str] = ...) -> None: ...
 
 class GetOrganizationRoleResponse(_message.Message):
     __slots__ = ("role",)
@@ -170,10 +172,12 @@ class GetOrganizationRoleResponse(_message.Message):
     def __init__(self, role: _Optional[_Union[Role, _Mapping]] = ...) -> None: ...
 
 class ListOrganizationRolesRequest(_message.Message):
-    __slots__ = ("org_id",)
+    __slots__ = ("org_id", "include")
     ORG_ID_FIELD_NUMBER: _ClassVar[int]
+    INCLUDE_FIELD_NUMBER: _ClassVar[int]
     org_id: str
-    def __init__(self, org_id: _Optional[str] = ...) -> None: ...
+    include: str
+    def __init__(self, org_id: _Optional[str] = ..., include: _Optional[str] = ...) -> None: ...
 
 class ListOrganizationRolesResponse(_message.Message):
     __slots__ = ("roles",)
@@ -262,34 +266,26 @@ class UpdateDefaultRole(_message.Message):
     def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ...) -> None: ...
 
 class Permission(_message.Message):
-    __slots__ = ("id", "name", "display_name", "description", "tags", "create_time", "update_time")
+    __slots__ = ("id", "name", "description", "create_time", "update_time")
     ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
-    DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
-    TAGS_FIELD_NUMBER: _ClassVar[int]
     CREATE_TIME_FIELD_NUMBER: _ClassVar[int]
     UPDATE_TIME_FIELD_NUMBER: _ClassVar[int]
     id: str
     name: str
-    display_name: str
     description: str
-    tags: _containers.RepeatedScalarFieldContainer[str]
     create_time: _timestamp_pb2.Timestamp
     update_time: _timestamp_pb2.Timestamp
-    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., tags: _Optional[_Iterable[str]] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
 class CreatePermission(_message.Message):
-    __slots__ = ("name", "display_name", "description", "tags")
+    __slots__ = ("name", "description")
     NAME_FIELD_NUMBER: _ClassVar[int]
-    DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
-    TAGS_FIELD_NUMBER: _ClassVar[int]
     name: str
-    display_name: str
     description: str
-    tags: _containers.RepeatedScalarFieldContainer[str]
-    def __init__(self, name: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., tags: _Optional[_Iterable[str]] = ...) -> None: ...
+    def __init__(self, name: _Optional[str] = ..., description: _Optional[str] = ...) -> None: ...
 
 class CreatePermissionRequest(_message.Message):
     __slots__ = ("permission",)
@@ -338,14 +334,16 @@ class ListPermissionsRequest(_message.Message):
     def __init__(self, page_token: _Optional[str] = ..., page_size: _Optional[int] = ...) -> None: ...
 
 class ListPermissionsResponse(_message.Message):
-    __slots__ = ("permissions", "next_page_token", "total_count")
+    __slots__ = ("permissions", "prev_page_token", "next_page_token", "total_size")
     PERMISSIONS_FIELD_NUMBER: _ClassVar[int]
+    PREV_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
     NEXT_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
-    TOTAL_COUNT_FIELD_NUMBER: _ClassVar[int]
+    TOTAL_SIZE_FIELD_NUMBER: _ClassVar[int]
     permissions: _containers.RepeatedCompositeFieldContainer[Permission]
+    prev_page_token: str
     next_page_token: str
-    total_count: int
-    def __init__(self, permissions: _Optional[_Iterable[_Union[Permission, _Mapping]]] = ..., next_page_token: _Optional[str] = ..., total_count: _Optional[int] = ...) -> None: ...
+    total_size: int
+    def __init__(self, permissions: _Optional[_Iterable[_Union[Permission, _Mapping]]] = ..., prev_page_token: _Optional[str] = ..., next_page_token: _Optional[str] = ..., total_size: _Optional[int] = ...) -> None: ...
 
 class DeletePermissionRequest(_message.Message):
     __slots__ = ("permission_name",)
