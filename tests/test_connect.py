@@ -1,6 +1,5 @@
 from basetest import BaseTest
-from scalekit.connect.models.tool_mapping import ToolMapping
-from scalekit.connect.types import ExecuteToolResponse, MagicLinkResponse, ListConnectedAccountsResponse, DeleteConnectedAccountResponse, GetConnectedAccountAuthResponse
+from scalekit.connect.types import ExecuteToolResponse, MagicLinkResponse, ListConnectedAccountsResponse, DeleteConnectedAccountResponse, GetConnectedAccountAuthResponse, ToolMapping
 from scalekit.connect.modifier import Modifier
 
 

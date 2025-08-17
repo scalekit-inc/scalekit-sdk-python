@@ -8,6 +8,7 @@ from .models.responses.get_connected_account_auth_response import GetConnectedAc
 from .models.responses.create_mcp_response import CreateMcpResponse
 from .models.responses.get_mcp_response import GetMcpResponse
 from .models.tool_input_output import ToolInput, ToolOutput
+from .models.tool_mapping import ToolMapping
 
 
 __all__ = [
@@ -21,5 +22,6 @@ __all__ = [
     'CreateMcpResponse',
     'GetMcpResponse',
     'ToolInput',
-    'ToolOutput'
+    'ToolOutput',
+    'ToolMapping',
 ]
