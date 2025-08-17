@@ -1,8 +1,13 @@
-from typing import List, Union, Any, Dict, Optional, Literal
+from typing import List, Union, Any, Dict, Optional, Literal, Callable
+from .models.tool_input_output import ToolInput, ToolOutput
 
 # Type definitions
 ModifierType = Literal["pre", "post"]
 ToolNames = Union[str, List[str]]
+PreModifierFunction = Callable[[ToolInput], ToolInput]
+PostModifierFunction = Callable[[ToolOutput], ToolOutput]
+ToolModifierFunction = Union[PreModifierFunction, PostModifierFunction]
+ToolIO = Union[ToolInput, ToolOutput]
 
 class Modifier:
     """A modifier that can transform inputs (pre) or outputs (post) for specific tools"""
@@ -20,26 +25,29 @@ class Modifier:
             self.tool_names = tool_names
             
         self.type: ModifierType = modifier_type
-        self.func = None  # Will hold the actual modifier function
-        self.params: Dict[str, Any] = kwargs  # Store additional parameters
+        self.func:Optional[ToolModifierFunction] = None  # Will hold the actual modifier function
         
-    def apply(self, tool_name: str, data: Any) -> Any:
+    def apply(self, tool_name: str, data: ToolIO) -> ToolIO:
         """Apply this modifier if the tool_name matches"""
         if tool_name in self.tool_names and self.func is not None:
-            return self.func(tool_name, data)
+            return self.func(data)
         return data
 
 # Stateless utility functions
 def apply_modifiers(
     tool_name: str, 
-    data: Any, 
+    data: ToolIO,
     modifiers: List[Modifier], 
     modifier_type: ModifierType
-) -> Any:
+) -> ToolIO:
     """Apply all modifiers of a specific type for a tool"""
     modified_data = data
-    
-    # Filter modifiers that match the tool and type
+
+    """
+    TODO optimize this filtering with a dict, 
+    Add validation to ensure modifiers are unique per tool
+    """
+
     applicable_modifiers = [
         m for m in modifiers 
         if m.type == modifier_type and tool_name in m.tool_names
@@ -51,10 +59,10 @@ def apply_modifiers(
     
     return modified_data
 
-def apply_pre_modifiers(tool_name: str, data: Any, modifiers: List[Modifier]) -> Any:
+def apply_pre_modifiers(tool_name: str, data: ToolIO, modifiers: List[Modifier]) -> ToolIO:
     """Convenience function to apply pre-modifiers"""
     return apply_modifiers(tool_name, data, modifiers, "pre")
 
-def apply_post_modifiers(tool_name: str, data: Any, modifiers: List[Modifier]) -> Any:
+def apply_post_modifiers(tool_name: str, data: ToolIO, modifiers: List[Modifier]) -> ToolIO:
     """Convenience function to apply post-modifiers"""
     return apply_modifiers(tool_name, data, modifiers, "post")

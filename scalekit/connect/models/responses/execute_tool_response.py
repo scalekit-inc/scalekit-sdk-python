@@ -1,12 +1,15 @@
 from typing import Optional, Dict, Any
+
+from  ..tool_input_output import ToolOutput
 from pydantic import BaseModel, Field
 from google.protobuf.json_format import MessageToDict
+
 
 
 class ExecuteToolResponse(BaseModel):
     """Execute tool response with one-to-one mapping to proto ExecuteToolResponse"""
     
-    data: Optional[Dict[str, Any]] = Field(
+    data: Optional[ToolOutput] = Field(
         None,
         description="Free-flowing JSON parameters for the tool execution"
     )

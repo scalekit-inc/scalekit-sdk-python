@@ -1,9 +1,12 @@
 from typing import Optional, Dict, Any, List
-from scalekit.connect.types import ToolRequest,ExecuteToolResponse,MagicLinkResponse,ListConnectedAccountsResponse,DeleteConnectedAccountResponse,GetConnectedAccountAuthResponse
+
+from scalekit.connect.types import ToolRequest,ExecuteToolResponse,MagicLinkResponse,ListConnectedAccountsResponse,DeleteConnectedAccountResponse,GetConnectedAccountAuthResponse,ToolInput,ToolOutput
 from scalekit.connect.modifier import (
     Modifier, ModifierType, ToolNames,
     apply_pre_modifiers, apply_post_modifiers
 )
+
+
 
 
 class ConnectClient:
@@ -28,7 +31,7 @@ class ConnectClient:
 
     def execute_tool(
         self,
-        tool_input: Dict[str, Any],
+        tool_input:ToolInput,
         tool_name: str,
         identifier: Optional[str] = None,
         tool_request: Optional[ToolRequest] = None,
@@ -73,7 +76,7 @@ class ConnectClient:
         response = ExecuteToolResponse.from_proto(proto_response)
         
         # Apply post-modifications to the result
-        modified_response = apply_post_modifiers(tool_name, response, self._modifiers)
+        modified_response = apply_post_modifiers(tool_name, response.data, self._modifiers)
         
         return modified_response
     
