@@ -240,7 +240,7 @@ class UpdateMembership(_message.Message):
     def __init__(self, roles: _Optional[_Iterable[_Union[_commons_pb2.Role, _Mapping]]] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
 
 class CreateMembership(_message.Message):
-    __slots__ = ("roles", "metadata")
+    __slots__ = ("roles", "metadata", "inviter_email")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -250,9 +250,11 @@ class CreateMembership(_message.Message):
         def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
     ROLES_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
+    INVITER_EMAIL_FIELD_NUMBER: _ClassVar[int]
     roles: _containers.RepeatedCompositeFieldContainer[_commons_pb2.Role]
     metadata: _containers.ScalarMap[str, str]
-    def __init__(self, roles: _Optional[_Iterable[_Union[_commons_pb2.Role, _Mapping]]] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    inviter_email: str
+    def __init__(self, roles: _Optional[_Iterable[_Union[_commons_pb2.Role, _Mapping]]] = ..., metadata: _Optional[_Mapping[str, str]] = ..., inviter_email: _Optional[str] = ...) -> None: ...
 
 class UpdateMembershipResponse(_message.Message):
     __slots__ = ("user",)

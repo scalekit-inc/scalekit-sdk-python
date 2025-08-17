@@ -108,16 +108,14 @@ class ExecuteToolResponse(_message.Message):
     def __init__(self, data: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., execution_id: _Optional[str] = ...) -> None: ...
 
 class SetToolDefaultRequest(_message.Message):
-    __slots__ = ("name", "schema_version", "tool_version", "provider")
+    __slots__ = ("name", "schema_version", "tool_version")
     NAME_FIELD_NUMBER: _ClassVar[int]
     SCHEMA_VERSION_FIELD_NUMBER: _ClassVar[int]
     TOOL_VERSION_FIELD_NUMBER: _ClassVar[int]
-    PROVIDER_FIELD_NUMBER: _ClassVar[int]
     name: str
     schema_version: str
     tool_version: str
-    provider: str
-    def __init__(self, name: _Optional[str] = ..., schema_version: _Optional[str] = ..., tool_version: _Optional[str] = ..., provider: _Optional[str] = ...) -> None: ...
+    def __init__(self, name: _Optional[str] = ..., schema_version: _Optional[str] = ..., tool_version: _Optional[str] = ...) -> None: ...
 
 class SetToolDefaultResponse(_message.Message):
     __slots__ = ("tool",)
@@ -138,13 +136,7 @@ class UpdateToolResponse(_message.Message):
     def __init__(self, tool: _Optional[_Union[Tool, _Mapping]] = ...) -> None: ...
 
 class DeleteToolRequest(_message.Message):
-    __slots__ = ("provider", "name", "schema_version", "tool_version")
-    PROVIDER_FIELD_NUMBER: _ClassVar[int]
-    NAME_FIELD_NUMBER: _ClassVar[int]
-    SCHEMA_VERSION_FIELD_NUMBER: _ClassVar[int]
-    TOOL_VERSION_FIELD_NUMBER: _ClassVar[int]
-    provider: str
-    name: str
-    schema_version: str
-    tool_version: str
-    def __init__(self, provider: _Optional[str] = ..., name: _Optional[str] = ..., schema_version: _Optional[str] = ..., tool_version: _Optional[str] = ...) -> None: ...
+    __slots__ = ("id",)
+    ID_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    def __init__(self, id: _Optional[str] = ...) -> None: ...

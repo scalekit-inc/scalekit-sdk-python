@@ -4,6 +4,7 @@ from .models.responses.magic_link_response import MagicLinkResponse
 from .models.responses.list_connected_accounts_response import ListConnectedAccountsResponse
 from .models.responses.delete_connected_account_response import DeleteConnectedAccountResponse
 from .models.responses.get_connected_account_auth_response import GetConnectedAccountAuthResponse
+from .models.tool_input_output import ToolInput, ToolOutput
 
 
 __all__ = [
@@ -12,5 +13,7 @@ __all__ = [
     'MagicLinkResponse',
     'ListConnectedAccountsResponse',
     'DeleteConnectedAccountResponse',
-    'GetConnectedAccountAuthResponse'
+    'GetConnectedAccountAuthResponse',
+    'ToolInput',
+    'ToolOutput'
 ]

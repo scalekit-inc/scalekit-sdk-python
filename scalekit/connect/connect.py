@@ -1,5 +1,12 @@
-from typing import Optional, Dict, Any
-from scalekit.connect.types import ToolRequest,ExecuteToolResponse,MagicLinkResponse,ListConnectedAccountsResponse,DeleteConnectedAccountResponse,GetConnectedAccountAuthResponse
+from typing import Optional, Dict, Any, List
+
+from scalekit.connect.types import ToolRequest,ExecuteToolResponse,MagicLinkResponse,ListConnectedAccountsResponse,DeleteConnectedAccountResponse,GetConnectedAccountAuthResponse,ToolInput,ToolOutput
+from scalekit.connect.modifier import (
+    Modifier, ModifierType, ToolNames,
+    apply_pre_modifiers, apply_post_modifiers
+)
+
+
 
 
 class ConnectClient:
@@ -20,10 +27,11 @@ class ConnectClient:
 
         self.tools = tools_client
         self.connected_accounts = connected_accounts_client
+        self._modifiers: List[Modifier] = []
 
     def execute_tool(
         self,
-        tool_input: Dict[str, Any],
+        tool_input:ToolInput,
         tool_name: str,
         identifier: Optional[str] = None,
         tool_request: Optional[ToolRequest] = None,
@@ -50,11 +58,14 @@ class ConnectClient:
         if not tool_name:
             raise ValueError("tool_name is required")
         
+        # Apply pre-modifications to the input parameters
+        modified_tool_input = apply_pre_modifiers(tool_name, tool_input, self._modifiers)
+        
         # Call the existing tools.execute_tool which returns (response, metadata) tuple
         result_tuple = self.tools.execute_tool(
             tool_name=tool_name,
             identifier=identifier,
-            params=tool_input,
+            params=modified_tool_input,
             connected_account_id=connected_account_id
         )
         
@@ -62,7 +73,12 @@ class ConnectClient:
         proto_response = result_tuple[0]
         
         # Convert proto to our ExecuteToolResponse class
-        return ExecuteToolResponse.from_proto(proto_response)
+        response = ExecuteToolResponse.from_proto(proto_response)
+        
+        # Apply post-modifications to the result
+        modified_response = apply_post_modifiers(tool_name, response.data, self._modifiers)
+        
+        return modified_response
     
     def get_authorization_link(
             self,
@@ -164,7 +180,7 @@ class ConnectClient:
         # Convert proto to our DeleteConnectedAccountResponse class
         return DeleteConnectedAccountResponse.from_proto(proto_response)
     
-    def get_connected_account_auth(
+    def get_connected_account(
         self,
         connection_name: Optional[str] = None,
         identifier: Optional[str] = None,
@@ -199,3 +215,53 @@ class ConnectClient:
         
         # Convert proto to our GetConnectedAccountAuthResponse class
         return GetConnectedAccountAuthResponse.from_proto(proto_response)
+    
+    def add_modifier(self, modifier: Modifier) -> None:
+        """Add a modifier to the private list"""
+        self._modifiers.append(modifier)
+    
+    def get_modifiers(
+        self, 
+        tool_name: Optional[str] = None, 
+        modifier_type: Optional[ModifierType] = None
+    ) -> List[Modifier]:
+        """Get modifiers, optionally filtered by tool_name and/or type"""
+        filtered = self._modifiers
+        
+        if tool_name:
+            filtered = [m for m in filtered if tool_name in m.tool_names]
+        
+        if modifier_type:
+            filtered = [m for m in filtered if m.type == modifier_type]
+            
+        return filtered
+    
+    def pre_modifier(self, tool_names: ToolNames, **kwargs: Any):
+        """Decorator for pre-modification that registers with this Connect instance
+        
+        Usage:
+            @connect.premodifier(tool_names="my_tool", priority=1)
+            def my_modifier(tool_name, data):
+                return modified_data
+        """
+        def decorator(func):
+            modifier = Modifier(tool_names=tool_names, modifier_type="pre", **kwargs)
+            modifier.func = func
+            self.add_modifier(modifier)
+            return func
+        return decorator
+    
+    def post_modifier(self, tool_names: ToolNames, **kwargs: Any):
+        """Decorator for post-modification that registers with this Connect instance
+        
+        Usage:
+            @connect.postmodifier(tool_names=["tool1", "tool2"])
+            def my_modifier(tool_name, result):
+                return modified_result
+        """
+        def decorator(func):
+            modifier = Modifier(tool_names=tool_names, modifier_type="post", **kwargs)
+            modifier.func = func
+            self.add_modifier(modifier)
+            return func
+        return decorator
