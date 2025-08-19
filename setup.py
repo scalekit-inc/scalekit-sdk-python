@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="a-beta-scalekit",
-    version="3.0.1",
+    version="4.0.0",
     packages=find_packages(),
     install_requires=[
         "grpcio>=1.64.1",
