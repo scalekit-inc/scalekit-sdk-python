@@ -1,4 +1,4 @@
-from typing import Optional, Any, Dict, List
+from typing import Optional, Any, Dict, List, Callable
 from langchain_core.tools import StructuredTool
 from pydantic.v1 import BaseModel, Field, create_model
 from scalekit.tools import ToolsClient
@@ -6,8 +6,12 @@ from scalekit.v1.tools.tools_pb2 import Filter
 
 
 class LangChain:
-    def __init__(self, tools_client: ToolsClient):
+    def __init__(self, tools_client: ToolsClient, execute_callback: Callable):
+        if not execute_callback:
+            raise ValueError("execute_callback is required. LangChain must be initialized with ConnectClient's execute_tool method.")
+        
         self.tools = tools_client
+        self.execute_callback = execute_callback
     
     def get_tools(
         self,
@@ -58,22 +62,28 @@ class LangChain:
         # Single implementation of tool execution logic
         def _call(**arguments: Dict[str, Any]) -> str:
             try:
-                # Call the actual tool execution
-                response = self.tools.execute_tool(
-                    tool_name=tool_name,
-                    identifier=identifier,
-                    params=arguments
-                )
+                # Import here to avoid circular imports
+                from scalekit.connect.types import ToolInput
+
                 
-                # Handle the response
-                result_data = self._struct_to_dict(response.data) if response.data else {}
+                # Call connect.execute_tool via callback (includes modifiers and enhanced handling)
+                response = self.execute_callback(
+                    tool_input=arguments,
+                    tool_name=tool_name,
+                    identifier=identifier
+                )
+
+                # Handle the ConnectClient ExecuteToolResponse
+                result_data = response.data if hasattr(response, 'data') else {}
+
                 execution_id = response.execution_id if hasattr(response, 'execution_id') else None
                 
                 # Format the response
+                result_dict = dict(result_data) if result_data else {}
                 if execution_id:
-                    result_data['execution_id'] = execution_id
+                    result_dict['execution_id'] = execution_id
                 
-                return str(result_data) if result_data else f"Tool {tool_name} executed successfully"
+                return str(result_dict) if result_dict else f"Tool {tool_name} executed successfully"
                 
             except Exception as e:
                 return f"Error executing tool {tool_name}: {str(e)}"

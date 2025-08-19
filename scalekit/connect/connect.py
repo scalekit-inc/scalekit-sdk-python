@@ -36,8 +36,8 @@ class ConnectClient:
         self.mcp = mcp_client
         self._modifiers: List[Modifier] = []
         
-        # Initialize LangChain with tools client
-        self.langchain = LangChain(tools_client)
+        # Initialize LangChain with tools client and execute callback
+        self.langchain = LangChain(tools_client, execute_callback=self.execute_tool)
 
     def execute_tool(
         self,
