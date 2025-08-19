@@ -8,6 +8,7 @@ from scalekit.connect.modifier import (
     Modifier, ModifierType, ToolNames,
     apply_pre_modifiers, apply_post_modifiers
 )
+from scalekit.connect.langchain import LangChain
 
 
 
@@ -34,6 +35,9 @@ class ConnectClient:
         self.connected_accounts = connected_accounts_client
         self.mcp = mcp_client
         self._modifiers: List[Modifier] = []
+        
+        # Initialize LangChain with tools client
+        self.langchain = LangChain(tools_client)
 
     def execute_tool(
         self,
