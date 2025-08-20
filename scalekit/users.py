@@ -380,11 +380,6 @@ class UserClient:
         :returns:
             Resend Invite Response
         """
-        if not organization_id:
-            raise ValueError('organization_id is required')
-        if not user_id:
-            raise ValueError('user_id is required')
-
         return self.core_client.grpc_exec(
             self.user_service.ResendInvite.with_call,
             ResendInviteRequest(
