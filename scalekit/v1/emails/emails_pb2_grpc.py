@@ -20,6 +20,11 @@ class EmailServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_emails_dot_emails__pb2.GetPlaceholdersRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_emails_dot_emails__pb2.GetPlaceholdersResponse.FromString,
                 )
+        self.GetTemplateUseCases = channel.unary_unary(
+                '/scalekit.v1.emails.EmailService/GetTemplateUseCases',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_emails_dot_emails__pb2.GetTemplateUseCasesResponse.FromString,
+                )
         self.CreateEmailTemplate = channel.unary_unary(
                 '/scalekit.v1.emails.EmailService/CreateEmailTemplate',
                 request_serializer=scalekit_dot_v1_dot_emails_dot_emails__pb2.CreateEmailTemplateRequest.SerializeToString,
@@ -106,6 +111,12 @@ class EmailServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def GetTemplatePlaceholders(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetTemplateUseCases(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -218,6 +229,11 @@ def add_EmailServiceServicer_to_server(servicer, server):
                     request_deserializer=scalekit_dot_v1_dot_emails_dot_emails__pb2.GetPlaceholdersRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_emails_dot_emails__pb2.GetPlaceholdersResponse.SerializeToString,
             ),
+            'GetTemplateUseCases': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetTemplateUseCases,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=scalekit_dot_v1_dot_emails_dot_emails__pb2.GetTemplateUseCasesResponse.SerializeToString,
+            ),
             'CreateEmailTemplate': grpc.unary_unary_rpc_method_handler(
                     servicer.CreateEmailTemplate,
                     request_deserializer=scalekit_dot_v1_dot_emails_dot_emails__pb2.CreateEmailTemplateRequest.FromString,
@@ -322,6 +338,23 @@ class EmailService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.emails.EmailService/GetTemplatePlaceholders',
             scalekit_dot_v1_dot_emails_dot_emails__pb2.GetPlaceholdersRequest.SerializeToString,
             scalekit_dot_v1_dot_emails_dot_emails__pb2.GetPlaceholdersResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetTemplateUseCases(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.emails.EmailService/GetTemplateUseCases',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            scalekit_dot_v1_dot_emails_dot_emails__pb2.GetTemplateUseCasesResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

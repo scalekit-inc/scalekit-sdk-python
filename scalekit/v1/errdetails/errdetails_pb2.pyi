@@ -91,9 +91,11 @@ class LocalizedMessageInfo(_message.Message):
     def __init__(self, locale: _Optional[str] = ..., message: _Optional[str] = ...) -> None: ...
 
 class ToolErrorInfo(_message.Message):
-    __slots__ = ("execution_id", "tool_message")
+    __slots__ = ("execution_id", "tool_error_message", "tool_error_code")
     EXECUTION_ID_FIELD_NUMBER: _ClassVar[int]
-    TOOL_MESSAGE_FIELD_NUMBER: _ClassVar[int]
+    TOOL_ERROR_MESSAGE_FIELD_NUMBER: _ClassVar[int]
+    TOOL_ERROR_CODE_FIELD_NUMBER: _ClassVar[int]
     execution_id: str
-    tool_message: str
-    def __init__(self, execution_id: _Optional[str] = ..., tool_message: _Optional[str] = ...) -> None: ...
+    tool_error_message: str
+    tool_error_code: str
+    def __init__(self, execution_id: _Optional[str] = ..., tool_error_message: _Optional[str] = ..., tool_error_code: _Optional[str] = ...) -> None: ...

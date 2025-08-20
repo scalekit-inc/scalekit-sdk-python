@@ -77,6 +77,42 @@ class GetPlaceholdersResponse(_message.Message):
     placeholders: _containers.RepeatedScalarFieldContainer[str]
     def __init__(self, placeholders: _Optional[_Iterable[str]] = ...) -> None: ...
 
+class GetTemplateUseCasesResponse(_message.Message):
+    __slots__ = ("use_cases",)
+    USE_CASES_FIELD_NUMBER: _ClassVar[int]
+    use_cases: _containers.RepeatedCompositeFieldContainer[TemplateUsecaseWithPlaceholders]
+    def __init__(self, use_cases: _Optional[_Iterable[_Union[TemplateUsecaseWithPlaceholders, _Mapping]]] = ...) -> None: ...
+
+class TemplateUsecaseWithPlaceholders(_message.Message):
+    __slots__ = ("use_case", "title", "description", "placeholders", "display", "default_template")
+    USE_CASE_FIELD_NUMBER: _ClassVar[int]
+    TITLE_FIELD_NUMBER: _ClassVar[int]
+    DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
+    PLACEHOLDERS_FIELD_NUMBER: _ClassVar[int]
+    DISPLAY_FIELD_NUMBER: _ClassVar[int]
+    DEFAULT_TEMPLATE_FIELD_NUMBER: _ClassVar[int]
+    use_case: TemplateUsecase
+    title: str
+    description: str
+    placeholders: _containers.RepeatedCompositeFieldContainer[Placeholder]
+    display: bool
+    default_template: Template
+    def __init__(self, use_case: _Optional[_Union[TemplateUsecase, str]] = ..., title: _Optional[str] = ..., description: _Optional[str] = ..., placeholders: _Optional[_Iterable[_Union[Placeholder, _Mapping]]] = ..., display: bool = ..., default_template: _Optional[_Union[Template, _Mapping]] = ...) -> None: ...
+
+class Placeholder(_message.Message):
+    __slots__ = ("name", "title", "description", "display", "category")
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    TITLE_FIELD_NUMBER: _ClassVar[int]
+    DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
+    DISPLAY_FIELD_NUMBER: _ClassVar[int]
+    CATEGORY_FIELD_NUMBER: _ClassVar[int]
+    name: str
+    title: str
+    description: str
+    display: bool
+    category: str
+    def __init__(self, name: _Optional[str] = ..., title: _Optional[str] = ..., description: _Optional[str] = ..., display: bool = ..., category: _Optional[str] = ...) -> None: ...
+
 class Template(_message.Message):
     __slots__ = ("updated_at", "id", "use_case", "enabled", "subject", "html_content", "plain_content", "placeholders")
     UPDATED_AT_FIELD_NUMBER: _ClassVar[int]
