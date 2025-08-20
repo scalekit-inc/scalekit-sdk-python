@@ -24,7 +24,7 @@ ADMIN: MemberRole
 USER: MemberRole
 
 class Member(_message.Message):
-    __slots__ = ("id", "create_time", "update_time", "workspace_id", "role", "first_name", "last_name", "email", "metadata", "organizations", "user_profile")
+    __slots__ = ("id", "create_time", "update_time", "workspace_id", "role", "first_name", "last_name", "email", "metadata", "organizations", "user_profile", "external_id")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -43,6 +43,7 @@ class Member(_message.Message):
     METADATA_FIELD_NUMBER: _ClassVar[int]
     ORGANIZATIONS_FIELD_NUMBER: _ClassVar[int]
     USER_PROFILE_FIELD_NUMBER: _ClassVar[int]
+    EXTERNAL_ID_FIELD_NUMBER: _ClassVar[int]
     id: str
     create_time: _timestamp_pb2.Timestamp
     update_time: _timestamp_pb2.Timestamp
@@ -54,7 +55,8 @@ class Member(_message.Message):
     metadata: _containers.ScalarMap[str, str]
     organizations: _containers.RepeatedCompositeFieldContainer[_commons_pb2.OrganizationMembership]
     user_profile: _commons_pb2.UserProfile
-    def __init__(self, id: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., workspace_id: _Optional[str] = ..., role: _Optional[_Union[MemberRole, str]] = ..., first_name: _Optional[str] = ..., last_name: _Optional[str] = ..., email: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., organizations: _Optional[_Iterable[_Union[_commons_pb2.OrganizationMembership, _Mapping]]] = ..., user_profile: _Optional[_Union[_commons_pb2.UserProfile, _Mapping]] = ...) -> None: ...
+    external_id: str
+    def __init__(self, id: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., workspace_id: _Optional[str] = ..., role: _Optional[_Union[MemberRole, str]] = ..., first_name: _Optional[str] = ..., last_name: _Optional[str] = ..., email: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., organizations: _Optional[_Iterable[_Union[_commons_pb2.OrganizationMembership, _Mapping]]] = ..., user_profile: _Optional[_Union[_commons_pb2.UserProfile, _Mapping]] = ..., external_id: _Optional[str] = ...) -> None: ...
 
 class CreateMemberRequest(_message.Message):
     __slots__ = ("member",)

@@ -515,6 +515,60 @@ class TestUsers(BaseTest):
         response = self.scalekit_client.users.delete_user_by_external_id(external_id=external_id)
         self.assertEqual(response[1].code().name, "OK")
 
+    def test_resend_invite(self):
+        """ Method to test resend invite """
+        # Create a user with invitation email
+        user_profile = CreateUserProfile(
+            first_name="Test",
+            last_name="User",
+            name="Test User",
+            locale="en-US"
+        )
+        user = CreateUser(
+            email=f"test.user.{self.faker.unique.random_number()}@example.com",
+            user_profile=user_profile,
+            metadata={"source": "test"}
+        )
+        create_response = self.scalekit_client.users.create_user_and_membership(
+            organization_id=self.org_id, 
+            user=user,
+            send_invitation_email=True
+        )
+        self.user_id = create_response[0].user.id
+
+        # Resend invite
+        response = self.scalekit_client.users.resend_invite(
+            organization_id=self.org_id,
+            user_id=self.user_id
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertTrue(response[0] is not None)
+        self.assertTrue(response[0].invite is not None)
+        self.assertEqual(response[0].invite.user_id, self.user_id)
+        self.assertEqual(response[0].invite.organization_id, self.org_id)
+        self.assertEqual(response[0].invite.status, "PENDING_INVITE")
+        self.assertTrue(response[0].invite.created_at is not None)
+        self.assertTrue(response[0].invite.expires_at is not None)
+        self.assertEqual(response[0].invite.resent_count, 1)
+
+    def test_resend_invite_missing_organization_id(self):
+        """ Method to test resend invite with missing organization ID """
+        with self.assertRaises(ValueError) as context:
+            self.scalekit_client.users.resend_invite(
+                organization_id="",
+                user_id="test_user_id"
+            )
+        self.assertEqual(str(context.exception), "organization_id is required")
+
+    def test_resend_invite_missing_user_id(self):
+        """ Method to test resend invite with missing user ID """
+        with self.assertRaises(ValueError) as context:
+            self.scalekit_client.users.resend_invite(
+                organization_id=self.org_id,
+                user_id=""
+            )
+        self.assertEqual(str(context.exception), "user_id is required")
+
 
     def tearDown(self):
         """ Method to clean up """

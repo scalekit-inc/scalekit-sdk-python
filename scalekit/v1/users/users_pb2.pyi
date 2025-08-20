@@ -240,7 +240,7 @@ class UpdateMembership(_message.Message):
     def __init__(self, roles: _Optional[_Iterable[_Union[_commons_pb2.Role, _Mapping]]] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
 
 class CreateMembership(_message.Message):
-    __slots__ = ("roles", "metadata")
+    __slots__ = ("roles", "metadata", "inviter_email")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -250,9 +250,11 @@ class CreateMembership(_message.Message):
         def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
     ROLES_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
+    INVITER_EMAIL_FIELD_NUMBER: _ClassVar[int]
     roles: _containers.RepeatedCompositeFieldContainer[_commons_pb2.Role]
     metadata: _containers.ScalarMap[str, str]
-    def __init__(self, roles: _Optional[_Iterable[_Union[_commons_pb2.Role, _Mapping]]] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    inviter_email: str
+    def __init__(self, roles: _Optional[_Iterable[_Union[_commons_pb2.Role, _Mapping]]] = ..., metadata: _Optional[_Mapping[str, str]] = ..., inviter_email: _Optional[str] = ...) -> None: ...
 
 class UpdateMembershipResponse(_message.Message):
     __slots__ = ("user",)
@@ -368,3 +370,111 @@ class UpdateUserProfile(_message.Message):
     metadata: _containers.ScalarMap[str, str]
     custom_attributes: _containers.ScalarMap[str, str]
     def __init__(self, first_name: _Optional[str] = ..., last_name: _Optional[str] = ..., name: _Optional[str] = ..., locale: _Optional[str] = ..., phone_number: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., custom_attributes: _Optional[_Mapping[str, str]] = ...) -> None: ...
+
+class Invite(_message.Message):
+    __slots__ = ("organization_id", "user_id", "invited_by", "status", "created_at", "expires_at", "resent_at", "resent_count")
+    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
+    USER_ID_FIELD_NUMBER: _ClassVar[int]
+    INVITED_BY_FIELD_NUMBER: _ClassVar[int]
+    STATUS_FIELD_NUMBER: _ClassVar[int]
+    CREATED_AT_FIELD_NUMBER: _ClassVar[int]
+    EXPIRES_AT_FIELD_NUMBER: _ClassVar[int]
+    RESENT_AT_FIELD_NUMBER: _ClassVar[int]
+    RESENT_COUNT_FIELD_NUMBER: _ClassVar[int]
+    organization_id: str
+    user_id: str
+    invited_by: str
+    status: str
+    created_at: _timestamp_pb2.Timestamp
+    expires_at: _timestamp_pb2.Timestamp
+    resent_at: _timestamp_pb2.Timestamp
+    resent_count: int
+    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., invited_by: _Optional[str] = ..., status: _Optional[str] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., resent_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., resent_count: _Optional[int] = ...) -> None: ...
+
+class ResendInviteRequest(_message.Message):
+    __slots__ = ("organization_id", "id")
+    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
+    ID_FIELD_NUMBER: _ClassVar[int]
+    organization_id: str
+    id: str
+    def __init__(self, organization_id: _Optional[str] = ..., id: _Optional[str] = ...) -> None: ...
+
+class ResendInviteResponse(_message.Message):
+    __slots__ = ("invite",)
+    INVITE_FIELD_NUMBER: _ClassVar[int]
+    invite: Invite
+    def __init__(self, invite: _Optional[_Union[Invite, _Mapping]] = ...) -> None: ...
+
+class ListUserRolesRequest(_message.Message):
+    __slots__ = ("organization_id", "user_id")
+    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
+    USER_ID_FIELD_NUMBER: _ClassVar[int]
+    organization_id: str
+    user_id: str
+    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ...) -> None: ...
+
+class ListUserRolesResponse(_message.Message):
+    __slots__ = ("roles",)
+    ROLES_FIELD_NUMBER: _ClassVar[int]
+    roles: _containers.RepeatedCompositeFieldContainer[_commons_pb2.Role]
+    def __init__(self, roles: _Optional[_Iterable[_Union[_commons_pb2.Role, _Mapping]]] = ...) -> None: ...
+
+class AssignUserRolesRequest(_message.Message):
+    __slots__ = ("organization_id", "user_id", "roles")
+    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
+    USER_ID_FIELD_NUMBER: _ClassVar[int]
+    ROLES_FIELD_NUMBER: _ClassVar[int]
+    organization_id: str
+    user_id: str
+    roles: _containers.RepeatedCompositeFieldContainer[AssignRoleRequest]
+    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., roles: _Optional[_Iterable[_Union[AssignRoleRequest, _Mapping]]] = ...) -> None: ...
+
+class AssignRoleRequest(_message.Message):
+    __slots__ = ("id",)
+    ID_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    def __init__(self, id: _Optional[str] = ...) -> None: ...
+
+class AssignUserRolesResponse(_message.Message):
+    __slots__ = ("roles",)
+    ROLES_FIELD_NUMBER: _ClassVar[int]
+    roles: _containers.RepeatedCompositeFieldContainer[_commons_pb2.Role]
+    def __init__(self, roles: _Optional[_Iterable[_Union[_commons_pb2.Role, _Mapping]]] = ...) -> None: ...
+
+class RemoveUserRoleRequest(_message.Message):
+    __slots__ = ("organization_id", "user_id", "role_id")
+    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
+    USER_ID_FIELD_NUMBER: _ClassVar[int]
+    ROLE_ID_FIELD_NUMBER: _ClassVar[int]
+    organization_id: str
+    user_id: str
+    role_id: str
+    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., role_id: _Optional[str] = ...) -> None: ...
+
+class ListUserPermissionsRequest(_message.Message):
+    __slots__ = ("organization_id", "user_id")
+    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
+    USER_ID_FIELD_NUMBER: _ClassVar[int]
+    organization_id: str
+    user_id: str
+    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ...) -> None: ...
+
+class Permission(_message.Message):
+    __slots__ = ("id", "name", "display_name", "description", "tags")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
+    DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
+    TAGS_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    name: str
+    display_name: str
+    description: str
+    tags: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., tags: _Optional[_Iterable[str]] = ...) -> None: ...
+
+class ListUserPermissionsResponse(_message.Message):
+    __slots__ = ("permissions",)
+    PERMISSIONS_FIELD_NUMBER: _ClassVar[int]
+    permissions: _containers.RepeatedCompositeFieldContainer[Permission]
+    def __init__(self, permissions: _Optional[_Iterable[_Union[Permission, _Mapping]]] = ...) -> None: ...

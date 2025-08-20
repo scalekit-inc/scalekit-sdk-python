@@ -73,9 +73,17 @@ class ObjectType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     TokenClaims: _ClassVar[ObjectType]
     OIDCReqParams: _ClassVar[ObjectType]
     OIDCRespClaims: _ClassVar[ObjectType]
-    OIDCAuthRequest: _ClassVar[ObjectType]
     SSOError: _ClassVar[ObjectType]
     GenericError: _ClassVar[ObjectType]
+    RefreshTokens: _ClassVar[ObjectType]
+    EndSessionRequest: _ClassVar[ObjectType]
+    LogoutTokenClaims: _ClassVar[ObjectType]
+    OAuthResponse: _ClassVar[ObjectType]
+    JSON: _ClassVar[ObjectType]
+    SKErrors: _ClassVar[ObjectType]
+    OrgMembership: _ClassVar[ObjectType]
+    UserProfile: _ClassVar[ObjectType]
+    IDPInitiatedPayload: _ClassVar[ObjectType]
 ACTOR_UNSPECIFIED: EventActor
 HUMAN: EventActor
 MACHINE: EventActor
@@ -119,9 +127,17 @@ SAMLResponse: ObjectType
 TokenClaims: ObjectType
 OIDCReqParams: ObjectType
 OIDCRespClaims: ObjectType
-OIDCAuthRequest: ObjectType
 SSOError: ObjectType
 GenericError: ObjectType
+RefreshTokens: ObjectType
+EndSessionRequest: ObjectType
+LogoutTokenClaims: ObjectType
+OAuthResponse: ObjectType
+JSON: ObjectType
+SKErrors: ObjectType
+OrgMembership: ObjectType
+UserProfile: ObjectType
+IDPInitiatedPayload: ObjectType
 
 class SendCustomEventRequest(_message.Message):
     __slots__ = ("event_type", "event")
@@ -272,7 +288,7 @@ class Target(_message.Message):
     def __init__(self, id: _Optional[str] = ..., type: _Optional[_Union[EventTarget, str]] = ...) -> None: ...
 
 class IEventFilter(_message.Message):
-    __slots__ = ("event_types", "start_time", "end_time", "tenant_id", "target", "source", "metadata")
+    __slots__ = ("event_types", "start_time", "end_time", "tenant_id", "target", "source", "metadata", "internal_events")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -287,6 +303,7 @@ class IEventFilter(_message.Message):
     TARGET_FIELD_NUMBER: _ClassVar[int]
     SOURCE_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
+    INTERNAL_EVENTS_FIELD_NUMBER: _ClassVar[int]
     event_types: _containers.RepeatedScalarFieldContainer[str]
     start_time: _timestamp_pb2.Timestamp
     end_time: _timestamp_pb2.Timestamp
@@ -294,7 +311,8 @@ class IEventFilter(_message.Message):
     target: Target
     source: Source
     metadata: _containers.ScalarMap[str, str]
-    def __init__(self, event_types: _Optional[_Iterable[str]] = ..., start_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., end_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., tenant_id: _Optional[str] = ..., target: _Optional[_Union[Target, _Mapping]] = ..., source: _Optional[_Union[Source, str]] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    internal_events: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, event_types: _Optional[_Iterable[str]] = ..., start_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., end_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., tenant_id: _Optional[str] = ..., target: _Optional[_Union[Target, _Mapping]] = ..., source: _Optional[_Union[Source, str]] = ..., metadata: _Optional[_Mapping[str, str]] = ..., internal_events: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class EventFilter(_message.Message):
     __slots__ = ("event_types", "start_time", "end_time", "organization_id", "source", "auth_request_id")
@@ -313,7 +331,7 @@ class EventFilter(_message.Message):
     def __init__(self, event_types: _Optional[_Iterable[str]] = ..., start_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., end_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., organization_id: _Optional[str] = ..., source: _Optional[_Union[Source, str]] = ..., auth_request_id: _Optional[str] = ...) -> None: ...
 
 class ScalekitEvent(_message.Message):
-    __slots__ = ("spec_version", "id", "type", "occurred_at", "environment_id", "organization_id", "object", "data")
+    __slots__ = ("spec_version", "id", "type", "occurred_at", "environment_id", "organization_id", "object", "data", "display")
     SPEC_VERSION_FIELD_NUMBER: _ClassVar[int]
     ID_FIELD_NUMBER: _ClassVar[int]
     TYPE_FIELD_NUMBER: _ClassVar[int]
@@ -322,6 +340,7 @@ class ScalekitEvent(_message.Message):
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     OBJECT_FIELD_NUMBER: _ClassVar[int]
     DATA_FIELD_NUMBER: _ClassVar[int]
+    DISPLAY_FIELD_NUMBER: _ClassVar[int]
     spec_version: str
     id: str
     type: str
@@ -330,4 +349,5 @@ class ScalekitEvent(_message.Message):
     organization_id: str
     object: ObjectType
     data: _struct_pb2.Struct
-    def __init__(self, spec_version: _Optional[str] = ..., id: _Optional[str] = ..., type: _Optional[str] = ..., occurred_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., environment_id: _Optional[str] = ..., organization_id: _Optional[str] = ..., object: _Optional[_Union[ObjectType, str]] = ..., data: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
+    display: str
+    def __init__(self, spec_version: _Optional[str] = ..., id: _Optional[str] = ..., type: _Optional[str] = ..., occurred_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., environment_id: _Optional[str] = ..., organization_id: _Optional[str] = ..., object: _Optional[_Union[ObjectType, str]] = ..., data: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., display: _Optional[str] = ...) -> None: ...
