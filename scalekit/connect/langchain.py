@@ -1,6 +1,5 @@
 from typing import Optional, Any, Dict, List, Callable
 from langchain_core.tools import StructuredTool
-from pydantic.v1 import BaseModel, Field, create_model
 from scalekit.tools import ToolsClient
 from scalekit.v1.tools.tools_pb2 import Filter
 
@@ -49,17 +48,17 @@ class LangChain:
     def _convert_tool_to_structured_tool(self, tool, identifier: str) -> StructuredTool:
         """Convert a Scalekit Tool to LangChain StructuredTool"""
         
-        # Extract definition dict
+
         definition_dict = self._struct_to_dict(tool.definition) if hasattr(tool, 'definition') and tool.definition else {}
         
-        # Use definition fields directly
+
         tool_name = definition_dict.get('name', getattr(tool, 'provider', 'unknown') + '_tool')
         tool_description = definition_dict.get('description', 'Scalekit tool')
         
-        # Create args schema from tool definition input_schema
+
         args_schema = definition_dict.get("input_schema", {})
         
-        # Single implementation of tool execution logic
+
         def _call(**arguments: Dict[str, Any]) -> str:
             try:
                 # Import here to avoid circular imports
@@ -73,7 +72,7 @@ class LangChain:
                     identifier=identifier
                 )
 
-                # Handle the ConnectClient ExecuteToolResponse
+
                 result_data = response.data if hasattr(response, 'data') else {}
 
                 execution_id = response.execution_id if hasattr(response, 'execution_id') else None
