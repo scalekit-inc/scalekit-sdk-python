@@ -1,6 +1,7 @@
 
 from faker import Faker
 from basetest import BaseTest
+from scalekit.common.exceptions import ScalekitNotFoundException
 
 from scalekit.v1.organizations.organizations_pb2 import CreateOrganization
 from scalekit.v1.directories.directories_pb2 import CreateDirectory
@@ -105,9 +106,9 @@ class TestDirectory(BaseTest):
 
         try:
             self.scalekit_client.directory.get_directory(organization_id=self.org_id, directory_id=self.dir_id)
-        except Exception as e:
-            self.assertEqual(e.args[0], "directory not found")
+        except ScalekitNotFoundException:
             self.dir_id = None
+            pass
 
     def test_get_primary_directory_by_organization_id(self):
         """ Method to test get primary directory by organization id """

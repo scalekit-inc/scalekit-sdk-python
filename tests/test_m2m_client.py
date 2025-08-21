@@ -2,6 +2,7 @@
 from faker import Faker
 
 from basetest import BaseTest
+from scalekit.common.exceptions import ScalekitNotFoundException, ScalekitBadRequestException
 from scalekit.v1.organizations.organizations_pb2 import CreateOrganization
 from scalekit.v1.clients.clients_pb2 import OrganizationClient
 
@@ -87,8 +88,8 @@ class TestM2MClient(BaseTest):
             self.scalekit_client.m2m_client.get_organization_client(
                 organization_id=self.org_id, client_id=f"m2morg_{Faker().credit_card_number()}"
             )
-        except Exception as exp:
-            self.assertEqual(exp.args[0], "client not found")
+        except ScalekitNotFoundException:
+            pass
 
     def test_update_organization_client(self):
         """ Method to test update organization client """
@@ -210,8 +211,8 @@ class TestM2MClient(BaseTest):
             self.scalekit_client.m2m_client.remove_organization_client_secret(
                 organization_id=self.org_id, client_id=self.client_id, secret_id=secret_id
             )
-        except Exception as exp:
-            self.assertEqual(exp.args[0], 'last client cannot be deleted')
+        except ScalekitBadRequestException as exp:
+            self.assertEqual(exp.message, 'last client cannot be deleted')
 
     def test_delete_organization_client(self):
         """ Method to test delete organization client """
@@ -230,19 +231,18 @@ class TestM2MClient(BaseTest):
         create_response = self.scalekit_client.m2m_client.create_organization_client(
             organization_id=self.org_id, m2m_client=m2m_client
         )
-        self.client_id = create_response[0].client.client_id
+        client_id = create_response[0].client.client_id
 
         response = self.scalekit_client.m2m_client.delete_organization_client(
-            organization_id=self.org_id, client_id=self.client_id
+            organization_id=self.org_id, client_id=client_id
         )
         self.assertEqual(response[1].code().name, "OK")
 
         try:
             self.scalekit_client.m2m_client.get_organization_client(
-                organization_id=self.org_id, client_id=self.client_id)
-        except Exception as exp:
-            self.assertEqual(exp.args[0], "client not found")
-            self.client_id = None
+                organization_id=self.org_id, client_id=client_id)
+        except ScalekitNotFoundException:
+            pass
 
     def test_generate_token_organization_client(self):
         """ Method to test generate token organization client """

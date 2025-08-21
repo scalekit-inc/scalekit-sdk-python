@@ -3,6 +3,7 @@ from datetime import datetime
 from faker import Faker
 
 from basetest import BaseTest
+from scalekit.common.exceptions import ScalekitNotFoundException
 from scalekit.v1.organizations.organizations_pb2 import CreateOrganization, UpdateOrganization
 
 
@@ -117,9 +118,9 @@ class TestOrganization(BaseTest):
 
         try:
             self.scalekit_client.organization.get_organization(organization_id=self.org_id)
-        except Exception as exp:
-            self.assertEqual(exp.args[0], "organization with id &{" + f"{self.org_id}" + "} was not found")
+        except ScalekitNotFoundException as exp:
             self.org_id = None
+            pass
 
     def test_generate_portal_link(self):
         """ Method to test generate portal link """

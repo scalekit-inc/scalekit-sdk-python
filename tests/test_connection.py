@@ -1,6 +1,7 @@
 
 from faker import Faker
 from basetest import BaseTest
+from scalekit.common.exceptions import ScalekitNotFoundException
 
 from scalekit.v1.connections.connections_pb2 import *
 from scalekit.v1.organizations.organizations_pb2 import CreateOrganization
@@ -10,15 +11,14 @@ class TestConnection(BaseTest):
     """ Class definition for Test Connection Class """
     def setUp(self):
         """ """
-        self.org_id = None
+        # self.org_id = None
+        organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
+        org_response = self.scalekit_client.organization.create_organization(organization=organization)
+        self.org_id = org_response[0].organization.id
         self.conn_id = None
 
     def test_create_connection(self):
         """ Method to test create connection """
-        organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
-        org_response = self.scalekit_client.organization.create_organization(organization=organization)
-        self.org_id = org_response[0].organization.id
-
         conn_provider = ConnectionProvider.OKTA
         conn_type = ConnectionType.SAML
         connection = CreateConnection(provider=conn_provider, type=conn_type)
@@ -32,10 +32,6 @@ class TestConnection(BaseTest):
 
     def test_get_connection(self):
         """ Method to test get connection """
-        organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
-        org_response = self.scalekit_client.organization.create_organization(organization=organization)
-        self.org_id = org_response[0].organization.id
-
         conn_provider = ConnectionProvider.OKTA
         conn_type = ConnectionType.SAML
         connection = CreateConnection(provider=conn_provider, type=conn_type)
@@ -53,10 +49,6 @@ class TestConnection(BaseTest):
 
     def test_list_connections_by_organization(self):
         """ Method to test list connections by organization """
-        organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
-        org_response = self.scalekit_client.organization.create_organization(organization=organization)
-        self.org_id = org_response[0].organization.id
-
         conn_provider = ConnectionProvider.OKTA
         conn_type = ConnectionType.SAML
         connection = CreateConnection(provider=conn_provider, type=conn_type)
@@ -70,10 +62,6 @@ class TestConnection(BaseTest):
 
     def test_list_connections_by_domain(self):
         """ Method to test list connections by domain """
-        organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
-        org_response = self.scalekit_client.organization.create_organization(organization=organization)
-        self.org_id = org_response[0].organization.id
-
         conn_provider = ConnectionProvider.OKTA
         conn_type = ConnectionType.SAML
         connection = CreateConnection(provider=conn_provider, type=conn_type)
@@ -90,10 +78,6 @@ class TestConnection(BaseTest):
 
     def test_delete_connection(self):
         """ Method to test delete connection """
-        organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
-        org_response = self.scalekit_client.organization.create_organization(organization=organization)
-        self.org_id = org_response[0].organization.id
-
         conn_provider = ConnectionProvider.OKTA
         conn_type = ConnectionType.SAML
         connection = CreateConnection(provider=conn_provider, type=conn_type)
@@ -105,8 +89,7 @@ class TestConnection(BaseTest):
 
         try:
             self.scalekit_client.connection.get_connection(organization_id=self.org_id, conn_id=self.conn_id)
-        except Exception as e:
-            self.assertEqual(e.args[0], "connection not found")
+        except ScalekitNotFoundException:
             self.conn_id = None
 
     def tearDown(self):
