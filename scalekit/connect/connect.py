@@ -1,14 +1,15 @@
-from typing import Optional, Dict, Any, List
+from typing import Optional, Any, List
 from scalekit.v1.mcp.mcp_pb2 import Mcp
 from scalekit.v1.mcp.mcp_pb2 import ToolMapping as ProtoToolMapping
 
 from scalekit.connect.models.tool_mapping import ToolMapping
-from scalekit.connect.types import ToolRequest,ExecuteToolResponse,MagicLinkResponse,ListConnectedAccountsResponse,DeleteConnectedAccountResponse,GetConnectedAccountAuthResponse,ToolInput,ToolOutput,McpRequest,CreateMcpResponse,GetMcpResponse
+from scalekit.connect.types import ToolRequest,ExecuteToolResponse,MagicLinkResponse,ListConnectedAccountsResponse,DeleteConnectedAccountResponse,GetConnectedAccountAuthResponse,ToolInput, \
+    McpRequest,CreateMcpResponse,GetMcpResponse
 from scalekit.connect.modifier import (
     Modifier, ModifierType, ToolNames,
     apply_pre_modifiers, apply_post_modifiers
 )
-from scalekit.connect.langchain import LangChain
+from scalekit.connect.frameworks.langchain import LangChain
 
 
 
