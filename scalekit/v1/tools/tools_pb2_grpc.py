@@ -25,6 +25,11 @@ class ToolServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_tools_dot_tools__pb2.ListToolsRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_tools_dot_tools__pb2.ListToolsResponse.FromString,
                 )
+        self.ListScopedTools = channel.unary_unary(
+                '/scalekit.v1.tools.ToolService/ListScopedTools',
+                request_serializer=scalekit_dot_v1_dot_tools_dot_tools__pb2.ListScopedToolsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_tools_dot_tools__pb2.ListScopedToolsResponse.FromString,
+                )
         self.SetToolDefault = channel.unary_unary(
                 '/scalekit.v1.tools.ToolService/SetToolDefault',
                 request_serializer=scalekit_dot_v1_dot_tools_dot_tools__pb2.SetToolDefaultRequest.SerializeToString,
@@ -57,6 +62,12 @@ class ToolServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def ListTools(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListScopedTools(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -98,6 +109,11 @@ def add_ToolServiceServicer_to_server(servicer, server):
                     servicer.ListTools,
                     request_deserializer=scalekit_dot_v1_dot_tools_dot_tools__pb2.ListToolsRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_tools_dot_tools__pb2.ListToolsResponse.SerializeToString,
+            ),
+            'ListScopedTools': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListScopedTools,
+                    request_deserializer=scalekit_dot_v1_dot_tools_dot_tools__pb2.ListScopedToolsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_tools_dot_tools__pb2.ListScopedToolsResponse.SerializeToString,
             ),
             'SetToolDefault': grpc.unary_unary_rpc_method_handler(
                     servicer.SetToolDefault,
@@ -160,6 +176,23 @@ class ToolService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.tools.ToolService/ListTools',
             scalekit_dot_v1_dot_tools_dot_tools__pb2.ListToolsRequest.SerializeToString,
             scalekit_dot_v1_dot_tools_dot_tools__pb2.ListToolsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListScopedTools(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.tools.ToolService/ListScopedTools',
+            scalekit_dot_v1_dot_tools_dot_tools__pb2.ListScopedToolsRequest.SerializeToString,
+            scalekit_dot_v1_dot_tools_dot_tools__pb2.ListScopedToolsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

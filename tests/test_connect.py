@@ -237,7 +237,7 @@ class TestConnect(BaseTest):
 
 
     def test_get_connected_account_auth(self):
-        """Method to test get_connected_account_auth returns GetConnectedAccountAuthResponse"""
+        """Method to test get_connected_account returns GetConnectedAccountAuthResponse"""
         try:
             result = self.scalekit_client.connect.get_connected_account(
                 connection_name="GMAIL",
@@ -246,6 +246,28 @@ class TestConnect(BaseTest):
             self.assertIsNotNone(result)
             self.assertIsInstance(result, GetConnectedAccountAuthResponse)
             self.assertTrue(hasattr(result, 'connected_account'))
+            
+            # Verify connected account structure
+            connected_account = result.connected_account
+            self.assertIsNotNone(connected_account)
+            self.assertTrue(hasattr(connected_account, 'id'))
+            self.assertTrue(hasattr(connected_account, 'identifier'))
+            self.assertTrue(hasattr(connected_account, 'provider'))
+            self.assertTrue(hasattr(connected_account, 'status'))
+            self.assertTrue(hasattr(connected_account, 'authorization_type'))
+            self.assertTrue(hasattr(connected_account, 'authorization_details'))
+            
+            # Verify OAuth details structure if present
+            if connected_account.authorization_details and "oauth_token" in connected_account.authorization_details:
+                oauth_token = connected_account.authorization_details["oauth_token"]
+                self.assertIsInstance(oauth_token, dict)
+                self.assertIn("access_token", oauth_token)
+                self.assertIn("refresh_token", oauth_token)
+                self.assertIn("scopes", oauth_token)
+                self.assertIsInstance(oauth_token["scopes"], list)
+                self.assertIsInstance(oauth_token["access_token"], str)
+                self.assertIsInstance(oauth_token["refresh_token"], str)
+
         except Exception as e:
             raise e
 
@@ -349,6 +371,7 @@ class TestConnect(BaseTest):
             self.assertIsNotNone(result)
             self.assertIsInstance(result, GetConnectedAccountAuthResponse)
             self.assertTrue(hasattr(result, 'connected_account'))
+
         except Exception as e:
             raise e
 

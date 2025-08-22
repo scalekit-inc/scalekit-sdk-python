@@ -45,6 +45,16 @@ class Tool(_message.Message):
     updated_at: _timestamp_pb2.Timestamp
     def __init__(self, id: _Optional[str] = ..., provider: _Optional[str] = ..., definition: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., metadata: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., tags: _Optional[_Iterable[str]] = ..., is_default: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
+class ScopedTool(_message.Message):
+    __slots__ = ("tool", "identifier", "connected_account_id")
+    TOOL_FIELD_NUMBER: _ClassVar[int]
+    IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
+    CONNECTED_ACCOUNT_ID_FIELD_NUMBER: _ClassVar[int]
+    tool: Tool
+    identifier: str
+    connected_account_id: str
+    def __init__(self, tool: _Optional[_Union[Tool, _Mapping]] = ..., identifier: _Optional[str] = ..., connected_account_id: _Optional[str] = ...) -> None: ...
+
 class ListToolsRequest(_message.Message):
     __slots__ = ("filter", "page_size", "page_token")
     FILTER_FIELD_NUMBER: _ClassVar[int]
@@ -140,3 +150,37 @@ class DeleteToolRequest(_message.Message):
     ID_FIELD_NUMBER: _ClassVar[int]
     id: str
     def __init__(self, id: _Optional[str] = ...) -> None: ...
+
+class ListScopedToolsRequest(_message.Message):
+    __slots__ = ("identifier", "filter", "page_size", "page_token")
+    IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
+    FILTER_FIELD_NUMBER: _ClassVar[int]
+    PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
+    PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    identifier: str
+    filter: ScopedToolFilter
+    page_size: int
+    page_token: str
+    def __init__(self, identifier: _Optional[str] = ..., filter: _Optional[_Union[ScopedToolFilter, _Mapping]] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ...) -> None: ...
+
+class ListScopedToolsResponse(_message.Message):
+    __slots__ = ("next_page_token", "total_size", "prev_page_token", "tools")
+    NEXT_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    TOTAL_SIZE_FIELD_NUMBER: _ClassVar[int]
+    PREV_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    TOOLS_FIELD_NUMBER: _ClassVar[int]
+    next_page_token: str
+    total_size: int
+    prev_page_token: str
+    tools: _containers.RepeatedCompositeFieldContainer[ScopedTool]
+    def __init__(self, next_page_token: _Optional[str] = ..., total_size: _Optional[int] = ..., prev_page_token: _Optional[str] = ..., tools: _Optional[_Iterable[_Union[ScopedTool, _Mapping]]] = ...) -> None: ...
+
+class ScopedToolFilter(_message.Message):
+    __slots__ = ("providers", "tool_names", "connection_names")
+    PROVIDERS_FIELD_NUMBER: _ClassVar[int]
+    TOOL_NAMES_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_NAMES_FIELD_NUMBER: _ClassVar[int]
+    providers: _containers.RepeatedScalarFieldContainer[str]
+    tool_names: _containers.RepeatedScalarFieldContainer[str]
+    connection_names: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, providers: _Optional[_Iterable[str]] = ..., tool_names: _Optional[_Iterable[str]] = ..., connection_names: _Optional[_Iterable[str]] = ...) -> None: ...
