@@ -1,10 +1,10 @@
 from typing import Optional, Dict, Any
 from datetime import datetime
 from pydantic import BaseModel, Field
-from scalekit.v1.connected_accounts.connected_accounts_pb2 import ConnectedAccount, ConnectorStatus, ConnectorType
+from scalekit.v1.connected_accounts.connected_accounts_pb2 import ConnectedAccount as ProtoConnectedAccount, ConnectorStatus, ConnectorType
 
 
-class ConnectedAccountInfo(BaseModel):
+class ConnectedAccount(BaseModel):
     """Connected account information"""
     
     id: Optional[str] = Field(None, description="Unique connected account ID")
@@ -19,15 +19,15 @@ class ConnectedAccountInfo(BaseModel):
     last_used_at: Optional[datetime] = Field(None, description="Last used time")
 
     @classmethod
-    def from_proto(cls, proto_account: ConnectedAccount) -> 'ConnectedAccountInfo':
+    def from_proto(cls, proto_account: ProtoConnectedAccount) -> 'ConnectedAccount':
         """
-        Create ConnectedAccountInfo from protobuf ConnectedAccount
+        Create ConnectedAccount from protobuf ConnectedAccount
         
         :param proto_account: The protobuf ConnectedAccount object
-        :type proto_account: ConnectedAccount
+        :type proto_account: ProtoConnectedAccount
         
         :returns:
-            ConnectedAccountInfo instance
+            ConnectedAccount instance
         """
         # Convert protobuf timestamps to datetime
         token_expires_at = None
@@ -76,7 +76,7 @@ class ConnectedAccountInfo(BaseModel):
 class GetConnectedAccountAuthResponse(BaseModel):
     """Get connected account auth response with one-to-one mapping to proto GetConnectedAccountByIdentifierResponse"""
     
-    connected_account: Optional[ConnectedAccountInfo] = Field(
+    connected_account: Optional[ConnectedAccount] = Field(
         None,
         description="Connected account details"
     )
@@ -94,7 +94,7 @@ class GetConnectedAccountAuthResponse(BaseModel):
         """
         connected_account = None
         if proto_response.connected_account:
-            connected_account = ConnectedAccountInfo.from_proto(proto_response.connected_account)
+            connected_account = ConnectedAccount.from_proto(proto_response.connected_account)
             
         return cls(connected_account=connected_account)
 
