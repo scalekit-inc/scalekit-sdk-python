@@ -1,7 +1,7 @@
 from typing import Optional, Any, Dict, List, Callable
 from langchain_core.tools import StructuredTool
 from scalekit.tools import ToolsClient
-from scalekit.v1.tools.tools_pb2 import Filter
+from scalekit.v1.tools.tools_pb2 import Filter, ScopedToolFilter
 
 
 class LangChain:
@@ -14,38 +14,53 @@ class LangChain:
     
     def get_tools(
         self,
-        identifier:str,
-        filter: Optional[Filter] = None,
+        identifier: str,
+        providers: Optional[List[str]] = None,
+        tool_names: Optional[List[str]] = None,
+        connection_names: Optional[List[str]] = None,
         page_size: Optional[int] = None,
         page_token: Optional[str] = None
     ) -> List[StructuredTool]:
         """
-        Get tools from Scalekit and convert them to LangChain StructuredTools
+        Get scoped tools from Scalekit and convert them to LangChain StructuredTools
         
-        :param filter: Filter parameters for listing tools
+        :param identifier: Identifier to scope the tools list
+        :param providers: List of provider names to filter by
+        :param tool_names: List of tool names to filter by
+        :param connection_names: List of connection names to filter by
         :param page_size: Maximum number of tools to return per page  
         :param page_token: Token from a previous response for pagination
         :returns: List of LangChain StructuredTools
         """
-        # Get tools from Scalekit
-
         if identifier is None or identifier == "":
             raise ValueError("Identifier must be provided to get tools")
 
-        # Call list_tools which returns (response, metadata) tuple
-        result_tuple = self.tools.list_tools(filter, page_size, page_token)
+        # Create ScopedToolFilter if any filter parameters are provided
+        scoped_filter = None
+        if providers or tool_names or connection_names:
+            scoped_filter = ScopedToolFilter(
+                providers=providers or [],
+                tool_names=tool_names or [],
+                connection_names=connection_names or []
+            )
+
+        # Call list_scoped_tools which returns (response, metadata) tuple
+        result_tuple = self.tools.list_scoped_tools(identifier, scoped_filter, page_size, page_token)
         
-        # Extract the response[0] (the actual ListToolsResponse proto object)
+        # Extract the response[0] (the actual ListScopedToolsResponse proto object)
         response = result_tuple[0]
         
         structured_tools = []
-        for tool in response.tools:
-            structured_tool = self._convert_tool_to_structured_tool(tool, identifier)
+        for scoped_tool in response.tools:
+            structured_tool = self._convert_tool_to_structured_tool(
+                scoped_tool.tool,
+                scoped_tool.connected_account_id
+            )
             structured_tools.append(structured_tool)
             
         return structured_tools
     
-    def _convert_tool_to_structured_tool(self, tool, identifier: str) -> StructuredTool:
+    def _convert_tool_to_structured_tool(self, tool, connected_account_id: str) -> StructuredTool:
         """Convert a Scalekit Tool to LangChain StructuredTool"""
         
 
@@ -69,7 +84,7 @@ class LangChain:
                 response = self.execute_callback(
                     tool_input=arguments,
                     tool_name=tool_name,
-                    identifier=identifier
+                    connected_account_id=connected_account_id
                 )
 
 

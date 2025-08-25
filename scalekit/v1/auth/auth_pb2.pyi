@@ -59,6 +59,12 @@ ORG_USER_CREATED: AuthState
 AUTHENTICATION_COMPLETED: AuthState
 AUTHENTICATION_FAILED: AuthState
 
+class ListAuthMethodsRequest(_message.Message):
+    __slots__ = ("intent",)
+    INTENT_FIELD_NUMBER: _ClassVar[int]
+    intent: str
+    def __init__(self, intent: _Optional[str] = ...) -> None: ...
+
 class ListAuthMethodsResponse(_message.Message):
     __slots__ = ("auth_methods",)
     AUTH_METHODS_FIELD_NUMBER: _ClassVar[int]

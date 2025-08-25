@@ -1,14 +1,18 @@
-from typing import Optional, Dict, Any, List
+from typing import Optional, Any, List, Dict
 from scalekit.v1.mcp.mcp_pb2 import Mcp
 from scalekit.v1.mcp.mcp_pb2 import ToolMapping as ProtoToolMapping
 
 from scalekit.connect.models.tool_mapping import ToolMapping
-from scalekit.connect.types import ToolRequest,ExecuteToolResponse,MagicLinkResponse,ListConnectedAccountsResponse,DeleteConnectedAccountResponse,GetConnectedAccountAuthResponse,ToolInput,ToolOutput,McpRequest,CreateMcpResponse,GetMcpResponse
+from scalekit.connect.types import ToolRequest,ExecuteToolResponse,MagicLinkResponse,ListConnectedAccountsResponse,DeleteConnectedAccountResponse,GetConnectedAccountAuthResponse,ToolInput, \
+    McpRequest,CreateMcpResponse,GetMcpResponse
+from scalekit.connect.models.responses.create_connected_account_response import CreateConnectedAccountResponse
+from scalekit.connect.models.requests.create_connected_account_request import CreateConnectedAccountRequest
 from scalekit.connect.modifier import (
     Modifier, ModifierType, ToolNames,
     apply_pre_modifiers, apply_post_modifiers
 )
-from scalekit.connect.langchain import LangChain
+from scalekit.connect.frameworks.langchain import LangChain
+from scalekit.common.exceptions import ScalekitNotFoundException
 
 
 
@@ -363,3 +367,115 @@ class ConnectClient:
         
         # Convert proto to our CreateMcpResponse class
         return CreateMcpResponse.from_proto(proto_response)
+
+    def create_connected_account(
+        self,
+        connection_name: str,
+        identifier: str, 
+        authorization_details: Dict[str, Any],
+        organization_id: Optional[str] = None,
+        user_id: Optional[str] = None,
+        **kwargs
+    ) -> CreateConnectedAccountResponse:
+        """
+        Create a new connected account
+        
+        :param connection_name: Connector identifier (required)
+        :type: str
+        :param identifier: Connected account identifier (required)
+        :type: str
+        :param authorization_details: Authorization details (OAuth token or static auth) (required)
+        :type: Dict[str, Any]
+        :param organization_id: Organization ID (optional)
+        :type: str
+        :param user_id: User ID (optional)
+        :type: str
+        
+        :returns:
+            CreateConnectedAccountResponse containing created connected account details
+        """
+        # Validate required parameters
+        if not connection_name:
+            raise ValueError("connection_name is required")
+        if not identifier:
+            raise ValueError("identifier is required")
+        if not authorization_details:
+            raise ValueError("authorization_details is required")
+        
+        # Create request model
+        request = CreateConnectedAccountRequest(
+            connection_name=connection_name,
+            identifier=identifier,
+            authorization_details=authorization_details,
+            organization_id=organization_id,
+            user_id=user_id
+        )
+        
+        # Convert to protobuf
+        connected_account_proto = request.to_proto()
+        
+        # Call the existing connected_accounts method which returns (response, metadata) tuple
+        result_tuple = self.connected_accounts.create_connected_account(
+            connector=connection_name,
+            identifier=identifier,
+            connected_account=connected_account_proto,
+            organization_id=organization_id,
+            user_id=user_id
+        )
+        
+        # Extract the response[0] (the actual CreateConnectedAccountResponse proto object)
+        proto_response = result_tuple[0]
+        
+        # Convert proto to our CreateConnectedAccountResponse class
+        return CreateConnectedAccountResponse.from_proto(proto_response)
+
+    def get_or_create_connected_account(
+        self,
+        connection_name: str,
+        identifier: str,
+        authorization_details: Optional[Dict[str, Any]] = None,
+        organization_id: Optional[str] = None,
+        user_id: Optional[str] = None,
+        **kwargs
+    ) -> CreateConnectedAccountResponse:
+        """
+        Get an existing connected account or create a new one if it doesn't exist
+        
+        :param connection_name: Connector identifier (required)
+        :type: str
+        :param identifier: Connected account identifier (required)
+        :type: str
+        :param authorization_details: Authorization details (OAuth token or static auth) (optional, empty auth will be used if not provided)
+        :type: Optional[Dict[str, Any]]
+        :param organization_id: Organization ID (optional)
+        :type: str
+        :param user_id: User ID (optional)
+        :type: str
+        
+        :returns:
+            CreateConnectedAccountResponse containing connected account details (either existing or newly created)
+        """
+        try:
+            # First, try to get the existing connected account
+            existing_response = self.get_connected_account(
+                connection_name=connection_name,
+                identifier=identifier,
+                organization_id=organization_id,
+                user_id=user_id
+            )
+            
+            # If we found it, convert the GetConnectedAccountAuthResponse to CreateConnectedAccountResponse format
+            return CreateConnectedAccountResponse(connected_account=existing_response.connected_account)
+            
+        except ScalekitNotFoundException:
+            # Connected account doesn't exist, create a new one
+            # Use empty authorization details if none provided
+            auth_details = authorization_details if authorization_details is not None else {}
+            
+            return self.create_connected_account(
+                connection_name=connection_name,
+                identifier=identifier,
+                authorization_details=auth_details,
+                organization_id=organization_id,
+                user_id=user_id
+            )

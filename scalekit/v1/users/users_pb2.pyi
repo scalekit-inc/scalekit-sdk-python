@@ -6,6 +6,7 @@ from google.protobuf import empty_pb2 as _empty_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
 from protoc_gen_openapiv2.options import annotations_pb2 as _annotations_pb2_1
 from scalekit.v1.commons import commons_pb2 as _commons_pb2
+from scalekit.v1.errdetails import errdetails_pb2 as _errdetails_pb2
 from scalekit.v1.options import options_pb2 as _options_pb2
 from google.protobuf.internal import containers as _containers
 from google.protobuf import descriptor as _descriptor
@@ -430,10 +431,12 @@ class AssignUserRolesRequest(_message.Message):
     def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., roles: _Optional[_Iterable[_Union[AssignRoleRequest, _Mapping]]] = ...) -> None: ...
 
 class AssignRoleRequest(_message.Message):
-    __slots__ = ("id",)
+    __slots__ = ("id", "role_name")
     ID_FIELD_NUMBER: _ClassVar[int]
+    ROLE_NAME_FIELD_NUMBER: _ClassVar[int]
     id: str
-    def __init__(self, id: _Optional[str] = ...) -> None: ...
+    role_name: str
+    def __init__(self, id: _Optional[str] = ..., role_name: _Optional[str] = ...) -> None: ...
 
 class AssignUserRolesResponse(_message.Message):
     __slots__ = ("roles",)
@@ -442,14 +445,14 @@ class AssignUserRolesResponse(_message.Message):
     def __init__(self, roles: _Optional[_Iterable[_Union[_commons_pb2.Role, _Mapping]]] = ...) -> None: ...
 
 class RemoveUserRoleRequest(_message.Message):
-    __slots__ = ("organization_id", "user_id", "role_id")
+    __slots__ = ("organization_id", "user_id", "role_name")
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     USER_ID_FIELD_NUMBER: _ClassVar[int]
-    ROLE_ID_FIELD_NUMBER: _ClassVar[int]
+    ROLE_NAME_FIELD_NUMBER: _ClassVar[int]
     organization_id: str
     user_id: str
-    role_id: str
-    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., role_id: _Optional[str] = ...) -> None: ...
+    role_name: str
+    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., role_name: _Optional[str] = ...) -> None: ...
 
 class ListUserPermissionsRequest(_message.Message):
     __slots__ = ("organization_id", "user_id")
