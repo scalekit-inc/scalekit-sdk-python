@@ -1,5 +1,5 @@
 google~=3.0.0
-protobuf~=5.29.5
+protobuf~=6.32.0
 grpcio~=1.73.1
 python-dotenv~=1.0.1
 Faker~=25.8.0
