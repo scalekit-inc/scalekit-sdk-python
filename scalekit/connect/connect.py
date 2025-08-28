@@ -453,6 +453,11 @@ class ConnectClient:
         :returns:
             CreateConnectedAccountResponse containing connected account details (either existing or newly created)
         """
+        if not connection_name:
+            raise ValueError("connection_name is required")
+        if not identifier:
+            raise ValueError("identifier is required")
+
         try:
             # First, try to get the existing connected account
             existing_response = self.get_connected_account(

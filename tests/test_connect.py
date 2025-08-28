@@ -647,7 +647,13 @@ class TestConnect(BaseTest):
             result = self.scalekit_client.connect.get_or_create_connected_account(
                 connection_name="GMAIL",
                 identifier=test_id,
-                authorization_details=None
+                authorization_details={
+                    "oauth_token": {
+                        "access_token": "",
+                        "refresh_token": "",
+                        "scopes": []
+                    }
+                }
             )
             
             self.assertIsNotNone(result)

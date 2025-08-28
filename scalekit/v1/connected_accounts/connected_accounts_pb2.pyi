@@ -29,6 +29,7 @@ class ConnectorType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     BASIC_AUTH: _ClassVar[ConnectorType]
     BEARER_TOKEN: _ClassVar[ConnectorType]
     CUSTOM: _ClassVar[ConnectorType]
+    BASIC: _ClassVar[ConnectorType]
 CONNECTION_STATUS_UNSPECIFIED: ConnectorStatus
 ACTIVE: ConnectorStatus
 EXPIRED: ConnectorStatus
@@ -39,6 +40,7 @@ API_KEY: ConnectorType
 BASIC_AUTH: ConnectorType
 BEARER_TOKEN: ConnectorType
 CUSTOM: ConnectorType
+BASIC: ConnectorType
 
 class ListConnectedAccountsRequest(_message.Message):
     __slots__ = ("organization_id", "user_id", "connector", "identifier", "provider", "page_size", "page_token", "query")

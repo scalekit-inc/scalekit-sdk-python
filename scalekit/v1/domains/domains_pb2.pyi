@@ -19,19 +19,21 @@ class VerificationStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     PENDING: _ClassVar[VerificationStatus]
     VERIFIED: _ClassVar[VerificationStatus]
     FAILED: _ClassVar[VerificationStatus]
+    AUTO_VERIFIED: _ClassVar[VerificationStatus]
 
 class DomainType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
     DOMAIN_TYPE_UNSPECIFIED: _ClassVar[DomainType]
-    HOME_REALM_DISCOVERY: _ClassVar[DomainType]
-    JIT_PROVISIONING_DOMAIN: _ClassVar[DomainType]
+    ALLOWED_EMAIL_DOMAIN: _ClassVar[DomainType]
+    ORGANIZATION_DOMAIN: _ClassVar[DomainType]
 VERIFICATION_STATUS_UNSPECIFIED: VerificationStatus
 PENDING: VerificationStatus
 VERIFIED: VerificationStatus
 FAILED: VerificationStatus
+AUTO_VERIFIED: VerificationStatus
 DOMAIN_TYPE_UNSPECIFIED: DomainType
-HOME_REALM_DISCOVERY: DomainType
-JIT_PROVISIONING_DOMAIN: DomainType
+ALLOWED_EMAIL_DOMAIN: DomainType
+ORGANIZATION_DOMAIN: DomainType
 
 class CreateDomainRequest(_message.Message):
     __slots__ = ("organization_id", "external_id", "connection_id", "domain")
