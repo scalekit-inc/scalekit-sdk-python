@@ -12,18 +12,18 @@ class TestConnect(BaseTest):
         self.test_identifier = "default"
         self.test_tool_name = "gmail_fetch_mails"
         self.test_connection_name = "GMAIL"
+        self.test_basic_connection_name = "freshdesk"
 
-
-        ca_response = self.scalekit_client.connect.get_connected_account(
-            connection_name=self.test_connection_name,
-            identifier=self.test_identifier
-        )
-
-        self.test_connected_account_id = ca_response.connected_account.id
-        if ca_response.connected_account.status != "ACTIVE":
-            response = self.scalekit_client.connect.get_authorization_link(identifier = self.test_identifier, connector="GMAIL")
-            print(f"Authorization link: {response.link}")
-            input("Press Enter to continue...")
+        # ca_response = self.scalekit_client.connect.get_connected_account(
+        #     connection_name=self.test_connection_name,
+        #     identifier=self.test_identifier
+        # )
+        #
+        # self.test_connected_account_id = ca_response.connected_account.id
+        # if ca_response.connected_account.status != "ACTIVE":
+        #     response = self.scalekit_client.connect.get_authorization_link(identifier = self.test_identifier, connector="GMAIL")
+        #     print(f"Authorization link: {response.link}")
+        #     input("Press Enter to continue...")
 
 
 
@@ -466,6 +466,10 @@ class TestConnect(BaseTest):
             self.assertTrue(hasattr(result, 'connected_account'))
             self.assertIsNotNone(result.connected_account)
             self.assertEqual(result.connected_account.identifier, test_id)
+            token = result.connected_account.authorization_details.get("oauth_token", {})
+            self.assertEqual(token.get("access_token"), "test_access_token")
+            self.assertEqual(token.get("refresh_token"), "test_refresh_token")
+            self.assertEqual(token.get("scopes"), ["read", "write"])
             
             # Clean up - delete the created account
             self.scalekit_client.connect.delete_connected_account(
@@ -485,14 +489,15 @@ class TestConnect(BaseTest):
         
         static_auth_details = {
             "static_auth": {
-                "api_key": "secret_key_123",
-                "username": "test_user"
+                    "domain": "testdomain.freshdesk.com",
+                    "password": "testpassword",
+                    "username": "testusername"
             }
         }
         
         try:
             result = self.scalekit_client.connect.create_connected_account(
-                connection_name="GMAIL", 
+                connection_name=self.test_basic_connection_name,
                 identifier=test_id,
                 authorization_details=static_auth_details
             )
@@ -502,12 +507,19 @@ class TestConnect(BaseTest):
             self.assertTrue(hasattr(result, 'connected_account'))
             self.assertIsNotNone(result.connected_account)
             self.assertEqual(result.connected_account.identifier, test_id)
+            auth = result.connected_account.authorization_details.get("static_auth", {})
+            self.assertEqual(auth.get("domain"), "testdomain.freshdesk.com")
+            self.assertEqual(auth.get("username"), "testusername")
+            self.assertEqual(auth.get("password"), "testpassword")
+
             
-            # Clean up - delete the created account
+            #Clean up - delete the created account
             self.scalekit_client.connect.delete_connected_account(
-                connection_name="GMAIL",
+                connection_name=self.test_basic_connection_name,
                 identifier=test_id
             )
+
+
             
         except Exception as e:
             raise e

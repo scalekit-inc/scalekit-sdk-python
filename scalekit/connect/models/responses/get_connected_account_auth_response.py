@@ -46,14 +46,14 @@ class ConnectedAccount(BaseModel):
         authorization_details = None
         if proto_account.authorization_details:
             authorization_details = {}
-            if proto_account.authorization_details.oauth_token:
+            if proto_account.authorization_type == ConnectorType.OAUTH :
                 oauth_token = proto_account.authorization_details.oauth_token
                 authorization_details["oauth_token"] = {
                     "access_token": oauth_token.access_token,
                     "refresh_token": oauth_token.refresh_token,
                     "scopes": list(oauth_token.scopes)
                 }
-            elif proto_account.authorization_details.static_auth:
+            else:
                 static_auth = proto_account.authorization_details.static_auth
                 # Convert protobuf Struct to dict
                 from google.protobuf.json_format import MessageToDict

@@ -67,8 +67,6 @@ class ConnectClient:
             ExecuteToolResponse containing execution results
         """
         # Validate required parameters
-        if not tool_input:
-            raise ValueError("tool_input is required")
         if not tool_name:
             raise ValueError("tool_name is required")
         
