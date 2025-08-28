@@ -17,7 +17,7 @@ class AuthServiceStub(object):
         """
         self.ListAuthMethods = channel.unary_unary(
                 '/scalekit.v1.auth.AuthService/ListAuthMethods',
-                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                request_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.ListAuthMethodsRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.ListAuthMethodsResponse.FromString,
                 )
         self.DiscoveryAuthMethod = channel.unary_unary(
@@ -157,7 +157,7 @@ def add_AuthServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'ListAuthMethods': grpc.unary_unary_rpc_method_handler(
                     servicer.ListAuthMethods,
-                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    request_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.ListAuthMethodsRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.ListAuthMethodsResponse.SerializeToString,
             ),
             'DiscoveryAuthMethod': grpc.unary_unary_rpc_method_handler(
@@ -237,7 +237,7 @@ class AuthService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.auth.AuthService/ListAuthMethods',
-            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            scalekit_dot_v1_dot_auth_dot_auth__pb2.ListAuthMethodsRequest.SerializeToString,
             scalekit_dot_v1_dot_auth_dot_auth__pb2.ListAuthMethodsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

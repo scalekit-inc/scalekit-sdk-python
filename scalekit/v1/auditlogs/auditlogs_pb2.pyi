@@ -38,7 +38,7 @@ class ListAuthLogResponse(_message.Message):
     def __init__(self, next_page_token: _Optional[str] = ..., prev_page_token: _Optional[str] = ..., total_size: _Optional[int] = ..., authRequests: _Optional[_Iterable[_Union[AuthLogRequest, _Mapping]]] = ...) -> None: ...
 
 class AuthLogRequest(_message.Message):
-    __slots__ = ("organization_id", "environment_id", "connection_id", "auth_request_id", "email", "connection_type", "connection_provider", "status", "timestamp", "connection_details")
+    __slots__ = ("organization_id", "environment_id", "connection_id", "auth_request_id", "email", "connection_type", "connection_provider", "status", "timestamp", "connection_details", "workflow")
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     ENVIRONMENT_ID_FIELD_NUMBER: _ClassVar[int]
     CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
@@ -49,6 +49,7 @@ class AuthLogRequest(_message.Message):
     STATUS_FIELD_NUMBER: _ClassVar[int]
     TIMESTAMP_FIELD_NUMBER: _ClassVar[int]
     CONNECTION_DETAILS_FIELD_NUMBER: _ClassVar[int]
+    WORKFLOW_FIELD_NUMBER: _ClassVar[int]
     organization_id: str
     environment_id: str
     connection_id: str
@@ -59,7 +60,8 @@ class AuthLogRequest(_message.Message):
     status: str
     timestamp: _timestamp_pb2.Timestamp
     connection_details: _containers.RepeatedCompositeFieldContainer[ConnectionDetails]
-    def __init__(self, organization_id: _Optional[str] = ..., environment_id: _Optional[str] = ..., connection_id: _Optional[str] = ..., auth_request_id: _Optional[str] = ..., email: _Optional[str] = ..., connection_type: _Optional[str] = ..., connection_provider: _Optional[str] = ..., status: _Optional[str] = ..., timestamp: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., connection_details: _Optional[_Iterable[_Union[ConnectionDetails, _Mapping]]] = ...) -> None: ...
+    workflow: str
+    def __init__(self, organization_id: _Optional[str] = ..., environment_id: _Optional[str] = ..., connection_id: _Optional[str] = ..., auth_request_id: _Optional[str] = ..., email: _Optional[str] = ..., connection_type: _Optional[str] = ..., connection_provider: _Optional[str] = ..., status: _Optional[str] = ..., timestamp: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., connection_details: _Optional[_Iterable[_Union[ConnectionDetails, _Mapping]]] = ..., workflow: _Optional[str] = ...) -> None: ...
 
 class ConnectionDetails(_message.Message):
     __slots__ = ("connection_id", "organization_id", "connection_type", "connection_provider")

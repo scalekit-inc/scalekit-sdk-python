@@ -57,6 +57,38 @@ class ToolsClient:
 
 
 
+    def list_scoped_tools(
+        self,
+        identifier: str,
+        filter: Optional[ScopedToolFilter] = None,
+        page_size: Optional[int] = None,
+        page_token: Optional[str] = None
+    ) -> ListScopedToolsResponse:
+        """
+        Method to list scoped tools for a specific identifier
+
+        :param identifier       : Identifier to scope the tools list
+        :type                   : ``` str ```
+        :param filter           : Filter parameters for scoped tools
+        :type                   : ``` ScopedToolFilter ```
+        :param page_size        : Maximum number of tools to return per page
+        :type                   : ``` int ```
+        :param page_token       : Token from a previous response for pagination
+        :type                   : ``` str ```
+
+        :returns:
+            List Scoped Tools Response
+        """
+        return self.core_client.grpc_exec(
+            self.tool_service.ListScopedTools.with_call,
+            ListScopedToolsRequest(
+                identifier=identifier,
+                filter=filter,
+                page_size=page_size,
+                page_token=page_token
+            ),
+        )
+
     def execute_tool(
         self,
         tool_name: str,
