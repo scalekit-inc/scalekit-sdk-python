@@ -35,7 +35,7 @@ class UserClient:
         :type                       : ``` str ```
         :param user                : CreateUser object with expected values for user creation
         :type                       : ``` obj ```
-        :param send_invitation_email: Whether to send activation email to the user
+        :param send_invitation_email: Whether to send invitation email to the user
         :type                       : ``` bool ```
 
         :returns:
@@ -212,7 +212,7 @@ class UserClient:
         :type                   : ``` str ```
         :param membership       : CreateMembership object
         :type                   : ``` obj ```
-        :param send_invitation_email: Whether to send activation email to the user
+        :param send_invitation_email: Whether to send invitation email to the user
         :type                       : ``` bool ```
 
         :returns:
@@ -244,7 +244,7 @@ class UserClient:
         :type                   : ``` str ```
         :param membership       : CreateMembership object
         :type                   : ``` obj ```
-        :param send_invitation_email: Whether to send activation email to the user
+        :param send_invitation_email: Whether to send invitation email to the user
         :type                       : ``` bool ```
 
         :returns:
@@ -361,6 +361,30 @@ class UserClient:
             DeleteMembershipRequest(
                 organization_id=organization_id,
                 external_id=external_id
+            ),
+        )
+
+    def resend_invite(
+        self,
+        organization_id: str,
+        user_id: str
+    ) -> ResendInviteResponse:
+        """
+        Method to resend an invitation email to a user who has a pending invitation
+
+        :param organization_id  : Organization id containing the pending invitation
+        :type                   : ``` str ```
+        :param user_id          : User id who has a pending invitation
+        :type                   : ``` str ```
+
+        :returns:
+            Resend Invite Response
+        """
+        return self.core_client.grpc_exec(
+            self.user_service.ResendInvite.with_call,
+            ResendInviteRequest(
+                organization_id=organization_id,
+                id=user_id
             ),
         )
 

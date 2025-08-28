@@ -1,4 +1,6 @@
 from faker import Faker
+
+from scalekit.common.exceptions import ScalekitBadRequestException, ScalekitNotFoundException, ScalekitException
 from tests.basetest import BaseTest
 
 from scalekit.v1.roles.roles_pb2 import CreateRole, UpdateRole
@@ -15,7 +17,7 @@ class TestRoles(BaseTest):
         self.role_id = None
         self.faker = Faker()
         self.user_id = None
-        
+
         # Always create a test organization for this test
         org_display_name = f"Test Organization {self.faker.unique.random_number()}"
         org = CreateOrganization(
@@ -30,7 +32,7 @@ class TestRoles(BaseTest):
         role_name = f"test_role_{self.faker.unique.random_number()}"
         display_name = f"Test Role {self.faker.unique.random_number()}"
         description = "Test role for unit testing"
-        
+
         role = CreateRole(
             name=role_name,
             display_name=display_name,
@@ -38,7 +40,7 @@ class TestRoles(BaseTest):
             default_creator=False,
             default_member=False
         )
-        
+
         response = self.scalekit_client.roles.create_role(role=role)
         self.assertEqual(response[1].code().name, "OK")
         self.assertTrue(response[0] is not None)
@@ -53,7 +55,7 @@ class TestRoles(BaseTest):
         """ Method to test create role with default flags """
         role_name = f"test_default_role_{self.faker.unique.random_number()}"
         display_name = f"Test Default Role {self.faker.unique.random_number()}"
-        
+
         role = CreateRole(
             name=role_name,
             display_name=display_name,
@@ -62,7 +64,7 @@ class TestRoles(BaseTest):
             default_member=False
         )
         print("CreateRole", role)
-        
+
         response = self.scalekit_client.roles.create_role(role=role)
         print("CreateRole response", response)
         self.assertEqual(response[1].code().name, "OK")
@@ -76,13 +78,13 @@ class TestRoles(BaseTest):
         """ Method to test get role """
         role_name = f"test_role_{self.faker.unique.random_number()}"
         display_name = f"Test Role {self.faker.unique.random_number()}"
-        
+
         role = CreateRole(
             name=role_name,
             display_name=display_name,
             description="Test role for get operation"
         )
-        
+
         create_response = self.scalekit_client.roles.create_role(role=role)
         self.role_id = create_response[0].role.id
 
@@ -98,13 +100,13 @@ class TestRoles(BaseTest):
         """ Method to test list roles """
         role_name = f"test_role_{self.faker.unique.random_number()}"
         display_name = f"Test Role {self.faker.unique.random_number()}"
-        
+
         role = CreateRole(
             name=role_name,
             display_name=display_name,
             description="Test role for list operation"
         )
-        
+
         create_response = self.scalekit_client.roles.create_role(role=role)
         self.role_id = create_response[0].role.id
 
@@ -112,14 +114,14 @@ class TestRoles(BaseTest):
         self.assertEqual(response[1].code().name, "OK")
         self.assertTrue(response[0] is not None)
         self.assertTrue(len(response[0].roles) > 0)
-        
+
         # Verify our created role is in the list
         found_role = None
         for role_item in response[0].roles:
             if role_item.id == self.role_id:
                 found_role = role_item
                 break
-        
+
         self.assertIsNotNone(found_role)
         self.assertEqual(found_role.name, role_name)
         self.assertEqual(found_role.display_name, display_name)
@@ -128,13 +130,13 @@ class TestRoles(BaseTest):
         """ Method to test update role """
         role_name = f"test_role_{self.faker.unique.random_number()}"
         display_name = f"Test Role {self.faker.unique.random_number()}"
-        
+
         role = CreateRole(
             name=role_name,
             display_name=display_name,
             description="Original description"
         )
-        
+
         create_response = self.scalekit_client.roles.create_role(role=role)
         self.role_id = create_response[0].role.id
         print("CreateRole for update response", create_response)
@@ -142,7 +144,7 @@ class TestRoles(BaseTest):
         # Update the role
         updated_display_name = f"Updated Role {self.faker.unique.random_number()}"
         updated_description = "Updated description for testing"
-        
+
         update_role = UpdateRole(
             display_name=updated_display_name,
             description=updated_description,
@@ -150,7 +152,7 @@ class TestRoles(BaseTest):
             default_member=False
         )
         print("UpdateRole", update_role)
-        
+
         response = self.scalekit_client.roles.update_role(
             role_id=self.role_id,
             role=update_role
@@ -169,20 +171,20 @@ class TestRoles(BaseTest):
         """ Method to test update role with partial fields """
         role_name = f"test_role_{self.faker.unique.random_number()}"
         display_name = f"Test Role {self.faker.unique.random_number()}"
-        
+
         role = CreateRole(
             name=role_name,
             display_name=display_name,
             description="Original description"
         )
-        
+
         create_response = self.scalekit_client.roles.create_role(role=role)
         self.role_id = create_response[0].role.id
 
         # Update only display name
         updated_display_name = f"Partial Update Role {self.faker.unique.random_number()}"
         update_role = UpdateRole(display_name=updated_display_name)
-        
+
         response = self.scalekit_client.roles.update_role(
             role_id=self.role_id,
             role=update_role
@@ -197,13 +199,13 @@ class TestRoles(BaseTest):
         """ Method to test delete role """
         role_name = f"test_role_{self.faker.unique.random_number()}"
         display_name = f"Test Role {self.faker.unique.random_number()}"
-        
+
         role = CreateRole(
             name=role_name,
             display_name=display_name,
             description="Test role for deletion"
         )
-        
+
         create_response = self.scalekit_client.roles.create_role(role=role)
         self.role_id = create_response[0].role.id
 
@@ -214,10 +216,9 @@ class TestRoles(BaseTest):
         try:
             self.scalekit_client.roles.get_role(role_id=self.role_id)
             self.fail("Role should have been deleted")
-        except Exception as exp:
-            # Expected behavior - role should not be found
-            self.assertTrue("not found" in str(exp) or "does not exist" in str(exp))
+        except ScalekitNotFoundException:
             self.role_id = None
+            pass
 
     def test_delete_role_with_reassignment(self):
         """ Method to test delete role with reassignment """
@@ -228,7 +229,7 @@ class TestRoles(BaseTest):
             display_name=f"Test Role 1 {self.faker.unique.random_number()}",
             description="First test role"
         )
-        
+
         create_response1 = self.scalekit_client.roles.create_role(role=role1)
         role1_id = create_response1[0].role.id
 
@@ -246,7 +247,7 @@ class TestRoles(BaseTest):
                 roles=[Role(id=role1_id, name=role1_name)]
             )
         )
-        
+
         user1_response = self.scalekit_client.users.create_user_and_membership(
             organization_id=self.org_id,
             user=user1
@@ -257,11 +258,8 @@ class TestRoles(BaseTest):
         try:
             self.scalekit_client.roles.delete_role(role_id=role1_id)
             self.fail("Role deletion should have failed because it has users assigned")
-        except Exception as exp:
-            # Expected behavior - should fail because role has users
-            print(f"Expected error when deleting role with users: {exp}")
-            # Assert the specific error message
-            self.assertEqual(str(exp), "role cannot be deleted as it is assigned to users")
+        except ScalekitBadRequestException as exp:
+            self.assertEqual(exp.message, "role cannot be deleted as it is assigned to users")
 
         # Create second role for reassignment
         role2_name = f"test_role_2_{self.faker.unique.random_number()}"
@@ -270,7 +268,7 @@ class TestRoles(BaseTest):
             display_name=f"Test Role 2 {self.faker.unique.random_number()}",
             description="Second test role for reassignment"
         )
-        
+
         create_response2 = self.scalekit_client.roles.create_role(role=role2)
         role2_id = create_response2[0].role.id
 
@@ -285,9 +283,8 @@ class TestRoles(BaseTest):
         try:
             self.scalekit_client.roles.get_role(role_id=role1_id)
             self.fail("Role should have been deleted")
-        except Exception as exp:
-            # Expected behavior - role should not be found
-            self.assertTrue("not found" in str(exp) or "does not exist" in str(exp))
+        except ScalekitNotFoundException:
+            pass
 
         # Verify second role still exists
         get_response = self.scalekit_client.roles.get_role(role_id=role2_id)
@@ -299,16 +296,12 @@ class TestRoles(BaseTest):
             try:
                 self.scalekit_client.users.delete_membership(
                     organization_id=self.org_id,
-                    user_id=self.user_id
-                )
+                    user_id=self.user_id)
+            except ScalekitNotFoundException:
+                pass
             except Exception as exp:
-                exp_message = str(exp).lower()
-                if "not found" in exp_message or "does not exist" in exp_message:
-                    # User already deleted or doesn't exist
-                    pass
-                else:
-                    # Log warning but don't fail the test
-                    print(f"Warning: Could not clean up user {self.user_id}: {exp}")
+                # Log warning but don't fail the test
+                print(f"Warning: Could not clean up user {self.user_id}: {exp}")
             self.user_id = None
 
         # Clean up second role
@@ -321,7 +314,7 @@ class TestRoles(BaseTest):
             display_name="Test Role without name"
             # Missing name field
         )
-        
+
         try:
             self.scalekit_client.roles.create_role(role=role)
             self.fail("Should have failed due to missing name")
@@ -332,19 +325,19 @@ class TestRoles(BaseTest):
     def test_role_name_uniqueness(self):
         """ Method to test role name uniqueness """
         role_name = f"unique_test_role_{self.faker.unique.random_number()}"
-        
+
         role1 = CreateRole(
             name=role_name,
             display_name=f"Test Role 1 {self.faker.unique.random_number()}",
             description="First role with same name"
         )
-        
+
         role2 = CreateRole(
             name=role_name,  # Same name
             display_name=f"Test Role 2 {self.faker.unique.random_number()}",
             description="Second role with same name"
         )
-        
+
         # Create first role
         create_response1 = self.scalekit_client.roles.create_role(role=role1)
         self.assertEqual(create_response1[1].code().name, "OK")
@@ -354,9 +347,9 @@ class TestRoles(BaseTest):
         try:
             self.scalekit_client.roles.create_role(role=role2)
             self.fail("Should have failed due to duplicate name")
-        except Exception as exp:
+        except ScalekitBadRequestException as exp:
             # Expected behavior - duplicate name error
-            self.assertTrue("already exists" in str(exp) or "duplicate" in str(exp) or "unique" in str(exp))
+            self.assertTrue(exp.message, 'duplicate key not allowed')
 
         # Clean up first role
         self.scalekit_client.roles.delete_role(role_id=role1_id)
@@ -387,24 +380,15 @@ class TestRoles(BaseTest):
         if self.role_id:
             try:
                 self.scalekit_client.roles.delete_role(role_id=self.role_id)
+            except ScalekitNotFoundException:
+                pass
             except Exception as exp:
-                exp_message = str(exp).lower()
-                
-                # Check for expected "not found" scenarios
-                if "not found" in exp_message or "does not exist" in exp_message:
-                    # Role already deleted or doesn't exist 
-                    pass
-                else:
-                    # Fail the test for unexpected exceptions during cleanup
-                    raise Exception(f"Unexpected exception during role cleanup: {exp}") from exp
-        
+                raise ScalekitException(f"Unexpected exception during role cleanup: {exp}") from exp
+
         # Clean up created organization
         try:
             self.scalekit_client.organization.delete_organization(organization_id=self.org_id)
+        except ScalekitNotFoundException:
+            pass
         except Exception as exp:
-            exp_message = str(exp).lower()
-            if "not found" in exp_message or "does not exist" in exp_message:
-                # Organization already deleted or doesn't exist
-                pass
-            else:
-                print(f"Warning: Could not clean up organization {self.org_id}: {exp}") 
+            raise ScalekitException(f"Warning: Could not clean up organization {self.org_id}: {exp}")
