@@ -10,7 +10,7 @@ setup(
         "protobuf<6.0.0,>=5.26.1",
         "google>=3.0",
         "requests>=2.32.3",
-        "PyJWT>=2.8,<2.10",
+        "PyJWT>=2.8,<2.11",
         "cffi>=1.15.1",
         "cryptography==45.0.6",
         "setuptools>=78.1.1",
