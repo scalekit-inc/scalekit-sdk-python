@@ -7,6 +7,6 @@ grpcio-status~=1.66.2
 requests~=2.32.3
 pydantic~=2.10.6
 PyJWT~=2.9.0
-cryptography~=44.0.1
+cryptography~=45.0.6
 setuptools~=80.9.0
 langchain-core~=0.3.74
