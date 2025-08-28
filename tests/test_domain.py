@@ -3,6 +3,7 @@ from faker import Faker
 
 from basetest import BaseTest
 from scalekit.v1.organizations.organizations_pb2 import CreateOrganization
+from scalekit.v1.domains.domains_pb2 import DomainType
 
 
 class TestDomain(BaseTest):
@@ -23,6 +24,60 @@ class TestDomain(BaseTest):
         self.assertTrue(response[0] is not None)
         self.assertEqual(response[0].domain.domain, domain_name)
         self.assertEqual(response[0].domain.organization_id, self.org_id)
+
+    def test_create_domain_with_allowed_email_domain_type(self):
+        """ Method to test create domain with ALLOWED_EMAIL_DOMAIN type """
+        organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
+        org_response = self.scalekit_client.organization.create_organization(organization=organization)
+        self.org_id = org_response[0].organization.id
+
+        domain_name = Faker().domain_name()
+        response = self.scalekit_client.domain.create_domain(
+            organization_id=self.org_id, 
+            domain_name=domain_name,
+            domain_type=DomainType.ALLOWED_EMAIL_DOMAIN
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertTrue(response[0] is not None)
+        self.assertEqual(response[0].domain.domain, domain_name)
+        self.assertEqual(response[0].domain.organization_id, self.org_id)
+        self.assertEqual(response[0].domain.domain_type, DomainType.ALLOWED_EMAIL_DOMAIN)
+
+    def test_create_domain_with_organization_domain_type(self):
+        """ Method to test create domain with ORGANIZATION_DOMAIN type """
+        organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
+        org_response = self.scalekit_client.organization.create_organization(organization=organization)
+        self.org_id = org_response[0].organization.id
+
+        domain_name = Faker().domain_name()
+        response = self.scalekit_client.domain.create_domain(
+            organization_id=self.org_id, 
+            domain_name=domain_name,
+            domain_type=DomainType.ORGANIZATION_DOMAIN
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertTrue(response[0] is not None)
+        self.assertEqual(response[0].domain.domain, domain_name)
+        self.assertEqual(response[0].domain.organization_id, self.org_id)
+        self.assertEqual(response[0].domain.domain_type, DomainType.ORGANIZATION_DOMAIN)
+
+    def test_create_domain_without_domain_type(self):
+        """ Method to test create domain without specifying domain_type (backward compatibility) """
+        organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
+        org_response = self.scalekit_client.organization.create_organization(organization=organization)
+        self.org_id = org_response[0].organization.id
+
+        domain_name = Faker().domain_name()
+        response = self.scalekit_client.domain.create_domain(
+            organization_id=self.org_id, 
+            domain_name=domain_name
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertTrue(response[0] is not None)
+        self.assertEqual(response[0].domain.domain, domain_name)
+        self.assertEqual(response[0].domain.organization_id, self.org_id)
+        # When domain_type is not specified, it should default to DOMAIN_TYPE_UNSPECIFIED
+        self.assertEqual(response[0].domain.domain_type, DomainType.DOMAIN_TYPE_UNSPECIFIED)
 
     def test_get_domain(self):
         """ Method to test get domain """

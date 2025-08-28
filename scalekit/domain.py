@@ -1,4 +1,6 @@
 
+from typing import Optional
+
 from scalekit.core import CoreClient
 from scalekit.v1.domains.domains_pb2 import *
 from scalekit.v1.domains.domains_pb2_grpc import DomainServiceStub
@@ -22,7 +24,7 @@ class DomainClient:
         )
 
     def create_domain(
-        self, organization_id: str, domain_name: str
+        self, organization_id: str, domain_name: str, domain_type: Optional[DomainType] = None
     ) -> CreateDomainResponse:
         """
         Method to create domain
@@ -31,6 +33,9 @@ class DomainClient:
         :type                   : ``` str ```
         :param domain_name      : Domain name for new creation
         :type                   : ``` str ```
+        :param domain_type      : Type of domain (ALLOWED_EMAIL_DOMAIN or ORGANIZATION_DOMAIN)
+        :type                   : ``` DomainType ```
+
         :returns
             Domain Response
         """
@@ -38,7 +43,10 @@ class DomainClient:
             self.domain_service.CreateDomain.with_call,
             CreateDomainRequest(
                 organization_id=organization_id,
-                domain=CreateDomain(domain=domain_name),
+                domain=CreateDomain(
+                    domain=domain_name,
+                    domain_type=domain_type
+                ),
             ),
         )
 

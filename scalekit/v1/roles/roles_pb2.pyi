@@ -18,7 +18,7 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class Role(_message.Message):
-    __slots__ = ("id", "name", "display_name", "description", "default_creator", "default_member", "extends", "permissions", "dependent_roles_count")
+    __slots__ = ("id", "name", "display_name", "description", "default_creator", "default_member", "extends", "permissions", "dependent_roles_count", "is_org_role")
     ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
@@ -28,6 +28,7 @@ class Role(_message.Message):
     EXTENDS_FIELD_NUMBER: _ClassVar[int]
     PERMISSIONS_FIELD_NUMBER: _ClassVar[int]
     DEPENDENT_ROLES_COUNT_FIELD_NUMBER: _ClassVar[int]
+    IS_ORG_ROLE_FIELD_NUMBER: _ClassVar[int]
     id: str
     name: str
     display_name: str
@@ -35,9 +36,10 @@ class Role(_message.Message):
     default_creator: bool
     default_member: bool
     extends: str
-    permissions: _containers.RepeatedCompositeFieldContainer[Permission]
+    permissions: _containers.RepeatedCompositeFieldContainer[RolePermission]
     dependent_roles_count: int
-    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., default_creator: bool = ..., default_member: bool = ..., extends: _Optional[str] = ..., permissions: _Optional[_Iterable[_Union[Permission, _Mapping]]] = ..., dependent_roles_count: _Optional[int] = ...) -> None: ...
+    is_org_role: bool
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., default_creator: bool = ..., default_member: bool = ..., extends: _Optional[str] = ..., permissions: _Optional[_Iterable[_Union[RolePermission, _Mapping]]] = ..., dependent_roles_count: _Optional[int] = ..., is_org_role: bool = ...) -> None: ...
 
 class CreateRole(_message.Message):
     __slots__ = ("name", "display_name", "description", "extends", "permissions")
@@ -223,6 +225,20 @@ class GetRoleUsersCountResponse(_message.Message):
     count: int
     def __init__(self, count: _Optional[int] = ...) -> None: ...
 
+class GetOrganizationRoleUsersCountRequest(_message.Message):
+    __slots__ = ("org_id", "role_name")
+    ORG_ID_FIELD_NUMBER: _ClassVar[int]
+    ROLE_NAME_FIELD_NUMBER: _ClassVar[int]
+    org_id: str
+    role_name: str
+    def __init__(self, org_id: _Optional[str] = ..., role_name: _Optional[str] = ...) -> None: ...
+
+class GetOrganizationRoleUsersCountResponse(_message.Message):
+    __slots__ = ("count",)
+    COUNT_FIELD_NUMBER: _ClassVar[int]
+    count: int
+    def __init__(self, count: _Optional[int] = ...) -> None: ...
+
 class UpdateDefaultRolesRequest(_message.Message):
     __slots__ = ("default_creator", "default_member", "default_creator_role", "default_member_role")
     DEFAULT_CREATOR_FIELD_NUMBER: _ClassVar[int]
@@ -278,6 +294,22 @@ class Permission(_message.Message):
     create_time: _timestamp_pb2.Timestamp
     update_time: _timestamp_pb2.Timestamp
     def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+
+class RolePermission(_message.Message):
+    __slots__ = ("id", "name", "description", "create_time", "update_time", "role_name")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
+    CREATE_TIME_FIELD_NUMBER: _ClassVar[int]
+    UPDATE_TIME_FIELD_NUMBER: _ClassVar[int]
+    ROLE_NAME_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    name: str
+    description: str
+    create_time: _timestamp_pb2.Timestamp
+    update_time: _timestamp_pb2.Timestamp
+    role_name: str
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., role_name: _Optional[str] = ...) -> None: ...
 
 class CreatePermission(_message.Message):
     __slots__ = ("name", "description")
@@ -414,3 +446,11 @@ class DeleteRoleBaseRequest(_message.Message):
     ROLE_NAME_FIELD_NUMBER: _ClassVar[int]
     role_name: str
     def __init__(self, role_name: _Optional[str] = ...) -> None: ...
+
+class DeleteOrganizationRoleBaseRequest(_message.Message):
+    __slots__ = ("org_id", "role_name")
+    ORG_ID_FIELD_NUMBER: _ClassVar[int]
+    ROLE_NAME_FIELD_NUMBER: _ClassVar[int]
+    org_id: str
+    role_name: str
+    def __init__(self, org_id: _Optional[str] = ..., role_name: _Optional[str] = ...) -> None: ...

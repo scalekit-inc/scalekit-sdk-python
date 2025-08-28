@@ -84,6 +84,7 @@ class ObjectType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     OrgMembership: _ClassVar[ObjectType]
     UserProfile: _ClassVar[ObjectType]
     IDPInitiatedPayload: _ClassVar[ObjectType]
+    DeviceDetails: _ClassVar[ObjectType]
 ACTOR_UNSPECIFIED: EventActor
 HUMAN: EventActor
 MACHINE: EventActor
@@ -138,6 +139,7 @@ SKErrors: ObjectType
 OrgMembership: ObjectType
 UserProfile: ObjectType
 IDPInitiatedPayload: ObjectType
+DeviceDetails: ObjectType
 
 class SendCustomEventRequest(_message.Message):
     __slots__ = ("event_type", "event")
@@ -331,7 +333,7 @@ class EventFilter(_message.Message):
     def __init__(self, event_types: _Optional[_Iterable[str]] = ..., start_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., end_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., organization_id: _Optional[str] = ..., source: _Optional[_Union[Source, str]] = ..., auth_request_id: _Optional[str] = ...) -> None: ...
 
 class ScalekitEvent(_message.Message):
-    __slots__ = ("spec_version", "id", "type", "occurred_at", "environment_id", "organization_id", "object", "data", "display")
+    __slots__ = ("spec_version", "id", "type", "occurred_at", "environment_id", "organization_id", "object", "data", "display_name")
     SPEC_VERSION_FIELD_NUMBER: _ClassVar[int]
     ID_FIELD_NUMBER: _ClassVar[int]
     TYPE_FIELD_NUMBER: _ClassVar[int]
@@ -340,7 +342,7 @@ class ScalekitEvent(_message.Message):
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     OBJECT_FIELD_NUMBER: _ClassVar[int]
     DATA_FIELD_NUMBER: _ClassVar[int]
-    DISPLAY_FIELD_NUMBER: _ClassVar[int]
+    DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     spec_version: str
     id: str
     type: str
@@ -349,5 +351,5 @@ class ScalekitEvent(_message.Message):
     organization_id: str
     object: ObjectType
     data: _struct_pb2.Struct
-    display: str
-    def __init__(self, spec_version: _Optional[str] = ..., id: _Optional[str] = ..., type: _Optional[str] = ..., occurred_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., environment_id: _Optional[str] = ..., organization_id: _Optional[str] = ..., object: _Optional[_Union[ObjectType, str]] = ..., data: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., display: _Optional[str] = ...) -> None: ...
+    display_name: str
+    def __init__(self, spec_version: _Optional[str] = ..., id: _Optional[str] = ..., type: _Optional[str] = ..., occurred_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., environment_id: _Optional[str] = ..., organization_id: _Optional[str] = ..., object: _Optional[_Union[ObjectType, str]] = ..., data: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., display_name: _Optional[str] = ...) -> None: ...
