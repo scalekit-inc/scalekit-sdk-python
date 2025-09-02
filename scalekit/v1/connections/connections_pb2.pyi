@@ -606,7 +606,7 @@ class StaticAuthConfig(_message.Message):
     def __init__(self, static_config: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
 
 class SAMLConnectionConfigRequest(_message.Message):
-    __slots__ = ("idp_metadata_url", "idp_entity_id", "idp_sso_url", "idp_certificate", "idp_slo_url", "ui_button_title", "idp_name_id_format", "idp_sso_request_binding", "idp_slo_request_binding", "saml_signing_option", "force_authn", "default_redirect_uri", "assertion_encrypted", "want_request_signed", "certificate_id", "idp_slo_required")
+    __slots__ = ("idp_metadata_url", "idp_entity_id", "idp_sso_url", "idp_certificate", "idp_slo_url", "ui_button_title", "idp_name_id_format", "idp_sso_request_binding", "idp_slo_request_binding", "saml_signing_option", "force_authn", "default_redirect_uri", "assertion_encrypted", "want_request_signed", "certificate_id", "idp_slo_required", "sp_entity_id", "sp_assertion_url", "sp_slo_url")
     IDP_METADATA_URL_FIELD_NUMBER: _ClassVar[int]
     IDP_ENTITY_ID_FIELD_NUMBER: _ClassVar[int]
     IDP_SSO_URL_FIELD_NUMBER: _ClassVar[int]
@@ -623,6 +623,9 @@ class SAMLConnectionConfigRequest(_message.Message):
     WANT_REQUEST_SIGNED_FIELD_NUMBER: _ClassVar[int]
     CERTIFICATE_ID_FIELD_NUMBER: _ClassVar[int]
     IDP_SLO_REQUIRED_FIELD_NUMBER: _ClassVar[int]
+    SP_ENTITY_ID_FIELD_NUMBER: _ClassVar[int]
+    SP_ASSERTION_URL_FIELD_NUMBER: _ClassVar[int]
+    SP_SLO_URL_FIELD_NUMBER: _ClassVar[int]
     idp_metadata_url: _wrappers_pb2.StringValue
     idp_entity_id: _wrappers_pb2.StringValue
     idp_sso_url: _wrappers_pb2.StringValue
@@ -639,7 +642,10 @@ class SAMLConnectionConfigRequest(_message.Message):
     want_request_signed: _wrappers_pb2.BoolValue
     certificate_id: _wrappers_pb2.StringValue
     idp_slo_required: _wrappers_pb2.BoolValue
-    def __init__(self, idp_metadata_url: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., idp_entity_id: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., idp_sso_url: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., idp_certificate: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., idp_slo_url: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., ui_button_title: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., idp_name_id_format: _Optional[_Union[NameIdFormat, str]] = ..., idp_sso_request_binding: _Optional[_Union[RequestBinding, str]] = ..., idp_slo_request_binding: _Optional[_Union[RequestBinding, str]] = ..., saml_signing_option: _Optional[_Union[SAMLSigningOptions, str]] = ..., force_authn: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., default_redirect_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., assertion_encrypted: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., want_request_signed: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., certificate_id: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., idp_slo_required: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ...) -> None: ...
+    sp_entity_id: _wrappers_pb2.StringValue
+    sp_assertion_url: _wrappers_pb2.StringValue
+    sp_slo_url: _wrappers_pb2.StringValue
+    def __init__(self, idp_metadata_url: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., idp_entity_id: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., idp_sso_url: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., idp_certificate: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., idp_slo_url: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., ui_button_title: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., idp_name_id_format: _Optional[_Union[NameIdFormat, str]] = ..., idp_sso_request_binding: _Optional[_Union[RequestBinding, str]] = ..., idp_slo_request_binding: _Optional[_Union[RequestBinding, str]] = ..., saml_signing_option: _Optional[_Union[SAMLSigningOptions, str]] = ..., force_authn: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., default_redirect_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., assertion_encrypted: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., want_request_signed: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., certificate_id: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., idp_slo_required: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., sp_entity_id: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., sp_assertion_url: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., sp_slo_url: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ...) -> None: ...
 
 class SAMLConnectionConfigResponse(_message.Message):
     __slots__ = ("sp_entity_id", "sp_assertion_url", "sp_metadata_url", "idp_metadata_url", "idp_entity_id", "idp_sso_url", "idp_certificates", "idp_slo_url", "ui_button_title", "idp_name_id_format", "idp_sso_request_binding", "idp_slo_request_binding", "saml_signing_option", "allow_idp_initiated_login", "force_authn", "default_redirect_uri", "assertion_encrypted", "want_request_signed", "certificate_id", "idp_slo_required", "sp_slo_url")
