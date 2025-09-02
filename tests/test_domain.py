@@ -76,8 +76,8 @@ class TestDomain(BaseTest):
         self.assertTrue(response[0] is not None)
         self.assertEqual(response[0].domain.domain, domain_name)
         self.assertEqual(response[0].domain.organization_id, self.org_id)
-        # When domain_type is not specified, it should default to DOMAIN_TYPE_UNSPECIFIED
-        self.assertEqual(response[0].domain.domain_type, DomainType.DOMAIN_TYPE_UNSPECIFIED)
+        # When domain_type is not specified, it should default to ORGANIZATION_DOMAIN
+        self.assertEqual(response[0].domain.domain_type, DomainType.ORGANIZATION_DOMAIN)
 
     def test_get_domain(self):
         """ Method to test get domain """
