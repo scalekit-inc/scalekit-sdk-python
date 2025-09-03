@@ -1,7 +1,7 @@
 
 from faker import Faker
 
-from basetest import BaseTest
+from .basetest import BaseTest
 from scalekit.v1.organizations.organizations_pb2 import CreateOrganization
 from scalekit.v1.domains.domains_pb2 import DomainType
 
@@ -115,6 +115,43 @@ class TestDomain(BaseTest):
         self.assertEqual(response[0].domains[0].id, create_domain_response[0].domain.id)
         self.assertEqual(response[0].domains[0].domain, domain_name)
         self.assertEqual(response[0].domains[0].organization_id, self.org_id)
+
+    def test_delete_domain(self):
+        """ Method to test delete domain """
+        organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
+        org_response = self.scalekit_client.organization.create_organization(organization=organization)
+        self.org_id = org_response[0].organization.id
+
+        domain_name = Faker().domain_name()
+        create_domain_response = self.scalekit_client.domain.create_domain(
+            organization_id=self.org_id, domain_name=domain_name)
+        domain_id = create_domain_response[0].domain.id
+
+        # Verify domain was created
+        self.assertEqual(create_domain_response[1].code().name, "OK")
+        self.assertTrue(create_domain_response[0] is not None)
+
+        # Delete the domain
+        delete_response = self.scalekit_client.domain.delete_domain(
+            organization_id=self.org_id, domain_id=domain_id)
+        self.assertEqual(delete_response[1].code().name, "OK")
+
+        # Verify domain was deleted by trying to get it (should fail)
+        try:
+            self.scalekit_client.domain.get_domain(organization_id=self.org_id, domain_id=domain_id)
+            self.fail("Domain should have been deleted")
+        except Exception:
+            # Expected behavior - domain should not exist
+            pass
+
+        # Verify domain is not in the list
+        list_response = self.scalekit_client.domain.list_domains(organization_id=self.org_id)
+        self.assertEqual(list_response[1].code().name, "OK")
+        self.assertTrue(list_response[0] is not None)
+        
+        # Check that the deleted domain is not in the list
+        domain_ids = [domain.id for domain in list_response[0].domains]
+        self.assertNotIn(domain_id, domain_ids)
 
     def tearDown(self):
         """ Method to clean up """

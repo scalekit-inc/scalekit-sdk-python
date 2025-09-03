@@ -102,3 +102,19 @@ class DomainClient:
             self.domain_service.GetDomain.with_call,
             GetDomainRequest(organization_id=organization_id, id=domain_id),
         )
+    
+    def delete_domain(self, organization_id: str, domain_id: str): 
+        """
+        Method to delete domain
+
+        :param organization_id  : Organization id to delete domain for
+        :type                   : ``` str ```
+        :param domain_id        : Domain id to delete
+        :type                   : ``` str ```
+        :returns
+            None
+        """
+        return self.core_client.grpc_exec(
+            self.domain_service.DeleteDomain.with_call,
+            DeleteDomainRequest(organization_id=organization_id, id=domain_id),
+        )
