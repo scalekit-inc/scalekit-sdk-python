@@ -52,7 +52,7 @@ class RoleClient:
         """
         return self.core_client.grpc_exec(
             self.role_service.GetRole.with_call,
-            GetRoleRequest(id=role_id),
+            GetRoleRequest(role_name=role_id),
         )
 
     def list_roles(self) -> ListRolesResponse:
@@ -86,7 +86,7 @@ class RoleClient:
         return self.core_client.grpc_exec(
             self.role_service.UpdateRole.with_call,
             UpdateRoleRequest(
-                id=role_id,
+                role_name=role_id,
                 role=role
             ),
         )
@@ -107,7 +107,7 @@ class RoleClient:
         :returns:
             None
         """
-        request = DeleteRoleRequest(id=role_id)
+        request = DeleteRoleRequest(role_name=role_id)
         if reassign_role_id:
             request.reassign_role_id = reassign_role_id
             
@@ -131,7 +131,7 @@ class RoleClient:
         """
         return self.core_client.grpc_exec(
             self.role_service.GetRoleUsersCount.with_call,
-            GetRoleUsersCountRequest(id=role_id),
+            GetRoleUsersCountRequest(role_name=role_id),
         )
 
  

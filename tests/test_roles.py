@@ -36,9 +36,7 @@ class TestRoles(BaseTest):
         role = CreateRole(
             name=role_name,
             display_name=display_name,
-            description=description,
-            default_creator=False,
-            default_member=False
+            description=description
         )
 
         response = self.scalekit_client.roles.create_role(role=role)
@@ -47,8 +45,6 @@ class TestRoles(BaseTest):
         self.assertEqual(response[0].role.name, role_name)
         self.assertEqual(response[0].role.display_name, display_name)
         self.assertEqual(response[0].role.description, description)
-        self.assertEqual(response[0].role.default_creator, False)
-        self.assertEqual(response[0].role.default_member, False)
         self.role_id = response[0].role.id
 
     def test_create_role_with_default_flags(self):
@@ -59,9 +55,7 @@ class TestRoles(BaseTest):
         role = CreateRole(
             name=role_name,
             display_name=display_name,
-            description="Test default role",
-            default_creator=False,
-            default_member=False
+            description="Test default role"
         )
         print("CreateRole", role)
 
@@ -70,8 +64,6 @@ class TestRoles(BaseTest):
         self.assertEqual(response[1].code().name, "OK")
         self.assertTrue(response[0] is not None)
         self.assertEqual(response[0].role.name, role_name)
-        self.assertEqual(response[0].role.default_creator, False)
-        self.assertEqual(response[0].role.default_member, False)
         self.role_id = response[0].role.id
 
     def test_get_role(self):
@@ -147,9 +139,7 @@ class TestRoles(BaseTest):
 
         update_role = UpdateRole(
             display_name=updated_display_name,
-            description=updated_description,
-            default_creator=False,
-            default_member=False
+            description=updated_description
         )
         print("UpdateRole", update_role)
 
@@ -164,8 +154,6 @@ class TestRoles(BaseTest):
         self.assertEqual(response[0].role.name, role_name)  # Name should not change
         self.assertEqual(response[0].role.display_name, updated_display_name)
         self.assertEqual(response[0].role.description, updated_description)
-        self.assertEqual(response[0].role.default_creator, False)
-        self.assertEqual(response[0].role.default_member, False)
 
     def test_update_role_partial(self):
         """ Method to test update role with partial fields """
