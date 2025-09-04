@@ -13,7 +13,7 @@ _TEMPLATE_TYPE_MAP = {
     "SIGNUP": TemplateType.SIGNUP,
 }
 
-def _convert_template_type(template: Union[str, TemplateType, None]) -> Optional[TemplateType]:
+def _convert_template_type(template: Union[str, "TemplateType", None]) -> Optional["TemplateType"]:
     """Convert string or enum to TemplateType enum"""
     if template is None:
         return None
@@ -46,7 +46,7 @@ class PasswordlessClient:
     def send_passwordless_email(
         self,
         email: str,
-        template: Optional[Union[str, TemplateType]] = None,
+        template: Optional[Union[str, "TemplateType"]] = None,
         magiclink_auth_uri: Optional[str] = None,
         state: Optional[str] = None,
         expires_in: Optional[int] = None,
