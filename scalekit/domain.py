@@ -13,7 +13,7 @@ _DOMAIN_TYPE_MAP = {
     "ORGANIZATION_DOMAIN": DomainType.ORGANIZATION_DOMAIN,
 }
 
-def _convert_domain_type(domain_type: Union[str, DomainType, None]) -> Optional[DomainType]:
+def _convert_domain_type(domain_type: Union[str, "DomainType", None]) -> Optional["DomainType"]:
     """Convert string or enum to DomainType enum"""
     if domain_type is None:
         return None
@@ -44,7 +44,7 @@ class DomainClient:
         )
 
     def create_domain(
-        self, organization_id: str, domain_name: str, domain_type: Optional[Union[str, DomainType]] = None
+        self, organization_id: str, domain_name: str, domain_type: Optional[Union[str, "DomainType"]] = None
     ) -> CreateDomainResponse:
         """
         Method to create domain
