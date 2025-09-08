@@ -8,10 +8,34 @@
 </p>
 
 # Official Python SDK
-<a href="https://scalekit.com" target="_blank" rel="noopener noreferrer">Scalekit</a> is an Enterprise Authentication Platform purpose built for B2B applications. This Python SDK helps implement Enterprise Capabilities like Single Sign-on via SAML or OIDC in your Python applications within a few hours.
+
+[![PyPI version](https://img.shields.io/pypi/v/scalekit-sdk-python.svg?style=flat-square)](https://pypi.org/project/scalekit-sdk-python/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python versions](https://img.shields.io/pypi/pyversions/scalekit-sdk-python.svg?style=flat-square)](https://pypi.org/project/scalekit-sdk-python/)
+
+<a href="https://scalekit.com" target="_blank" rel="noopener noreferrer">Scalekit</a> is the **auth stack for AI apps** - from human authentication to agent authorization. Build secure AI products faster with authentication for humans (SSO, passwordless, full-stack auth) and agents (MCP/APIs, delegated actions), all unified on one platform. This Python SDK enables both traditional B2B authentication and cutting-edge agentic workflows.
+
+## 🤖 Agent-First Features
+
+- **🔐 Agent Identity**: Agents as first-class actors with human ownership and org context
+- **🎯 MCP-Native OAuth 2.1**: Purpose-built for Model Context Protocol with DCR/PKCE support
+- **⏰ Ephemeral Credentials**: Time-bound, task-based authorization (minutes, not days)
+- **🔒 Token Vault**: Per-user, per-tool token storage with rotation and progressive consent
+- **👥 Human-in-the-Loop**: Step-up authentication when risk crosses thresholds
+- **📊 Immutable Audit**: Track which user initiated, which agent acted, what resource was accessed
+
+## 👨‍💼 Human Authentication
+
+- **🔐 Enterprise SSO**: Support for SAML and OIDC protocols
+- **👥 SCIM Provisioning**: Automated user provisioning and deprovisioning  
+- **🚀 Passwordless Authentication**: Magic links, OTP, and modern auth flows
+- **🏢 Multi-tenant Architecture**: Organization-level authentication policies
+- **📱 Social Logins**: Support for popular social identity providers
+- **🛡️ Full-Stack Auth**: Complete IdP-of-record solution for B2B SaaS
+- **🐍 Pythonic API**: Clean, intuitive interface following Python conventions
 
 <div>
-📚 <a target="_blank" href="https://docs.scalekit.com">Documentation</a> - 🚀 <a target="_blank" href="https://docs.scalekit.com">Quick-start Guide</a> - 💻 <a target="_blank" href="https://docs.scalekit.com/apis">API Reference</a>
+📚 <a target="_blank" href="https://docs.scalekit.com">Documentation</a> • 🚀 <a target="_blank" href="https://docs.scalekit.com/sso/quickstart/">SSO Quickstart</a> • 💻 <a target="_blank" href="https://docs.scalekit.com/apis">API Reference</a>
 </div>
 <hr />
 
@@ -106,20 +130,33 @@ if __name__ == "__main__":
 
 ```
 
-## Example Apps
+## 📱 Example Apps
 
-Fully functional sample applications written using some popular web application frameworks and Scalekit SDK. Feel free to clone the repo and run them locally.
+Explore fully functional sample applications built with popular Python frameworks and the Scalekit SDK:
 
-- [FastAPI](https://github.com/scalekit-inc/scalekit-fastapi-example.git)
+| Framework | Repository | Description |
+|-----------|------------|-------------|
+| **FastAPI** | [scalekit-fastapi-example](https://github.com/scalekit-developers/scalekit-fastapi-example) | Modern async Python API framework |
 
-## API Reference
+## 🔗 Helpful Links
 
-Refer to our [API reference docs](https://docs.scalekit.com/apis) for detailed information about all our API endpoints and their usage.
+### 📖 Quickstart Guides
+- [**SSO Integration**](https://docs.scalekit.com/sso/quickstart/) - Implement enterprise Single Sign-on
+- [**Full Stack Auth**](https://docs.scalekit.com/fsa/quickstart/) - Complete authentication solution
+- [**Passwordless Auth**](https://docs.scalekit.com/passwordless/quickstart/) - Modern authentication flows
+- [**Social Logins**](https://docs.scalekit.com/social-logins/quickstart/) - Popular social identity providers
+- [**Machine-to-Machine**](https://docs.scalekit.com/m2m/quickstart/) - API authentication
 
-## More Information
+### 📚 Documentation & Reference
+- [**API Reference**](https://docs.scalekit.com/apis) - Complete API documentation
+- [**Developer Kit**](https://docs.scalekit.com/dev-kit/) - Tools and utilities
+- [**API Authentication Guide**](https://docs.scalekit.com/guides/authenticate-scalekit-api/) - Secure API access
 
-- Quickstart Guide to implement Single Sign-on in your application: [SSO Quickstart Guide](https://docs.scalekit.com)
-- Understand Single Sign-on basics: [SSO Basics](https://docs.scalekit.com/best-practices/single-sign-on)
+### 🛠️ Additional Resources
+- [**Setup Guide**](https://docs.scalekit.com/guides/setup-scalekit/) - Initial platform configuration
+- [**Code Examples**](https://docs.scalekit.com/directory/code-examples/) - Ready-to-use code snippets
+- [**Admin Portal Guide**](https://docs.scalekit.com/directory/guides/admin-portal/) - Administrative interface
+- [**Launch Checklist**](https://docs.scalekit.com/directory/guides/launch-checklist/) - Pre-production checklist
 
 ## License
 
