@@ -1,7 +1,6 @@
 from basetest import BaseTest
-from scalekit.connect.types import ExecuteToolResponse, MagicLinkResponse, ListConnectedAccountsResponse, DeleteConnectedAccountResponse, GetConnectedAccountAuthResponse, ToolMapping, CreateConnectedAccountResponse
-from scalekit.connect.modifier import Modifier
-from scalekit.common.exceptions import ScalekitNotFoundException
+from scalekit.actions.types import ExecuteToolResponse, MagicLinkResponse, ListConnectedAccountsResponse, DeleteConnectedAccountResponse, GetConnectedAccountAuthResponse, ToolMapping, CreateConnectedAccountResponse
+from scalekit.actions.modifier import Modifier
 
 
 class TestConnect(BaseTest):
@@ -14,16 +13,16 @@ class TestConnect(BaseTest):
         self.test_connection_name = "GMAIL"
         self.test_basic_connection_name = "freshdesk"
 
-        # ca_response = self.scalekit_client.connect.get_connected_account(
-        #     connection_name=self.test_connection_name,
-        #     identifier=self.test_identifier
-        # )
-        #
-        # self.test_connected_account_id = ca_response.connected_account.id
-        # if ca_response.connected_account.status != "ACTIVE":
-        #     response = self.scalekit_client.connect.get_authorization_link(identifier = self.test_identifier, connector="GMAIL")
-        #     print(f"Authorization link: {response.link}")
-        #     input("Press Enter to continue...")
+        ca_response = self.scalekit_client.connect.get_connected_account(
+            connection_name=self.test_connection_name,
+            identifier=self.test_identifier
+        )
+
+        self.test_connected_account_id = ca_response.connected_account.id
+        if ca_response.connected_account.status != "ACTIVE":
+            response = self.scalekit_client.connect.get_authorization_link(identifier = self.test_identifier, connector="GMAIL")
+            print(f"Authorization link: {response.link}")
+            input("Press Enter to continue...")
 
 
 
@@ -35,7 +34,7 @@ class TestConnect(BaseTest):
         }
 
         try:
-            result = self.scalekit_client.connect.execute_tool(
+            result = self.scalekit_client.actions.execute_tool(
                 tool_input=tool_input,
                 tool_name=self.test_tool_name,
                 identifier=self.test_identifier,
@@ -399,7 +398,7 @@ class TestConnect(BaseTest):
     def test_create_mcp_success(self):
         """Method to test create_mcp creates MCP server successfully"""
         import uuid
-        from scalekit.connect.types import CreateMcpResponse
+        from scalekit.actions.types import CreateMcpResponse
         
         # Generate unique identifier for this test
         test_identifier = 'default'
@@ -455,7 +454,7 @@ class TestConnect(BaseTest):
         }
         
         try:
-            result = self.scalekit_client.connect.create_connected_account(
+            result = self.scalekit_client.actions.create_connected_account(
                 connection_name="GMAIL",
                 identifier=test_id,
                 authorization_details=oauth_auth_details

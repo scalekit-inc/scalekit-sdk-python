@@ -2,27 +2,27 @@ from typing import Optional, Any, List, Dict
 from scalekit.v1.mcp.mcp_pb2 import Mcp
 from scalekit.v1.mcp.mcp_pb2 import ToolMapping as ProtoToolMapping
 
-from scalekit.connect.models.tool_mapping import ToolMapping
-from scalekit.connect.types import ToolRequest,ExecuteToolResponse,MagicLinkResponse,ListConnectedAccountsResponse,DeleteConnectedAccountResponse,GetConnectedAccountAuthResponse,ToolInput, \
+from scalekit.actions.models.tool_mapping import ToolMapping
+from scalekit.actions.types import ToolRequest,ExecuteToolResponse,MagicLinkResponse,ListConnectedAccountsResponse,DeleteConnectedAccountResponse,GetConnectedAccountAuthResponse,ToolInput, \
     McpRequest,CreateMcpResponse,GetMcpResponse
-from scalekit.connect.models.responses.create_connected_account_response import CreateConnectedAccountResponse
-from scalekit.connect.models.requests.create_connected_account_request import CreateConnectedAccountRequest
-from scalekit.connect.modifier import (
+from scalekit.actions.models.responses.create_connected_account_response import CreateConnectedAccountResponse
+from scalekit.actions.models.requests.create_connected_account_request import CreateConnectedAccountRequest
+from scalekit.actions.modifier import (
     Modifier, ModifierType, ToolNames,
     apply_pre_modifiers, apply_post_modifiers
 )
-from scalekit.connect.frameworks.langchain import LangChain
+from scalekit.actions.frameworks.langchain import LangChain
 from scalekit.common.exceptions import ScalekitNotFoundException
 
 
 
 
-class ConnectClient:
+class ActionClient:
     """Class definition for Connect Client"""
 
     def __init__(self,tools_client, connected_accounts_client, mcp_client=None):
         """
-        Initialize ConnectClient with tools, connected accounts, and MCP dependencies
+        Initialize ActionClient with tools, connected accounts, and MCP dependencies
         
         :param tools_client: ToolsClient instance
         :type: ToolsClient
