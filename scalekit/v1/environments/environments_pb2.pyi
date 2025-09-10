@@ -447,7 +447,7 @@ class SessionSettings(_message.Message):
     def __init__(self, access_token_expiry: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., client_access_token_expiry: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., absolute_session_timeout: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., session_management_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., idle_session_timeout: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., idle_session_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., cookie_persistence_type: _Optional[_Union[CookiePersistenceType, str]] = ..., cookie_same_site_setting: _Optional[_Union[CookieSameSiteSetting, str]] = ..., cookie_custom_domain: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ...) -> None: ...
 
 class UserManagement(_message.Message):
-    __slots__ = ("allow_duplicate_user_identities", "allow_multiple_memberships", "allow_organization_signup", "org_user_relationship", "enable_max_users_limit", "max_users_limit", "invitation_expiry", "organization_meta_name")
+    __slots__ = ("allow_duplicate_user_identities", "allow_multiple_memberships", "allow_organization_signup", "org_user_relationship", "enable_max_users_limit", "max_users_limit", "invitation_expiry", "block_disposable_email_domains", "block_public_email_domains")
     ALLOW_DUPLICATE_USER_IDENTITIES_FIELD_NUMBER: _ClassVar[int]
     ALLOW_MULTIPLE_MEMBERSHIPS_FIELD_NUMBER: _ClassVar[int]
     ALLOW_ORGANIZATION_SIGNUP_FIELD_NUMBER: _ClassVar[int]
@@ -455,7 +455,8 @@ class UserManagement(_message.Message):
     ENABLE_MAX_USERS_LIMIT_FIELD_NUMBER: _ClassVar[int]
     MAX_USERS_LIMIT_FIELD_NUMBER: _ClassVar[int]
     INVITATION_EXPIRY_FIELD_NUMBER: _ClassVar[int]
-    ORGANIZATION_META_NAME_FIELD_NUMBER: _ClassVar[int]
+    BLOCK_DISPOSABLE_EMAIL_DOMAINS_FIELD_NUMBER: _ClassVar[int]
+    BLOCK_PUBLIC_EMAIL_DOMAINS_FIELD_NUMBER: _ClassVar[int]
     allow_duplicate_user_identities: _wrappers_pb2.BoolValue
     allow_multiple_memberships: _wrappers_pb2.BoolValue
     allow_organization_signup: _wrappers_pb2.BoolValue
@@ -463,8 +464,9 @@ class UserManagement(_message.Message):
     enable_max_users_limit: _wrappers_pb2.BoolValue
     max_users_limit: _wrappers_pb2.Int32Value
     invitation_expiry: _wrappers_pb2.UInt32Value
-    organization_meta_name: _wrappers_pb2.StringValue
-    def __init__(self, allow_duplicate_user_identities: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., allow_multiple_memberships: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., allow_organization_signup: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., org_user_relationship: _Optional[_Union[OrgUserRelationshipType, str]] = ..., enable_max_users_limit: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., max_users_limit: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., invitation_expiry: _Optional[_Union[_wrappers_pb2.UInt32Value, _Mapping]] = ..., organization_meta_name: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ...) -> None: ...
+    block_disposable_email_domains: _wrappers_pb2.BoolValue
+    block_public_email_domains: _wrappers_pb2.BoolValue
+    def __init__(self, allow_duplicate_user_identities: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., allow_multiple_memberships: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., allow_organization_signup: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., org_user_relationship: _Optional[_Union[OrgUserRelationshipType, str]] = ..., enable_max_users_limit: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., max_users_limit: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., invitation_expiry: _Optional[_Union[_wrappers_pb2.UInt32Value, _Mapping]] = ..., block_disposable_email_domains: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., block_public_email_domains: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ...) -> None: ...
 
 class GetContextRequest(_message.Message):
     __slots__ = ("environment_id",)
