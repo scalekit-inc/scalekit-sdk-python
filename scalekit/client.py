@@ -18,7 +18,7 @@ from scalekit.users import UserClient
 from scalekit.role import RoleClient
 from scalekit.connected_accounts import ConnectedAccountsClient
 from scalekit.tools import ToolsClient
-from scalekit.connect import ConnectClient
+from scalekit.actions import ActionClient
 from scalekit.passwordless import PasswordlessClient
 from scalekit.mcp import McpClient
 from scalekit.common.scalekit import (
@@ -69,7 +69,8 @@ class ScalekitClient:
             self.connected_accounts = ConnectedAccountsClient(self.core_client)
             self.tools = ToolsClient(self.core_client)
             self.mcp = McpClient(self.core_client)
-            self.connect = ConnectClient(self.tools, self.connected_accounts, self.mcp)
+            self.connect = ActionClient(self.tools, self.connected_accounts, self.mcp)
+            self.actions = ActionClient(self.tools, self.connected_accounts, self.mcp)
             self.passwordless = PasswordlessClient(self.core_client)
         except Exception as exp:
             raise exp
