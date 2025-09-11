@@ -1,8 +1,8 @@
 from typing import Optional, Dict, Any, List
 from pydantic import BaseModel, Field
-from google.protobuf.json_format import MessageToDict
 
-from scalekit.connect.models.tool_mapping import ToolMapping
+
+from scalekit.actions.models.tool_mapping import ToolMapping
 
 
 class CreateMcpResponse(BaseModel):

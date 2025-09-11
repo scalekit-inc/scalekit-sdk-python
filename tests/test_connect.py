@@ -25,8 +25,6 @@ class TestConnect(BaseTest):
             input("Press Enter to continue...")
 
 
-
-
     def test_execute_tool(self):
         """Method to test execute_tool with SLACK.SEND_MESSAGE"""
         tool_input = {

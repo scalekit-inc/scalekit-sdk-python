@@ -1,7 +1,7 @@
 from typing import Optional, List
 from pydantic import BaseModel, Field, field_validator
 
-from scalekit.connect.models.tool_mapping import ToolMapping
+from scalekit.actions.models.tool_mapping import ToolMapping
 
 # TODO: Add validation for tool_mappings to ensure unique tool names across mappings
 class McpRequest(BaseModel):
