@@ -702,8 +702,8 @@ class TestConnect(BaseTest):
     def test_create_connected_account_response_structure(self):
         """Method to test CreateConnectedAccountResponse structure"""
         # Test that response has expected structure
-        from scalekit.connect.models.responses.create_connected_account_response import CreateConnectedAccountResponse
-        from scalekit.connect.models.responses.get_connected_account_auth_response import ConnectedAccount
+        from scalekit.actions.models.responses.create_connected_account_response import CreateConnectedAccountResponse
+        from scalekit.actions.models.responses.get_connected_account_auth_response import ConnectedAccount
         
         # Create a mock ConnectedAccount
         mock_account = ConnectedAccount(
@@ -727,7 +727,7 @@ class TestConnect(BaseTest):
 
     def test_create_connected_account_request_structure(self):
         """Method to test CreateConnectedAccountRequest structure""" 
-        from scalekit.connect.models.requests.create_connected_account_request import CreateConnectedAccountRequest
+        from scalekit.actions.models.requests.create_connected_account_request import CreateConnectedAccountRequest
         
         oauth_auth_details = {
             "oauth_token": {
