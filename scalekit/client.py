@@ -22,6 +22,7 @@ from scalekit.tools import ToolsClient
 from scalekit.actions import ActionClient
 from scalekit.passwordless import PasswordlessClient
 from scalekit.mcp import McpClient
+from scalekit.sessions import SessionsClient
 from scalekit.common.scalekit import (
     AuthorizationUrlOptions,
     CodeAuthenticationOptions,
@@ -74,6 +75,7 @@ class ScalekitClient:
             self.connect = ActionClient(self.tools, self.connected_accounts, self.mcp)
             self.actions = ActionClient(self.tools, self.connected_accounts, self.mcp)
             self.passwordless = PasswordlessClient(self.core_client)
+            self.sessions = SessionsClient(self.core_client)
         except Exception as exp:
             raise exp
 
