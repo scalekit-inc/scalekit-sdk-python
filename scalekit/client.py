@@ -16,6 +16,7 @@ from scalekit.organization import OrganizationClient
 from scalekit.directory import DirectoryClient
 from scalekit.users import UserClient
 from scalekit.role import RoleClient
+from scalekit.permissions import PermissionClient
 from scalekit.connected_accounts import ConnectedAccountsClient
 from scalekit.tools import ToolsClient
 from scalekit.actions import ActionClient
@@ -66,6 +67,7 @@ class ScalekitClient:
             self.m2m_client = M2MClient(self.core_client)
             self.users = UserClient(self.core_client)
             self.roles = RoleClient(self.core_client)
+            self.permissions = PermissionClient(self.core_client)
             self.connected_accounts = ConnectedAccountsClient(self.core_client)
             self.tools = ToolsClient(self.core_client)
             self.mcp = McpClient(self.core_client)
