@@ -207,7 +207,7 @@ class RoleClient:
         self, 
         org_id: str,
         role_name: str, 
-        role: UpdateOrganizationRole
+        role: UpdateRole
     ) -> UpdateOrganizationRoleResponse:
         """
         Method to update an existing organization role by name
@@ -289,7 +289,7 @@ class RoleClient:
     def update_default_organization_roles(
         self, 
         org_id: str,
-        default_roles: UpdateDefaultOrganizationRoles
+        default_roles: UpdateDefaultOrganizationRolesRequest
     ) -> UpdateDefaultOrganizationRolesResponse:
         """
         Method to update default organization roles
@@ -306,7 +306,7 @@ class RoleClient:
             self.role_service.UpdateDefaultOrganizationRoles.with_call,
             UpdateDefaultOrganizationRolesRequest(
                 org_id=org_id,
-                default_roles=default_roles
+                default_member_role=default_roles.default_member_role
             ),
         )
 
