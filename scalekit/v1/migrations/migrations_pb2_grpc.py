@@ -19,12 +19,23 @@ class MigrationServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateFSARequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrationFSAResponse.FromString,
                 )
+        self.MigrateStripeCustomers = channel.unary_unary(
+                '/scalekit.v1.migrations.MigrationService/MigrateStripeCustomers',
+                request_serializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateStripeCustomersRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateStripeCustomersResponse.FromString,
+                )
 
 
 class MigrationServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def MigrateFSAData(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def MigrateStripeCustomers(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -37,6 +48,11 @@ def add_MigrationServiceServicer_to_server(servicer, server):
                     servicer.MigrateFSAData,
                     request_deserializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateFSARequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrationFSAResponse.SerializeToString,
+            ),
+            'MigrateStripeCustomers': grpc.unary_unary_rpc_method_handler(
+                    servicer.MigrateStripeCustomers,
+                    request_deserializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateStripeCustomersRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateStripeCustomersResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -62,5 +78,22 @@ class MigrationService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.migrations.MigrationService/MigrateFSAData',
             scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateFSARequest.SerializeToString,
             scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrationFSAResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def MigrateStripeCustomers(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.migrations.MigrationService/MigrateStripeCustomers',
+            scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateStripeCustomersRequest.SerializeToString,
+            scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateStripeCustomersResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
