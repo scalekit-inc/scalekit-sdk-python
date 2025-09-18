@@ -15,6 +15,7 @@ class TestRoles(BaseTest):
     def setUp(self):
         """ """
         self.role_id = None
+        self.role_name = None
         self.faker = Faker()
         self.user_id = None
 
@@ -36,9 +37,7 @@ class TestRoles(BaseTest):
         role = CreateRole(
             name=role_name,
             display_name=display_name,
-            description=description,
-            default_creator=False,
-            default_member=False
+            description=description
         )
 
         response = self.scalekit_client.roles.create_role(role=role)
@@ -47,9 +46,8 @@ class TestRoles(BaseTest):
         self.assertEqual(response[0].role.name, role_name)
         self.assertEqual(response[0].role.display_name, display_name)
         self.assertEqual(response[0].role.description, description)
-        self.assertEqual(response[0].role.default_creator, False)
-        self.assertEqual(response[0].role.default_member, False)
         self.role_id = response[0].role.id
+        self.role_name = role_name
 
     def test_create_role_with_default_flags(self):
         """ Method to test create role with default flags """
@@ -59,9 +57,7 @@ class TestRoles(BaseTest):
         role = CreateRole(
             name=role_name,
             display_name=display_name,
-            description="Test default role",
-            default_creator=False,
-            default_member=False
+            description="Test default role"
         )
         print("CreateRole", role)
 
@@ -70,9 +66,8 @@ class TestRoles(BaseTest):
         self.assertEqual(response[1].code().name, "OK")
         self.assertTrue(response[0] is not None)
         self.assertEqual(response[0].role.name, role_name)
-        self.assertEqual(response[0].role.default_creator, False)
-        self.assertEqual(response[0].role.default_member, False)
         self.role_id = response[0].role.id
+        self.role_name = role_name
 
     def test_get_role(self):
         """ Method to test get role """
@@ -87,8 +82,9 @@ class TestRoles(BaseTest):
 
         create_response = self.scalekit_client.roles.create_role(role=role)
         self.role_id = create_response[0].role.id
+        self.role_name = role_name
 
-        response = self.scalekit_client.roles.get_role(role_id=self.role_id)
+        response = self.scalekit_client.roles.get_role(role_name=role_name)
         self.assertEqual(response[1].code().name, "OK")
         self.assertTrue(response[0] is not None)
         self.assertEqual(response[0].role.id, self.role_id)
@@ -109,6 +105,7 @@ class TestRoles(BaseTest):
 
         create_response = self.scalekit_client.roles.create_role(role=role)
         self.role_id = create_response[0].role.id
+        self.role_name = role_name
 
         response = self.scalekit_client.roles.list_roles()
         self.assertEqual(response[1].code().name, "OK")
@@ -139,6 +136,7 @@ class TestRoles(BaseTest):
 
         create_response = self.scalekit_client.roles.create_role(role=role)
         self.role_id = create_response[0].role.id
+        self.role_name = role_name
         print("CreateRole for update response", create_response)
 
         # Update the role
@@ -147,14 +145,12 @@ class TestRoles(BaseTest):
 
         update_role = UpdateRole(
             display_name=updated_display_name,
-            description=updated_description,
-            default_creator=False,
-            default_member=False
+            description=updated_description
         )
         print("UpdateRole", update_role)
 
         response = self.scalekit_client.roles.update_role(
-            role_id=self.role_id,
+            role_name=role_name,
             role=update_role
         )
         print("UpdateRole response", response)
@@ -164,8 +160,7 @@ class TestRoles(BaseTest):
         self.assertEqual(response[0].role.name, role_name)  # Name should not change
         self.assertEqual(response[0].role.display_name, updated_display_name)
         self.assertEqual(response[0].role.description, updated_description)
-        self.assertEqual(response[0].role.default_creator, False)
-        self.assertEqual(response[0].role.default_member, False)
+        
 
     def test_update_role_partial(self):
         """ Method to test update role with partial fields """
@@ -180,13 +175,14 @@ class TestRoles(BaseTest):
 
         create_response = self.scalekit_client.roles.create_role(role=role)
         self.role_id = create_response[0].role.id
+        self.role_name = role_name
 
         # Update only display name
         updated_display_name = f"Partial Update Role {self.faker.unique.random_number()}"
         update_role = UpdateRole(display_name=updated_display_name)
 
         response = self.scalekit_client.roles.update_role(
-            role_id=self.role_id,
+            role_name=role_name,
             role=update_role
         )
         self.assertEqual(response[1].code().name, "OK")
@@ -208,13 +204,14 @@ class TestRoles(BaseTest):
 
         create_response = self.scalekit_client.roles.create_role(role=role)
         self.role_id = create_response[0].role.id
+        self.role_name = role_name
 
-        response = self.scalekit_client.roles.delete_role(role_id=self.role_id)
+        response = self.scalekit_client.roles.delete_role(role_name=role_name)
         self.assertEqual(response[1].code().name, "OK")
 
         # Verify role is deleted by trying to get it
         try:
-            self.scalekit_client.roles.get_role(role_id=self.role_id)
+            self.scalekit_client.roles.get_role(role_name=role_name)
             self.fail("Role should have been deleted")
         except ScalekitNotFoundException:
             self.role_id = None
@@ -256,7 +253,7 @@ class TestRoles(BaseTest):
 
         # Try to delete the first role WITHOUT reassignment - this should fail
         try:
-            self.scalekit_client.roles.delete_role(role_id=role1_id)
+            self.scalekit_client.roles.delete_role(role_name=role1_name)
             self.fail("Role deletion should have failed because it has users assigned")
         except ScalekitBadRequestException as exp:
             self.assertEqual(exp.message, "role cannot be deleted as it is assigned to users")
@@ -274,20 +271,20 @@ class TestRoles(BaseTest):
 
         # Delete first role with reassignment to second role 
         response = self.scalekit_client.roles.delete_role(
-            role_id=role1_id,
-            reassign_role_id=role2_id
+            role_name=role1_name,
+            reassign_role_name=role2_name
         )
         self.assertEqual(response[1].code().name, "OK")
 
         # Verify first role is deleted
         try:
-            self.scalekit_client.roles.get_role(role_id=role1_id)
+            self.scalekit_client.roles.get_role(role_name=role1_name)
             self.fail("Role should have been deleted")
         except ScalekitNotFoundException:
             pass
 
         # Verify second role still exists
-        get_response = self.scalekit_client.roles.get_role(role_id=role2_id)
+        get_response = self.scalekit_client.roles.get_role(role_name=role2_name)
         self.assertEqual(get_response[1].code().name, "OK")
         self.assertEqual(get_response[0].role.id, role2_id)
 
@@ -305,7 +302,7 @@ class TestRoles(BaseTest):
             self.user_id = None
 
         # Clean up second role
-        self.scalekit_client.roles.delete_role(role_id=role2_id)
+        self.scalekit_client.roles.delete_role(role_name=role2_name)
 
     def test_create_role_validation(self):
         """ Method to test role creation validation """
@@ -352,7 +349,7 @@ class TestRoles(BaseTest):
             self.assertTrue(exp.message, 'duplicate key not allowed')
 
         # Clean up first role
-        self.scalekit_client.roles.delete_role(role_id=role1_id)
+        self.scalekit_client.roles.delete_role(role_name=role_name)
 
     def test_get_role_users_count(self):
         """ Method to test get role users count """
@@ -367,9 +364,10 @@ class TestRoles(BaseTest):
         
         create_response = self.scalekit_client.roles.create_role(role=role)
         self.role_id = create_response[0].role.id
+        self.role_name = role_name
 
         # Get user count for the role
-        response = self.scalekit_client.roles.get_role_users_count(role_id=self.role_id)
+        response = self.scalekit_client.roles.get_role_users_count(role_name=role_name)
         self.assertEqual(response[1].code().name, "OK")
         self.assertTrue(response[0] is not None)
         self.assertIsInstance(response[0].count, int)
@@ -377,9 +375,9 @@ class TestRoles(BaseTest):
 
     def tearDown(self):
         """ Method to clean up """
-        if self.role_id:
+        if self.role_name:
             try:
-                self.scalekit_client.roles.delete_role(role_id=self.role_id)
+                self.scalekit_client.roles.delete_role(role_name=self.role_name)
             except ScalekitNotFoundException:
                 pass
             except Exception as exp:
