@@ -1,3 +1,4 @@
+import faker
 from faker import Faker
 from basetest import BaseTest
 
@@ -340,3 +341,29 @@ class TestConnectedAccounts(BaseTest):
             identifier=compat_identifier
         )
         self.assertEqual(delete_response[1].code().name, "OK")
+
+    def test_get_or_create_connected_account_idempotency(self):
+        """ Method to test idempotency of get_or_create_connected_account """
+        connected_account = self._create_oauth_connected_account()
+        idempotent_identifier = f"idempotent_test_{self.faker.unique.random_number()}"
+
+        # First call to create
+        first_response = self.scalekit_client.actions.get_or_create_connected_account(
+            connection_name=self.test_connector,
+            identifier=idempotent_identifier,
+        )
+        self.assertIsNotNone(first_response)
+        self.assertIsNotNone(first_response.connected_account)
+        created_account = first_response.connected_account
+
+
+        # Second call to get_or_create with same identifier should return the same connected account
+        second_response = self.scalekit_client.actions.get_or_create_connected_account(
+            connection_name=self.test_connector,
+            identifier=idempotent_identifier,
+        )
+        self.assertIsNotNone(second_response)
+        self.assertIsNotNone(second_response.connected_account)
+
+        # Verify that both responses refer to the same connected account ID
+        self.assertEqual(created_account.id, second_response.connected_account.id)

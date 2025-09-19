@@ -397,8 +397,6 @@ class ActionClient:
             raise ValueError("connection_name is required")
         if not identifier:
             raise ValueError("identifier is required")
-        if not authorization_details:
-            raise ValueError("authorization_details is required")
         
         # Create request model
         request = CreateConnectedAccountRequest(
