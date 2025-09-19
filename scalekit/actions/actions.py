@@ -12,6 +12,7 @@ from scalekit.actions.modifier import (
     apply_pre_modifiers, apply_post_modifiers
 )
 from scalekit.actions.frameworks.langchain import LangChain
+from scalekit.actions.frameworks.google_adk import GoogleADK
 from scalekit.common.exceptions import ScalekitNotFoundException
 
 
@@ -42,6 +43,9 @@ class ActionClient:
         
         # Initialize LangChain with tools client and execute callback
         self.langchain = LangChain(tools_client, execute_callback=self.execute_tool)
+        
+        # Initialize Google ADK with tools client and execute callback
+        self.google_adk = GoogleADK(tools_client, execute_callback=self.execute_tool)
 
     def execute_tool(
         self,

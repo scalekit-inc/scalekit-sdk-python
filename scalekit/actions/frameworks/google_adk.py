@@ -70,10 +70,11 @@ class GoogleADK:
             install_commands = list(missing.values())
             
             raise ImportError(
-                f"Google ADK dependencies not found: {', '.join(missing_deps)}\n"
-                f"To use Google ADK integration, please install the missing dependencies:\n"
+                f"Google ADK not found: {', '.join(missing_deps)}\n"
+                f"To use Google ADK integration, please install:\n"
                 + "\n".join(f"  {cmd}" for cmd in install_commands) + "\n\n"
-                "For more information, see the Scalekit SDK documentation."
+                "Note: MCP is already included as a Scalekit SDK dependency.\n"
+                "For more information, see: https://google.github.io/adk-docs/"
             )
 
         # Create ScopedToolFilter if any filter parameters are provided

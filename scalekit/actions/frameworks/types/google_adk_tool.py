@@ -1,6 +1,9 @@
 from typing import Any, Dict, Callable, Protocol, runtime_checkable
 
 
+from mcp import types as mcp_types
+
+
 @runtime_checkable
 class McpToolProtocol(Protocol):
     """Protocol for Google ADK McpTool compatibility"""
@@ -38,48 +41,20 @@ class FunctionDeclarationProtocol(Protocol):
 def _import_google_adk():
     """Import Google ADK with helpful error message if not available"""
     try:
-        from google.genai.adk import McpTool
-        from google.genai.adk.core import AuthCredential, ToolContext
-        return McpTool, AuthCredential, ToolContext
+        from google.adk.tools import BaseTool
+        from google.adk.core import AuthCredential, ToolContext
+        return BaseTool, AuthCredential, ToolContext
     except ImportError as e:
         raise ImportError(
             "Google ADK not found. To use Google ADK integration, please install:\n"
-            "pip install google-genai-adk\n\n"
-            "For more information, see: https://github.com/google/generative-ai-adk\n"
-            f"Original error: {e}"
-        )
-
-
-def _import_mcp_types():
-    """Import MCP types with helpful error message if not available"""
-    try:
-        from mcp import types as mcp_types
-        return mcp_types
-    except ImportError as e:
-        raise ImportError(
-            "MCP (Model Context Protocol) not found. To use Google ADK integration, please install:\n"
-            "pip install mcp\n\n"
-            "For more information, see: https://github.com/modelcontextprotocol/python-sdk\n"
-            f"Original error: {e}"
-        )
-
-
-def _import_function_declaration():
-    """Import Google AI FunctionDeclaration with helpful error message if not available"""
-    try:
-        from google.ai.generativelanguage import FunctionDeclaration
-        return FunctionDeclaration
-    except ImportError as e:
-        raise ImportError(
-            "Google AI Generative Language not found. To use Google ADK integration, please install:\n"
-            "pip install google-ai-generativelanguage\n\n"
-            "For more information, see: https://googleapis.dev/python/generativelanguage/latest/\n"
+            "pip install google-adk\n\n"
+            "For more information, see: https://google.github.io/adk-docs/\n"
             f"Original error: {e}"
         )
 
 
 class ScalekitGoogleAdkTool:
-    """Google ADK Tool wrapper for Scalekit tools using MCP protocol"""
+    """Google ADK Tool wrapper for Scalekit tools inheriting from Google BaseTool"""
     
     def __init__(
         self, 
@@ -98,33 +73,90 @@ class ScalekitGoogleAdkTool:
         :param connected_account_id: Connected account ID for execution
         :param execute_callback: Callback function for tool execution (ActionClient.execute_tool)
         """
-        # Import dependencies dynamically
-        McpTool, AuthCredential, ToolContext = _import_google_adk()
-        mcp_types = _import_mcp_types()
-        FunctionDeclaration = _import_function_declaration()
+        # Import Google ADK dependencies dynamically  
+        BaseTool, AuthCredential, ToolContext = _import_google_adk()
         
         # Store types for later use
-        self._McpTool = McpTool
+        self._BaseTool = BaseTool
         self._AuthCredential = AuthCredential
         self._ToolContext = ToolContext
-        self._FunctionDeclaration = FunctionDeclaration
         
-        # Create MCP tool definition
-        mcp_tool_def = mcp_types.Tool(
-            name=tool_name,
-            description=tool_description,
-            inputSchema=input_schema
+        # Create dynamic class that inherits from BaseTool
+        class _DynamicScalekitTool(BaseTool):
+            def __init__(self_inner, tool_name, tool_description, input_schema, connected_account_id, execute_callback):
+                # Initialize parent BaseTool
+                super().__init__()
+                
+                # Store Scalekit-specific properties
+                self_inner.tool_name = tool_name
+                self_inner.tool_description = tool_description
+                self_inner.input_schema = input_schema
+                self_inner.connected_account_id = connected_account_id
+                self_inner.execute_callback = execute_callback
+            
+            def _get_declaration(self_inner):
+                """
+                Get Google ADK function declaration for this tool
+                Override from BaseTool to provide Scalekit tool definition
+                """
+                # Convert MCP input schema to Google ADK format
+                from google.ai.generativelanguage import FunctionDeclaration, Schema, Type
+                
+                # Create function declaration from Scalekit tool
+                return FunctionDeclaration(
+                    name=self_inner.tool_name,
+                    description=self_inner.tool_description,
+                    parameters=Schema(
+                        type=Type.OBJECT,
+                        properties=self_inner.input_schema.get('properties', {}),
+                        required=self_inner.input_schema.get('required', [])
+                    )
+                )
+            
+            async def _run_async_impl(
+                self_inner, 
+                *, 
+                args: Dict[str, Any], 
+                tool_context, 
+                credential
+            ) -> str:
+                """
+                Execute the Scalekit tool using the execute_callback
+                Override from BaseTool to provide Scalekit execution
+                
+                :param args: Tool execution arguments
+                :param tool_context: Google ADK tool context
+                :param credential: Authentication credential
+                :returns: Tool execution result as string
+                """
+                try:
+                    # Call the execute_callback (ActionClient.execute_tool)
+                    response = await self_inner.execute_callback(
+                        tool_input=args,
+                        tool_name=self_inner.tool_name,
+                        connected_account_id=self_inner.connected_account_id
+                    )
+                    
+                    # Extract result data
+                    result_data = response.data if hasattr(response, 'data') else {}
+                    execution_id = response.execution_id if hasattr(response, 'execution_id') else None
+                    
+                    # Format the response
+                    result_dict = dict(result_data) if result_data else {}
+                    if execution_id:
+                        result_dict['execution_id'] = execution_id
+                    
+                    return str(result_dict) if result_dict else f"Tool {self_inner.tool_name} executed successfully"
+                    
+                except Exception as e:
+                    return f"Error executing tool {self_inner.tool_name}: {str(e)}"
+        
+        # Create instance of the dynamic class
+        self._tool_instance = _DynamicScalekitTool(
+            tool_name, tool_description, input_schema, connected_account_id, execute_callback
         )
         
-        # Initialize as McpTool-like object
-        self._mcp_tool = McpTool(
-            mcp_tool=mcp_tool_def,
-            mcp_session_manager=None,
-            auth_scheme=None,
-            auth_credential=None,
-        )
-        
-        # Store Scalekit-specific properties
+        # Store properties for external access
         self.tool_name = tool_name
         self.tool_description = tool_description
         self.input_schema = input_schema
@@ -132,48 +164,16 @@ class ScalekitGoogleAdkTool:
         self.execute_callback = execute_callback
     
     def _get_declaration(self):
-        """
-        Get Google ADK function declaration for this tool
-        Delegates to wrapped McpTool which handles MCP -> Google ADK conversion
-        """
-        return self._mcp_tool._get_declaration()
+        """Delegate to the BaseTool instance"""
+        return self._tool_instance._get_declaration()
     
-    async def _run_async_impl(
-        self, 
-        *, 
-        args: Dict[str, Any], 
-        tool_context, 
-        credential
-    ) -> str:
-        """
-        Execute the Scalekit tool using the execute_callback
-        
-        :param args: Tool execution arguments
-        :param tool_context: Google ADK tool context
-        :param credential: Authentication credential
-        :returns: Tool execution result as string
-        """
-        try:
-            # Call the execute_callback (ActionClient.execute_tool)
-            response = await self.execute_callback(
-                tool_input=args,
-                tool_name=self.tool_name,
-                connected_account_id=self.connected_account_id
-            )
-            
-            # Extract result data
-            result_data = response.data if hasattr(response, 'data') else {}
-            execution_id = response.execution_id if hasattr(response, 'execution_id') else None
-            
-            # Format the response
-            result_dict = dict(result_data) if result_data else {}
-            if execution_id:
-                result_dict['execution_id'] = execution_id
-            
-            return str(result_dict) if result_dict else f"Tool {self.tool_name} executed successfully"
-            
-        except Exception as e:
-            return f"Error executing tool {self.tool_name}: {str(e)}"
+    async def _run_async_impl(self, *, args: Dict[str, Any], tool_context, credential) -> str:
+        """Delegate to the BaseTool instance"""
+        return await self._tool_instance._run_async_impl(args=args, tool_context=tool_context, credential=credential)
+    
+    def get_tool_instance(self):
+        """Get the actual Google ADK BaseTool instance"""
+        return self._tool_instance
 
 
 def create_scalekit_google_adk_tool(
@@ -214,12 +214,10 @@ def check_google_adk_availability() -> bool:
     """
     Check if Google ADK dependencies are available
     
-    :returns: True if all dependencies are available, False otherwise
+    :returns: True if Google ADK is installed, False otherwise
     """
     try:
         _import_google_adk()
-        _import_mcp_types()
-        _import_function_declaration()
         return True
     except ImportError:
         return False
@@ -236,16 +234,6 @@ def get_missing_dependencies() -> Dict[str, str]:
     try:
         _import_google_adk()
     except ImportError:
-        missing["google-genai-adk"] = "pip install google-genai-adk"
-    
-    try:
-        _import_mcp_types()
-    except ImportError:
-        missing["mcp"] = "pip install mcp"
-    
-    try:
-        _import_function_declaration()
-    except ImportError:
-        missing["google-ai-generativelanguage"] = "pip install google-ai-generativelanguage"
+        missing["google-adk"] = "pip install google-adk"
     
     return missing
