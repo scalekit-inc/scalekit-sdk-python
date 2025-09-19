@@ -75,14 +75,16 @@ class ListConnectedAccountsResponse(_message.Message):
     def __init__(self, connected_accounts: _Optional[_Iterable[_Union[ConnectedAccountForList, _Mapping]]] = ..., total_size: _Optional[int] = ..., next_page_token: _Optional[str] = ..., prev_page_token: _Optional[str] = ...) -> None: ...
 
 class SearchConnectedAccountsRequest(_message.Message):
-    __slots__ = ("query", "page_size", "page_token")
+    __slots__ = ("query", "page_size", "page_token", "connection_id")
     QUERY_FIELD_NUMBER: _ClassVar[int]
     PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
     PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
     query: str
     page_size: int
     page_token: str
-    def __init__(self, query: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ...) -> None: ...
+    connection_id: str
+    def __init__(self, query: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ..., connection_id: _Optional[str] = ...) -> None: ...
 
 class SearchConnectedAccountsResponse(_message.Message):
     __slots__ = ("connected_accounts", "total_size", "next_page_token", "prev_page_token")
@@ -213,7 +215,7 @@ class GetConnectedAccountByIdentifierResponse(_message.Message):
     def __init__(self, connected_account: _Optional[_Union[ConnectedAccount, _Mapping]] = ...) -> None: ...
 
 class ConnectedAccount(_message.Message):
-    __slots__ = ("identifier", "provider", "status", "authorization_type", "authorization_details", "token_expires_at", "updated_at", "connector", "last_used_at", "id", "connection_id")
+    __slots__ = ("identifier", "provider", "status", "authorization_type", "authorization_details", "token_expires_at", "updated_at", "connector", "last_used_at", "id", "connection_id", "api_config")
     IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
     PROVIDER_FIELD_NUMBER: _ClassVar[int]
     STATUS_FIELD_NUMBER: _ClassVar[int]
@@ -225,6 +227,7 @@ class ConnectedAccount(_message.Message):
     LAST_USED_AT_FIELD_NUMBER: _ClassVar[int]
     ID_FIELD_NUMBER: _ClassVar[int]
     CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
+    API_CONFIG_FIELD_NUMBER: _ClassVar[int]
     identifier: str
     provider: str
     status: ConnectorStatus
@@ -236,19 +239,24 @@ class ConnectedAccount(_message.Message):
     last_used_at: _timestamp_pb2.Timestamp
     id: str
     connection_id: str
-    def __init__(self, identifier: _Optional[str] = ..., provider: _Optional[str] = ..., status: _Optional[_Union[ConnectorStatus, str]] = ..., authorization_type: _Optional[_Union[ConnectorType, str]] = ..., authorization_details: _Optional[_Union[AuthorizationDetails, _Mapping]] = ..., token_expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., connector: _Optional[str] = ..., last_used_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., id: _Optional[str] = ..., connection_id: _Optional[str] = ...) -> None: ...
+    api_config: _struct_pb2.Struct
+    def __init__(self, identifier: _Optional[str] = ..., provider: _Optional[str] = ..., status: _Optional[_Union[ConnectorStatus, str]] = ..., authorization_type: _Optional[_Union[ConnectorType, str]] = ..., authorization_details: _Optional[_Union[AuthorizationDetails, _Mapping]] = ..., token_expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., connector: _Optional[str] = ..., last_used_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., id: _Optional[str] = ..., connection_id: _Optional[str] = ..., api_config: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
 
 class CreateConnectedAccount(_message.Message):
-    __slots__ = ("authorization_details",)
+    __slots__ = ("authorization_details", "api_config")
     AUTHORIZATION_DETAILS_FIELD_NUMBER: _ClassVar[int]
+    API_CONFIG_FIELD_NUMBER: _ClassVar[int]
     authorization_details: AuthorizationDetails
-    def __init__(self, authorization_details: _Optional[_Union[AuthorizationDetails, _Mapping]] = ...) -> None: ...
+    api_config: _struct_pb2.Struct
+    def __init__(self, authorization_details: _Optional[_Union[AuthorizationDetails, _Mapping]] = ..., api_config: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
 
 class UpdateConnectedAccount(_message.Message):
-    __slots__ = ("authorization_details",)
+    __slots__ = ("authorization_details", "api_config")
     AUTHORIZATION_DETAILS_FIELD_NUMBER: _ClassVar[int]
+    API_CONFIG_FIELD_NUMBER: _ClassVar[int]
     authorization_details: AuthorizationDetails
-    def __init__(self, authorization_details: _Optional[_Union[AuthorizationDetails, _Mapping]] = ...) -> None: ...
+    api_config: _struct_pb2.Struct
+    def __init__(self, authorization_details: _Optional[_Union[AuthorizationDetails, _Mapping]] = ..., api_config: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
 
 class ConnectedAccountForList(_message.Message):
     __slots__ = ("identifier", "provider", "status", "authorization_type", "token_expires_at", "updated_at", "connector", "last_used_at", "id", "connection_id")
@@ -283,14 +291,16 @@ class AuthorizationDetails(_message.Message):
     def __init__(self, oauth_token: _Optional[_Union[OauthToken, _Mapping]] = ..., static_auth: _Optional[_Union[StaticAuth, _Mapping]] = ...) -> None: ...
 
 class OauthToken(_message.Message):
-    __slots__ = ("access_token", "refresh_token", "scopes")
+    __slots__ = ("access_token", "refresh_token", "scopes", "domain")
     ACCESS_TOKEN_FIELD_NUMBER: _ClassVar[int]
     REFRESH_TOKEN_FIELD_NUMBER: _ClassVar[int]
     SCOPES_FIELD_NUMBER: _ClassVar[int]
+    DOMAIN_FIELD_NUMBER: _ClassVar[int]
     access_token: str
     refresh_token: str
     scopes: _containers.RepeatedScalarFieldContainer[str]
-    def __init__(self, access_token: _Optional[str] = ..., refresh_token: _Optional[str] = ..., scopes: _Optional[_Iterable[str]] = ...) -> None: ...
+    domain: str
+    def __init__(self, access_token: _Optional[str] = ..., refresh_token: _Optional[str] = ..., scopes: _Optional[_Iterable[str]] = ..., domain: _Optional[str] = ...) -> None: ...
 
 class StaticAuth(_message.Message):
     __slots__ = ("details",)

@@ -60,6 +60,21 @@ class WorkspaceServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.GetBillingPortalRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.GetBillingPortalResponse.FromString,
                 )
+        self.GetBillingInfo = channel.unary_unary(
+                '/scalekit.v1.workspaces.WorkspaceService/GetBillingInfo',
+                request_serializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.GetBillingInfoRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.GetBillingInfoResponse.FromString,
+                )
+        self.GetProductUsage = channel.unary_unary(
+                '/scalekit.v1.workspaces.WorkspaceService/GetProductUsage',
+                request_serializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.GetProductUsageRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.GetProductUsageResponse.FromString,
+                )
+        self.GetProductCatalog = channel.unary_unary(
+                '/scalekit.v1.workspaces.WorkspaceService/GetProductCatalog',
+                request_serializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.GetProductCatalogRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.GetProductCatalogResponse.FromString,
+                )
 
 
 class WorkspaceServiceServicer(object):
@@ -119,6 +134,24 @@ class WorkspaceServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetBillingInfo(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetProductUsage(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetProductCatalog(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_WorkspaceServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -166,6 +199,21 @@ def add_WorkspaceServiceServicer_to_server(servicer, server):
                     servicer.GetBillingPortal,
                     request_deserializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.GetBillingPortalRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.GetBillingPortalResponse.SerializeToString,
+            ),
+            'GetBillingInfo': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetBillingInfo,
+                    request_deserializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.GetBillingInfoRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.GetBillingInfoResponse.SerializeToString,
+            ),
+            'GetProductUsage': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetProductUsage,
+                    request_deserializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.GetProductUsageRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.GetProductUsageResponse.SerializeToString,
+            ),
+            'GetProductCatalog': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetProductCatalog,
+                    request_deserializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.GetProductCatalogRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.GetProductCatalogResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -327,5 +375,56 @@ class WorkspaceService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.workspaces.WorkspaceService/GetBillingPortal',
             scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.GetBillingPortalRequest.SerializeToString,
             scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.GetBillingPortalResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetBillingInfo(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.workspaces.WorkspaceService/GetBillingInfo',
+            scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.GetBillingInfoRequest.SerializeToString,
+            scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.GetBillingInfoResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetProductUsage(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.workspaces.WorkspaceService/GetProductUsage',
+            scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.GetProductUsageRequest.SerializeToString,
+            scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.GetProductUsageResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetProductCatalog(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.workspaces.WorkspaceService/GetProductCatalog',
+            scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.GetProductCatalogRequest.SerializeToString,
+            scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.GetProductCatalogResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
