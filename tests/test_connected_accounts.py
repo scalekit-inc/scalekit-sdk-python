@@ -344,7 +344,6 @@ class TestConnectedAccounts(BaseTest):
 
     def test_get_or_create_connected_account_idempotency(self):
         """ Method to test idempotency of get_or_create_connected_account """
-        connected_account = self._create_oauth_connected_account()
         idempotent_identifier = f"idempotent_test_{self.faker.unique.random_number()}"
 
         # First call to create
