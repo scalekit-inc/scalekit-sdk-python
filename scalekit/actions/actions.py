@@ -45,7 +45,7 @@ class ActionClient:
         self.langchain = LangChain(tools_client, execute_callback=self.execute_tool)
         
         # Initialize Google ADK with tools client and execute callback
-        self.google_adk = GoogleADK(tools_client, execute_callback=self.execute_tool)
+        self.google = GoogleADK(tools_client, execute_callback=self.execute_tool)
 
     def execute_tool(
         self,

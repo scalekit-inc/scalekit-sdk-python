@@ -1,4 +1,5 @@
 from basetest import BaseTest
+from scalekit.actions.frameworks.types import ScalekitGoogleAdkTool
 from scalekit.actions.types import ExecuteToolResponse, MagicLinkResponse, ListConnectedAccountsResponse, DeleteConnectedAccountResponse, GetConnectedAccountAuthResponse, ToolMapping, CreateConnectedAccountResponse
 from scalekit.actions.modifier import Modifier
 
@@ -769,12 +770,13 @@ class TestConnect(BaseTest):
 
     def test_google_adk_get_tools(self):
 
-        tool = self.scalekit_client.actions.google_adk.get_tools(
+        tool = self.scalekit_client.actions.google.get_tools(
             identifier=self.test_identifier,
             tool_names=["gmail_fetch_mails"],
             connection_names=["GMAIL"]
         )
         self.assertIsInstance(tool, list)
         self.assertGreaterEqual(len(tool), 1)
+        self.assertTrue(isinstance(tool[0], ScalekitGoogleAdkTool))
         print(tool)
 
