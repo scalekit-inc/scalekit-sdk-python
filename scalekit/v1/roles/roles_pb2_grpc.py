@@ -285,32 +285,7 @@ class RolesServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def ListRolePermissions(self, request, context):
-        """rpc BatchCreatePermissions(BatchCreatePermissionsRequest) returns (BatchCreatePermissionsResponse) {
-        option (scalekit.v1.options.auth_option) = {authentication_type: WORKSPACE_SESSION};
-
-        option (google.api.http) = {
-        post: "/api/v1/permissions/batch"
-        body: "*"
-        };
-
-        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-        tags: "Permissions"
-        summary: "Batch Create/Update Permissions"
-        description: "Create or update multiple permissions in a single operation"
-
-        responses: {
-        key: "200"
-        value: {
-        description: "Batch operation completed successfully"
-        schema: {
-        json_schema: {ref: ".scalekit.v1.roles.BatchCreatePermissionsResponse"}
-        }
-        }
-        }
-        };
-        }
-
-        Role-Permission Management RPCs
+        """Role-Permission Management RPCs
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')

@@ -100,18 +100,20 @@ class TemplateUsecaseWithPlaceholders(_message.Message):
     def __init__(self, use_case: _Optional[_Union[TemplateUsecase, str]] = ..., title: _Optional[str] = ..., description: _Optional[str] = ..., placeholders: _Optional[_Iterable[_Union[Placeholder, _Mapping]]] = ..., display: bool = ..., default_template: _Optional[_Union[Template, _Mapping]] = ...) -> None: ...
 
 class Placeholder(_message.Message):
-    __slots__ = ("name", "title", "description", "display", "category")
+    __slots__ = ("name", "title", "description", "display", "category", "category_priority")
     NAME_FIELD_NUMBER: _ClassVar[int]
     TITLE_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     DISPLAY_FIELD_NUMBER: _ClassVar[int]
     CATEGORY_FIELD_NUMBER: _ClassVar[int]
+    CATEGORY_PRIORITY_FIELD_NUMBER: _ClassVar[int]
     name: str
     title: str
     description: str
     display: bool
     category: str
-    def __init__(self, name: _Optional[str] = ..., title: _Optional[str] = ..., description: _Optional[str] = ..., display: bool = ..., category: _Optional[str] = ...) -> None: ...
+    category_priority: int
+    def __init__(self, name: _Optional[str] = ..., title: _Optional[str] = ..., description: _Optional[str] = ..., display: bool = ..., category: _Optional[str] = ..., category_priority: _Optional[int] = ...) -> None: ...
 
 class Template(_message.Message):
     __slots__ = ("updated_at", "id", "use_case", "enabled", "subject", "html_content", "plain_content", "placeholders")

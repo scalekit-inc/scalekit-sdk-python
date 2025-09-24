@@ -150,22 +150,22 @@ class ListUserOrganizationsResponse(_message.Message):
     def __init__(self, organizations: _Optional[_Iterable[_Union[Organization, _Mapping]]] = ..., user: _Optional[_Union[UserDetails, _Mapping]] = ..., intent: _Optional[_Union[Intent, str]] = ...) -> None: ...
 
 class Organization(_message.Message):
-    __slots__ = ("id", "name", "membership_status", "invitation_invited_by", "invitation_accepted_at", "invitation_created_at", "invitation_expires_at")
+    __slots__ = ("id", "name", "membership_status", "invitation_inviter_email", "invitation_accepted_at", "invitation_created_at", "invitation_expires_at")
     ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     MEMBERSHIP_STATUS_FIELD_NUMBER: _ClassVar[int]
-    INVITATION_INVITED_BY_FIELD_NUMBER: _ClassVar[int]
+    INVITATION_INVITER_EMAIL_FIELD_NUMBER: _ClassVar[int]
     INVITATION_ACCEPTED_AT_FIELD_NUMBER: _ClassVar[int]
     INVITATION_CREATED_AT_FIELD_NUMBER: _ClassVar[int]
     INVITATION_EXPIRES_AT_FIELD_NUMBER: _ClassVar[int]
     id: str
     name: str
     membership_status: str
-    invitation_invited_by: str
+    invitation_inviter_email: str
     invitation_accepted_at: _timestamp_pb2.Timestamp
     invitation_created_at: _timestamp_pb2.Timestamp
     invitation_expires_at: _timestamp_pb2.Timestamp
-    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., membership_status: _Optional[str] = ..., invitation_invited_by: _Optional[str] = ..., invitation_accepted_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., invitation_created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., invitation_expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., membership_status: _Optional[str] = ..., invitation_inviter_email: _Optional[str] = ..., invitation_accepted_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., invitation_created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., invitation_expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
 class UserDetails(_message.Message):
     __slots__ = ("email", "first_name", "last_name")

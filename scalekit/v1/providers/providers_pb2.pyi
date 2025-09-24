@@ -4,6 +4,7 @@ from google.api import field_behavior_pb2 as _field_behavior_pb2
 from google.api import visibility_pb2 as _visibility_pb2
 from google.protobuf import struct_pb2 as _struct_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
+from google.protobuf import wrappers_pb2 as _wrappers_pb2
 from protoc_gen_openapiv2.options import annotations_pb2 as _annotations_pb2_1
 from scalekit.v1.options import options_pb2 as _options_pb2
 from google.protobuf.internal import containers as _containers
@@ -14,7 +15,7 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class Provider(_message.Message):
-    __slots__ = ("id", "identifier", "display_name", "description", "categories", "auth_patterns", "icon_src", "display_priority")
+    __slots__ = ("id", "identifier", "display_name", "description", "categories", "auth_patterns", "icon_src", "display_priority", "coming_soon")
     ID_FIELD_NUMBER: _ClassVar[int]
     IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
@@ -23,6 +24,7 @@ class Provider(_message.Message):
     AUTH_PATTERNS_FIELD_NUMBER: _ClassVar[int]
     ICON_SRC_FIELD_NUMBER: _ClassVar[int]
     DISPLAY_PRIORITY_FIELD_NUMBER: _ClassVar[int]
+    COMING_SOON_FIELD_NUMBER: _ClassVar[int]
     id: str
     identifier: str
     display_name: str
@@ -31,10 +33,11 @@ class Provider(_message.Message):
     auth_patterns: _struct_pb2.ListValue
     icon_src: str
     display_priority: int
-    def __init__(self, id: _Optional[str] = ..., identifier: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., categories: _Optional[_Iterable[str]] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., icon_src: _Optional[str] = ..., display_priority: _Optional[int] = ...) -> None: ...
+    coming_soon: bool
+    def __init__(self, id: _Optional[str] = ..., identifier: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., categories: _Optional[_Iterable[str]] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., icon_src: _Optional[str] = ..., display_priority: _Optional[int] = ..., coming_soon: bool = ...) -> None: ...
 
 class CreateProvider(_message.Message):
-    __slots__ = ("identifier", "display_name", "description", "categories", "auth_patterns", "icon_src", "display_priority")
+    __slots__ = ("identifier", "display_name", "description", "categories", "auth_patterns", "icon_src", "display_priority", "coming_soon")
     IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
@@ -42,6 +45,7 @@ class CreateProvider(_message.Message):
     AUTH_PATTERNS_FIELD_NUMBER: _ClassVar[int]
     ICON_SRC_FIELD_NUMBER: _ClassVar[int]
     DISPLAY_PRIORITY_FIELD_NUMBER: _ClassVar[int]
+    COMING_SOON_FIELD_NUMBER: _ClassVar[int]
     identifier: str
     display_name: str
     description: str
@@ -49,7 +53,8 @@ class CreateProvider(_message.Message):
     auth_patterns: _struct_pb2.ListValue
     icon_src: str
     display_priority: int
-    def __init__(self, identifier: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., categories: _Optional[_Iterable[str]] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., icon_src: _Optional[str] = ..., display_priority: _Optional[int] = ...) -> None: ...
+    coming_soon: bool
+    def __init__(self, identifier: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., categories: _Optional[_Iterable[str]] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., icon_src: _Optional[str] = ..., display_priority: _Optional[int] = ..., coming_soon: bool = ...) -> None: ...
 
 class CreateProviderRequest(_message.Message):
     __slots__ = ("provider",)
@@ -64,20 +69,22 @@ class CreateProviderResponse(_message.Message):
     def __init__(self, provider: _Optional[_Union[Provider, _Mapping]] = ...) -> None: ...
 
 class UpdateProvider(_message.Message):
-    __slots__ = ("display_name", "description", "categories", "auth_patterns", "icon_src", "display_priority")
+    __slots__ = ("display_name", "description", "categories", "auth_patterns", "icon_src", "display_priority", "coming_soon")
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     CATEGORIES_FIELD_NUMBER: _ClassVar[int]
     AUTH_PATTERNS_FIELD_NUMBER: _ClassVar[int]
     ICON_SRC_FIELD_NUMBER: _ClassVar[int]
     DISPLAY_PRIORITY_FIELD_NUMBER: _ClassVar[int]
+    COMING_SOON_FIELD_NUMBER: _ClassVar[int]
     display_name: str
     description: str
     categories: _containers.RepeatedScalarFieldContainer[str]
     auth_patterns: _struct_pb2.ListValue
     icon_src: str
     display_priority: int
-    def __init__(self, display_name: _Optional[str] = ..., description: _Optional[str] = ..., categories: _Optional[_Iterable[str]] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., icon_src: _Optional[str] = ..., display_priority: _Optional[int] = ...) -> None: ...
+    coming_soon: _wrappers_pb2.BoolValue
+    def __init__(self, display_name: _Optional[str] = ..., description: _Optional[str] = ..., categories: _Optional[_Iterable[str]] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., icon_src: _Optional[str] = ..., display_priority: _Optional[int] = ..., coming_soon: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ...) -> None: ...
 
 class UpdateProviderRequest(_message.Message):
     __slots__ = ("identifier", "provider")

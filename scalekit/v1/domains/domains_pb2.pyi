@@ -166,29 +166,25 @@ class ListAuthorizedDomainResponse(_message.Message):
     def __init__(self, domains: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class Domain(_message.Message):
-    __slots__ = ("id", "domain", "environment_id", "organization_id", "connection_id", "txt_record_key", "txt_record_secret", "verification_status", "create_time", "update_time", "created_by", "domain_type")
+    __slots__ = ("id", "domain", "environment_id", "organization_id", "txt_record_key", "txt_record_secret", "verification_status", "create_time", "update_time", "domain_type")
     ID_FIELD_NUMBER: _ClassVar[int]
     DOMAIN_FIELD_NUMBER: _ClassVar[int]
     ENVIRONMENT_ID_FIELD_NUMBER: _ClassVar[int]
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
-    CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
     TXT_RECORD_KEY_FIELD_NUMBER: _ClassVar[int]
     TXT_RECORD_SECRET_FIELD_NUMBER: _ClassVar[int]
     VERIFICATION_STATUS_FIELD_NUMBER: _ClassVar[int]
     CREATE_TIME_FIELD_NUMBER: _ClassVar[int]
     UPDATE_TIME_FIELD_NUMBER: _ClassVar[int]
-    CREATED_BY_FIELD_NUMBER: _ClassVar[int]
     DOMAIN_TYPE_FIELD_NUMBER: _ClassVar[int]
     id: str
     domain: str
     environment_id: str
     organization_id: str
-    connection_id: str
     txt_record_key: str
     txt_record_secret: str
     verification_status: VerificationStatus
     create_time: _timestamp_pb2.Timestamp
     update_time: _timestamp_pb2.Timestamp
-    created_by: str
     domain_type: DomainType
-    def __init__(self, id: _Optional[str] = ..., domain: _Optional[str] = ..., environment_id: _Optional[str] = ..., organization_id: _Optional[str] = ..., connection_id: _Optional[str] = ..., txt_record_key: _Optional[str] = ..., txt_record_secret: _Optional[str] = ..., verification_status: _Optional[_Union[VerificationStatus, str]] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., created_by: _Optional[str] = ..., domain_type: _Optional[_Union[DomainType, str]] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., domain: _Optional[str] = ..., environment_id: _Optional[str] = ..., organization_id: _Optional[str] = ..., txt_record_key: _Optional[str] = ..., txt_record_secret: _Optional[str] = ..., verification_status: _Optional[_Union[VerificationStatus, str]] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., domain_type: _Optional[_Union[DomainType, str]] = ...) -> None: ...
