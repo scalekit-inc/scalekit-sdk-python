@@ -22,17 +22,8 @@ def _import_google_adk():
 
 McpTool,AuthCredential,ToolContext = _import_google_adk()
 
-@runtime_checkable
-class McpToolProtocol(Protocol):
-    """Protocol for Google ADK McpTool compatibility"""
-    def _get_declaration(self): ...
-    async def _run_async_impl(self, *, args, tool_context, credentials):  ...
 
-
-
-
-
-class ScalekitGoogleAdkTool(McpTool,McpToolProtocol):
+class ScalekitGoogleAdkTool(McpTool):
     """Google ADK Tool wrapper for Scalekit tools inheriting from Google BaseTool"""
     
     def __init__(
