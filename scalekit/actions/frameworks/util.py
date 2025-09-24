@@ -1,4 +1,5 @@
 from typing import Dict, Any
+from mcp.types import Tool as McpBaseTool, ToolAnnotations
 
 
 def struct_to_dict(struct) -> Dict[str, Any]:
@@ -42,3 +43,31 @@ def convert_to_mcp_input_schema(definition_dict: Dict[str, Any]) -> Dict[str, An
         "properties": input_schema.get("properties", {}),
         "required": input_schema.get("required", [])
     }
+
+def build_mcp_tool_from_spec(spec: Dict[str, Any]) -> McpBaseTool:
+    """Converts the raw spec dict into an MCP Tool instance.
+
+    Mapping performed:
+      definition.input_schema -> inputSchema
+      definition.annotations.* snake_case -> ToolAnnotations camelCase
+    """
+    definition = spec["definition"]
+    ann_raw = definition.get("annotations", {})
+    ann_map = {
+        "title": ann_raw.get("title"),
+        "readOnlyHint": ann_raw.get("read_only_hint"),
+        "destructiveHint": ann_raw.get("destructive_hint"),
+        "idempotentHint": ann_raw.get("idempotent_hint"),
+        "openWorldHint": ann_raw.get("open_world_hint"),
+    }
+    # Filter out None values
+    ann_clean = {k: v for k, v in ann_map.items() if v is not None}
+    annotations = ToolAnnotations(**ann_clean) if ann_clean else None
+
+    mcp_tool = McpBaseTool(
+        name=definition["name"],
+        description=definition.get("description"),
+        inputSchema=definition["input_schema"],
+        annotations=annotations,
+    )
+    return mcp_tool

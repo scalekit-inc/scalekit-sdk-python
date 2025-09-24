@@ -2,12 +2,11 @@ from typing import Optional, Any, Dict, List, Callable
 from scalekit.tools import ToolsClient
 from scalekit.v1.tools.tools_pb2 import Filter, ScopedToolFilter
 from scalekit.actions.frameworks.types.google_adk_tool import (
-    create_scalekit_google_adk_tool, 
     ScalekitGoogleAdkTool,
     check_google_adk_availability,
     get_missing_dependencies
 )
-from scalekit.actions.frameworks.util import extract_tool_metadata, convert_to_mcp_input_schema
+from scalekit.actions.frameworks.util import extract_tool_metadata, build_mcp_tool_from_spec, struct_to_dict
 
 
 class GoogleADK:
@@ -105,17 +104,12 @@ class GoogleADK:
     def _convert_tool_to_google_adk_tool(self, tool, connected_account_id: str):
         """Convert a Scalekit Tool to Google ADK compatible tool"""
         
-        # Extract tool metadata using common utility
-        tool_name, tool_description, definition_dict = extract_tool_metadata(tool)
-        
-        # Convert Scalekit tool to MCP input schema
-        input_schema = convert_to_mcp_input_schema(definition_dict)
-        
-        # Create and return ScalekitGoogleAdkTool instance
-        return create_scalekit_google_adk_tool(
-            tool_name=tool_name,
-            tool_description=tool_description,
-            input_schema=input_schema,
+
+        spec = struct_to_dict(tool)
+        mcp_tool = build_mcp_tool_from_spec(spec)
+
+        return ScalekitGoogleAdkTool(
+            mcp_tool=mcp_tool,
             connected_account_id=connected_account_id,
             execute_callback=self.execute_callback
         )

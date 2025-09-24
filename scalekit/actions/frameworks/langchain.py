@@ -71,10 +71,6 @@ class LangChain:
 
         def _call(**arguments: Dict[str, Any]) -> str:
             try:
-                # Import here to avoid circular imports
-                from scalekit.actions.types import ToolInput
-
-                
                 # Call connect.execute_tool via callback (includes modifiers and enhanced handling)
                 response = self.execute_callback(
                     tool_input=arguments,

@@ -767,3 +767,14 @@ class TestConnect(BaseTest):
         self.assertTrue(empty_proto.authorization_details.HasField("oauth_token"))
         self.assertEqual(empty_proto.authorization_details.oauth_token.access_token, "")
 
+    def test_google_adk_get_tools(self):
+
+        tool = self.scalekit_client.actions.google_adk.get_tools(
+            identifier=self.test_identifier,
+            tool_names=["gmail_fetch_mails"],
+            connection_names=["GMAIL"]
+        )
+        self.assertIsInstance(tool, list)
+        self.assertGreaterEqual(len(tool), 1)
+        print(tool)
+

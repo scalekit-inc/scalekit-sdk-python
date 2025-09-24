@@ -20,7 +20,7 @@ setup(
         "deprecation>=2.1.0",
         "python-dotenv>=1.1.0",
         "Faker~=25.8.0",
-        "pydantic~=2.10.6",
+        "pydantic>=2.10.6",
         "langchain-core>=0.3.36,<0.4",
         "mcp>=1.0.0",
     ],
