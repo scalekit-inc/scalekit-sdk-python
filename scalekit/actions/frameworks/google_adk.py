@@ -3,10 +3,8 @@ from scalekit.tools import ToolsClient
 from scalekit.v1.tools.tools_pb2 import Filter, ScopedToolFilter
 from scalekit.actions.frameworks.types.google_adk_tool import (
     ScalekitGoogleAdkTool,
-    check_google_adk_availability,
-    get_missing_dependencies
 )
-from scalekit.actions.frameworks.util import extract_tool_metadata, build_mcp_tool_from_spec, struct_to_dict
+from scalekit.actions.frameworks.util import  build_mcp_tool_from_spec, struct_to_dict
 
 
 class GoogleADK:
@@ -16,27 +14,7 @@ class GoogleADK:
         
         self.tools = tools_client
         self.execute_callback = execute_callback
-        self._availability_checked = False
-        self._is_available = False
-    
-    def is_available(self) -> bool:
-        """
-        Check if Google ADK dependencies are available
-        
-        :returns: True if all Google ADK dependencies are installed, False otherwise
-        """
-        if not self._availability_checked:
-            self._is_available = check_google_adk_availability()
-            self._availability_checked = True
-        return self._is_available
-    
-    def get_missing_dependencies(self) -> Dict[str, str]:
-        """
-        Get information about missing Google ADK dependencies
-        
-        :returns: Dictionary mapping dependency names to installation commands
-        """
-        return get_missing_dependencies()
+
     
     def get_tools(
         self,
@@ -61,20 +39,7 @@ class GoogleADK:
         """
         if identifier is None or identifier == "":
             raise ValueError("Identifier must be provided to get tools")
-        
-        # Check if Google ADK dependencies are available
-        if not self.is_available():
-            missing = self.get_missing_dependencies()
-            missing_deps = list(missing.keys())
-            install_commands = list(missing.values())
-            
-            raise ImportError(
-                f"Google ADK not found: {', '.join(missing_deps)}\n"
-                f"To use Google ADK integration, please install:\n"
-                + "\n".join(f"  {cmd}" for cmd in install_commands) + "\n\n"
-                "Note: MCP is already included as a Scalekit SDK dependency.\n"
-                "For more information, see: https://google.github.io/adk-docs/"
-            )
+
 
         # Create ScopedToolFilter if any filter parameters are provided
         scoped_filter = None

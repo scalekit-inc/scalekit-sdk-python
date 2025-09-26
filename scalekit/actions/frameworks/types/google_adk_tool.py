@@ -1,17 +1,14 @@
-from typing import Any, Dict, Callable, Protocol, runtime_checkable
-
-
-
+from typing import Callable
 from mcp.types import Tool as McpBaseTool
 
 # Dynamic imports with helpful error messages
 def _import_google_adk():
     """Import Google ADK with helpful error message if not available"""
     try:
-        from google.adk.tools.mcp_tool.mcp_tool import MCPTool
+        from google.adk.tools.mcp_tool.mcp_tool import McpTool
         from google.adk.tools.tool_context import ToolContext
         from google.adk.auth.auth_credential import AuthCredential
-        return MCPTool, AuthCredential, ToolContext
+        return McpTool, AuthCredential, ToolContext
     except ImportError as e:
         raise ImportError(
             "Google ADK not found. To use Google ADK integration, please install:\n"
@@ -78,36 +75,3 @@ class ScalekitGoogleAdkTool(McpTool):
 
         except Exception as e:
             return f"Error executing tool {self.name}: {str(e)}"
-
-
-
-
-
-
-def check_google_adk_availability() -> bool:
-    """
-    Check if Google ADK dependencies are available
-    
-    :returns: True if Google ADK is installed, False otherwise
-    """
-    try:
-        _import_google_adk()
-        return True
-    except ImportError:
-        return False
-
-
-def get_missing_dependencies() -> Dict[str, str]:
-    """
-    Get information about missing Google ADK dependencies
-    
-    :returns: Dictionary mapping dependency names to installation commands
-    """
-    missing = {}
-    
-    try:
-        _import_google_adk()
-    except ImportError:
-        missing["google-adk"] = "pip install google-adk"
-    
-    return missing

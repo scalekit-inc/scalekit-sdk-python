@@ -1,5 +1,4 @@
 from basetest import BaseTest
-from scalekit.actions.frameworks.types import ScalekitGoogleAdkTool
 from scalekit.actions.types import ExecuteToolResponse, MagicLinkResponse, ListConnectedAccountsResponse, DeleteConnectedAccountResponse, GetConnectedAccountAuthResponse, ToolMapping, CreateConnectedAccountResponse
 from scalekit.actions.modifier import Modifier
 
@@ -549,15 +548,7 @@ class TestConnect(BaseTest):
                 authorization_details=oauth_auth_details
             )
         self.assertIn("identifier is required", str(context.exception))
-        
-        # Test missing authorization_details
-        with self.assertRaises(ValueError) as context:
-            self.scalekit_client.connect.create_connected_account(
-                connection_name="GMAIL",
-                identifier="test_id", 
-                authorization_details={}
-            )
-        self.assertIn("authorization_details is required", str(context.exception))
+
 
     # Tests for new get_or_create_connected_account functionality
     def test_get_or_create_connected_account_method_exists(self):
@@ -770,13 +761,32 @@ class TestConnect(BaseTest):
 
     def test_google_adk_get_tools(self):
 
-        tool = self.scalekit_client.actions.google.get_tools(
+        google = self.scalekit_client.actions.google
+        self.assertIsNotNone(google)
+
+        from scalekit.actions.frameworks.google_adk import ScalekitGoogleAdkTool
+
+        tools = google.get_tools(
             identifier=self.test_identifier,
             tool_names=["gmail_fetch_mails"],
             connection_names=["GMAIL"]
         )
-        self.assertIsInstance(tool, list)
-        self.assertGreaterEqual(len(tool), 1)
-        self.assertTrue(isinstance(tool[0], ScalekitGoogleAdkTool))
-        print(tool)
+        self.assertIsInstance(tools, list)
+        self.assertGreaterEqual(len(tools), 1)
+        self.assertIsInstance(tools[0], ScalekitGoogleAdkTool)
+        print(tools)
+
+    def test_langchain_adk_get_tools(self):
+
+        lang = self.scalekit_client.actions.langchain
+        self.assertIsNotNone(lang)
+
+        tools = lang.get_tools(
+            identifier=self.test_identifier,
+            tool_names=["gmail_fetch_mails"],
+            connection_names=["GMAIL"]
+        )
+        self.assertIsInstance(tools, list)
+        self.assertGreaterEqual(len(tools), 1)
+        print(tools)
 

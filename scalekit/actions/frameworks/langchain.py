@@ -1,8 +1,8 @@
 from typing import Optional, Any, Dict, List, Callable
 from langchain_core.tools import StructuredTool
 from scalekit.tools import ToolsClient
-from scalekit.v1.tools.tools_pb2 import Filter, ScopedToolFilter
-from scalekit.actions.frameworks.util import struct_to_dict, extract_tool_metadata
+from scalekit.v1.tools.tools_pb2 import ScopedToolFilter
+from scalekit.actions.frameworks.util import extract_tool_metadata
 
 
 class LangChain:
