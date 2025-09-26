@@ -21,7 +21,7 @@ setup(
         "python-dotenv>=1.1.0",
         "Faker~=25.8.0",
         "pydantic>=2.10.6",
-        "mcp>=1.0.0",
+        "mcp>= 1.15.0",
     ],
     url="https://github.com/scalekit-inc/scalekit-sdk-python",
     license="MIT",
