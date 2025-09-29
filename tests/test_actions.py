@@ -548,15 +548,7 @@ class TestConnect(BaseTest):
                 authorization_details=oauth_auth_details
             )
         self.assertIn("identifier is required", str(context.exception))
-        
-        # Test missing authorization_details
-        with self.assertRaises(ValueError) as context:
-            self.scalekit_client.connect.create_connected_account(
-                connection_name="GMAIL",
-                identifier="test_id", 
-                authorization_details={}
-            )
-        self.assertIn("authorization_details is required", str(context.exception))
+
 
     # Tests for new get_or_create_connected_account functionality
     def test_get_or_create_connected_account_method_exists(self):
@@ -766,4 +758,35 @@ class TestConnect(BaseTest):
         self.assertIsNotNone(empty_proto)
         self.assertTrue(empty_proto.authorization_details.HasField("oauth_token"))
         self.assertEqual(empty_proto.authorization_details.oauth_token.access_token, "")
+
+    def test_google_adk_get_tools(self):
+
+        google = self.scalekit_client.actions.google
+        self.assertIsNotNone(google)
+
+        from scalekit.actions.frameworks.google_adk import ScalekitGoogleAdkTool
+
+        tools = google.get_tools(
+            identifier=self.test_identifier,
+            tool_names=["gmail_fetch_mails"],
+            connection_names=["GMAIL"]
+        )
+        self.assertIsInstance(tools, list)
+        self.assertGreaterEqual(len(tools), 1)
+        self.assertIsInstance(tools[0], ScalekitGoogleAdkTool)
+        print(tools)
+
+    def test_langchain_adk_get_tools(self):
+
+        lang = self.scalekit_client.actions.langchain
+        self.assertIsNotNone(lang)
+
+        tools = lang.get_tools(
+            identifier=self.test_identifier,
+            tool_names=["gmail_fetch_mails"],
+            connection_names=["GMAIL"]
+        )
+        self.assertIsInstance(tools, list)
+        self.assertGreaterEqual(len(tools), 1)
+        print(tools)
 

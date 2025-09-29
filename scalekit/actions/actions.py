@@ -11,7 +11,6 @@ from scalekit.actions.modifier import (
     Modifier, ModifierType, ToolNames,
     apply_pre_modifiers, apply_post_modifiers
 )
-from scalekit.actions.frameworks.langchain import LangChain
 from scalekit.common.exceptions import ScalekitNotFoundException
 
 
@@ -39,9 +38,46 @@ class ActionClient:
         self.connected_accounts = connected_accounts_client
         self.mcp = mcp_client
         self._modifiers: List[Modifier] = []
+        self._google = None
+        self._langchain = None
         
         # Initialize LangChain with tools client and execute callback
-        self.langchain = LangChain(tools_client, execute_callback=self.execute_tool)
+
+        
+        # Initialize Google ADK with tools client and execute callback
+        #self.google = GoogleADK(tools_client, execute_callback=self.execute_tool)
+
+    @property
+    def langchain(self):
+        """Get LangChain framework instance"""
+        if self._langchain is None:
+            try:
+                from scalekit.actions.frameworks.langchain import LangChain
+                self._langchain = LangChain(self.tools, execute_callback=self.execute_tool)
+            except ImportError as e:
+                raise ImportError(
+                    "LangChain not found. To use LangChain integration, please install:\n"
+                    "pip install langchain\n\n"
+                    "For more information, see: https://python.langchain.com/docs/\n"
+                )
+        return self._langchain
+
+
+    @property
+    def google(self):
+        """Get Google ADK framework instance"""
+        if self._google is None:
+            try:
+                from scalekit.actions.frameworks.google_adk import GoogleADK
+                self._google = GoogleADK(self.tools, execute_callback=self.execute_tool)
+            except ImportError as e:
+                raise ImportError(
+                    "Google ADK not found. To use Google ADK integration, please install:\n"
+                    "pip install google-adk\n\n"
+                    "For more information, see: https://google.github.io/adk-docs/\n"
+                )
+
+        return self._google
 
     def execute_tool(
         self,
