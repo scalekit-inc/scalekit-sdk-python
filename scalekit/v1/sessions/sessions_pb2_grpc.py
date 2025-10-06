@@ -15,19 +15,24 @@ class SessionServiceStub(object):
             channel: A grpc.Channel.
         """
         self.GetSession = channel.unary_unary(
-                '/scalekit.v1.auditlogs.SessionService/GetSession',
+                '/scalekit.v1.sessions.SessionService/GetSession',
                 request_serializer=scalekit_dot_v1_dot_sessions_dot_sessions__pb2.SessionDetailsRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_sessions_dot_sessions__pb2.SessionDetails.FromString,
                 )
         self.RevokeSession = channel.unary_unary(
-                '/scalekit.v1.auditlogs.SessionService/RevokeSession',
+                '/scalekit.v1.sessions.SessionService/RevokeSession',
                 request_serializer=scalekit_dot_v1_dot_sessions_dot_sessions__pb2.RevokeSessionRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_sessions_dot_sessions__pb2.RevokeSessionResponse.FromString,
                 )
         self.GetUserSessions = channel.unary_unary(
-                '/scalekit.v1.auditlogs.SessionService/GetUserSessions',
+                '/scalekit.v1.sessions.SessionService/GetUserSessions',
                 request_serializer=scalekit_dot_v1_dot_sessions_dot_sessions__pb2.UserSessionDetailsRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_sessions_dot_sessions__pb2.UserSessionDetails.FromString,
+                )
+        self.RevokeAllUserSessions = channel.unary_unary(
+                '/scalekit.v1.sessions.SessionService/RevokeAllUserSessions',
+                request_serializer=scalekit_dot_v1_dot_sessions_dot_sessions__pb2.RevokeAllUserSessionsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_sessions_dot_sessions__pb2.RevokeAllUserSessionsResponse.FromString,
                 )
 
 
@@ -52,6 +57,12 @@ class SessionServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def RevokeAllUserSessions(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_SessionServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -70,9 +81,14 @@ def add_SessionServiceServicer_to_server(servicer, server):
                     request_deserializer=scalekit_dot_v1_dot_sessions_dot_sessions__pb2.UserSessionDetailsRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_sessions_dot_sessions__pb2.UserSessionDetails.SerializeToString,
             ),
+            'RevokeAllUserSessions': grpc.unary_unary_rpc_method_handler(
+                    servicer.RevokeAllUserSessions,
+                    request_deserializer=scalekit_dot_v1_dot_sessions_dot_sessions__pb2.RevokeAllUserSessionsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_sessions_dot_sessions__pb2.RevokeAllUserSessionsResponse.SerializeToString,
+            ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'scalekit.v1.auditlogs.SessionService', rpc_method_handlers)
+            'scalekit.v1.sessions.SessionService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
@@ -91,7 +107,7 @@ class SessionService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.auditlogs.SessionService/GetSession',
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.sessions.SessionService/GetSession',
             scalekit_dot_v1_dot_sessions_dot_sessions__pb2.SessionDetailsRequest.SerializeToString,
             scalekit_dot_v1_dot_sessions_dot_sessions__pb2.SessionDetails.FromString,
             options, channel_credentials,
@@ -108,7 +124,7 @@ class SessionService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.auditlogs.SessionService/RevokeSession',
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.sessions.SessionService/RevokeSession',
             scalekit_dot_v1_dot_sessions_dot_sessions__pb2.RevokeSessionRequest.SerializeToString,
             scalekit_dot_v1_dot_sessions_dot_sessions__pb2.RevokeSessionResponse.FromString,
             options, channel_credentials,
@@ -125,8 +141,25 @@ class SessionService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.auditlogs.SessionService/GetUserSessions',
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.sessions.SessionService/GetUserSessions',
             scalekit_dot_v1_dot_sessions_dot_sessions__pb2.UserSessionDetailsRequest.SerializeToString,
             scalekit_dot_v1_dot_sessions_dot_sessions__pb2.UserSessionDetails.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def RevokeAllUserSessions(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.sessions.SessionService/RevokeAllUserSessions',
+            scalekit_dot_v1_dot_sessions_dot_sessions__pb2.RevokeAllUserSessionsRequest.SerializeToString,
+            scalekit_dot_v1_dot_sessions_dot_sessions__pb2.RevokeAllUserSessionsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

@@ -84,7 +84,7 @@ SCALEKIT: IdentityProviderType
 ADFS: IdentityProviderType
 
 class OrganizationMembership(_message.Message):
-    __slots__ = ("organization_id", "join_time", "membership_status", "roles", "name", "metadata", "display_name", "invited_by", "created_at", "accepted_at", "expires_at")
+    __slots__ = ("organization_id", "join_time", "membership_status", "roles", "name", "metadata", "display_name", "inviter_email", "created_at", "accepted_at", "expires_at")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -99,7 +99,7 @@ class OrganizationMembership(_message.Message):
     NAME_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
-    INVITED_BY_FIELD_NUMBER: _ClassVar[int]
+    INVITER_EMAIL_FIELD_NUMBER: _ClassVar[int]
     CREATED_AT_FIELD_NUMBER: _ClassVar[int]
     ACCEPTED_AT_FIELD_NUMBER: _ClassVar[int]
     EXPIRES_AT_FIELD_NUMBER: _ClassVar[int]
@@ -110,11 +110,11 @@ class OrganizationMembership(_message.Message):
     name: str
     metadata: _containers.ScalarMap[str, str]
     display_name: str
-    invited_by: str
+    inviter_email: str
     created_at: _timestamp_pb2.Timestamp
     accepted_at: _timestamp_pb2.Timestamp
     expires_at: _timestamp_pb2.Timestamp
-    def __init__(self, organization_id: _Optional[str] = ..., join_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., membership_status: _Optional[_Union[MembershipStatus, str]] = ..., roles: _Optional[_Iterable[_Union[Role, _Mapping]]] = ..., name: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., display_name: _Optional[str] = ..., invited_by: _Optional[str] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., accepted_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+    def __init__(self, organization_id: _Optional[str] = ..., join_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., membership_status: _Optional[_Union[MembershipStatus, str]] = ..., roles: _Optional[_Iterable[_Union[Role, _Mapping]]] = ..., name: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., display_name: _Optional[str] = ..., inviter_email: _Optional[str] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., accepted_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
 class Role(_message.Message):
     __slots__ = ("id", "name", "display_name")

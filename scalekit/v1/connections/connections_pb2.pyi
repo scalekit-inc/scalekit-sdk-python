@@ -556,7 +556,7 @@ class OIDCConnectionConfig(_message.Message):
     def __init__(self, issuer: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., discovery_endpoint: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., authorize_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., token_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., user_info_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., jwks_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_id: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_secret: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., scopes: _Optional[_Iterable[_Union[OIDCScope, str]]] = ..., token_auth_type: _Optional[_Union[TokenAuthType, str]] = ..., redirect_uri: _Optional[str] = ..., pkce_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., idp_logout_required: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., post_logout_redirect_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., backchannel_logout_redirect_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ...) -> None: ...
 
 class OAuthConnectionConfig(_message.Message):
-    __slots__ = ("authorize_uri", "token_uri", "user_info_uri", "client_id", "client_secret", "scopes", "redirect_uri", "pkce_enabled", "prompt", "use_platform_creds", "access_type")
+    __slots__ = ("authorize_uri", "token_uri", "user_info_uri", "client_id", "client_secret", "scopes", "redirect_uri", "pkce_enabled", "prompt", "use_platform_creds", "access_type", "custom_scope_name")
     AUTHORIZE_URI_FIELD_NUMBER: _ClassVar[int]
     TOKEN_URI_FIELD_NUMBER: _ClassVar[int]
     USER_INFO_URI_FIELD_NUMBER: _ClassVar[int]
@@ -568,6 +568,7 @@ class OAuthConnectionConfig(_message.Message):
     PROMPT_FIELD_NUMBER: _ClassVar[int]
     USE_PLATFORM_CREDS_FIELD_NUMBER: _ClassVar[int]
     ACCESS_TYPE_FIELD_NUMBER: _ClassVar[int]
+    CUSTOM_SCOPE_NAME_FIELD_NUMBER: _ClassVar[int]
     authorize_uri: _wrappers_pb2.StringValue
     token_uri: _wrappers_pb2.StringValue
     user_info_uri: _wrappers_pb2.StringValue
@@ -579,7 +580,8 @@ class OAuthConnectionConfig(_message.Message):
     prompt: _wrappers_pb2.StringValue
     use_platform_creds: _wrappers_pb2.BoolValue
     access_type: _wrappers_pb2.StringValue
-    def __init__(self, authorize_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., token_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., user_info_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_id: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_secret: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., scopes: _Optional[_Iterable[str]] = ..., redirect_uri: _Optional[str] = ..., pkce_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., prompt: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., use_platform_creds: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., access_type: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ...) -> None: ...
+    custom_scope_name: _wrappers_pb2.StringValue
+    def __init__(self, authorize_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., token_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., user_info_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_id: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_secret: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., scopes: _Optional[_Iterable[str]] = ..., redirect_uri: _Optional[str] = ..., pkce_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., prompt: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., use_platform_creds: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., access_type: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., custom_scope_name: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ...) -> None: ...
 
 class PasswordLessConfig(_message.Message):
     __slots__ = ("type", "frequency", "validity", "enforce_same_browser_origin", "code_challenge_length", "code_challenge_type", "regenerate_passwordless_credentials_on_resend")

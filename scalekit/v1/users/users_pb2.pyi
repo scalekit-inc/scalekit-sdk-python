@@ -373,10 +373,10 @@ class UpdateUserProfile(_message.Message):
     def __init__(self, first_name: _Optional[str] = ..., last_name: _Optional[str] = ..., name: _Optional[str] = ..., locale: _Optional[str] = ..., phone_number: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., custom_attributes: _Optional[_Mapping[str, str]] = ...) -> None: ...
 
 class Invite(_message.Message):
-    __slots__ = ("organization_id", "user_id", "invited_by", "status", "created_at", "expires_at", "resent_at", "resent_count")
+    __slots__ = ("organization_id", "user_id", "inviter_email", "status", "created_at", "expires_at", "resent_at", "resent_count")
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     USER_ID_FIELD_NUMBER: _ClassVar[int]
-    INVITED_BY_FIELD_NUMBER: _ClassVar[int]
+    INVITER_EMAIL_FIELD_NUMBER: _ClassVar[int]
     STATUS_FIELD_NUMBER: _ClassVar[int]
     CREATED_AT_FIELD_NUMBER: _ClassVar[int]
     EXPIRES_AT_FIELD_NUMBER: _ClassVar[int]
@@ -384,13 +384,13 @@ class Invite(_message.Message):
     RESENT_COUNT_FIELD_NUMBER: _ClassVar[int]
     organization_id: str
     user_id: str
-    invited_by: str
+    inviter_email: str
     status: str
     created_at: _timestamp_pb2.Timestamp
     expires_at: _timestamp_pb2.Timestamp
     resent_at: _timestamp_pb2.Timestamp
     resent_count: int
-    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., invited_by: _Optional[str] = ..., status: _Optional[str] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., resent_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., resent_count: _Optional[int] = ...) -> None: ...
+    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., inviter_email: _Optional[str] = ..., status: _Optional[str] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., resent_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., resent_count: _Optional[int] = ...) -> None: ...
 
 class ResendInviteRequest(_message.Message):
     __slots__ = ("organization_id", "id")
