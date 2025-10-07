@@ -155,11 +155,11 @@ class CoreClient:
         retry=1,
     ) -> TResponse:
         try:
-            resp = func(
+            resp, call = func(
                 data,
                 metadata=tuple(self.get_headers().items()),
             )
-            return resp
+            return resp, call
         except grpc.RpcError as exp:
             if retry > 0:
                 return self.grpc_exec(func, data, retry=retry - 1)

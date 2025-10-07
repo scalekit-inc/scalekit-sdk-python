@@ -6,7 +6,6 @@ from google.protobuf import empty_pb2 as _empty_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
 from protoc_gen_openapiv2.options import annotations_pb2 as _annotations_pb2_1
 from scalekit.v1.commons import commons_pb2 as _commons_pb2
-from scalekit.v1.errdetails import errdetails_pb2 as _errdetails_pb2
 from scalekit.v1.options import options_pb2 as _options_pb2
 from google.protobuf.internal import containers as _containers
 from google.protobuf import descriptor as _descriptor
@@ -241,7 +240,7 @@ class UpdateMembership(_message.Message):
     def __init__(self, roles: _Optional[_Iterable[_Union[_commons_pb2.Role, _Mapping]]] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
 
 class CreateMembership(_message.Message):
-    __slots__ = ("roles", "metadata", "inviter_email")
+    __slots__ = ("roles", "metadata")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -251,11 +250,9 @@ class CreateMembership(_message.Message):
         def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
     ROLES_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
-    INVITER_EMAIL_FIELD_NUMBER: _ClassVar[int]
     roles: _containers.RepeatedCompositeFieldContainer[_commons_pb2.Role]
     metadata: _containers.ScalarMap[str, str]
-    inviter_email: str
-    def __init__(self, roles: _Optional[_Iterable[_Union[_commons_pb2.Role, _Mapping]]] = ..., metadata: _Optional[_Mapping[str, str]] = ..., inviter_email: _Optional[str] = ...) -> None: ...
+    def __init__(self, roles: _Optional[_Iterable[_Union[_commons_pb2.Role, _Mapping]]] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
 
 class UpdateMembershipResponse(_message.Message):
     __slots__ = ("user",)
@@ -309,7 +306,7 @@ class CreateUser(_message.Message):
     def __init__(self, email: _Optional[str] = ..., external_id: _Optional[str] = ..., membership: _Optional[_Union[CreateMembership, _Mapping]] = ..., user_profile: _Optional[_Union[CreateUserProfile, _Mapping]] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
 
 class CreateUserProfile(_message.Message):
-    __slots__ = ("first_name", "last_name", "name", "locale", "phone_number", "metadata", "custom_attributes")
+    __slots__ = ("given_name", "family_name", "name", "locale", "phone_number", "metadata", "custom_attributes", "first_name", "last_name")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -324,24 +321,28 @@ class CreateUserProfile(_message.Message):
         key: str
         value: str
         def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
-    FIRST_NAME_FIELD_NUMBER: _ClassVar[int]
-    LAST_NAME_FIELD_NUMBER: _ClassVar[int]
+    GIVEN_NAME_FIELD_NUMBER: _ClassVar[int]
+    FAMILY_NAME_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     LOCALE_FIELD_NUMBER: _ClassVar[int]
     PHONE_NUMBER_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     CUSTOM_ATTRIBUTES_FIELD_NUMBER: _ClassVar[int]
-    first_name: str
-    last_name: str
+    FIRST_NAME_FIELD_NUMBER: _ClassVar[int]
+    LAST_NAME_FIELD_NUMBER: _ClassVar[int]
+    given_name: str
+    family_name: str
     name: str
     locale: str
     phone_number: str
     metadata: _containers.ScalarMap[str, str]
     custom_attributes: _containers.ScalarMap[str, str]
-    def __init__(self, first_name: _Optional[str] = ..., last_name: _Optional[str] = ..., name: _Optional[str] = ..., locale: _Optional[str] = ..., phone_number: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., custom_attributes: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    first_name: str
+    last_name: str
+    def __init__(self, given_name: _Optional[str] = ..., family_name: _Optional[str] = ..., name: _Optional[str] = ..., locale: _Optional[str] = ..., phone_number: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., custom_attributes: _Optional[_Mapping[str, str]] = ..., first_name: _Optional[str] = ..., last_name: _Optional[str] = ...) -> None: ...
 
 class UpdateUserProfile(_message.Message):
-    __slots__ = ("first_name", "last_name", "name", "locale", "phone_number", "metadata", "custom_attributes")
+    __slots__ = ("given_name", "family_name", "name", "locale", "phone_number", "metadata", "custom_attributes", "first_name", "last_name")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -356,27 +357,31 @@ class UpdateUserProfile(_message.Message):
         key: str
         value: str
         def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
-    FIRST_NAME_FIELD_NUMBER: _ClassVar[int]
-    LAST_NAME_FIELD_NUMBER: _ClassVar[int]
+    GIVEN_NAME_FIELD_NUMBER: _ClassVar[int]
+    FAMILY_NAME_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     LOCALE_FIELD_NUMBER: _ClassVar[int]
     PHONE_NUMBER_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     CUSTOM_ATTRIBUTES_FIELD_NUMBER: _ClassVar[int]
-    first_name: str
-    last_name: str
+    FIRST_NAME_FIELD_NUMBER: _ClassVar[int]
+    LAST_NAME_FIELD_NUMBER: _ClassVar[int]
+    given_name: str
+    family_name: str
     name: str
     locale: str
     phone_number: str
     metadata: _containers.ScalarMap[str, str]
     custom_attributes: _containers.ScalarMap[str, str]
-    def __init__(self, first_name: _Optional[str] = ..., last_name: _Optional[str] = ..., name: _Optional[str] = ..., locale: _Optional[str] = ..., phone_number: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., custom_attributes: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    first_name: str
+    last_name: str
+    def __init__(self, given_name: _Optional[str] = ..., family_name: _Optional[str] = ..., name: _Optional[str] = ..., locale: _Optional[str] = ..., phone_number: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., custom_attributes: _Optional[_Mapping[str, str]] = ..., first_name: _Optional[str] = ..., last_name: _Optional[str] = ...) -> None: ...
 
 class Invite(_message.Message):
-    __slots__ = ("organization_id", "user_id", "inviter_email", "status", "created_at", "expires_at", "resent_at", "resent_count")
+    __slots__ = ("organization_id", "user_id", "invited_by", "status", "created_at", "expires_at", "resent_at", "resent_count")
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     USER_ID_FIELD_NUMBER: _ClassVar[int]
-    INVITER_EMAIL_FIELD_NUMBER: _ClassVar[int]
+    INVITED_BY_FIELD_NUMBER: _ClassVar[int]
     STATUS_FIELD_NUMBER: _ClassVar[int]
     CREATED_AT_FIELD_NUMBER: _ClassVar[int]
     EXPIRES_AT_FIELD_NUMBER: _ClassVar[int]
@@ -384,13 +389,13 @@ class Invite(_message.Message):
     RESENT_COUNT_FIELD_NUMBER: _ClassVar[int]
     organization_id: str
     user_id: str
-    inviter_email: str
+    invited_by: str
     status: str
     created_at: _timestamp_pb2.Timestamp
     expires_at: _timestamp_pb2.Timestamp
     resent_at: _timestamp_pb2.Timestamp
     resent_count: int
-    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., inviter_email: _Optional[str] = ..., status: _Optional[str] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., resent_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., resent_count: _Optional[int] = ...) -> None: ...
+    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., invited_by: _Optional[str] = ..., status: _Optional[str] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., resent_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., resent_count: _Optional[int] = ...) -> None: ...
 
 class ResendInviteRequest(_message.Message):
     __slots__ = ("organization_id", "id")
@@ -431,12 +436,10 @@ class AssignUserRolesRequest(_message.Message):
     def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., roles: _Optional[_Iterable[_Union[AssignRoleRequest, _Mapping]]] = ...) -> None: ...
 
 class AssignRoleRequest(_message.Message):
-    __slots__ = ("id", "role_name")
+    __slots__ = ("id",)
     ID_FIELD_NUMBER: _ClassVar[int]
-    ROLE_NAME_FIELD_NUMBER: _ClassVar[int]
     id: str
-    role_name: str
-    def __init__(self, id: _Optional[str] = ..., role_name: _Optional[str] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ...) -> None: ...
 
 class AssignUserRolesResponse(_message.Message):
     __slots__ = ("roles",)
@@ -445,14 +448,14 @@ class AssignUserRolesResponse(_message.Message):
     def __init__(self, roles: _Optional[_Iterable[_Union[_commons_pb2.Role, _Mapping]]] = ...) -> None: ...
 
 class RemoveUserRoleRequest(_message.Message):
-    __slots__ = ("organization_id", "user_id", "role_name")
+    __slots__ = ("organization_id", "user_id", "role_id")
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     USER_ID_FIELD_NUMBER: _ClassVar[int]
-    ROLE_NAME_FIELD_NUMBER: _ClassVar[int]
+    ROLE_ID_FIELD_NUMBER: _ClassVar[int]
     organization_id: str
     user_id: str
-    role_name: str
-    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., role_name: _Optional[str] = ...) -> None: ...
+    role_id: str
+    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., role_id: _Optional[str] = ...) -> None: ...
 
 class ListUserPermissionsRequest(_message.Message):
     __slots__ = ("organization_id", "user_id")

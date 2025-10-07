@@ -1,6 +1,6 @@
 import os
 from faker import Faker
-from basetest import BaseTest
+from .basetest import BaseTest
 
 from scalekit.v1.users.users_pb2 import CreateUser, UpdateUser, CreateUserProfile, UpdateUserProfile, CreateMembership, UpdateMembership
 from scalekit.v1.commons.commons_pb2 import UserProfile, Role
