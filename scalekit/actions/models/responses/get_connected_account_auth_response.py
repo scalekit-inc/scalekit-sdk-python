@@ -17,6 +17,7 @@ class ConnectedAccount(BaseModel):
     updated_at: Optional[datetime] = Field(None, description="Last updated time")
     connector: Optional[str] = Field(None, description="Connector name")
     last_used_at: Optional[datetime] = Field(None, description="Last used time")
+    api_config: Optional[Dict[str, Any]] = Field(None, description="API configuration as dictionary")
 
     @classmethod
     def from_proto(cls, proto_account: ProtoConnectedAccount) -> 'ConnectedAccount':
@@ -59,6 +60,12 @@ class ConnectedAccount(BaseModel):
                 from google.protobuf.json_format import MessageToDict
                 authorization_details["static_auth"] = MessageToDict(static_auth.details)
 
+        # Convert api_config protobuf Struct to dict
+        api_config_dict = None
+        if proto_account.api_config:
+            from google.protobuf.json_format import MessageToDict
+            api_config_dict = MessageToDict(proto_account.api_config)
+
         return cls(
             id=proto_account.id if proto_account.id else None,
             identifier=proto_account.identifier,
@@ -69,7 +76,8 @@ class ConnectedAccount(BaseModel):
             token_expires_at=token_expires_at,
             updated_at=updated_at,
             connector=proto_account.connector,
-            last_used_at=last_used_at
+            last_used_at=last_used_at,
+            api_config=api_config_dict
         )
 
 
