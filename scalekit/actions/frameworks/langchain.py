@@ -1,7 +1,8 @@
 from typing import Optional, Any, Dict, List, Callable
 from langchain_core.tools import StructuredTool
 from scalekit.tools import ToolsClient
-from scalekit.v1.tools.tools_pb2 import Filter, ScopedToolFilter
+from scalekit.v1.tools.tools_pb2 import ScopedToolFilter
+from scalekit.actions.frameworks.util import extract_tool_metadata
 
 
 class LangChain:
@@ -63,23 +64,13 @@ class LangChain:
     def _convert_tool_to_structured_tool(self, tool, connected_account_id: str) -> StructuredTool:
         """Convert a Scalekit Tool to LangChain StructuredTool"""
         
-
-        definition_dict = self._struct_to_dict(tool.definition) if hasattr(tool, 'definition') and tool.definition else {}
-        
-
-        tool_name = definition_dict.get('name', getattr(tool, 'provider', 'unknown') + '_tool')
-        tool_description = definition_dict.get('description', 'Scalekit tool')
-        
+        tool_name, tool_description, definition_dict = extract_tool_metadata(tool)
 
         args_schema = definition_dict.get("input_schema", {})
         
 
         def _call(**arguments: Dict[str, Any]) -> str:
             try:
-                # Import here to avoid circular imports
-                from scalekit.actions.types import ToolInput
-
-                
                 # Call connect.execute_tool via callback (includes modifiers and enhanced handling)
                 response = self.execute_callback(
                     tool_input=arguments,
@@ -119,7 +110,3 @@ class LangChain:
             coroutine=call_tool_async,
         )
     
-    def _struct_to_dict(self, struct) -> Dict[str, Any]:
-        """Convert protobuf Struct to Python dict"""
-        from google.protobuf.json_format import MessageToDict
-        return MessageToDict(struct)
