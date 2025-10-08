@@ -1,7 +1,7 @@
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any
 from pydantic import BaseModel, Field
 from scalekit.v1.connected_accounts.connected_accounts_pb2 import (
-    CreateConnectedAccount,
+    UpdateConnectedAccount,
     AuthorizationDetails,
     OauthToken,
     StaticAuth
@@ -9,25 +9,26 @@ from scalekit.v1.connected_accounts.connected_accounts_pb2 import (
 from google.protobuf import struct_pb2
 
 
-class CreateConnectedAccountRequest(BaseModel):
-    """Create connected account request model"""
+class UpdateConnectedAccountRequest(BaseModel):
+    """Update connected account request model"""
 
     connection_name: str = Field(..., description="Connector identifier")
     identifier: str = Field(..., description="Connected account identifier")
-    authorization_details: Dict[str, Any] = Field(default_factory=dict, description="Authorization details (OAuth token or static auth)")
+    authorization_details: Optional[Dict[str, Any]] = Field(None, description="Authorization details (OAuth token or static auth)")
     organization_id: Optional[str] = Field(None, description="Organization ID")
     user_id: Optional[str] = Field(None, description="User ID")
+    connected_account_id: Optional[str] = Field(None, description="Connected account ID")
     api_config: Optional[Dict[str, Any]] = Field(None, description="Optional API configuration for the connected account")
 
-    def to_proto(self) -> CreateConnectedAccount:
+    def to_proto(self) -> UpdateConnectedAccount:
         """
-        Convert to protobuf CreateConnectedAccount object
-        
+        Convert to protobuf UpdateConnectedAccount object
+
         :returns:
-            CreateConnectedAccount protobuf object
+            UpdateConnectedAccount protobuf object
         """
         auth_details = None
-        
+
         if self.authorization_details and "oauth_token" in self.authorization_details:
             oauth_data = self.authorization_details["oauth_token"]
             oauth_token = OauthToken(
@@ -36,7 +37,7 @@ class CreateConnectedAccountRequest(BaseModel):
                 scopes=oauth_data.get("scopes", [])
             )
             auth_details = AuthorizationDetails(oauth_token=oauth_token)
-            
+
         elif self.authorization_details and "static_auth" in self.authorization_details:
             static_data = self.authorization_details["static_auth"]
             # Convert dict to protobuf Struct
@@ -44,15 +45,6 @@ class CreateConnectedAccountRequest(BaseModel):
             struct_details.update(static_data)
             static_auth = StaticAuth(details=struct_details)
             auth_details = AuthorizationDetails(static_auth=static_auth)
-        
-        elif not self.authorization_details:
-            # Create empty OAuth token for empty authorization details
-            oauth_token = OauthToken(
-                access_token="",
-                refresh_token="",
-                scopes=[]
-            )
-            auth_details = AuthorizationDetails(oauth_token=oauth_token)
 
         # Handle api_config if provided
         api_config_struct = None
@@ -60,7 +52,7 @@ class CreateConnectedAccountRequest(BaseModel):
             api_config_struct = struct_pb2.Struct()
             api_config_struct.update(self.api_config)
 
-        return CreateConnectedAccount(
+        return UpdateConnectedAccount(
             authorization_details=auth_details,
             api_config=api_config_struct
         )

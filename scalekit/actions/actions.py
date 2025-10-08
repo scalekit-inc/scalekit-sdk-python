@@ -4,9 +4,10 @@ from scalekit.v1.mcp.mcp_pb2 import ToolMapping as ProtoToolMapping
 
 from scalekit.actions.models.tool_mapping import ToolMapping
 from scalekit.actions.types import ToolRequest,ExecuteToolResponse,MagicLinkResponse,ListConnectedAccountsResponse,DeleteConnectedAccountResponse,GetConnectedAccountAuthResponse,ToolInput, \
-    McpRequest,CreateMcpResponse,GetMcpResponse
+    McpRequest,CreateMcpResponse,GetMcpResponse,UpdateConnectedAccountResponse
 from scalekit.actions.models.responses.create_connected_account_response import CreateConnectedAccountResponse
 from scalekit.actions.models.requests.create_connected_account_request import CreateConnectedAccountRequest
+from scalekit.actions.models.requests.update_connected_account_request import UpdateConnectedAccountRequest
 from scalekit.actions.modifier import (
     Modifier, ModifierType, ToolNames,
     apply_pre_modifiers, apply_post_modifiers
@@ -405,15 +406,16 @@ class ActionClient:
     def create_connected_account(
         self,
         connection_name: str,
-        identifier: str, 
+        identifier: str,
         authorization_details: Dict[str, Any],
         organization_id: Optional[str] = None,
         user_id: Optional[str] = None,
+        api_config: Optional[Dict[str, Any]] = None,
         **kwargs
     ) -> CreateConnectedAccountResponse:
         """
         Create a new connected account
-        
+
         :param connection_name: Connector identifier (required)
         :type: str
         :param identifier: Connected account identifier (required)
@@ -424,7 +426,9 @@ class ActionClient:
         :type: str
         :param user_id: User ID (optional)
         :type: str
-        
+        :param api_config: Optional API configuration for the connected account (optional)
+        :type: Optional[Dict[str, Any]]
+
         :returns:
             CreateConnectedAccountResponse containing created connected account details
         """
@@ -440,7 +444,8 @@ class ActionClient:
             identifier=identifier,
             authorization_details=authorization_details,
             organization_id=organization_id,
-            user_id=user_id
+            user_id=user_id,
+            api_config=api_config
         )
         
         # Convert to protobuf
@@ -468,11 +473,12 @@ class ActionClient:
         authorization_details: Optional[Dict[str, Any]] = None,
         organization_id: Optional[str] = None,
         user_id: Optional[str] = None,
+        api_config: Optional[Dict[str, Any]] = None,
         **kwargs
     ) -> CreateConnectedAccountResponse:
         """
         Get an existing connected account or create a new one if it doesn't exist
-        
+
         :param connection_name: Connector identifier (required)
         :type: str
         :param identifier: Connected account identifier (required)
@@ -483,7 +489,9 @@ class ActionClient:
         :type: str
         :param user_id: User ID (optional)
         :type: str
-        
+        :param api_config: Optional API configuration for the connected account (optional, only used when creating)
+        :type: Optional[Dict[str, Any]]
+
         :returns:
             CreateConnectedAccountResponse containing connected account details (either existing or newly created)
         """
@@ -514,5 +522,74 @@ class ActionClient:
                 identifier=identifier,
                 authorization_details=auth_details,
                 organization_id=organization_id,
-                user_id=user_id
+                user_id=user_id,
+                api_config=api_config
             )
+
+    def update_connected_account(
+        self,
+        connection_name: str,
+        identifier: str,
+        authorization_details: Optional[Dict[str, Any]] = None,
+        organization_id: Optional[str] = None,
+        user_id: Optional[str] = None,
+        connected_account_id: Optional[str] = None,
+        api_config: Optional[Dict[str, Any]] = None,
+        **kwargs
+    ) -> UpdateConnectedAccountResponse:
+        """
+        Update an existing connected account
+
+        :param connection_name: Connector identifier (required)
+        :type: str
+        :param identifier: Connected account identifier (required)
+        :type: str
+        :param authorization_details: Authorization details (OAuth token or static auth) (optional)
+        :type: Optional[Dict[str, Any]]
+        :param organization_id: Organization ID (optional)
+        :type: str
+        :param user_id: User ID (optional)
+        :type: str
+        :param connected_account_id: Connected account ID (optional)
+        :type: str
+        :param api_config: Optional API configuration for the connected account (optional)
+        :type: Optional[Dict[str, Any]]
+
+        :returns:
+            UpdateConnectedAccountResponse containing updated connected account details
+        """
+        # Validate required parameters
+        if not connection_name:
+            raise ValueError("connection_name is required")
+        if not identifier:
+            raise ValueError("identifier is required")
+
+        # Create request model
+        request = UpdateConnectedAccountRequest(
+            connection_name=connection_name,
+            identifier=identifier,
+            authorization_details=authorization_details,
+            organization_id=organization_id,
+            user_id=user_id,
+            connected_account_id=connected_account_id,
+            api_config=api_config
+        )
+
+        # Convert to protobuf
+        connected_account_proto = request.to_proto()
+
+        # Call the existing connected_accounts method which returns (response, metadata) tuple
+        result_tuple = self.connected_accounts.update_connected_account(
+            connector=connection_name,
+            identifier=identifier,
+            connected_account=connected_account_proto,
+            organization_id=organization_id,
+            user_id=user_id,
+            connected_account_id=connected_account_id
+        )
+
+        # Extract the response[0] (the actual UpdateConnectedAccountResponse proto object)
+        proto_response = result_tuple[0]
+
+        # Convert proto to our UpdateConnectedAccountResponse class
+        return UpdateConnectedAccountResponse.from_proto(proto_response)

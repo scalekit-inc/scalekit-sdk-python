@@ -367,3 +367,54 @@ class TestConnectedAccounts(BaseTest):
 
         # Verify that both responses refer to the same connected account ID
         self.assertEqual(created_account.id, second_response.connected_account.id)
+
+
+    def test_create_connected_account_with_oauth_api_info(self):
+        """ Method to test create connected account with OAuth """
+        oauth_token = OauthToken(
+            access_token="test_access_token",
+            refresh_token="test_refresh_token",
+            scopes=["read", "write"]
+        )
+        auth_details = AuthorizationDetails(oauth_token=oauth_token)
+
+        api_config = struct_pb2.Struct()
+        api_config.update({
+            "version": "v1",
+            "domain": "gmail.com",
+            "api_endpoint": "https://gmail.googleapis.com",
+            "custom_auth_header": "Bearer"
+        })
+
+        connected_account = CreateConnectedAccount(authorization_details=auth_details, api_config=api_config)
+
+        response = self.scalekit_client.connected_accounts.create_connected_account(
+            connector=self.test_connector,
+            identifier=self.test_identifier,
+            connected_account=connected_account
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertTrue(response[0] is not None)
+        self.assertTrue(hasattr(response[0], 'connected_account'))
+        self.assertEqual(response[0].connected_account.identifier, self.test_identifier)
+
+        # Validate API config was set correctly
+        self.assertTrue(hasattr(response[0].connected_account, 'api_config'))
+        self.assertIsNotNone(response[0].connected_account.api_config)
+
+
+        version_field = response[0].connected_account.api_config.fields["version"]
+        self.assertTrue(version_field.HasField("string_value"), "Version should be a string field")
+        self.assertEqual(version_field.string_value, "v1", "Version value should match what we set")
+
+        domain_field = response[0].connected_account.api_config.fields["domain"]
+        self.assertTrue(domain_field.HasField("string_value"), "Domain should be a string field")
+        self.assertEqual(domain_field.string_value, "gmail.com", "Domain value should match what we set")
+
+        api_endpoint_field = response[0].connected_account.api_config.fields["api_endpoint"]
+        self.assertTrue(api_endpoint_field.HasField("string_value"), "API endpoint should be a string field")
+        self.assertEqual(api_endpoint_field.string_value, "https://gmail.googleapis.com", "API endpoint value should match what we set")
+
+        custom_auth_header_field = response[0].connected_account.api_config.fields["custom_auth_header"]
+        self.assertTrue(custom_auth_header_field.HasField("string_value"), "Custom auth header should be a string field")
+        self.assertEqual(custom_auth_header_field.string_value, "Bearer", "Custom auth header value should match what we set")
