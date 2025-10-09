@@ -470,14 +470,12 @@ class ScalekitClient:
         """
         try:
             response = self.core_client.authenticate(
-                json.dumps(
-                    {
-                        "refresh_token": refresh_token,
-                        "grant_type": GrantType.RefreshToken.value,
-                        "client_id": self.core_client.client_id,
-                        "client_secret": self.core_client.client_secret,
-                    }
-                )
+                {
+                    "refresh_token": refresh_token,
+                    "grant_type": GrantType.RefreshToken.value,
+                    "client_id": self.core_client.client_id,
+                    "client_secret": self.core_client.client_secret,
+                }
             )
             response = json.loads(response.content)
             return {

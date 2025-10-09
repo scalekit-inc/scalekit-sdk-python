@@ -26,7 +26,7 @@ class WithCall(Protocol):
 class CoreClient:
     """Class definition for Core Client"""
 
-    sdk_version = "Scalekit-Python/2.4.7"
+    sdk_version = "Scalekit-Python/2.4.6"
     api_version = "20250917"
     user_agent = f"{sdk_version} Python/{platform.python_version()} ({platform.system()}; {platform.architecture()}"
 
@@ -100,7 +100,7 @@ class CoreClient:
         response = requests.post(
             self.env_url + TOKEN_ENDPOINT,
             headers=self.get_headers(headers=headers),
-            data=json.loads(data),
+            data=data,
             verify=True,
         )
         if response.status_code != 200:
@@ -123,7 +123,7 @@ class CoreClient:
 
             pem_key = rsa_key.public_bytes(
                 encoding=serialization.Encoding.PEM,
-                format=serialization.PublicFormat.SubjectPublicKeyInfo
+                format=serialization.PublicFormat.SubjectPublicKeyInfo,
             )
 
             self.keys[kid] = pem_key.decode("utf-8")
