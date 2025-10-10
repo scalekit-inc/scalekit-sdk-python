@@ -360,25 +360,24 @@ class ScalekitClient:
         scopes = payload.get("scopes", [])
         return [scope for scope in scopes if scope and scope.strip()]
 
-    def verify_webhook_payload(self, secret: str, headers: Dict[str, str], payload: [str | bytes]) -> bool:
+    def __verify_payload_signature(self, secret: str, webhook_id: str, webhook_timestamp: str, webhook_signature: str, payload: str) -> bool:
         """
-        Method to verify webhook payload
+        Private method to verify payload signature (common logic for both webhook and interceptor verification)
 
-        :param secret      :     Secret for webhook verification
-        :type              :     ``` str ```
-        :param headers     :     Webhook request headers
-        :type              :     ``` dict[str, str] ```
-        :param payload     :     Webhook payload in str or bytes
-        :type              :     ``` str | bytes ```
+        :param secret            :     Secret for verification
+        :type                    :     ``` str ```
+        :param webhook_id        :     Webhook/Interceptor ID
+        :type                    :     ``` str ```
+        :param webhook_timestamp :     Webhook/Interceptor timestamp
+        :type                    :     ``` str ```
+        :param webhook_signature :     Webhook/Interceptor signature
+        :type                    :     ``` str ```
+        :param payload           :     Payload string
+        :type                    :     ``` str ```
 
         :returns:
             bool
         """
-        payload = payload if isinstance(payload, str) else payload.decode()
-        webhook_id = headers.get("webhook-id")
-        webhook_timestamp = headers.get("webhook-timestamp")
-        webhook_signature = headers.get("webhook-signature")
-
         if not all([webhook_id, webhook_timestamp, webhook_signature]):
             raise WebhookVerificationError("Missing required headers")
 
@@ -416,6 +415,49 @@ class ScalekitClient:
                 return True
 
         raise WebhookVerificationError("Invalid signature")
+
+    def verify_webhook_payload(self, secret: str, headers: Dict[str, str], payload: str | bytes) -> bool:
+        """
+        Method to verify webhook payload
+
+        :param secret      :     Secret for webhook verification
+        :type              :     ``` str ```
+        :param headers     :     Webhook request headers
+        :type              :     ``` dict[str, str] ```
+        :param payload     :     Webhook payload in str or bytes
+        :type              :     ``` str | bytes ```
+
+        :returns:
+            bool
+        """
+        payload_str = payload if isinstance(payload, str) else payload.decode()
+        webhook_id = headers.get("webhook-id")
+        webhook_timestamp = headers.get("webhook-timestamp")
+        webhook_signature = headers.get("webhook-signature")
+
+        return self.__verify_payload_signature(secret, webhook_id, webhook_timestamp, webhook_signature, payload_str)
+
+    def verify_interceptor_payload(self, secret: str, headers: Dict[str, str], payload: str | bytes) -> bool:
+        """
+        Method to verify interceptor payload using common verification logic
+
+        :param secret      :     Secret for interceptor verification
+        :type              :     ``` str ```
+        :param headers     :     Interceptor request headers (with interceptor-id, interceptor-timestamp, interceptor-signature)
+        :type              :     ``` dict[str, str] ```
+        :param payload     :     Interceptor payload in str or bytes
+        :type              :     ``` str | bytes ```
+
+        :returns:
+            bool
+        """
+        payload_str = payload if isinstance(payload, str) else payload.decode()
+        
+        interceptor_id = headers.get("interceptor-id") or headers.get("webhook-id")
+        interceptor_timestamp = headers.get("interceptor-timestamp") or headers.get("webhook-timestamp")
+        interceptor_signature = headers.get("interceptor-signature") or headers.get("webhook-signature")
+
+        return self.__verify_payload_signature(secret, interceptor_id, interceptor_timestamp, interceptor_signature, payload_str)
 
     @staticmethod
     def __verify_timestamp(timestamp_str: str):
