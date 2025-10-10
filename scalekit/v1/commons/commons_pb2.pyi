@@ -84,7 +84,7 @@ SCALEKIT: IdentityProviderType
 ADFS: IdentityProviderType
 
 class OrganizationMembership(_message.Message):
-    __slots__ = ("organization_id", "join_time", "membership_status", "roles", "name", "metadata", "display_name", "inviter_email", "created_at", "accepted_at", "expires_at")
+    __slots__ = ("organization_id", "join_time", "membership_status", "roles", "name", "metadata", "display_name", "invited_by", "created_at", "accepted_at", "expires_at")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -99,7 +99,7 @@ class OrganizationMembership(_message.Message):
     NAME_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
-    INVITER_EMAIL_FIELD_NUMBER: _ClassVar[int]
+    INVITED_BY_FIELD_NUMBER: _ClassVar[int]
     CREATED_AT_FIELD_NUMBER: _ClassVar[int]
     ACCEPTED_AT_FIELD_NUMBER: _ClassVar[int]
     EXPIRES_AT_FIELD_NUMBER: _ClassVar[int]
@@ -110,11 +110,11 @@ class OrganizationMembership(_message.Message):
     name: str
     metadata: _containers.ScalarMap[str, str]
     display_name: str
-    inviter_email: str
+    invited_by: str
     created_at: _timestamp_pb2.Timestamp
     accepted_at: _timestamp_pb2.Timestamp
     expires_at: _timestamp_pb2.Timestamp
-    def __init__(self, organization_id: _Optional[str] = ..., join_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., membership_status: _Optional[_Union[MembershipStatus, str]] = ..., roles: _Optional[_Iterable[_Union[Role, _Mapping]]] = ..., name: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., display_name: _Optional[str] = ..., inviter_email: _Optional[str] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., accepted_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+    def __init__(self, organization_id: _Optional[str] = ..., join_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., membership_status: _Optional[_Union[MembershipStatus, str]] = ..., roles: _Optional[_Iterable[_Union[Role, _Mapping]]] = ..., name: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., display_name: _Optional[str] = ..., invited_by: _Optional[str] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., accepted_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
 class Role(_message.Message):
     __slots__ = ("id", "name", "display_name")
@@ -127,7 +127,7 @@ class Role(_message.Message):
     def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., display_name: _Optional[str] = ...) -> None: ...
 
 class UserProfile(_message.Message):
-    __slots__ = ("id", "first_name", "last_name", "name", "locale", "email_verified", "phone_number", "metadata", "custom_attributes")
+    __slots__ = ("id", "given_name", "family_name", "name", "locale", "email_verified", "phone_number", "metadata", "custom_attributes", "first_name", "last_name", "preferred_username", "phone_number_verified", "picture", "groups", "gender")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -143,21 +143,35 @@ class UserProfile(_message.Message):
         value: str
         def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
     ID_FIELD_NUMBER: _ClassVar[int]
-    FIRST_NAME_FIELD_NUMBER: _ClassVar[int]
-    LAST_NAME_FIELD_NUMBER: _ClassVar[int]
+    GIVEN_NAME_FIELD_NUMBER: _ClassVar[int]
+    FAMILY_NAME_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     LOCALE_FIELD_NUMBER: _ClassVar[int]
     EMAIL_VERIFIED_FIELD_NUMBER: _ClassVar[int]
     PHONE_NUMBER_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     CUSTOM_ATTRIBUTES_FIELD_NUMBER: _ClassVar[int]
+    FIRST_NAME_FIELD_NUMBER: _ClassVar[int]
+    LAST_NAME_FIELD_NUMBER: _ClassVar[int]
+    PREFERRED_USERNAME_FIELD_NUMBER: _ClassVar[int]
+    PHONE_NUMBER_VERIFIED_FIELD_NUMBER: _ClassVar[int]
+    PICTURE_FIELD_NUMBER: _ClassVar[int]
+    GROUPS_FIELD_NUMBER: _ClassVar[int]
+    GENDER_FIELD_NUMBER: _ClassVar[int]
     id: str
-    first_name: str
-    last_name: str
+    given_name: str
+    family_name: str
     name: str
     locale: str
     email_verified: bool
     phone_number: str
     metadata: _containers.ScalarMap[str, str]
     custom_attributes: _containers.ScalarMap[str, str]
-    def __init__(self, id: _Optional[str] = ..., first_name: _Optional[str] = ..., last_name: _Optional[str] = ..., name: _Optional[str] = ..., locale: _Optional[str] = ..., email_verified: bool = ..., phone_number: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., custom_attributes: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    first_name: str
+    last_name: str
+    preferred_username: str
+    phone_number_verified: bool
+    picture: str
+    groups: _containers.RepeatedScalarFieldContainer[str]
+    gender: str
+    def __init__(self, id: _Optional[str] = ..., given_name: _Optional[str] = ..., family_name: _Optional[str] = ..., name: _Optional[str] = ..., locale: _Optional[str] = ..., email_verified: bool = ..., phone_number: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., custom_attributes: _Optional[_Mapping[str, str]] = ..., first_name: _Optional[str] = ..., last_name: _Optional[str] = ..., preferred_username: _Optional[str] = ..., phone_number_verified: bool = ..., picture: _Optional[str] = ..., groups: _Optional[_Iterable[str]] = ..., gender: _Optional[str] = ...) -> None: ...
