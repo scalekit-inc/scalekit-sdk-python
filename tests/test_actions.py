@@ -1,5 +1,6 @@
 from basetest import BaseTest
-from scalekit.actions.types import ExecuteToolResponse, MagicLinkResponse, ListConnectedAccountsResponse, DeleteConnectedAccountResponse, GetConnectedAccountAuthResponse, ToolMapping, CreateConnectedAccountResponse
+from scalekit.actions.types import ExecuteToolResponse, MagicLinkResponse, ListConnectedAccountsResponse, DeleteConnectedAccountResponse, GetConnectedAccountAuthResponse, ToolMapping, CreateConnectedAccountResponse, UpdateConnectedAccountResponse
+from scalekit.actions.models.responses.get_connected_account_auth_response import ConnectedAccount
 from scalekit.actions.modifier import Modifier
 
 
@@ -11,7 +12,7 @@ class TestConnect(BaseTest):
         self.test_identifier = "default"
         self.test_tool_name = "gmail_fetch_mails"
         self.test_connection_name = "GMAIL"
-        self.test_basic_connection_name = "freshdesk"
+        self.test_basic_connection_name = "freshdesk-8"
 
         ca_response = self.scalekit_client.connect.get_connected_account(
             connection_name=self.test_connection_name,
@@ -20,7 +21,7 @@ class TestConnect(BaseTest):
 
         self.test_connected_account_id = ca_response.connected_account.id
         if ca_response.connected_account.status != "ACTIVE":
-            response = self.scalekit_client.connect.get_authorization_link(identifier = self.test_identifier, connector="GMAIL")
+            response = self.scalekit_client.connect.get_authorization_link(identifier = self.test_identifier, connection_name="GMAIL")
             print(f"Authorization link: {response.link}")
             input("Press Enter to continue...")
 
@@ -789,4 +790,925 @@ class TestConnect(BaseTest):
         self.assertIsInstance(tools, list)
         self.assertGreaterEqual(len(tools), 1)
         print(tools)
+
+    # API Config Tests for Existing Methods
+    def test_create_connected_account_with_api_config(self):
+        """Method to test create_connected_account with api_config parameter"""
+        import uuid
+
+        # Generate unique identifier for this test
+        test_id = f"test_create_api_config_{uuid.uuid4().hex[:8]}"
+
+        oauth_auth_details = {
+            "oauth_token": {
+                "access_token": "test_access_token_api",
+                "refresh_token": "test_refresh_token_api",
+                "scopes": ["read", "write"]
+            }
+        }
+
+        # Use connector-specific api_config fields that the server actually supports
+        api_config = {
+            "version": "v1",
+            "domain": "gmail.com",
+            "api_endpoint": "https://gmail.googleapis.com",
+            "custom_auth_header": "Bearer"
+        }
+
+        try:
+            result = self.scalekit_client.actions.create_connected_account(
+                connection_name="GMAIL",
+                identifier=test_id,
+                authorization_details=oauth_auth_details,
+                api_config=api_config
+            )
+
+            self.assertIsNotNone(result)
+            self.assertIsInstance(result, CreateConnectedAccountResponse)
+            self.assertTrue(hasattr(result, 'connected_account'))
+            self.assertIsNotNone(result.connected_account)
+            self.assertEqual(result.connected_account.identifier, test_id)
+
+            # Verify api_config is returned as a Python dictionary
+            self.assertTrue(hasattr(result.connected_account, 'api_config'))
+            self.assertIsNotNone(result.connected_account.api_config)
+            self.assertIsInstance(result.connected_account.api_config, dict)
+
+            # Verify expected api_config fields are present
+            returned_config = result.connected_account.api_config
+            expected_fields = ["version", "domain", "custom_headers", "custom_auth_header", "api_endpoint"]
+
+            for field_name in expected_fields:
+                self.assertIn(field_name, returned_config,
+                             f"Expected field '{field_name}' not found in API config")
+
+            # Verify our set values are preserved
+            self.assertEqual(returned_config["version"], "v1")
+            self.assertEqual(returned_config["domain"], "gmail.com")
+            self.assertEqual(returned_config["api_endpoint"], "https://gmail.googleapis.com")
+            self.assertEqual(returned_config["custom_auth_header"], "Bearer")
+
+            # Clean up - delete the created account
+            self.scalekit_client.actions.delete_connected_account(
+                connection_name="GMAIL",
+                identifier=test_id
+            )
+
+        except Exception as e:
+            raise e
+
+    def test_get_or_create_connected_account_with_api_config(self):
+        """Method to test get_or_create_connected_account with api_config parameter"""
+        import uuid
+
+        # Generate unique identifier for this test
+        test_id = f"test_get_or_create_api_config_{uuid.uuid4().hex[:8]}"
+
+        oauth_auth_details = {
+            "oauth_token": {
+                "access_token": "test_get_or_create_api_token",
+                "refresh_token": "test_get_or_create_api_refresh",
+                "scopes": ["read", "write"]
+            }
+        }
+
+        # Use connector-specific api_config fields
+        api_config = {
+            "version": "v2",
+            "domain": "test.gmail.com",
+            "api_endpoint": "https://test.gmail.googleapis.com",
+            "custom_auth_header": "Token"
+        }
+
+        try:
+            # Should create new account with api_config
+            result = self.scalekit_client.actions.get_or_create_connected_account(
+                connection_name="GMAIL",
+                identifier=test_id,
+                authorization_details=oauth_auth_details,
+                api_config=api_config
+            )
+
+            self.assertIsNotNone(result)
+            self.assertIsInstance(result, CreateConnectedAccountResponse)
+            self.assertTrue(hasattr(result, 'connected_account'))
+            self.assertIsNotNone(result.connected_account)
+            self.assertEqual(result.connected_account.identifier, test_id)
+
+            # Verify api_config was set correctly
+            self.assertTrue(hasattr(result.connected_account, 'api_config'))
+            self.assertIsNotNone(result.connected_account.api_config)
+            self.assertIsInstance(result.connected_account.api_config, dict)
+
+            returned_config = result.connected_account.api_config
+            self.assertEqual(returned_config["version"], "v2")
+            self.assertEqual(returned_config["domain"], "test.gmail.com")
+            self.assertEqual(returned_config["api_endpoint"], "https://test.gmail.googleapis.com")
+            self.assertEqual(returned_config["custom_auth_header"], "Token")
+
+            # Now call it again - should get the existing account with same api_config
+            result2 = self.scalekit_client.actions.get_or_create_connected_account(
+                connection_name="GMAIL",
+                identifier=test_id
+            )
+
+            self.assertIsNotNone(result2)
+            self.assertEqual(result2.connected_account.identifier, test_id)
+            self.assertEqual(result.connected_account.id, result2.connected_account.id)
+
+            # Verify existing account still has the api_config
+            self.assertIsNotNone(result2.connected_account.api_config)
+            self.assertEqual(result2.connected_account.api_config["version"], "v2")
+            self.assertEqual(result2.connected_account.api_config["domain"], "test.gmail.com")
+
+            # Clean up - delete the created account
+            self.scalekit_client.actions.delete_connected_account(
+                connection_name="GMAIL",
+                identifier=test_id
+            )
+
+        except Exception as e:
+            raise e
+
+    def test_api_config_response_structure(self):
+        """Method to test api_config comes back as Python dictionary with correct field types"""
+        import uuid
+
+        # Generate unique identifier for this test
+        test_id = f"test_api_config_structure_{uuid.uuid4().hex[:8]}"
+
+        oauth_auth_details = {
+            "oauth_token": {
+                "access_token": "test_structure_token",
+                "refresh_token": "test_structure_refresh",
+                "scopes": ["read"]
+            }
+        }
+
+        # Use all supported api_config fields for GMAIL connector
+        api_config = {
+            "version": "v1.2",
+            "domain": "structure.gmail.com",
+            "api_endpoint": "https://structure.gmail.googleapis.com",
+            "custom_auth_header": "Custom Bearer"
+        }
+
+        try:
+            result = self.scalekit_client.actions.create_connected_account(
+                connection_name="GMAIL",
+                identifier=test_id,
+                authorization_details=oauth_auth_details,
+                api_config=api_config
+            )
+
+            self.assertIsNotNone(result.connected_account.api_config)
+            returned_config = result.connected_account.api_config
+
+            # Verify it's a Python dictionary, not protobuf Struct
+            self.assertIsInstance(returned_config, dict)
+
+            # Verify all expected fields are present
+            expected_fields = ["version", "domain", "custom_headers", "custom_auth_header", "api_endpoint"]
+            for field in expected_fields:
+                self.assertIn(field, returned_config, f"Field '{field}' missing from api_config")
+
+            # Verify field types and values we set
+            self.assertIsInstance(returned_config["version"], str)
+            self.assertEqual(returned_config["version"], "v1.2")
+
+            self.assertIsInstance(returned_config["domain"], str)
+            self.assertEqual(returned_config["domain"], "structure.gmail.com")
+
+            self.assertIsInstance(returned_config["api_endpoint"], str)
+            self.assertEqual(returned_config["api_endpoint"], "https://structure.gmail.googleapis.com")
+
+            self.assertIsInstance(returned_config["custom_auth_header"], str)
+            self.assertEqual(returned_config["custom_auth_header"], "Custom Bearer")
+
+            # Verify custom_headers field (should be null/None or empty)
+            # Note: protobuf null values might come back as None or empty values
+            custom_headers = returned_config.get("custom_headers")
+            # Just verify the field exists, value can be null/None/empty
+
+            # Test dictionary access patterns work correctly
+            self.assertEqual(returned_config.get("version"), "v1.2")
+            self.assertEqual(returned_config.get("domain"), "structure.gmail.com")
+            self.assertEqual(returned_config.get("nonexistent_field"), None)
+
+            # Test that we can iterate over the dictionary
+            field_count = 0
+            for key, value in returned_config.items():
+                field_count += 1
+                self.assertIsInstance(key, str)
+            self.assertGreater(field_count, 0)
+
+            # Verify we can convert to JSON (important for serialization)
+            import json
+            json_str = json.dumps(returned_config)
+            self.assertIsInstance(json_str, str)
+            parsed_back = json.loads(json_str)
+            self.assertEqual(parsed_back["version"], "v1.2")
+
+            # Clean up - delete the created account
+            self.scalekit_client.actions.delete_connected_account(
+                connection_name="GMAIL",
+                identifier=test_id
+            )
+
+        except Exception as e:
+            raise e
+
+    # Update Connected Account Tests
+    def test_update_connected_account_method_exists(self):
+        """Method to test update_connected_account method exists"""
+        self.assertTrue(hasattr(self.scalekit_client.actions, 'update_connected_account'))
+        self.assertTrue(callable(self.scalekit_client.actions.update_connected_account))
+
+    def test_update_connected_account_with_oauth(self):
+        """Method to test update_connected_account with OAuth authorization"""
+        import uuid
+
+        # Generate unique identifier for this test
+        test_id = f"test_update_oauth_{uuid.uuid4().hex[:8]}"
+
+        # Initial OAuth auth details
+        initial_oauth_auth_details = {
+            "oauth_token": {
+                "access_token": "initial_access_token",
+                "refresh_token": "initial_refresh_token",
+                "scopes": ["read"]
+            }
+        }
+
+        # Updated OAuth auth details
+        updated_oauth_auth_details = {
+            "oauth_token": {
+                "access_token": "updated_access_token",
+                "refresh_token": "updated_refresh_token",
+                "scopes": ["read", "write", "admin"]
+            }
+        }
+
+        try:
+            # First create a connected account
+            create_result = self.scalekit_client.actions.create_connected_account(
+                connection_name="GMAIL",
+                identifier=test_id,
+                authorization_details=initial_oauth_auth_details
+            )
+
+            self.assertIsNotNone(create_result)
+            self.assertIsInstance(create_result, CreateConnectedAccountResponse)
+            self.assertEqual(create_result.connected_account.identifier, test_id)
+
+            # Verify initial OAuth details
+            initial_token = create_result.connected_account.authorization_details.get("oauth_token", {})
+            self.assertEqual(initial_token.get("access_token"), "initial_access_token")
+            self.assertEqual(initial_token.get("scopes"), ["read"])
+
+            # Now update the connected account with new OAuth details
+            update_result = self.scalekit_client.actions.update_connected_account(
+                connection_name="GMAIL",
+                identifier=test_id,
+                authorization_details=updated_oauth_auth_details
+            )
+
+            self.assertIsNotNone(update_result)
+            self.assertIsInstance(update_result, UpdateConnectedAccountResponse)
+            self.assertTrue(hasattr(update_result, 'connected_account'))
+            self.assertIsNotNone(update_result.connected_account)
+            self.assertEqual(update_result.connected_account.identifier, test_id)
+
+            # Verify updated OAuth details
+            updated_token = update_result.connected_account.authorization_details.get("oauth_token", {})
+            self.assertEqual(updated_token.get("access_token"), "updated_access_token")
+            self.assertEqual(updated_token.get("refresh_token"), "updated_refresh_token")
+            self.assertEqual(updated_token.get("scopes"), ["read", "write", "admin"])
+
+            # Clean up - delete the created account
+            self.scalekit_client.actions.delete_connected_account(
+                connection_name="GMAIL",
+                identifier=test_id
+            )
+
+        except Exception as e:
+            raise e
+
+    def test_update_connected_account_with_static_auth(self):
+        """Method to test update_connected_account with static authorization"""
+        import uuid
+
+        # Generate unique identifier for this test
+        test_id = f"test_update_static_{uuid.uuid4().hex[:8]}"
+
+        # Initial static auth details
+        initial_static_auth_details = {
+            "static_auth": {
+                "domain": "initial.freshdesk.com",
+                "username": "initial_user",
+                "password": "initial_password"
+            }
+        }
+
+        # Updated static auth details
+        updated_static_auth_details = {
+            "static_auth": {
+                "domain": "updated.freshdesk.com",
+                "username": "updated_user",
+                "password": "updated_password"
+            }
+        }
+
+        try:
+            # First create a connected account with static auth
+            create_result = self.scalekit_client.actions.create_connected_account(
+                connection_name=self.test_basic_connection_name,  # freshdesk-8
+                identifier=test_id,
+                authorization_details=initial_static_auth_details
+            )
+
+            self.assertIsNotNone(create_result)
+            self.assertIsInstance(create_result, CreateConnectedAccountResponse)
+            self.assertEqual(create_result.connected_account.identifier, test_id)
+
+            # Verify initial static auth details
+            initial_auth = create_result.connected_account.authorization_details.get("static_auth", {})
+            self.assertEqual(initial_auth.get("domain"), "initial.freshdesk.com")
+            self.assertEqual(initial_auth.get("username"), "initial_user")
+            self.assertEqual(initial_auth.get("password"), "initial_password")
+
+            # Now update the connected account with new static auth details
+            update_result = self.scalekit_client.actions.update_connected_account(
+                connection_name=self.test_basic_connection_name,  # freshdesk-8
+                identifier=test_id,
+                authorization_details=updated_static_auth_details
+            )
+
+            self.assertIsNotNone(update_result)
+            self.assertIsInstance(update_result, UpdateConnectedAccountResponse)
+            self.assertTrue(hasattr(update_result, 'connected_account'))
+            self.assertIsNotNone(update_result.connected_account)
+            self.assertEqual(update_result.connected_account.identifier, test_id)
+
+            # Verify updated static auth details
+            updated_auth = update_result.connected_account.authorization_details.get("static_auth", {})
+            self.assertEqual(updated_auth.get("domain"), "updated.freshdesk.com")
+            self.assertEqual(updated_auth.get("username"), "updated_user")
+            self.assertEqual(updated_auth.get("password"), "updated_password")
+
+            # Clean up - delete the created account
+            self.scalekit_client.actions.delete_connected_account(
+                connection_name=self.test_basic_connection_name,
+                identifier=test_id
+            )
+
+        except Exception as e:
+            raise e
+
+    def test_update_connected_account_with_api_config(self):
+        """Method to test update_connected_account with api_config parameter"""
+        import uuid
+
+        # Generate unique identifier for this test
+        test_id = f"test_update_api_config_{uuid.uuid4().hex[:8]}"
+
+        oauth_auth_details = {
+            "oauth_token": {
+                "access_token": "test_update_api_token",
+                "refresh_token": "test_update_api_refresh",
+                "scopes": ["read", "write"]
+            }
+        }
+
+        # Initial API config
+        initial_api_config = {
+            "version": "v1.0",
+            "domain": "initial.gmail.com",
+            "api_endpoint": "https://initial.gmail.googleapis.com",
+            "custom_auth_header": "Initial Bearer"
+        }
+
+        # Updated API config
+        updated_api_config = {
+            "version": "v2.0",
+            "domain": "updated.gmail.com",
+            "api_endpoint": "https://updated.gmail.googleapis.com",
+            "custom_auth_header": "Updated Bearer"
+        }
+
+        try:
+            # First create a connected account with initial API config
+            create_result = self.scalekit_client.actions.create_connected_account(
+                connection_name="GMAIL",
+                identifier=test_id,
+                authorization_details=oauth_auth_details,
+                api_config=initial_api_config
+            )
+
+            self.assertIsNotNone(create_result)
+            self.assertIsInstance(create_result, CreateConnectedAccountResponse)
+            self.assertEqual(create_result.connected_account.identifier, test_id)
+
+            # Verify initial API config
+            self.assertIsNotNone(create_result.connected_account.api_config)
+            initial_config = create_result.connected_account.api_config
+            self.assertEqual(initial_config["version"], "v1.0")
+            self.assertEqual(initial_config["domain"], "initial.gmail.com")
+
+            # Now update the connected account with new API config
+            update_result = self.scalekit_client.actions.update_connected_account(
+                connection_name="GMAIL",
+                identifier=test_id,
+                api_config=updated_api_config
+            )
+
+            self.assertIsNotNone(update_result)
+            self.assertIsInstance(update_result, UpdateConnectedAccountResponse)
+            self.assertTrue(hasattr(update_result, 'connected_account'))
+            self.assertIsNotNone(update_result.connected_account)
+            self.assertEqual(update_result.connected_account.identifier, test_id)
+
+            # Verify updated API config
+            self.assertIsNotNone(update_result.connected_account.api_config)
+            updated_config = update_result.connected_account.api_config
+            self.assertEqual(updated_config["version"], "v2.0")
+            self.assertEqual(updated_config["domain"], "updated.gmail.com")
+            self.assertEqual(updated_config["api_endpoint"], "https://updated.gmail.googleapis.com")
+            self.assertEqual(updated_config["custom_auth_header"], "Updated Bearer")
+
+            # Clean up - delete the created account
+            self.scalekit_client.actions.delete_connected_account(
+                connection_name="GMAIL",
+                identifier=test_id
+            )
+
+        except Exception as e:
+            raise e
+
+    def test_update_connected_account_with_connected_account_id(self):
+        """Method to test update_connected_account using connected_account_id parameter"""
+        import uuid
+
+        # Generate unique identifier for this test
+        test_id = f"test_update_ca_id_{uuid.uuid4().hex[:8]}"
+
+        # Initial OAuth auth details
+        initial_oauth_auth_details = {
+            "oauth_token": {
+                "access_token": "initial_ca_id_token",
+                "refresh_token": "initial_ca_id_refresh",
+                "scopes": ["read"]
+            }
+        }
+
+        # Updated OAuth auth details
+        updated_oauth_auth_details = {
+            "oauth_token": {
+                "access_token": "updated_ca_id_token",
+                "refresh_token": "updated_ca_id_refresh",
+                "scopes": ["read", "write"]
+            }
+        }
+
+        try:
+            # First create a connected account
+            create_result = self.scalekit_client.actions.create_connected_account(
+                connection_name="GMAIL",
+                identifier=test_id,
+                authorization_details=initial_oauth_auth_details
+            )
+
+            self.assertIsNotNone(create_result)
+            self.assertIsInstance(create_result, CreateConnectedAccountResponse)
+            self.assertEqual(create_result.connected_account.identifier, test_id)
+
+            # Get the connected_account_id for the update
+            connected_account_id = create_result.connected_account.id
+            self.assertIsNotNone(connected_account_id)
+
+            # Verify initial OAuth details
+            initial_token = create_result.connected_account.authorization_details.get("oauth_token", {})
+            self.assertEqual(initial_token.get("access_token"), "initial_ca_id_token")
+            self.assertEqual(initial_token.get("scopes"), ["read"])
+
+            # Now update the connected account using connected_account_id instead of connection_name + identifier
+            update_result = self.scalekit_client.actions.update_connected_account(
+                connection_name="GMAIL",  # Still required in current implementation
+                identifier=test_id,      # Still required in current implementation
+                connected_account_id=connected_account_id,
+                authorization_details=updated_oauth_auth_details
+            )
+
+            self.assertIsNotNone(update_result)
+            self.assertIsInstance(update_result, UpdateConnectedAccountResponse)
+            self.assertTrue(hasattr(update_result, 'connected_account'))
+            self.assertIsNotNone(update_result.connected_account)
+            self.assertEqual(update_result.connected_account.identifier, test_id)
+            self.assertEqual(update_result.connected_account.id, connected_account_id)
+
+            # Verify updated OAuth details
+            updated_token = update_result.connected_account.authorization_details.get("oauth_token", {})
+            self.assertEqual(updated_token.get("access_token"), "updated_ca_id_token")
+            self.assertEqual(updated_token.get("refresh_token"), "updated_ca_id_refresh")
+            self.assertEqual(updated_token.get("scopes"), ["read", "write"])
+
+            # Clean up - delete the created account
+            self.scalekit_client.actions.delete_connected_account(
+                connection_name="GMAIL",
+                identifier=test_id
+            )
+
+        except Exception as e:
+            raise e
+
+    def test_update_connected_account_validation(self):
+        """Method to test update_connected_account validation and error handling"""
+        import uuid
+
+        # Generate unique identifier for this test
+        test_id = f"test_update_validation_{uuid.uuid4().hex[:8]}"
+
+        oauth_auth_details = {
+            "oauth_token": {
+                "access_token": "test_validation_token",
+                "refresh_token": "test_validation_refresh",
+                "scopes": ["read"]
+            }
+        }
+
+        try:
+            # First create a connected account
+            create_result = self.scalekit_client.actions.create_connected_account(
+                connection_name="GMAIL",
+                identifier=test_id,
+                authorization_details=oauth_auth_details
+            )
+
+            self.assertIsNotNone(create_result)
+            self.assertIsInstance(create_result, CreateConnectedAccountResponse)
+            self.assertEqual(create_result.connected_account.identifier, test_id)
+
+            # Test successful update with minimal parameters
+            minimal_update_result = self.scalekit_client.actions.update_connected_account(
+                connection_name="GMAIL",
+                identifier=test_id
+            )
+
+            self.assertIsNotNone(minimal_update_result)
+            self.assertIsInstance(minimal_update_result, UpdateConnectedAccountResponse)
+            self.assertIsNotNone(minimal_update_result.connected_account)
+            self.assertEqual(minimal_update_result.connected_account.identifier, test_id)
+
+            # Test update with organization_id and user_id parameters
+            update_with_ids_result = self.scalekit_client.actions.update_connected_account(
+                connection_name="GMAIL",
+                identifier=test_id,
+                organization_id="test_org_id",
+                user_id="test_user_id"
+            )
+
+            self.assertIsNotNone(update_with_ids_result)
+            self.assertIsInstance(update_with_ids_result, UpdateConnectedAccountResponse)
+            self.assertIsNotNone(update_with_ids_result.connected_account)
+            self.assertEqual(update_with_ids_result.connected_account.identifier, test_id)
+
+            # Test update with all valid parameters
+            updated_auth_details = {
+                "oauth_token": {
+                    "access_token": "updated_validation_token",
+                    "refresh_token": "updated_validation_refresh",
+                    "scopes": ["read", "write"]
+                }
+            }
+
+            api_config = {
+                "version": "v1.1",
+                "domain": "validation.gmail.com",
+                "api_endpoint": "https://validation.gmail.googleapis.com",
+                "custom_auth_header": "Validation Bearer"
+            }
+
+            full_update_result = self.scalekit_client.actions.update_connected_account(
+                connection_name="GMAIL",
+                identifier=test_id,
+                authorization_details=updated_auth_details,
+                organization_id="test_org_id",
+                user_id="test_user_id",
+                connected_account_id=create_result.connected_account.id,
+                api_config=api_config
+            )
+
+            self.assertIsNotNone(full_update_result)
+            self.assertIsInstance(full_update_result, UpdateConnectedAccountResponse)
+            self.assertIsNotNone(full_update_result.connected_account)
+            self.assertEqual(full_update_result.connected_account.identifier, test_id)
+            self.assertEqual(full_update_result.connected_account.id, create_result.connected_account.id)
+
+            # Verify the updates were applied correctly
+            updated_token = full_update_result.connected_account.authorization_details.get("oauth_token", {})
+            self.assertEqual(updated_token.get("access_token"), "updated_validation_token")
+            self.assertEqual(updated_token.get("scopes"), ["read", "write"])
+
+            # Verify API config was updated
+            self.assertIsNotNone(full_update_result.connected_account.api_config)
+            updated_config = full_update_result.connected_account.api_config
+            self.assertEqual(updated_config["version"], "v1.1")
+            self.assertEqual(updated_config["domain"], "validation.gmail.com")
+
+            # Clean up - delete the created account
+            self.scalekit_client.actions.delete_connected_account(
+                connection_name="GMAIL",
+                identifier=test_id
+            )
+
+        except Exception as e:
+            raise e
+
+    def test_update_connected_account_response_structure(self):
+        """Method to test update_connected_account response structure and types"""
+        import uuid
+
+        # Generate unique identifier for this test
+        test_id = f"test_update_structure_{uuid.uuid4().hex[:8]}"
+
+        oauth_auth_details = {
+            "oauth_token": {
+                "access_token": "test_structure_token",
+                "refresh_token": "test_structure_refresh",
+                "scopes": ["read"]
+            }
+        }
+
+        api_config = {
+            "version": "v1.0",
+            "domain": "structure.gmail.com",
+            "api_endpoint": "https://structure.gmail.googleapis.com",
+            "custom_auth_header": "Structure Bearer"
+        }
+
+        try:
+            # First create a connected account
+            create_result = self.scalekit_client.actions.create_connected_account(
+                connection_name="GMAIL",
+                identifier=test_id,
+                authorization_details=oauth_auth_details,
+                api_config=api_config
+            )
+
+            self.assertIsNotNone(create_result)
+            self.assertIsInstance(create_result, CreateConnectedAccountResponse)
+
+            # Update the connected account
+            updated_auth_details = {
+                "oauth_token": {
+                    "access_token": "updated_structure_token",
+                    "refresh_token": "updated_structure_refresh",
+                    "scopes": ["read", "write", "admin"]
+                }
+            }
+
+            updated_api_config = {
+                "version": "v2.0",
+                "domain": "updated-structure.gmail.com",
+                "api_endpoint": "https://updated-structure.gmail.googleapis.com",
+                "custom_auth_header": "Updated Structure Bearer"
+            }
+
+            update_result = self.scalekit_client.actions.update_connected_account(
+                connection_name="GMAIL",
+                identifier=test_id,
+                authorization_details=updated_auth_details,
+                api_config=updated_api_config
+            )
+
+            # Verify response is correct type
+            self.assertIsNotNone(update_result)
+            self.assertIsInstance(update_result, UpdateConnectedAccountResponse)
+
+            # Verify response has connected_account attribute
+            self.assertTrue(hasattr(update_result, 'connected_account'))
+            self.assertIsNotNone(update_result.connected_account)
+            self.assertIsInstance(update_result.connected_account, ConnectedAccount)
+
+            # Verify ConnectedAccount fields and types
+            ca = update_result.connected_account
+
+            # Basic string fields
+            self.assertIsNotNone(ca.id)
+            self.assertIsInstance(ca.id, str)
+            self.assertEqual(ca.identifier, test_id)
+            self.assertIsInstance(ca.identifier, str)
+            self.assertIsNotNone(ca.provider)
+            self.assertIsInstance(ca.provider, str)
+            self.assertIsNotNone(ca.status)
+            self.assertIsInstance(ca.status, str)
+            self.assertIsNotNone(ca.authorization_type)
+            self.assertIsInstance(ca.authorization_type, str)
+            self.assertIsNotNone(ca.connector)
+            self.assertIsInstance(ca.connector, str)
+
+            # DateTime fields
+            if ca.token_expires_at:
+                from datetime import datetime
+                self.assertIsInstance(ca.token_expires_at, datetime)
+            if ca.updated_at:
+                from datetime import datetime
+                self.assertIsInstance(ca.updated_at, datetime)
+            if ca.last_used_at:
+                from datetime import datetime
+                self.assertIsInstance(ca.last_used_at, datetime)
+
+            # Dictionary fields
+            self.assertIsNotNone(ca.authorization_details)
+            self.assertIsInstance(ca.authorization_details, dict)
+
+            # Verify OAuth token structure
+            oauth_token = ca.authorization_details.get("oauth_token")
+            self.assertIsNotNone(oauth_token)
+            self.assertIsInstance(oauth_token, dict)
+            self.assertEqual(oauth_token.get("access_token"), "updated_structure_token")
+            self.assertEqual(oauth_token.get("refresh_token"), "updated_structure_refresh")
+            self.assertEqual(oauth_token.get("scopes"), ["read", "write", "admin"])
+
+            # API config structure verification
+            self.assertIsNotNone(ca.api_config)
+            self.assertIsInstance(ca.api_config, dict)
+
+            # Verify API config content and types
+            api_config_result = ca.api_config
+            self.assertEqual(api_config_result["version"], "v2.0")
+            self.assertIsInstance(api_config_result["version"], str)
+            self.assertEqual(api_config_result["domain"], "updated-structure.gmail.com")
+            self.assertIsInstance(api_config_result["domain"], str)
+            self.assertEqual(api_config_result["api_endpoint"], "https://updated-structure.gmail.googleapis.com")
+            self.assertIsInstance(api_config_result["api_endpoint"], str)
+            self.assertEqual(api_config_result["custom_auth_header"], "Updated Structure Bearer")
+            self.assertIsInstance(api_config_result["custom_auth_header"], str)
+
+            # Verify all expected API config fields are present
+            expected_api_config_fields = ["version", "domain", "custom_headers", "custom_auth_header", "api_endpoint"]
+            for field in expected_api_config_fields:
+                self.assertIn(field, api_config_result, f"Expected API config field '{field}' not found")
+
+            # Test response serialization
+            self.assertTrue(hasattr(update_result, 'model_dump'))
+            response_dict = update_result.model_dump()
+            self.assertIsInstance(response_dict, dict)
+            self.assertIn('connected_account', response_dict)
+
+            # Test ConnectedAccount serialization
+            self.assertTrue(hasattr(ca, 'model_dump'))
+            ca_dict = ca.model_dump()
+            self.assertIsInstance(ca_dict, dict)
+            self.assertIn('id', ca_dict)
+            self.assertIn('identifier', ca_dict)
+            self.assertIn('authorization_details', ca_dict)
+            self.assertIn('api_config', ca_dict)
+
+            # Clean up - delete the created account
+            self.scalekit_client.actions.delete_connected_account(
+                connection_name="GMAIL",
+                identifier=test_id
+            )
+
+        except Exception as e:
+            raise e
+
+    def test_api_config_end_to_end(self):
+        """Method to test complete API config workflow: create -> get -> update -> get -> delete"""
+        import uuid
+
+        # Generate unique identifier for this test
+        test_id = f"test_api_e2e_{uuid.uuid4().hex[:8]}"
+
+        oauth_auth_details = {
+            "oauth_token": {
+                "access_token": "test_e2e_token",
+                "refresh_token": "test_e2e_refresh",
+                "scopes": ["read"]
+            }
+        }
+
+        # Initial API config
+        initial_api_config = {
+            "version": "v1.0",
+            "domain": "e2e.gmail.com",
+            "api_endpoint": "https://e2e.gmail.googleapis.com",
+            "custom_auth_header": "Initial E2E Bearer"
+        }
+
+        # Updated API config
+        updated_api_config = {
+            "version": "v2.1",
+            "domain": "updated-e2e.gmail.com",
+            "api_endpoint": "https://updated-e2e.gmail.googleapis.com",
+            "custom_auth_header": "Updated E2E Bearer"
+        }
+
+        try:
+            # Step 1: Create connected account with API config
+            create_result = self.scalekit_client.actions.create_connected_account(
+                connection_name="GMAIL",
+                identifier=test_id,
+                authorization_details=oauth_auth_details,
+                api_config=initial_api_config
+            )
+
+            self.assertIsNotNone(create_result)
+            self.assertIsInstance(create_result, CreateConnectedAccountResponse)
+            self.assertEqual(create_result.connected_account.identifier, test_id)
+
+            # Verify initial API config was set
+            self.assertIsNotNone(create_result.connected_account.api_config)
+            initial_config = create_result.connected_account.api_config
+            self.assertEqual(initial_config["version"], "v1.0")
+            self.assertEqual(initial_config["domain"], "e2e.gmail.com")
+            self.assertEqual(initial_config["api_endpoint"], "https://e2e.gmail.googleapis.com")
+            self.assertEqual(initial_config["custom_auth_header"], "Initial E2E Bearer")
+
+            # Step 2: Get connected account and verify API config persists
+            get_result = self.scalekit_client.actions.get_connected_account(
+                connection_name="GMAIL",
+                identifier=test_id
+            )
+
+            self.assertIsNotNone(get_result)
+            self.assertIsInstance(get_result, GetConnectedAccountAuthResponse)
+            self.assertIsNotNone(get_result.connected_account)
+            self.assertEqual(get_result.connected_account.identifier, test_id)
+
+            # Verify API config persisted in get operation
+            self.assertIsNotNone(get_result.connected_account.api_config)
+            get_config = get_result.connected_account.api_config
+            self.assertEqual(get_config["version"], "v1.0")
+            self.assertEqual(get_config["domain"], "e2e.gmail.com")
+            self.assertEqual(get_config["api_endpoint"], "https://e2e.gmail.googleapis.com")
+            self.assertEqual(get_config["custom_auth_header"], "Initial E2E Bearer")
+
+            # Step 3: Update connected account with new API config
+            update_result = self.scalekit_client.actions.update_connected_account(
+                connection_name="GMAIL",
+                identifier=test_id,
+                api_config=updated_api_config
+            )
+
+            self.assertIsNotNone(update_result)
+            self.assertIsInstance(update_result, UpdateConnectedAccountResponse)
+            self.assertIsNotNone(update_result.connected_account)
+            self.assertEqual(update_result.connected_account.identifier, test_id)
+
+            # Verify API config was updated
+            self.assertIsNotNone(update_result.connected_account.api_config)
+            updated_config = update_result.connected_account.api_config
+            self.assertEqual(updated_config["version"], "v2.1")
+            self.assertEqual(updated_config["domain"], "updated-e2e.gmail.com")
+            self.assertEqual(updated_config["api_endpoint"], "https://updated-e2e.gmail.googleapis.com")
+            self.assertEqual(updated_config["custom_auth_header"], "Updated E2E Bearer")
+
+            # Step 4: Get connected account again and verify updates persisted
+            final_get_result = self.scalekit_client.actions.get_connected_account(
+                connection_name="GMAIL",
+                identifier=test_id
+            )
+
+            self.assertIsNotNone(final_get_result)
+            self.assertIsInstance(final_get_result, GetConnectedAccountAuthResponse)
+            self.assertIsNotNone(final_get_result.connected_account)
+            self.assertEqual(final_get_result.connected_account.identifier, test_id)
+
+            # Verify final API config state
+            self.assertIsNotNone(final_get_result.connected_account.api_config)
+            final_config = final_get_result.connected_account.api_config
+            self.assertEqual(final_config["version"], "v2.1")
+            self.assertEqual(final_config["domain"], "updated-e2e.gmail.com")
+            self.assertEqual(final_config["api_endpoint"], "https://updated-e2e.gmail.googleapis.com")
+            self.assertEqual(final_config["custom_auth_header"], "Updated E2E Bearer")
+
+            # Verify all expected fields are present in final state
+            expected_fields = ["version", "domain", "custom_headers", "custom_auth_header", "api_endpoint"]
+            for field in expected_fields:
+                self.assertIn(field, final_config, f"Expected field '{field}' not found in final API config")
+
+            # Verify that all API config responses are consistent dictionaries
+            for config_dict in [initial_config, get_config, updated_config, final_config]:
+                self.assertIsInstance(config_dict, dict)
+                for field in expected_fields:
+                    self.assertIn(field, config_dict)
+
+            # Verify the account ID remains consistent across all operations
+            self.assertEqual(create_result.connected_account.id, get_result.connected_account.id)
+            self.assertEqual(get_result.connected_account.id, update_result.connected_account.id)
+            self.assertEqual(update_result.connected_account.id, final_get_result.connected_account.id)
+
+            # Step 5: Clean up - delete the created account
+            delete_result = self.scalekit_client.actions.delete_connected_account(
+                connection_name="GMAIL",
+                identifier=test_id
+            )
+
+            self.assertIsNotNone(delete_result)
+            self.assertIsInstance(delete_result, DeleteConnectedAccountResponse)
+
+        except Exception as e:
+            raise e
 
