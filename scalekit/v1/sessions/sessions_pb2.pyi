@@ -47,8 +47,22 @@ class RevokeSessionRequest(_message.Message):
 class RevokeSessionResponse(_message.Message):
     __slots__ = ("revoked_session",)
     REVOKED_SESSION_FIELD_NUMBER: _ClassVar[int]
-    revoked_session: SessionDetails
-    def __init__(self, revoked_session: _Optional[_Union[SessionDetails, _Mapping]] = ...) -> None: ...
+    revoked_session: RevokedSessionDetails
+    def __init__(self, revoked_session: _Optional[_Union[RevokedSessionDetails, _Mapping]] = ...) -> None: ...
+
+class RevokeAllUserSessionsRequest(_message.Message):
+    __slots__ = ("user_id",)
+    USER_ID_FIELD_NUMBER: _ClassVar[int]
+    user_id: str
+    def __init__(self, user_id: _Optional[str] = ...) -> None: ...
+
+class RevokeAllUserSessionsResponse(_message.Message):
+    __slots__ = ("revoked_sessions", "total_revoked")
+    REVOKED_SESSIONS_FIELD_NUMBER: _ClassVar[int]
+    TOTAL_REVOKED_FIELD_NUMBER: _ClassVar[int]
+    revoked_sessions: _containers.RepeatedCompositeFieldContainer[RevokedSessionDetails]
+    total_revoked: int
+    def __init__(self, revoked_sessions: _Optional[_Iterable[_Union[RevokedSessionDetails, _Mapping]]] = ..., total_revoked: _Optional[int] = ...) -> None: ...
 
 class UserSessionDetails(_message.Message):
     __slots__ = ("sessions", "next_page_token", "prev_page_token", "total_size")
@@ -119,6 +133,28 @@ class SessionDetails(_message.Message):
     latest_ip: str
     latest_location: Location
     def __init__(self, session_id: _Optional[str] = ..., user_id: _Optional[str] = ..., authenticated_organizations: _Optional[_Iterable[str]] = ..., organization_id: _Optional[str] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., idle_expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., absolute_expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., expired_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., logout_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., status: _Optional[str] = ..., initial_user_agent: _Optional[str] = ..., initial_os: _Optional[str] = ..., initial_os_version: _Optional[str] = ..., initial_browser: _Optional[str] = ..., initial_browser_version: _Optional[str] = ..., initial_device_type: _Optional[str] = ..., initial_ip: _Optional[str] = ..., initial_location: _Optional[_Union[Location, _Mapping]] = ..., latest_user_agent: _Optional[str] = ..., latest_os: _Optional[str] = ..., latest_os_version: _Optional[str] = ..., latest_browser: _Optional[str] = ..., latest_browser_version: _Optional[str] = ..., latest_device_type: _Optional[str] = ..., latest_ip: _Optional[str] = ..., latest_location: _Optional[_Union[Location, _Mapping]] = ...) -> None: ...
+
+class RevokedSessionDetails(_message.Message):
+    __slots__ = ("session_id", "user_id", "created_at", "updated_at", "idle_expires_at", "absolute_expires_at", "expired_at", "logout_at", "status")
+    SESSION_ID_FIELD_NUMBER: _ClassVar[int]
+    USER_ID_FIELD_NUMBER: _ClassVar[int]
+    CREATED_AT_FIELD_NUMBER: _ClassVar[int]
+    UPDATED_AT_FIELD_NUMBER: _ClassVar[int]
+    IDLE_EXPIRES_AT_FIELD_NUMBER: _ClassVar[int]
+    ABSOLUTE_EXPIRES_AT_FIELD_NUMBER: _ClassVar[int]
+    EXPIRED_AT_FIELD_NUMBER: _ClassVar[int]
+    LOGOUT_AT_FIELD_NUMBER: _ClassVar[int]
+    STATUS_FIELD_NUMBER: _ClassVar[int]
+    session_id: str
+    user_id: str
+    created_at: _timestamp_pb2.Timestamp
+    updated_at: _timestamp_pb2.Timestamp
+    idle_expires_at: _timestamp_pb2.Timestamp
+    absolute_expires_at: _timestamp_pb2.Timestamp
+    expired_at: _timestamp_pb2.Timestamp
+    logout_at: _timestamp_pb2.Timestamp
+    status: str
+    def __init__(self, session_id: _Optional[str] = ..., user_id: _Optional[str] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., idle_expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., absolute_expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., expired_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., logout_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., status: _Optional[str] = ...) -> None: ...
 
 class Location(_message.Message):
     __slots__ = ("region", "region_subdivision", "city", "latitude", "longitude")

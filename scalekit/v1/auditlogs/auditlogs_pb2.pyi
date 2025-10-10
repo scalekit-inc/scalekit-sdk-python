@@ -20,10 +20,10 @@ class ListAuthLogRequest(_message.Message):
     page_size: int
     page_token: str
     email: str
-    status: str
+    status: _containers.RepeatedScalarFieldContainer[str]
     start_time: _timestamp_pb2.Timestamp
     end_time: _timestamp_pb2.Timestamp
-    def __init__(self, page_size: _Optional[int] = ..., page_token: _Optional[str] = ..., email: _Optional[str] = ..., status: _Optional[str] = ..., start_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., end_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+    def __init__(self, page_size: _Optional[int] = ..., page_token: _Optional[str] = ..., email: _Optional[str] = ..., status: _Optional[_Iterable[str]] = ..., start_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., end_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
 class ListAuthLogResponse(_message.Message):
     __slots__ = ("next_page_token", "prev_page_token", "total_size", "authRequests")
