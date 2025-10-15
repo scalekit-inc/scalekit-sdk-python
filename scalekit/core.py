@@ -152,7 +152,7 @@ class CoreClient:
         self,
         func: WithCall,
         data: TRequest,
-        retry=1,
+        retry=2,
     ) -> TResponse:
         try:
             resp = func(
@@ -161,7 +161,13 @@ class CoreClient:
             )
             return resp
         except grpc.RpcError as exp:
-            if retry > 0:
+            if exp.code() == grpc.StatusCode.UNAUTHENTICATED:
+                try:
+                    self.__authenticate_client()
+                    return self.grpc_exec(func, data, retry=retry-1)
+                except Exception as refresh_exp:
+                    raise ScalekitServerException.promote(exp)
+            elif retry > 0:
                 return self.grpc_exec(func, data, retry=retry - 1)
             else:
                 raise ScalekitServerException.promote(exp)
