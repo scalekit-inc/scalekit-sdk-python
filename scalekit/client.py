@@ -153,7 +153,7 @@ class ScalekitClient:
             access_token = response["access_token"]
             refresh_token = response.get("refresh_token")
             # Validate id_token
-            claims = self.__validate_token(id_token, options=None)
+            claims = self.validate_token(id_token, options=None)
             user = {}
             amr_claims = claims.get('amr', [])
             connection_id = amr_claims[0] if amr_claims else None
