@@ -3,7 +3,9 @@ from basetest import BaseTest
 
 from scalekit.v1.mcp.mcp_pb2 import (
     Mcp,
+    McpConfig,
     ToolMapping,
+    McpConfigConnectionToolMapping,
 )
 
 
@@ -98,5 +100,73 @@ class TestMcp(BaseTest):
 
         # Now delete the MCP
         delete_response = self.scalekit_client.mcp.delete_mcp(mcp_id=created_mcp_id)
+        self.assertEqual(delete_response[1].code().name, "OK")
+        self.assertTrue(delete_response[0] is not None)
+
+
+    def _create_test_mcp_config(self):
+        """Helper method to create test MCP object"""
+        mcp_config = McpConfig(
+            name="py-test-meeting-manager-1",
+            description="Summarizes latest email and creates calendar event",
+            connection_tool_mappings=[
+                McpConfigConnectionToolMapping(
+                    connection_name="MY_CALENDAR",
+                    tools=[
+                        "googlecalendar_create_event",
+                        "googlecalendar_delete_event"
+                    ]
+                )
+            ]
+        )
+
+        return mcp_config
+
+    def test_mcp_create_update_list_delete_config(self):
+        """ Method to test delete MCP Config by ID """
+        # First create an MCP Config to delete
+        mcp_config = self._create_test_mcp_config()
+        create_response = self.scalekit_client.mcp.create_config(mcp_config=mcp_config)
+        print(create_response)
+        self.assertEqual(create_response[1].code().name, "OK")
+        self.assertTrue(create_response[0] is not None)
+        self.assertTrue(hasattr(create_response[0], 'config'))
+        self.assertEqual(create_response[0].config.name, mcp_config.name)
+        self.assertEqual(len(create_response[0].config.connection_tool_mappings[0].tools), 2)
+        created_mcp_config_id = create_response[0].config.id
+
+        # Now update the MCP Config
+        del mcp_config.connection_tool_mappings[:]
+        mcp_config.connection_tool_mappings.extend([
+            McpConfigConnectionToolMapping(
+                connection_name="MY_CALENDAR",
+                tools=[
+                    "googlecalendar_create_event",
+                    "googlecalendar_delete_event",
+                    "googlecalendar_list_calendars",
+                ],
+            )
+        ])
+        update_response = self.scalekit_client.mcp.update_config(
+            config_id=created_mcp_config_id,
+            description= "Updated description for meeting manager",
+            connection_tool_mappings=mcp_config.connection_tool_mappings)
+        print(update_response)
+        self.assertEqual(update_response[1].code().name, "OK")
+        self.assertTrue(update_response[0] is not None)
+        self.assertTrue(hasattr(update_response[0], 'config'))
+        self.assertEqual(update_response[0].config.name, mcp_config.name)
+        self.assertEqual(len(update_response[0].config.connection_tool_mappings[0].tools), 3)
+
+        # Now list the MCP Configs
+        list_response = self.scalekit_client.mcp.list_configs()
+        print(list_response)
+        self.assertEqual(list_response[1].code().name, "OK")
+        self.assertTrue(list_response[0] is not None)
+        self.assertTrue(hasattr(list_response[0], 'configs'))
+
+        # Now delete the MCP Config
+        delete_response = self.scalekit_client.mcp.delete_config(config_id=created_mcp_config_id)
+        print(delete_response)
         self.assertEqual(delete_response[1].code().name, "OK")
         self.assertTrue(delete_response[0] is not None)

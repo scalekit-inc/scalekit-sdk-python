@@ -89,3 +89,251 @@ class DeleteMcpRequest(_message.Message):
 class DeleteMcpResponse(_message.Message):
     __slots__ = ()
     def __init__(self) -> None: ...
+
+class CreateMcpConfigRequest(_message.Message):
+    __slots__ = ("config",)
+    CONFIG_FIELD_NUMBER: _ClassVar[int]
+    config: McpConfig
+    def __init__(self, config: _Optional[_Union[McpConfig, _Mapping]] = ...) -> None: ...
+
+class CreateMcpConfigResponse(_message.Message):
+    __slots__ = ("config",)
+    CONFIG_FIELD_NUMBER: _ClassVar[int]
+    config: McpConfig
+    def __init__(self, config: _Optional[_Union[McpConfig, _Mapping]] = ...) -> None: ...
+
+class UpdateMcpConfigRequest(_message.Message):
+    __slots__ = ("config_id", "description", "connection_tool_mappings")
+    CONFIG_ID_FIELD_NUMBER: _ClassVar[int]
+    DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_TOOL_MAPPINGS_FIELD_NUMBER: _ClassVar[int]
+    config_id: str
+    description: str
+    connection_tool_mappings: _containers.RepeatedCompositeFieldContainer[McpConfigConnectionToolMapping]
+    def __init__(self, config_id: _Optional[str] = ..., description: _Optional[str] = ..., connection_tool_mappings: _Optional[_Iterable[_Union[McpConfigConnectionToolMapping, _Mapping]]] = ...) -> None: ...
+
+class UpdateMcpConfigResponse(_message.Message):
+    __slots__ = ("config",)
+    CONFIG_FIELD_NUMBER: _ClassVar[int]
+    config: McpConfig
+    def __init__(self, config: _Optional[_Union[McpConfig, _Mapping]] = ...) -> None: ...
+
+class DeleteMcpConfigRequest(_message.Message):
+    __slots__ = ("config_id",)
+    CONFIG_ID_FIELD_NUMBER: _ClassVar[int]
+    config_id: str
+    def __init__(self, config_id: _Optional[str] = ...) -> None: ...
+
+class DeleteMcpConfigResponse(_message.Message):
+    __slots__ = ()
+    def __init__(self) -> None: ...
+
+class GetMcpConfigRequest(_message.Message):
+    __slots__ = ("config_id",)
+    CONFIG_ID_FIELD_NUMBER: _ClassVar[int]
+    config_id: str
+    def __init__(self, config_id: _Optional[str] = ...) -> None: ...
+
+class GetMcpConfigResponse(_message.Message):
+    __slots__ = ("config",)
+    CONFIG_FIELD_NUMBER: _ClassVar[int]
+    config: McpConfig
+    def __init__(self, config: _Optional[_Union[McpConfig, _Mapping]] = ...) -> None: ...
+
+class ListMcpConfigsRequest(_message.Message):
+    __slots__ = ("filter", "search", "page_size", "page_token")
+    class Filter(_message.Message):
+        __slots__ = ("id", "name", "provider")
+        ID_FIELD_NUMBER: _ClassVar[int]
+        NAME_FIELD_NUMBER: _ClassVar[int]
+        PROVIDER_FIELD_NUMBER: _ClassVar[int]
+        id: str
+        name: str
+        provider: str
+        def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., provider: _Optional[str] = ...) -> None: ...
+    FILTER_FIELD_NUMBER: _ClassVar[int]
+    SEARCH_FIELD_NUMBER: _ClassVar[int]
+    PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
+    PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    filter: ListMcpConfigsRequest.Filter
+    search: str
+    page_size: int
+    page_token: str
+    def __init__(self, filter: _Optional[_Union[ListMcpConfigsRequest.Filter, _Mapping]] = ..., search: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ...) -> None: ...
+
+class ListMcpConfigsResponse(_message.Message):
+    __slots__ = ("configs", "next_page_token", "prev_page_token", "total_size")
+    CONFIGS_FIELD_NUMBER: _ClassVar[int]
+    NEXT_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    PREV_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    TOTAL_SIZE_FIELD_NUMBER: _ClassVar[int]
+    configs: _containers.RepeatedCompositeFieldContainer[McpConfig]
+    next_page_token: str
+    prev_page_token: str
+    total_size: int
+    def __init__(self, configs: _Optional[_Iterable[_Union[McpConfig, _Mapping]]] = ..., next_page_token: _Optional[str] = ..., prev_page_token: _Optional[str] = ..., total_size: _Optional[int] = ...) -> None: ...
+
+class EnsureMcpInstanceRequest(_message.Message):
+    __slots__ = ("name", "config_name", "user_identifier")
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    CONFIG_NAME_FIELD_NUMBER: _ClassVar[int]
+    USER_IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
+    name: str
+    config_name: str
+    user_identifier: str
+    def __init__(self, name: _Optional[str] = ..., config_name: _Optional[str] = ..., user_identifier: _Optional[str] = ...) -> None: ...
+
+class EnsureMcpInstanceResponse(_message.Message):
+    __slots__ = ("instance",)
+    INSTANCE_FIELD_NUMBER: _ClassVar[int]
+    instance: McpInstance
+    def __init__(self, instance: _Optional[_Union[McpInstance, _Mapping]] = ...) -> None: ...
+
+class ListMcpInstancesRequest(_message.Message):
+    __slots__ = ("filter", "search", "page_size", "page_token")
+    class Filter(_message.Message):
+        __slots__ = ("id", "name", "config_name", "user_identifier")
+        ID_FIELD_NUMBER: _ClassVar[int]
+        NAME_FIELD_NUMBER: _ClassVar[int]
+        CONFIG_NAME_FIELD_NUMBER: _ClassVar[int]
+        USER_IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
+        id: str
+        name: str
+        config_name: str
+        user_identifier: str
+        def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., config_name: _Optional[str] = ..., user_identifier: _Optional[str] = ...) -> None: ...
+    FILTER_FIELD_NUMBER: _ClassVar[int]
+    SEARCH_FIELD_NUMBER: _ClassVar[int]
+    PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
+    PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    filter: ListMcpInstancesRequest.Filter
+    search: str
+    page_size: int
+    page_token: str
+    def __init__(self, filter: _Optional[_Union[ListMcpInstancesRequest.Filter, _Mapping]] = ..., search: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ...) -> None: ...
+
+class ListMcpInstancesResponse(_message.Message):
+    __slots__ = ("instances", "next_page_token", "prev_page_token", "total_size")
+    INSTANCES_FIELD_NUMBER: _ClassVar[int]
+    NEXT_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    PREV_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    TOTAL_SIZE_FIELD_NUMBER: _ClassVar[int]
+    instances: _containers.RepeatedCompositeFieldContainer[McpInstance]
+    next_page_token: str
+    prev_page_token: str
+    total_size: int
+    def __init__(self, instances: _Optional[_Iterable[_Union[McpInstance, _Mapping]]] = ..., next_page_token: _Optional[str] = ..., prev_page_token: _Optional[str] = ..., total_size: _Optional[int] = ...) -> None: ...
+
+class DeleteMcpInstanceRequest(_message.Message):
+    __slots__ = ("instance_id",)
+    INSTANCE_ID_FIELD_NUMBER: _ClassVar[int]
+    instance_id: str
+    def __init__(self, instance_id: _Optional[str] = ...) -> None: ...
+
+class DeleteMcpInstanceResponse(_message.Message):
+    __slots__ = ()
+    def __init__(self) -> None: ...
+
+class UpdateMcpInstanceRequest(_message.Message):
+    __slots__ = ("instance_id", "name", "config_name")
+    INSTANCE_ID_FIELD_NUMBER: _ClassVar[int]
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    CONFIG_NAME_FIELD_NUMBER: _ClassVar[int]
+    instance_id: str
+    name: str
+    config_name: str
+    def __init__(self, instance_id: _Optional[str] = ..., name: _Optional[str] = ..., config_name: _Optional[str] = ...) -> None: ...
+
+class UpdateMcpInstanceResponse(_message.Message):
+    __slots__ = ("instance",)
+    INSTANCE_FIELD_NUMBER: _ClassVar[int]
+    instance: McpInstance
+    def __init__(self, instance: _Optional[_Union[McpInstance, _Mapping]] = ...) -> None: ...
+
+class GetMcpInstanceRequest(_message.Message):
+    __slots__ = ("instance_id",)
+    INSTANCE_ID_FIELD_NUMBER: _ClassVar[int]
+    instance_id: str
+    def __init__(self, instance_id: _Optional[str] = ...) -> None: ...
+
+class GetMcpInstanceResponse(_message.Message):
+    __slots__ = ("instance",)
+    INSTANCE_FIELD_NUMBER: _ClassVar[int]
+    instance: McpInstance
+    def __init__(self, instance: _Optional[_Union[McpInstance, _Mapping]] = ...) -> None: ...
+
+class GetMcpInstanceAuthStateRequest(_message.Message):
+    __slots__ = ("instance_id", "include_auth_links")
+    INSTANCE_ID_FIELD_NUMBER: _ClassVar[int]
+    INCLUDE_AUTH_LINKS_FIELD_NUMBER: _ClassVar[int]
+    instance_id: str
+    include_auth_links: bool
+    def __init__(self, instance_id: _Optional[str] = ..., include_auth_links: bool = ...) -> None: ...
+
+class McpInstanceConnectionAuthState(_message.Message):
+    __slots__ = ("connection_id", "connection_name", "provider", "connected_account_id", "connected_account_status", "authentication_link")
+    CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_NAME_FIELD_NUMBER: _ClassVar[int]
+    PROVIDER_FIELD_NUMBER: _ClassVar[int]
+    CONNECTED_ACCOUNT_ID_FIELD_NUMBER: _ClassVar[int]
+    CONNECTED_ACCOUNT_STATUS_FIELD_NUMBER: _ClassVar[int]
+    AUTHENTICATION_LINK_FIELD_NUMBER: _ClassVar[int]
+    connection_id: str
+    connection_name: str
+    provider: str
+    connected_account_id: str
+    connected_account_status: str
+    authentication_link: str
+    def __init__(self, connection_id: _Optional[str] = ..., connection_name: _Optional[str] = ..., provider: _Optional[str] = ..., connected_account_id: _Optional[str] = ..., connected_account_status: _Optional[str] = ..., authentication_link: _Optional[str] = ...) -> None: ...
+
+class GetMcpInstanceAuthStateResponse(_message.Message):
+    __slots__ = ("connections",)
+    CONNECTIONS_FIELD_NUMBER: _ClassVar[int]
+    connections: _containers.RepeatedCompositeFieldContainer[McpInstanceConnectionAuthState]
+    def __init__(self, connections: _Optional[_Iterable[_Union[McpInstanceConnectionAuthState, _Mapping]]] = ...) -> None: ...
+
+class McpInstance(_message.Message):
+    __slots__ = ("id", "name", "user_identifier", "config", "last_used_at", "updated_at", "url")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    USER_IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
+    CONFIG_FIELD_NUMBER: _ClassVar[int]
+    LAST_USED_AT_FIELD_NUMBER: _ClassVar[int]
+    UPDATED_AT_FIELD_NUMBER: _ClassVar[int]
+    URL_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    name: str
+    user_identifier: str
+    config: McpConfig
+    last_used_at: _timestamp_pb2.Timestamp
+    updated_at: _timestamp_pb2.Timestamp
+    url: str
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., user_identifier: _Optional[str] = ..., config: _Optional[_Union[McpConfig, _Mapping]] = ..., last_used_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., url: _Optional[str] = ...) -> None: ...
+
+class McpConfig(_message.Message):
+    __slots__ = ("id", "name", "description", "connection_tool_mappings")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_TOOL_MAPPINGS_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    name: str
+    description: str
+    connection_tool_mappings: _containers.RepeatedCompositeFieldContainer[McpConfigConnectionToolMapping]
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., connection_tool_mappings: _Optional[_Iterable[_Union[McpConfigConnectionToolMapping, _Mapping]]] = ...) -> None: ...
+
+class McpConfigConnectionToolMapping(_message.Message):
+    __slots__ = ("connection_id", "connection_name", "provider", "tools", "connected_account_id", "connected_account_status")
+    CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_NAME_FIELD_NUMBER: _ClassVar[int]
+    PROVIDER_FIELD_NUMBER: _ClassVar[int]
+    TOOLS_FIELD_NUMBER: _ClassVar[int]
+    CONNECTED_ACCOUNT_ID_FIELD_NUMBER: _ClassVar[int]
+    CONNECTED_ACCOUNT_STATUS_FIELD_NUMBER: _ClassVar[int]
+    connection_id: str
+    connection_name: str
+    provider: str
+    tools: _containers.RepeatedScalarFieldContainer[str]
+    connected_account_id: str
+    connected_account_status: str
+    def __init__(self, connection_id: _Optional[str] = ..., connection_name: _Optional[str] = ..., provider: _Optional[str] = ..., tools: _Optional[_Iterable[str]] = ..., connected_account_id: _Optional[str] = ..., connected_account_status: _Optional[str] = ...) -> None: ...
