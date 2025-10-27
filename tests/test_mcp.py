@@ -127,7 +127,6 @@ class TestMcp(BaseTest):
         # First create an MCP Config to delete
         mcp_config = self._create_test_mcp_config()
         create_response = self.scalekit_client.mcp.create_config(mcp_config=mcp_config)
-        print(create_response)
         self.assertEqual(create_response[1].code().name, "OK")
         self.assertTrue(create_response[0] is not None)
         self.assertTrue(hasattr(create_response[0], 'config'))
@@ -151,7 +150,6 @@ class TestMcp(BaseTest):
             config_id=created_mcp_config_id,
             description= "Updated description for meeting manager",
             connection_tool_mappings=mcp_config.connection_tool_mappings)
-        print(update_response)
         self.assertEqual(update_response[1].code().name, "OK")
         self.assertTrue(update_response[0] is not None)
         self.assertTrue(hasattr(update_response[0], 'config'))
@@ -160,13 +158,11 @@ class TestMcp(BaseTest):
 
         # Now list the MCP Configs
         list_response = self.scalekit_client.mcp.list_configs()
-        print(list_response)
         self.assertEqual(list_response[1].code().name, "OK")
         self.assertTrue(list_response[0] is not None)
         self.assertTrue(hasattr(list_response[0], 'configs'))
 
         # Now delete the MCP Config
         delete_response = self.scalekit_client.mcp.delete_config(config_id=created_mcp_config_id)
-        print(delete_response)
         self.assertEqual(delete_response[1].code().name, "OK")
         self.assertTrue(delete_response[0] is not None)
