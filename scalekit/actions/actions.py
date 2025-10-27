@@ -4,7 +4,9 @@ from scalekit.v1.mcp.mcp_pb2 import ToolMapping as ProtoToolMapping
 
 from scalekit.actions.models.tool_mapping import ToolMapping
 from scalekit.actions.types import ToolRequest,ExecuteToolResponse,MagicLinkResponse,ListConnectedAccountsResponse,DeleteConnectedAccountResponse,GetConnectedAccountAuthResponse,ToolInput, \
-    McpRequest,CreateMcpResponse,GetMcpResponse,UpdateConnectedAccountResponse
+    McpRequest,CreateMcpResponse,GetMcpResponse,UpdateConnectedAccountResponse,CreateMcpConfigResponse,ListMcpConfigsResponse,UpdateMcpConfigResponse,DeleteMcpConfigResponse, \
+    EnsureMcpInstanceResponse,UpdateMcpInstanceResponse,GetMcpInstanceResponse,ListMcpInstancesResponse,DeleteMcpInstanceResponse,GetMcpInstanceAuthStateResponse, \
+    McpConfig,McpConfigConnectionToolMapping,McpInstance,McpInstanceConnectionAuthState
 from scalekit.actions.models.responses.create_connected_account_response import CreateConnectedAccountResponse
 from scalekit.actions.models.requests.create_connected_account_request import CreateConnectedAccountRequest
 from scalekit.actions.models.requests.update_connected_account_request import UpdateConnectedAccountRequest
@@ -37,7 +39,8 @@ class ActionClient:
 
         self.tools = tools_client
         self.connected_accounts = connected_accounts_client
-        self.mcp = mcp_client
+        self._mcp_client = mcp_client
+        self._mcp_actions = None
         self._modifiers: List[Modifier] = []
         self._google = None
         self._langchain = None
@@ -79,6 +82,13 @@ class ActionClient:
                 )
 
         return self._google
+
+    @property
+    def mcp(self) -> "ActionMcp":
+        """Expose MCP-related operations behind a dedicated helper."""
+        if self._mcp_actions is None:
+            self._mcp_actions = ActionMcp(self)
+        return self._mcp_actions
 
     def execute_tool(
         self,
@@ -334,14 +344,14 @@ class ActionClient:
         :returns:
             GetMcpResponse containing MCP details
         """
-        if not self.mcp:
+        if not self._mcp_client:
             raise ValueError("MCP client not initialized. Please ensure MCP client is available.")
         
         if not mcp_id:
             raise ValueError("mcp_id is required")
         
         # Call the MCP client's get_mcp method which returns (response, metadata) tuple
-        result_tuple = self.mcp.get_mcp(mcp_id=mcp_id)
+        result_tuple = self._mcp_client.get_mcp(mcp_id=mcp_id)
         
         # Extract the response[0] (the actual GetMcpResponse proto object)
         proto_response = result_tuple[0]
@@ -369,7 +379,7 @@ class ActionClient:
         :returns:
             CreateMcpResponse containing created MCP details
         """
-        if not self.mcp:
+        if not self._mcp_client:
             raise ValueError("MCP client not initialized. Please ensure MCP client is available.")
         
         # Validate required parameters
@@ -395,13 +405,161 @@ class ActionClient:
             tool_mappings=proto_tool_mappings,
         )
 
-        result_tuple = self.mcp.create_mcp(mcp=mcp_proto)
+        result_tuple = self._mcp_client.create_mcp(mcp=mcp_proto)
         
         # Extract the response[0] (the actual CreateMcpResponse proto object)
         proto_response = result_tuple[0]
         
         # Convert proto to our CreateMcpResponse class
         return CreateMcpResponse.from_proto(proto_response)
+
+    def list_configs(
+        self,
+        page_size: Optional[int] = None,
+        page_token: Optional[str] = None,
+        filter_id: Optional[str] = None,
+        filter_provider: Optional[str] = None,
+        filter_name: Optional[str] = None,
+        search: Optional[str] = None,
+        **kwargs,
+    ) -> ListMcpConfigsResponse:
+        """List MCP configurations with optional filters via the action layer."""
+
+        return self.mcp.list_configs(
+            page_size=page_size,
+            page_token=page_token,
+            filter_id=filter_id,
+            filter_provider=filter_provider,
+            filter_name=filter_name,
+            search=search,
+        )
+
+    def create_config(
+        self,
+        name: str,
+        description: Optional[str] = None,
+        connection_tool_mappings: Optional[List[McpConfigConnectionToolMapping]] = None,
+        **kwargs,
+    ) -> CreateMcpConfigResponse:
+        """Create a new MCP configuration via the action layer."""
+
+        return self.mcp.create_config(
+            name=name,
+            description=description,
+            connection_tool_mappings=connection_tool_mappings,
+        )
+
+    def update_config(
+        self,
+        config_id: str,
+        description: Optional[str] = None,
+        connection_tool_mappings: Optional[List[McpConfigConnectionToolMapping]] = None,
+        **kwargs,
+    ) -> UpdateMcpConfigResponse:
+        """Update an existing MCP configuration via the action layer."""
+
+        return self.mcp.update_config(
+            config_id=config_id,
+            description=description,
+            connection_tool_mappings=connection_tool_mappings,
+        )
+
+    def delete_config(
+        self,
+        config_id: str,
+        **kwargs,
+    ) -> DeleteMcpConfigResponse:
+        """Delete an MCP configuration via the action layer."""
+
+        return self.mcp.delete_config(config_id=config_id)
+
+    def ensure_instance(
+        self,
+        config_name: str,
+        user_identifier: str,
+        name: Optional[str] = None,
+        **kwargs,
+    ) -> EnsureMcpInstanceResponse:
+        """Ensure (create or return) an MCP instance for a given config and user."""
+
+        return self.mcp.ensure_instance(
+            config_name=config_name,
+            user_identifier=user_identifier,
+            name=name,
+        )
+
+    def update_instance(
+        self,
+        instance_id: str,
+        name: Optional[str] = None,
+        config_name: Optional[str] = None,
+        **kwargs,
+    ) -> UpdateMcpInstanceResponse:
+        """Update mutable fields on an MCP instance."""
+
+        return self.mcp.update_instance(
+            instance_id=instance_id,
+            name=name,
+            config_name=config_name,
+        )
+
+    def get_instance(
+        self,
+        instance_id: str,
+        **kwargs,
+    ) -> GetMcpInstanceResponse:
+        """Fetch a single MCP instance by ID."""
+
+        return self.mcp.get_instance(instance_id=instance_id)
+
+    def list_instances(
+        self,
+        page_size: Optional[int] = None,
+        page_token: Optional[str] = None,
+        filter_id: Optional[str] = None,
+        filter_name: Optional[str] = None,
+        filter_config_name: Optional[str] = None,
+        filter_user_identifier: Optional[str] = None,
+        **kwargs,
+    ) -> ListMcpInstancesResponse:
+        """List MCP instances with optional filters applied."""
+
+        return self.mcp.list_instances(
+            page_size=page_size,
+            page_token=page_token,
+            filter_id=filter_id,
+            filter_name=filter_name,
+            filter_config_name=filter_config_name,
+            filter_user_identifier=filter_user_identifier,
+        )
+
+    def delete_instance(
+        self,
+        instance_id: str,
+        **kwargs,
+    ) -> DeleteMcpInstanceResponse:
+        """Delete an MCP instance by ID."""
+
+        return self.mcp.delete_instance(instance_id=instance_id)
+
+    def get_instance_auth_state(
+        self,
+        instance_id: str,
+        include_auth_links: Optional[bool] = None,
+        **kwargs,
+    ) -> GetMcpInstanceAuthStateResponse:
+        """Retrieve authentication state for the connections used by an MCP instance.
+
+        :param instance_id: ID of the MCP instance (required)
+        :type instance_id: str
+        :param include_auth_links: When True, generate fresh auth links for connections
+        :type include_auth_links: Optional[bool]
+        """
+
+        return self.mcp.get_instance_auth_state(
+            instance_id=instance_id,
+            include_auth_links=include_auth_links,
+        )
 
     def create_connected_account(
         self,
@@ -593,3 +751,154 @@ class ActionClient:
 
         # Convert proto to our UpdateConnectedAccountResponse class
         return UpdateConnectedAccountResponse.from_proto(proto_response)
+
+
+class ActionMcp:
+    """Helper that exposes MCP-specific actions through the ActionClient."""
+
+    def __init__(self, action_client: ActionClient) -> None:
+        self._actions = action_client
+
+    def _client(self):
+        client = self._actions._mcp_client
+        if not client:
+            raise ValueError("MCP client not initialized. Please ensure MCP client is available.")
+        return client
+
+    def list_configs(
+        self,
+        page_size: Optional[int] = None,
+        page_token: Optional[str] = None,
+        filter_id: Optional[str] = None,
+        filter_provider: Optional[str] = None,
+        filter_name: Optional[str] = None,
+        search: Optional[str] = None,
+    ) -> ListMcpConfigsResponse:
+        client = self._client()
+        result_tuple = client.list_configs(
+            page_size=page_size,
+            page_token=page_token,
+            filter_id=filter_id,
+            filter_provider=filter_provider,
+            filter_name=filter_name,
+            search=search,
+        )
+        return ListMcpConfigsResponse.from_proto(result_tuple[0])
+
+    def create_config(
+        self,
+        name: str,
+        description: Optional[str] = None,
+        connection_tool_mappings: Optional[List[McpConfigConnectionToolMapping]] = None,
+    ) -> CreateMcpConfigResponse:
+        if not name:
+            raise ValueError("name is required")
+        proto_config = McpConfig.to_proto_static(
+            name=name,
+            description=description,
+            connection_tool_mappings=connection_tool_mappings or [],
+        )
+        result_tuple = self._client().create_config(mcp_config=proto_config)
+        return CreateMcpConfigResponse.from_proto(result_tuple[0])
+
+    def update_config(
+        self,
+        config_id: str,
+        description: Optional[str] = None,
+        connection_tool_mappings: Optional[List[McpConfigConnectionToolMapping]] = None,
+    ) -> UpdateMcpConfigResponse:
+        if not config_id:
+            raise ValueError("config_id is required")
+        proto_mappings = None
+        if connection_tool_mappings is not None:
+            proto_mappings = [mapping.to_proto() for mapping in connection_tool_mappings]
+        result_tuple = self._client().update_config(
+            config_id=config_id,
+            description=description,
+            connection_tool_mappings=proto_mappings,
+        )
+        return UpdateMcpConfigResponse.from_proto(result_tuple[0])
+
+    def delete_config(self, config_id: str) -> DeleteMcpConfigResponse:
+        if not config_id:
+            raise ValueError("config_id is required")
+        result_tuple = self._client().delete_config(config_id=config_id)
+        return DeleteMcpConfigResponse.from_proto(result_tuple[0])
+
+    def ensure_instance(
+        self,
+        config_name: str,
+        user_identifier: str,
+        name: Optional[str] = None,
+    ) -> EnsureMcpInstanceResponse:
+        if not config_name:
+            raise ValueError("config_name is required")
+        if not user_identifier:
+            raise ValueError("user_identifier is required")
+        result_tuple = self._client().ensure_instance(
+            name=name,
+            config_name=config_name,
+            user_identifier=user_identifier,
+        )
+        return EnsureMcpInstanceResponse.from_proto(result_tuple[0])
+
+    def update_instance(
+        self,
+        instance_id: str,
+        name: Optional[str] = None,
+        config_name: Optional[str] = None,
+    ) -> UpdateMcpInstanceResponse:
+        if not instance_id:
+            raise ValueError("instance_id is required")
+        if name is None and config_name is None:
+            raise ValueError("At least one of name or config_name must be provided")
+        result_tuple = self._client().update_instance(
+            instance_id=instance_id,
+            name=name,
+            config_name=config_name,
+        )
+        return UpdateMcpInstanceResponse.from_proto(result_tuple[0])
+
+    def get_instance(self, instance_id: str) -> GetMcpInstanceResponse:
+        if not instance_id:
+            raise ValueError("instance_id is required")
+        result_tuple = self._client().get_instance(instance_id=instance_id)
+        return GetMcpInstanceResponse.from_proto(result_tuple[0])
+
+    def list_instances(
+        self,
+        page_size: Optional[int] = None,
+        page_token: Optional[str] = None,
+        filter_id: Optional[str] = None,
+        filter_name: Optional[str] = None,
+        filter_config_name: Optional[str] = None,
+        filter_user_identifier: Optional[str] = None,
+    ) -> ListMcpInstancesResponse:
+        result_tuple = self._client().list_instances(
+            page_size=page_size,
+            page_token=page_token,
+            filter_id=filter_id,
+            filter_name=filter_name,
+            filter_config_name=filter_config_name,
+            filter_user_identifier=filter_user_identifier,
+        )
+        return ListMcpInstancesResponse.from_proto(result_tuple[0])
+
+    def delete_instance(self, instance_id: str) -> DeleteMcpInstanceResponse:
+        if not instance_id:
+            raise ValueError("instance_id is required")
+        result_tuple = self._client().delete_instance(instance_id=instance_id)
+        return DeleteMcpInstanceResponse.from_proto(result_tuple[0])
+
+    def get_instance_auth_state(
+        self,
+        instance_id: str,
+        include_auth_links: Optional[bool] = None,
+    ) -> GetMcpInstanceAuthStateResponse:
+        if not instance_id:
+            raise ValueError("instance_id is required")
+        result_tuple = self._client().get_instance_auth_state(
+            instance_id=instance_id,
+            include_auth_links=include_auth_links,
+        )
+        return GetMcpInstanceAuthStateResponse.from_proto(result_tuple[0])

@@ -195,3 +195,108 @@ class McpClient:
             self.mcp_service.DeleteMcpConfig.with_call,
             DeleteMcpConfigRequest(config_id=config_id),
         )
+
+    def ensure_instance(
+        self,
+        name: Optional[str],
+        config_name: str,
+        user_identifier: str,
+    ) -> EnsureMcpInstanceResponse:
+        """Create or return an MCP instance for the given config and user."""
+
+        request = EnsureMcpInstanceRequest(
+            config_name=config_name,
+            user_identifier=user_identifier,
+        )
+        if name:
+            request.name = name
+
+        return self.core_client.grpc_exec(
+            self.mcp_service.EnsureMcpInstance.with_call,
+            request,
+        )
+
+    def update_instance(
+        self,
+        instance_id: str,
+        name: Optional[str] = None,
+        config_name: Optional[str] = None,
+    ) -> UpdateMcpInstanceResponse:
+        """Update attributes for an existing MCP instance."""
+
+        request = UpdateMcpInstanceRequest(instance_id=instance_id)
+        if name is not None:
+            request.name = name
+        if config_name is not None:
+            request.config_name = config_name
+
+        return self.core_client.grpc_exec(
+            self.mcp_service.UpdateMcpInstance.with_call,
+            request,
+        )
+
+    def get_instance(self, instance_id: str) -> GetMcpInstanceResponse:
+        """Fetch an MCP instance by ID."""
+
+        return self.core_client.grpc_exec(
+            self.mcp_service.GetMcpInstance.with_call,
+            GetMcpInstanceRequest(instance_id=instance_id),
+        )
+
+    def list_instances(
+        self,
+        page_size: Optional[int] = None,
+        page_token: Optional[str] = None,
+        filter_id: Optional[str] = None,
+        filter_name: Optional[str] = None,
+        filter_config_name: Optional[str] = None,
+        filter_user_identifier: Optional[str] = None,
+    ) -> ListMcpInstancesResponse:
+        """List MCP instances with optional filters."""
+
+        filter_obj = None
+        if any(
+            value is not None
+            for value in (filter_id, filter_name, filter_config_name, filter_user_identifier)
+        ):
+            filter_obj = ListMcpInstancesRequest.Filter(
+                id=filter_id or "",
+                name=filter_name or "",
+                config_name=filter_config_name or "",
+                user_identifier=filter_user_identifier or "",
+            )
+
+        request = ListMcpInstancesRequest(
+            page_size=page_size or 0,
+            page_token=page_token or "",
+            filter=filter_obj,
+        )
+
+        return self.core_client.grpc_exec(
+            self.mcp_service.ListMcpInstances.with_call,
+            request,
+        )
+
+    def delete_instance(self, instance_id: str) -> DeleteMcpInstanceResponse:
+        """Delete an MCP instance by ID."""
+
+        return self.core_client.grpc_exec(
+            self.mcp_service.DeleteMcpInstance.with_call,
+            DeleteMcpInstanceRequest(instance_id=instance_id),
+        )
+
+    def get_instance_auth_state(
+        self,
+        instance_id: str,
+        include_auth_links: Optional[bool] = None,
+    ) -> GetMcpInstanceAuthStateResponse:
+        """Retrieve authentication state for connections used by an MCP instance."""
+
+        request = GetMcpInstanceAuthStateRequest(instance_id=instance_id)
+        if include_auth_links is not None:
+            request.include_auth_links = include_auth_links
+
+        return self.core_client.grpc_exec(
+            self.mcp_service.GetMcpInstanceAuthState.with_call,
+            request,
+        )
