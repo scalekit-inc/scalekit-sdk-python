@@ -1,3 +1,5 @@
+import uuid
+
 from faker import Faker
 from basetest import BaseTest
 
@@ -166,3 +168,61 @@ class TestMcp(BaseTest):
         delete_response = self.scalekit_client.mcp.delete_config(config_id=created_mcp_config_id)
         self.assertEqual(delete_response[1].code().name, "OK")
         self.assertTrue(delete_response[0] is not None)
+
+    def test_get_instance_auth_state_include_links_variants(self):
+        """Ensure auth state retrieval works with include_auth_links True and False."""
+        mcp_config = self._create_test_mcp_config()
+        # Use a unique name to avoid collisions across test runs
+        mcp_config.name = f"{mcp_config.name}-{uuid.uuid4().hex[:8]}"
+
+        create_response = self.scalekit_client.mcp.create_config(mcp_config=mcp_config)
+        self.assertEqual(create_response[1].code().name, "OK")
+        created_config_id = create_response[0].config.id
+        config_name = create_response[0].config.name
+
+        user_identifier = f"py-test-auth-{uuid.uuid4().hex[:8]}"
+        instance_name = f"py-test-instance-{uuid.uuid4().hex[:8]}"
+        instance_id = None
+
+        try:
+            ensure_response = self.scalekit_client.mcp.ensure_instance(
+                name=instance_name,
+                config_name=config_name,
+                user_identifier=user_identifier,
+            )
+            self.assertEqual(ensure_response[1].code().name, "OK")
+            self.assertTrue(ensure_response[0] is not None)
+            self.assertTrue(hasattr(ensure_response[0], 'instance'))
+
+            instance_id = ensure_response[0].instance.id
+            self.assertIsNotNone(instance_id)
+
+            auth_state_with_links = self.scalekit_client.mcp.get_instance_auth_state(
+                instance_id=instance_id,
+                include_auth_links=True,
+            )
+            self.assertEqual(auth_state_with_links[1].code().name, "OK")
+            self.assertTrue(auth_state_with_links[0] is not None)
+            self.assertTrue(hasattr(auth_state_with_links[0], 'connections'))
+            if auth_state_with_links[0].connections:
+                self.assertTrue(
+                    any(conn.authentication_link for conn in auth_state_with_links[0].connections),
+                    "Expected at least one authentication link when include_auth_links is True",
+                )
+
+            auth_state_without_links = self.scalekit_client.mcp.get_instance_auth_state(
+                instance_id=instance_id,
+                include_auth_links=False,
+            )
+            self.assertEqual(auth_state_without_links[1].code().name, "OK")
+            self.assertTrue(auth_state_without_links[0] is not None)
+            self.assertTrue(hasattr(auth_state_without_links[0], 'connections'))
+            if auth_state_without_links[0].connections:
+                self.assertTrue(
+                    all(not conn.authentication_link for conn in auth_state_without_links[0].connections),
+                    "Expected authentication links to be omitted when include_auth_links is False",
+                )
+        finally:
+            if instance_id:
+                self.scalekit_client.mcp.delete_instance(instance_id=instance_id)
+            self.scalekit_client.mcp.delete_config(config_id=created_config_id)

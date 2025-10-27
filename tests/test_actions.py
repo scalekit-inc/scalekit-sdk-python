@@ -611,6 +611,53 @@ class TestActionsMcpInstance(BaseTest):
                 )
                 self.assertIsInstance(delete_response, DeleteMcpInstanceResponse)
 
+    def test_actions_mcp_instance_auth_state_variants(self):
+        """Verify auth state retrieval with include_auth_links toggled."""
+        import uuid
+
+        config_name = self.seed_config.name
+        user_identifier = f"py-test-auth-{uuid.uuid4().hex[:8]}"
+        instance_id = None
+
+        try:
+            ensure_response = self.actions_client.mcp.ensure_instance(
+                config_name=config_name,
+                user_identifier=user_identifier,
+            )
+            self.assertIsInstance(ensure_response, EnsureMcpInstanceResponse)
+            self.assertIsNotNone(ensure_response.instance)
+
+            instance_id = ensure_response.instance.id
+            self.assertIsNotNone(instance_id)
+
+            auth_state_with_links = self.actions_client.mcp.get_instance_auth_state(
+                instance_id=instance_id,
+                include_auth_links=True,
+            )
+            self.assertIsInstance(auth_state_with_links, GetMcpInstanceAuthStateResponse)
+            if auth_state_with_links.connections:
+                self.assertTrue(
+                    any(conn.authentication_link for conn in auth_state_with_links.connections),
+                    "Expected authentication links when include_auth_links is True",
+                )
+
+            auth_state_without_links = self.actions_client.mcp.get_instance_auth_state(
+                instance_id=instance_id,
+                include_auth_links=False,
+            )
+            self.assertIsInstance(auth_state_without_links, GetMcpInstanceAuthStateResponse)
+            if auth_state_without_links.connections:
+                self.assertTrue(
+                    all(not conn.authentication_link for conn in auth_state_without_links.connections),
+                    "Expected authentication links to be omitted when include_auth_links is False",
+                )
+        finally:
+            if instance_id:
+                delete_response = self.actions_client.mcp.delete_instance(
+                    instance_id=instance_id
+                )
+                self.assertIsInstance(delete_response, DeleteMcpInstanceResponse)
+
     # Tests for new create_connected_account functionality
     def test_create_connected_account_method_exists(self):
         """Method to test create_connected_account method exists"""
