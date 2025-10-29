@@ -1,12 +1,8 @@
 from typing import Optional, Any, List, Dict
-from scalekit.v1.mcp.mcp_pb2 import Mcp
-from scalekit.v1.mcp.mcp_pb2 import ToolMapping as ProtoToolMapping
-
-from scalekit.actions.models.tool_mapping import ToolMapping
 from scalekit.actions.types import ToolRequest,ExecuteToolResponse,MagicLinkResponse,ListConnectedAccountsResponse,DeleteConnectedAccountResponse,GetConnectedAccountAuthResponse,ToolInput, \
-    McpRequest,CreateMcpResponse,GetMcpResponse,UpdateConnectedAccountResponse,CreateMcpConfigResponse,ListMcpConfigsResponse,UpdateMcpConfigResponse,DeleteMcpConfigResponse, \
+    UpdateConnectedAccountResponse,CreateMcpConfigResponse,ListMcpConfigsResponse,UpdateMcpConfigResponse,DeleteMcpConfigResponse, \
     EnsureMcpInstanceResponse,UpdateMcpInstanceResponse,GetMcpInstanceResponse,ListMcpInstancesResponse,DeleteMcpInstanceResponse,GetMcpInstanceAuthStateResponse, \
-    McpConfig,McpConfigConnectionToolMapping,McpInstance,McpInstanceConnectionAuthState
+    McpConfig,McpConfigConnectionToolMapping
 from scalekit.actions.models.responses.create_connected_account_response import CreateConnectedAccountResponse
 from scalekit.actions.models.requests.create_connected_account_request import CreateConnectedAccountRequest
 from scalekit.actions.models.requests.update_connected_account_request import UpdateConnectedAccountRequest
@@ -326,92 +322,6 @@ class ActionClient:
             self.add_modifier(modifier)
             return func
         return decorator
-
-    def get_mcp(
-        self,
-        mcp_id: str,
-        mcp_request: Optional[McpRequest] = None,
-        **kwargs
-    ) -> GetMcpResponse:
-        """
-        Get an existing MCP by ID via the connect interface
-        
-        :param mcp_id: ID of the MCP to retrieve (required)
-        :type: str
-        :param mcp_request: Optional McpRequest configuration object
-        :type: McpRequest
-        
-        :returns:
-            GetMcpResponse containing MCP details
-        """
-        if not self._mcp_client:
-            raise ValueError("MCP client not initialized. Please ensure MCP client is available.")
-        
-        if not mcp_id:
-            raise ValueError("mcp_id is required")
-        
-        # Call the MCP client's get_mcp method which returns (response, metadata) tuple
-        result_tuple = self._mcp_client.get_mcp(mcp_id=mcp_id)
-        
-        # Extract the response[0] (the actual GetMcpResponse proto object)
-        proto_response = result_tuple[0]
-        
-        # Convert proto to our GetMcpResponse class
-        return GetMcpResponse.from_proto(proto_response)
-
-    def create_mcp(
-        self,
-        identifier: str,
-        tool_mappings: List[ToolMapping],
-        mcp_request: Optional[McpRequest] = None,
-        **kwargs
-    ) -> CreateMcpResponse:
-        """
-        Create or return existing MCP with given configuration via the connect interface
-        
-        :param identifier: Identifier for the connected account (required)
-        :type: str
-        :param tool_mappings: List of tool mappings for the MCP (required)
-        :type: List[ToolMapping]
-        :param mcp_request: Optional McpRequest configuration object
-        :type: McpRequest
-        
-        :returns:
-            CreateMcpResponse containing created MCP details
-        """
-        if not self._mcp_client:
-            raise ValueError("MCP client not initialized. Please ensure MCP client is available.")
-        
-        # Validate required parameters
-        if not identifier:
-            raise ValueError("connected_account_identifier is required")
-        if not tool_mappings:
-            raise ValueError("tool_mappings is required")
-
-
-
-        # Create ToolMapping objects from the provided tool_mappings
-        proto_tool_mappings = []
-        for mapping in tool_mappings:
-            proto_mapping = ProtoToolMapping(
-                tool_names=mapping.tool_names,
-                connection_name=mapping.connection_name,
-            )
-            proto_tool_mappings.append(proto_mapping)
-        
-        # Create the MCP proto object
-        mcp_proto = Mcp(
-            connected_account_identifier=identifier,
-            tool_mappings=proto_tool_mappings,
-        )
-
-        result_tuple = self._mcp_client.create_mcp(mcp=mcp_proto)
-        
-        # Extract the response[0] (the actual CreateMcpResponse proto object)
-        proto_response = result_tuple[0]
-        
-        # Convert proto to our CreateMcpResponse class
-        return CreateMcpResponse.from_proto(proto_response)
 
     def list_configs(
         self,
