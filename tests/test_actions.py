@@ -1,5 +1,24 @@
 from basetest import BaseTest
-from scalekit.actions.types import ExecuteToolResponse, MagicLinkResponse, ListConnectedAccountsResponse, DeleteConnectedAccountResponse, GetConnectedAccountAuthResponse, ToolMapping, CreateConnectedAccountResponse, UpdateConnectedAccountResponse
+from scalekit.actions.types import (
+    ExecuteToolResponse,
+    MagicLinkResponse,
+    ListConnectedAccountsResponse,
+    DeleteConnectedAccountResponse,
+    GetConnectedAccountAuthResponse,
+    CreateConnectedAccountResponse,
+    UpdateConnectedAccountResponse,
+    CreateMcpConfigResponse,
+    UpdateMcpConfigResponse,
+    ListMcpConfigsResponse,
+    DeleteMcpConfigResponse,
+    McpConfigConnectionToolMapping,
+    EnsureMcpInstanceResponse,
+    UpdateMcpInstanceResponse,
+    GetMcpInstanceResponse,
+    ListMcpInstancesResponse,
+    DeleteMcpInstanceResponse,
+    GetMcpInstanceAuthStateResponse,
+)
 from scalekit.actions.models.responses.get_connected_account_auth_response import ConnectedAccount
 from scalekit.actions.modifier import Modifier
 
@@ -388,48 +407,212 @@ class TestConnect(BaseTest):
         modifiers = self.scalekit_client.connect.get_modifiers()
         self.assertEqual(len(modifiers), 2)
 
+class TestActionsMcpConfig(BaseTest):
+    """Tests for MCP config operations exposed via the actions client."""
 
-    def test_create_mcp_method_exists(self):
-        """Method to test create_mcp method exists"""
-        self.assertTrue(hasattr(self.scalekit_client.connect, 'create_mcp'))
-        self.assertTrue(callable(self.scalekit_client.connect.create_mcp))
+    def setUp(self):
+        self.actions_client = self.scalekit_client.actions
 
-    def test_create_mcp_success(self):
-        """Method to test create_mcp creates MCP server successfully"""
+        list_response = self.actions_client.mcp.list_configs(page_size=1)
+        seed_mapping = None
+        for config in list_response.configs:
+            if config.connection_tool_mappings:
+                seed_mapping = config.connection_tool_mappings[0]
+                break
+
+        if seed_mapping is None or not seed_mapping.tools:
+            self.skipTest("No MCP config with connection mappings available for testing")
+
+        self.seed_connection_name = seed_mapping.connection_name
+        self.seed_tools = list(seed_mapping.tools)
+
+        if not self.seed_connection_name or not self.seed_tools:
+            self.skipTest("Seed MCP config missing connection name or tools")
+
+    def test_actions_mcp_config_lifecycle(self):
+        """End-to-end lifecycle: create, update, list, delete via actions client."""
         import uuid
-        from scalekit.actions.types import CreateMcpResponse
-        
-        # Generate unique identifier for this test
-        test_identifier = 'default'
-        
-        # Define test MCP configuration
-        tool_mappings = [
-            ToolMapping(
-                tool_names=["gmail_fetch_mails", "gmail_send_mails"],
-                connection_name="GMAIL",
+
+        config_name = f"py-test-actions-config-{uuid.uuid4().hex[:8]}"
+        created_config_id = None
+
+        initial_tools = self.seed_tools[:1]
+        if not initial_tools:
+            self.skipTest("Seed MCP config does not contain tools for creation")
+
+        initial_mappings = [
+            McpConfigConnectionToolMapping(
+                connection_name=self.seed_connection_name,
+                tools=initial_tools,
             )
         ]
-        
+
         try:
-            # Create MCP server
-            result = self.scalekit_client.connect.create_mcp(
-                identifier=test_identifier,
-                tool_mappings=tool_mappings,
+            create_response = self.actions_client.mcp.create_config(
+                name=config_name,
+                description="Test MCP config via actions client",
+                connection_tool_mappings=initial_mappings,
             )
-            
-            # Verify response structure
-            self.assertIsNotNone(result)
-            self.assertIsInstance(result, CreateMcpResponse)
-            self.assertTrue(hasattr(result, 'id'))
-            self.assertTrue(hasattr(result, 'identifier'))
-            self.assertTrue(hasattr(result, 'url'))
-            print(result.url)
-            
-            # Verify the created MCP has expected values
-            self.assertIsNotNone(result.id)
-            
-        except Exception as e:
-            raise e
+            self.assertIsInstance(create_response, CreateMcpConfigResponse)
+            self.assertIsNotNone(create_response.config)
+            created_config_id = create_response.config.id
+            self.assertIsNotNone(created_config_id)
+            self.assertEqual(create_response.config.name, config_name)
+
+            updated_tools = self.seed_tools[:2] if len(self.seed_tools) >= 2 else list(initial_tools)
+            updated_mappings = [
+                McpConfigConnectionToolMapping(
+                    connection_name=self.seed_connection_name,
+                    tools=updated_tools,
+                )
+            ]
+
+            update_response = self.actions_client.mcp.update_config(
+                config_id=created_config_id,
+                description="Updated MCP config via actions client",
+                connection_tool_mappings=updated_mappings,
+            )
+            self.assertIsInstance(update_response, UpdateMcpConfigResponse)
+            self.assertIsNotNone(update_response.config)
+            self.assertEqual(update_response.config.id, created_config_id)
+            self.assertEqual(update_response.config.name, config_name)
+            self.assertTrue(update_response.config.connection_tool_mappings)
+            self.assertEqual(
+                update_response.config.connection_tool_mappings[0].tools,
+                updated_tools,
+            )
+
+            list_response = self.actions_client.mcp.list_configs(filter_id=created_config_id)
+            self.assertIsInstance(list_response, ListMcpConfigsResponse)
+            self.assertTrue(
+                any(cfg.id == created_config_id for cfg in list_response.configs)
+            )
+
+        finally:
+            if created_config_id:
+                delete_response = self.actions_client.mcp.delete_config(
+                    config_id=created_config_id
+                )
+                self.assertIsInstance(delete_response, DeleteMcpConfigResponse)
+
+
+class TestActionsMcpInstance(BaseTest):
+    """Tests for MCP instance lifecycle via the actions client."""
+
+    def setUp(self):
+        self.actions_client = self.scalekit_client.actions
+
+        configs_response = self.actions_client.mcp.list_configs(page_size=1)
+        if not configs_response.configs:
+            self.skipTest("No MCP configs available to create an instance")
+
+        self.seed_config = configs_response.configs[0]
+        if not self.seed_config or not self.seed_config.name:
+            self.skipTest("Seed MCP config missing required name field")
+
+    def test_actions_mcp_instance_lifecycle(self):
+        """Ensure -> update -> list -> get -> auth_state -> delete."""
+        import uuid
+
+        config_name = self.seed_config.name
+        user_identifier = f"py-test-instance-user-{uuid.uuid4().hex[:8]}"
+        instance_name = f"py-test-instance-{uuid.uuid4().hex[:8]}"
+        created_instance_id = None
+
+        try:
+            ensure_response = self.actions_client.mcp.ensure_instance(
+                config_name=config_name,
+                user_identifier=user_identifier,
+                name=instance_name,
+            )
+            self.assertIsInstance(ensure_response, EnsureMcpInstanceResponse)
+            self.assertIsNotNone(ensure_response.instance)
+            created_instance_id = ensure_response.instance.id
+            self.assertIsNotNone(created_instance_id)
+
+            updated_name = f"{instance_name}-updated"
+            update_response = self.actions_client.mcp.update_instance(
+                instance_id=created_instance_id,
+                name=updated_name,
+            )
+            self.assertIsInstance(update_response, UpdateMcpInstanceResponse)
+            self.assertIsNotNone(update_response.instance)
+            self.assertEqual(update_response.instance.name, updated_name)
+
+            list_response = self.actions_client.mcp.list_instances(
+                filter_id=created_instance_id
+            )
+            self.assertIsInstance(list_response, ListMcpInstancesResponse)
+            self.assertTrue(
+                any(instance.id == created_instance_id for instance in list_response.instances)
+            )
+
+            get_response = self.actions_client.mcp.get_instance(
+                instance_id=created_instance_id
+            )
+            self.assertIsInstance(get_response, GetMcpInstanceResponse)
+            self.assertIsNotNone(get_response.instance)
+            self.assertEqual(get_response.instance.id, created_instance_id)
+
+            auth_state_response = self.actions_client.mcp.get_instance_auth_state(
+                instance_id=created_instance_id,
+                include_auth_links=True,
+            )
+            self.assertIsInstance(auth_state_response, GetMcpInstanceAuthStateResponse)
+
+        finally:
+            if created_instance_id:
+                delete_response = self.actions_client.mcp.delete_instance(
+                    instance_id=created_instance_id
+                )
+                self.assertIsInstance(delete_response, DeleteMcpInstanceResponse)
+
+    def test_actions_mcp_instance_auth_state_variants(self):
+        """Verify auth state retrieval with include_auth_links toggled."""
+        import uuid
+
+        config_name = self.seed_config.name
+        user_identifier = f"py-test-auth-{uuid.uuid4().hex[:8]}"
+        instance_id = None
+
+        try:
+            ensure_response = self.actions_client.mcp.ensure_instance(
+                config_name=config_name,
+                user_identifier=user_identifier,
+            )
+            self.assertIsInstance(ensure_response, EnsureMcpInstanceResponse)
+            self.assertIsNotNone(ensure_response.instance)
+
+            instance_id = ensure_response.instance.id
+            self.assertIsNotNone(instance_id)
+
+            auth_state_with_links = self.actions_client.mcp.get_instance_auth_state(
+                instance_id=instance_id,
+                include_auth_links=True,
+            )
+            self.assertIsInstance(auth_state_with_links, GetMcpInstanceAuthStateResponse)
+            if auth_state_with_links.connections:
+                self.assertTrue(
+                    any(conn.authentication_link for conn in auth_state_with_links.connections),
+                    "Expected authentication links when include_auth_links is True",
+                )
+
+            auth_state_without_links = self.actions_client.mcp.get_instance_auth_state(
+                instance_id=instance_id,
+                include_auth_links=False,
+            )
+            self.assertIsInstance(auth_state_without_links, GetMcpInstanceAuthStateResponse)
+            if auth_state_without_links.connections:
+                self.assertTrue(
+                    all(not conn.authentication_link for conn in auth_state_without_links.connections),
+                    "Expected authentication links to be omitted when include_auth_links is False",
+                )
+        finally:
+            if instance_id:
+                delete_response = self.actions_client.mcp.delete_instance(
+                    instance_id=instance_id
+                )
+                self.assertIsInstance(delete_response, DeleteMcpInstanceResponse)
 
     # Tests for new create_connected_account functionality
     def test_create_connected_account_method_exists(self):
@@ -1711,4 +1894,3 @@ class TestConnect(BaseTest):
 
         except Exception as e:
             raise e
-

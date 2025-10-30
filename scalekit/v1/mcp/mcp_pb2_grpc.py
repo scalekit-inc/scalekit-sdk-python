@@ -34,6 +34,61 @@ class McpServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.DeleteMcpRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.DeleteMcpResponse.FromString,
                 )
+        self.CreateMcpConfig = channel.unary_unary(
+                '/scalekit.v1.mcp.McpService/CreateMcpConfig',
+                request_serializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.CreateMcpConfigRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.CreateMcpConfigResponse.FromString,
+                )
+        self.UpdateMcpConfig = channel.unary_unary(
+                '/scalekit.v1.mcp.McpService/UpdateMcpConfig',
+                request_serializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.UpdateMcpConfigRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.UpdateMcpConfigResponse.FromString,
+                )
+        self.ListMcpConfigs = channel.unary_unary(
+                '/scalekit.v1.mcp.McpService/ListMcpConfigs',
+                request_serializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.ListMcpConfigsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.ListMcpConfigsResponse.FromString,
+                )
+        self.GetMcpConfig = channel.unary_unary(
+                '/scalekit.v1.mcp.McpService/GetMcpConfig',
+                request_serializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.GetMcpConfigRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.GetMcpConfigResponse.FromString,
+                )
+        self.DeleteMcpConfig = channel.unary_unary(
+                '/scalekit.v1.mcp.McpService/DeleteMcpConfig',
+                request_serializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.DeleteMcpConfigRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.DeleteMcpConfigResponse.FromString,
+                )
+        self.EnsureMcpInstance = channel.unary_unary(
+                '/scalekit.v1.mcp.McpService/EnsureMcpInstance',
+                request_serializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.EnsureMcpInstanceRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.EnsureMcpInstanceResponse.FromString,
+                )
+        self.ListMcpInstances = channel.unary_unary(
+                '/scalekit.v1.mcp.McpService/ListMcpInstances',
+                request_serializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.ListMcpInstancesRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.ListMcpInstancesResponse.FromString,
+                )
+        self.DeleteMcpInstance = channel.unary_unary(
+                '/scalekit.v1.mcp.McpService/DeleteMcpInstance',
+                request_serializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.DeleteMcpInstanceRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.DeleteMcpInstanceResponse.FromString,
+                )
+        self.UpdateMcpInstance = channel.unary_unary(
+                '/scalekit.v1.mcp.McpService/UpdateMcpInstance',
+                request_serializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.UpdateMcpInstanceRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.UpdateMcpInstanceResponse.FromString,
+                )
+        self.GetMcpInstance = channel.unary_unary(
+                '/scalekit.v1.mcp.McpService/GetMcpInstance',
+                request_serializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.GetMcpInstanceRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.GetMcpInstanceResponse.FromString,
+                )
+        self.GetMcpInstanceAuthState = channel.unary_unary(
+                '/scalekit.v1.mcp.McpService/GetMcpInstanceAuthState',
+                request_serializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.GetMcpInstanceAuthStateRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.GetMcpInstanceAuthStateResponse.FromString,
+                )
 
 
 class McpServiceServicer(object):
@@ -63,6 +118,72 @@ class McpServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def CreateMcpConfig(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateMcpConfig(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListMcpConfigs(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetMcpConfig(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeleteMcpConfig(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def EnsureMcpInstance(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListMcpInstances(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeleteMcpInstance(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateMcpInstance(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetMcpInstance(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetMcpInstanceAuthState(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_McpServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -85,6 +206,61 @@ def add_McpServiceServicer_to_server(servicer, server):
                     servicer.DeleteMcp,
                     request_deserializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.DeleteMcpRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.DeleteMcpResponse.SerializeToString,
+            ),
+            'CreateMcpConfig': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateMcpConfig,
+                    request_deserializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.CreateMcpConfigRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.CreateMcpConfigResponse.SerializeToString,
+            ),
+            'UpdateMcpConfig': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateMcpConfig,
+                    request_deserializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.UpdateMcpConfigRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.UpdateMcpConfigResponse.SerializeToString,
+            ),
+            'ListMcpConfigs': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListMcpConfigs,
+                    request_deserializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.ListMcpConfigsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.ListMcpConfigsResponse.SerializeToString,
+            ),
+            'GetMcpConfig': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetMcpConfig,
+                    request_deserializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.GetMcpConfigRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.GetMcpConfigResponse.SerializeToString,
+            ),
+            'DeleteMcpConfig': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteMcpConfig,
+                    request_deserializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.DeleteMcpConfigRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.DeleteMcpConfigResponse.SerializeToString,
+            ),
+            'EnsureMcpInstance': grpc.unary_unary_rpc_method_handler(
+                    servicer.EnsureMcpInstance,
+                    request_deserializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.EnsureMcpInstanceRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.EnsureMcpInstanceResponse.SerializeToString,
+            ),
+            'ListMcpInstances': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListMcpInstances,
+                    request_deserializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.ListMcpInstancesRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.ListMcpInstancesResponse.SerializeToString,
+            ),
+            'DeleteMcpInstance': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteMcpInstance,
+                    request_deserializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.DeleteMcpInstanceRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.DeleteMcpInstanceResponse.SerializeToString,
+            ),
+            'UpdateMcpInstance': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateMcpInstance,
+                    request_deserializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.UpdateMcpInstanceRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.UpdateMcpInstanceResponse.SerializeToString,
+            ),
+            'GetMcpInstance': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetMcpInstance,
+                    request_deserializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.GetMcpInstanceRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.GetMcpInstanceResponse.SerializeToString,
+            ),
+            'GetMcpInstanceAuthState': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetMcpInstanceAuthState,
+                    request_deserializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.GetMcpInstanceAuthStateRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.GetMcpInstanceAuthStateResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -161,5 +337,192 @@ class McpService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.mcp.McpService/DeleteMcp',
             scalekit_dot_v1_dot_mcp_dot_mcp__pb2.DeleteMcpRequest.SerializeToString,
             scalekit_dot_v1_dot_mcp_dot_mcp__pb2.DeleteMcpResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def CreateMcpConfig(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.mcp.McpService/CreateMcpConfig',
+            scalekit_dot_v1_dot_mcp_dot_mcp__pb2.CreateMcpConfigRequest.SerializeToString,
+            scalekit_dot_v1_dot_mcp_dot_mcp__pb2.CreateMcpConfigResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def UpdateMcpConfig(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.mcp.McpService/UpdateMcpConfig',
+            scalekit_dot_v1_dot_mcp_dot_mcp__pb2.UpdateMcpConfigRequest.SerializeToString,
+            scalekit_dot_v1_dot_mcp_dot_mcp__pb2.UpdateMcpConfigResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListMcpConfigs(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.mcp.McpService/ListMcpConfigs',
+            scalekit_dot_v1_dot_mcp_dot_mcp__pb2.ListMcpConfigsRequest.SerializeToString,
+            scalekit_dot_v1_dot_mcp_dot_mcp__pb2.ListMcpConfigsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetMcpConfig(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.mcp.McpService/GetMcpConfig',
+            scalekit_dot_v1_dot_mcp_dot_mcp__pb2.GetMcpConfigRequest.SerializeToString,
+            scalekit_dot_v1_dot_mcp_dot_mcp__pb2.GetMcpConfigResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DeleteMcpConfig(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.mcp.McpService/DeleteMcpConfig',
+            scalekit_dot_v1_dot_mcp_dot_mcp__pb2.DeleteMcpConfigRequest.SerializeToString,
+            scalekit_dot_v1_dot_mcp_dot_mcp__pb2.DeleteMcpConfigResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def EnsureMcpInstance(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.mcp.McpService/EnsureMcpInstance',
+            scalekit_dot_v1_dot_mcp_dot_mcp__pb2.EnsureMcpInstanceRequest.SerializeToString,
+            scalekit_dot_v1_dot_mcp_dot_mcp__pb2.EnsureMcpInstanceResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListMcpInstances(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.mcp.McpService/ListMcpInstances',
+            scalekit_dot_v1_dot_mcp_dot_mcp__pb2.ListMcpInstancesRequest.SerializeToString,
+            scalekit_dot_v1_dot_mcp_dot_mcp__pb2.ListMcpInstancesResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DeleteMcpInstance(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.mcp.McpService/DeleteMcpInstance',
+            scalekit_dot_v1_dot_mcp_dot_mcp__pb2.DeleteMcpInstanceRequest.SerializeToString,
+            scalekit_dot_v1_dot_mcp_dot_mcp__pb2.DeleteMcpInstanceResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def UpdateMcpInstance(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.mcp.McpService/UpdateMcpInstance',
+            scalekit_dot_v1_dot_mcp_dot_mcp__pb2.UpdateMcpInstanceRequest.SerializeToString,
+            scalekit_dot_v1_dot_mcp_dot_mcp__pb2.UpdateMcpInstanceResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetMcpInstance(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.mcp.McpService/GetMcpInstance',
+            scalekit_dot_v1_dot_mcp_dot_mcp__pb2.GetMcpInstanceRequest.SerializeToString,
+            scalekit_dot_v1_dot_mcp_dot_mcp__pb2.GetMcpInstanceResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetMcpInstanceAuthState(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.mcp.McpService/GetMcpInstanceAuthState',
+            scalekit_dot_v1_dot_mcp_dot_mcp__pb2.GetMcpInstanceAuthStateRequest.SerializeToString,
+            scalekit_dot_v1_dot_mcp_dot_mcp__pb2.GetMcpInstanceAuthStateResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

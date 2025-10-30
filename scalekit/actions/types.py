@@ -10,9 +10,21 @@ from .models.responses.get_connected_account_auth_response import GetConnectedAc
 from .models.responses.create_connected_account_response import CreateConnectedAccountResponse
 from .models.responses.update_connected_account_response import UpdateConnectedAccountResponse
 from .models.responses.create_mcp_response import CreateMcpResponse
+from .models.responses.create_mcp_config_response import CreateMcpConfigResponse
+from .models.responses.ensure_mcp_instance_response import EnsureMcpInstanceResponse
 from .models.responses.get_mcp_response import GetMcpResponse
+from .models.responses.get_mcp_instance_response import GetMcpInstanceResponse
+from .models.responses.get_mcp_instance_auth_state_response import GetMcpInstanceAuthStateResponse
+from .models.responses.list_mcp_configs_response import ListMcpConfigsResponse
+from .models.responses.list_mcp_instances_response import ListMcpInstancesResponse
+from .models.responses.update_mcp_config_response import UpdateMcpConfigResponse
+from .models.responses.update_mcp_instance_response import UpdateMcpInstanceResponse
+from .models.responses.delete_mcp_config_response import DeleteMcpConfigResponse
+from .models.responses.delete_mcp_instance_response import DeleteMcpInstanceResponse
 from .models.tool_input_output import ToolInput, ToolOutput
 from .models.tool_mapping import ToolMapping
+from .models.mcp_config import McpConfig, McpConfigConnectionToolMapping
+from .models.mcp_instance import McpInstance, McpInstanceConnectionAuthState
 
 
 __all__ = [
@@ -29,7 +41,21 @@ __all__ = [
     'UpdateConnectedAccountResponse',
     'CreateMcpResponse',
     'GetMcpResponse',
+    'CreateMcpConfigResponse',
+    'EnsureMcpInstanceResponse',
+    'ListMcpConfigsResponse',
+    'ListMcpInstancesResponse',
+    'UpdateMcpConfigResponse',
+    'UpdateMcpInstanceResponse',
+    'DeleteMcpConfigResponse',
+    'DeleteMcpInstanceResponse',
+    'GetMcpInstanceResponse',
+    'GetMcpInstanceAuthStateResponse',
     'ToolInput',
     'ToolOutput',
     'ToolMapping',
+    'McpConfig',
+    'McpConfigConnectionToolMapping',
+    'McpInstance',
+    'McpInstanceConnectionAuthState',
 ]
