@@ -700,7 +700,7 @@ class ActionMcp:
             filter_id: Restrict results to a specific configuration identifier.
             filter_provider: Restrict results to configs for a given provider slug.
             filter_name: Restrict results to configs whose names match exactly.
-            search: Free-form search query applied to name and description fields.
+            search: Free-form search query applied to name field.
 
         Returns:
             ListMcpConfigsResponse: Parsed wrapper around the proto response.
