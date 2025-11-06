@@ -22,7 +22,6 @@ from scalekit.actions.types import (
 from scalekit.actions.models.responses.get_connected_account_auth_response import ConnectedAccount
 from scalekit.actions.modifier import Modifier
 
-
 class TestConnect(BaseTest):
     """Class definition for Test Connect Class"""
 
@@ -1776,7 +1775,6 @@ class TestActionsMcpConfig(BaseTest):
                     config_id=created_config_id
                 )
                 self.assertIsInstance(delete_response, DeleteMcpConfigResponse)
-
 
 class TestActionsMcpInstance(BaseTest):
     """Tests for MCP instance lifecycle via the actions client."""
