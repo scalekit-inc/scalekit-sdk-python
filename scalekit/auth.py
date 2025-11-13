@@ -55,7 +55,7 @@ class AuthClient:
         :type                     : ``` dict ```
 
         :returns:
-            Empty response
+            Tuple of (Empty response, grpc.Call metadata)
         """
 
         user_data: Dict[str, Any] = {}
