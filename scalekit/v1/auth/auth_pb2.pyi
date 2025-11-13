@@ -40,6 +40,7 @@ class AuthState(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     ORG_USER_CREATED: _ClassVar[AuthState]
     AUTHENTICATION_COMPLETED: _ClassVar[AuthState]
     AUTHENTICATION_FAILED: _ClassVar[AuthState]
+    WEBAUTHN_VERIFIED: _ClassVar[AuthState]
 INTENT_UNSPECIFIED: Intent
 sign_in: Intent
 sign_up: Intent
@@ -58,6 +59,7 @@ SSO_AUTHENTICATED: AuthState
 ORG_USER_CREATED: AuthState
 AUTHENTICATION_COMPLETED: AuthState
 AUTHENTICATION_FAILED: AuthState
+WEBAUTHN_VERIFIED: AuthState
 
 class ListAuthMethodsRequest(_message.Message):
     __slots__ = ("intent",)
@@ -72,20 +74,26 @@ class ListAuthMethodsResponse(_message.Message):
     def __init__(self, auth_methods: _Optional[_Iterable[_Union[AuthMethod, _Mapping]]] = ...) -> None: ...
 
 class AuthMethod(_message.Message):
-    __slots__ = ("connection_id", "connection_type", "provider", "auth_initiation_uri", "passwordless_type", "code_challenge_length")
+    __slots__ = ("connection_id", "connection_type", "provider", "auth_initiation_uri", "passwordless_type", "code_challenge_length", "enable_webauthn_auto_registration", "show_passkey_button", "enable_webauthn_conditional_login")
     CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
     CONNECTION_TYPE_FIELD_NUMBER: _ClassVar[int]
     PROVIDER_FIELD_NUMBER: _ClassVar[int]
     AUTH_INITIATION_URI_FIELD_NUMBER: _ClassVar[int]
     PASSWORDLESS_TYPE_FIELD_NUMBER: _ClassVar[int]
     CODE_CHALLENGE_LENGTH_FIELD_NUMBER: _ClassVar[int]
+    ENABLE_WEBAUTHN_AUTO_REGISTRATION_FIELD_NUMBER: _ClassVar[int]
+    SHOW_PASSKEY_BUTTON_FIELD_NUMBER: _ClassVar[int]
+    ENABLE_WEBAUTHN_CONDITIONAL_LOGIN_FIELD_NUMBER: _ClassVar[int]
     connection_id: str
     connection_type: _connections_pb2.ConnectionType
     provider: str
     auth_initiation_uri: str
     passwordless_type: _connections_pb2.PasswordlessType
     code_challenge_length: int
-    def __init__(self, connection_id: _Optional[str] = ..., connection_type: _Optional[_Union[_connections_pb2.ConnectionType, str]] = ..., provider: _Optional[str] = ..., auth_initiation_uri: _Optional[str] = ..., passwordless_type: _Optional[_Union[_connections_pb2.PasswordlessType, str]] = ..., code_challenge_length: _Optional[int] = ...) -> None: ...
+    enable_webauthn_auto_registration: bool
+    show_passkey_button: bool
+    enable_webauthn_conditional_login: bool
+    def __init__(self, connection_id: _Optional[str] = ..., connection_type: _Optional[_Union[_connections_pb2.ConnectionType, str]] = ..., provider: _Optional[str] = ..., auth_initiation_uri: _Optional[str] = ..., passwordless_type: _Optional[_Union[_connections_pb2.PasswordlessType, str]] = ..., code_challenge_length: _Optional[int] = ..., enable_webauthn_auto_registration: bool = ..., show_passkey_button: bool = ..., enable_webauthn_conditional_login: bool = ...) -> None: ...
 
 class DiscoveryAuthMethodRequest(_message.Message):
     __slots__ = ("discovery_request",)
@@ -246,3 +254,17 @@ class GetAuthStateResponse(_message.Message):
     AUTH_STATE_FIELD_NUMBER: _ClassVar[int]
     auth_state: AuthState
     def __init__(self, auth_state: _Optional[_Union[AuthState, str]] = ...) -> None: ...
+
+class GetAuthErrorRequest(_message.Message):
+    __slots__ = ("error_id",)
+    ERROR_ID_FIELD_NUMBER: _ClassVar[int]
+    error_id: str
+    def __init__(self, error_id: _Optional[str] = ...) -> None: ...
+
+class GetAuthErrorResponse(_message.Message):
+    __slots__ = ("error", "error_description")
+    ERROR_FIELD_NUMBER: _ClassVar[int]
+    ERROR_DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
+    error: str
+    error_description: str
+    def __init__(self, error: _Optional[str] = ..., error_description: _Optional[str] = ...) -> None: ...

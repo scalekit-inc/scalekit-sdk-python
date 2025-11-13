@@ -8,6 +8,7 @@ from google.protobuf import struct_pb2 as _struct_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
 from google.protobuf import wrappers_pb2 as _wrappers_pb2
 from protoc_gen_openapiv2.options import annotations_pb2 as _annotations_pb2_1
+from scalekit.v1.auth import webauthn_pb2 as _webauthn_pb2
 from scalekit.v1.commons import commons_pb2 as _commons_pb2
 from scalekit.v1.domains import domains_pb2 as _domains_pb2
 from scalekit.v1.options import options_pb2 as _options_pb2
@@ -93,6 +94,7 @@ class ConnectionType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     BASIC: _ClassVar[ConnectionType]
     BEARER: _ClassVar[ConnectionType]
     API_KEY: _ClassVar[ConnectionType]
+    WEBAUTHN: _ClassVar[ConnectionType]
 
 class ConnectionStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
@@ -165,6 +167,7 @@ PASSWORDLESS: ConnectionType
 BASIC: ConnectionType
 BEARER: ConnectionType
 API_KEY: ConnectionType
+WEBAUTHN: ConnectionType
 CONNECTION_STATUS_UNSPECIFIED: ConnectionStatus
 DRAFT: ConnectionStatus
 IN_PROGRESS: ConnectionStatus
@@ -186,6 +189,26 @@ MICROSOFT: ConnectionProvider
 IDP_SIMULATOR: ConnectionProvider
 SCALEKIT: ConnectionProvider
 ADFS: ConnectionProvider
+
+class UpdateConnectionUserManagementSettingsRequest(_message.Message):
+    __slots__ = ("connection_id", "settings")
+    CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
+    SETTINGS_FIELD_NUMBER: _ClassVar[int]
+    connection_id: str
+    settings: ConnectionUserManagementSettings
+    def __init__(self, connection_id: _Optional[str] = ..., settings: _Optional[_Union[ConnectionUserManagementSettings, _Mapping]] = ...) -> None: ...
+
+class ConnectionUserManagementSettings(_message.Message):
+    __slots__ = ("sync_user_profile_on_signin",)
+    SYNC_USER_PROFILE_ON_SIGNIN_FIELD_NUMBER: _ClassVar[int]
+    sync_user_profile_on_signin: _wrappers_pb2.BoolValue
+    def __init__(self, sync_user_profile_on_signin: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ...) -> None: ...
+
+class UpdateConnectionUserManagementSettingsResponse(_message.Message):
+    __slots__ = ("settings",)
+    SETTINGS_FIELD_NUMBER: _ClassVar[int]
+    settings: ConnectionUserManagementSettings
+    def __init__(self, settings: _Optional[_Union[ConnectionUserManagementSettings, _Mapping]] = ...) -> None: ...
 
 class AssignDomainsToConnectionRequest(_message.Message):
     __slots__ = ("organization_id", "connection_id", "domain_ids")
@@ -252,7 +275,7 @@ class CreateConnection(_message.Message):
     def __init__(self, provider: _Optional[_Union[ConnectionProvider, str]] = ..., type: _Optional[_Union[ConnectionType, str]] = ..., provider_key: _Optional[str] = ..., key_id: _Optional[str] = ...) -> None: ...
 
 class Connection(_message.Message):
-    __slots__ = ("id", "provider", "type", "status", "enabled", "debug_enabled", "organization_id", "ui_button_title", "configuration_type", "test_connection_uri", "attribute_mapping", "create_time", "update_time", "oidc_config", "saml_config", "oauth_config", "passwordless_config", "static_config", "key_id", "provider_key", "domains")
+    __slots__ = ("id", "provider", "type", "status", "enabled", "debug_enabled", "organization_id", "ui_button_title", "configuration_type", "test_connection_uri", "attribute_mapping", "create_time", "update_time", "oidc_config", "saml_config", "oauth_config", "passwordless_config", "static_config", "webauthn_config", "key_id", "provider_key", "domains", "sync_user_profile_on_signin")
     class AttributeMappingEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -278,9 +301,11 @@ class Connection(_message.Message):
     OAUTH_CONFIG_FIELD_NUMBER: _ClassVar[int]
     PASSWORDLESS_CONFIG_FIELD_NUMBER: _ClassVar[int]
     STATIC_CONFIG_FIELD_NUMBER: _ClassVar[int]
+    WEBAUTHN_CONFIG_FIELD_NUMBER: _ClassVar[int]
     KEY_ID_FIELD_NUMBER: _ClassVar[int]
     PROVIDER_KEY_FIELD_NUMBER: _ClassVar[int]
     DOMAINS_FIELD_NUMBER: _ClassVar[int]
+    SYNC_USER_PROFILE_ON_SIGNIN_FIELD_NUMBER: _ClassVar[int]
     id: str
     provider: ConnectionProvider
     type: ConnectionType
@@ -299,10 +324,12 @@ class Connection(_message.Message):
     oauth_config: OAuthConnectionConfig
     passwordless_config: PasswordLessConfig
     static_config: StaticAuthConfig
+    webauthn_config: WebAuthConfiguration
     key_id: str
     provider_key: str
     domains: _containers.RepeatedCompositeFieldContainer[_domains_pb2.Domain]
-    def __init__(self, id: _Optional[str] = ..., provider: _Optional[_Union[ConnectionProvider, str]] = ..., type: _Optional[_Union[ConnectionType, str]] = ..., status: _Optional[_Union[ConnectionStatus, str]] = ..., enabled: bool = ..., debug_enabled: bool = ..., organization_id: _Optional[str] = ..., ui_button_title: _Optional[str] = ..., configuration_type: _Optional[_Union[ConfigurationType, str]] = ..., test_connection_uri: _Optional[str] = ..., attribute_mapping: _Optional[_Mapping[str, str]] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., oidc_config: _Optional[_Union[OIDCConnectionConfig, _Mapping]] = ..., saml_config: _Optional[_Union[SAMLConnectionConfigResponse, _Mapping]] = ..., oauth_config: _Optional[_Union[OAuthConnectionConfig, _Mapping]] = ..., passwordless_config: _Optional[_Union[PasswordLessConfig, _Mapping]] = ..., static_config: _Optional[_Union[StaticAuthConfig, _Mapping]] = ..., key_id: _Optional[str] = ..., provider_key: _Optional[str] = ..., domains: _Optional[_Iterable[_Union[_domains_pb2.Domain, _Mapping]]] = ...) -> None: ...
+    sync_user_profile_on_signin: _wrappers_pb2.BoolValue
+    def __init__(self, id: _Optional[str] = ..., provider: _Optional[_Union[ConnectionProvider, str]] = ..., type: _Optional[_Union[ConnectionType, str]] = ..., status: _Optional[_Union[ConnectionStatus, str]] = ..., enabled: bool = ..., debug_enabled: bool = ..., organization_id: _Optional[str] = ..., ui_button_title: _Optional[str] = ..., configuration_type: _Optional[_Union[ConfigurationType, str]] = ..., test_connection_uri: _Optional[str] = ..., attribute_mapping: _Optional[_Mapping[str, str]] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., oidc_config: _Optional[_Union[OIDCConnectionConfig, _Mapping]] = ..., saml_config: _Optional[_Union[SAMLConnectionConfigResponse, _Mapping]] = ..., oauth_config: _Optional[_Union[OAuthConnectionConfig, _Mapping]] = ..., passwordless_config: _Optional[_Union[PasswordLessConfig, _Mapping]] = ..., static_config: _Optional[_Union[StaticAuthConfig, _Mapping]] = ..., webauthn_config: _Optional[_Union[WebAuthConfiguration, _Mapping]] = ..., key_id: _Optional[str] = ..., provider_key: _Optional[str] = ..., domains: _Optional[_Iterable[_Union[_domains_pb2.Domain, _Mapping]]] = ..., sync_user_profile_on_signin: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ...) -> None: ...
 
 class CreateConnectionResponse(_message.Message):
     __slots__ = ("connection",)
@@ -329,7 +356,7 @@ class UpdateConnectionRequest(_message.Message):
     def __init__(self, organization_id: _Optional[str] = ..., id: _Optional[str] = ..., connection: _Optional[_Union[UpdateConnection, _Mapping]] = ...) -> None: ...
 
 class UpdateConnection(_message.Message):
-    __slots__ = ("provider", "type", "debug_enabled", "ui_button_title", "configuration_type", "attribute_mapping", "oidc_config", "saml_config", "oauth_config", "passwordless_config", "static_config", "key_id", "provider_key")
+    __slots__ = ("provider", "type", "debug_enabled", "ui_button_title", "configuration_type", "attribute_mapping", "oidc_config", "saml_config", "oauth_config", "passwordless_config", "static_config", "webauthn_config", "key_id", "provider_key", "sync_user_profile_on_signin")
     class AttributeMappingEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -348,8 +375,10 @@ class UpdateConnection(_message.Message):
     OAUTH_CONFIG_FIELD_NUMBER: _ClassVar[int]
     PASSWORDLESS_CONFIG_FIELD_NUMBER: _ClassVar[int]
     STATIC_CONFIG_FIELD_NUMBER: _ClassVar[int]
+    WEBAUTHN_CONFIG_FIELD_NUMBER: _ClassVar[int]
     KEY_ID_FIELD_NUMBER: _ClassVar[int]
     PROVIDER_KEY_FIELD_NUMBER: _ClassVar[int]
+    SYNC_USER_PROFILE_ON_SIGNIN_FIELD_NUMBER: _ClassVar[int]
     provider: ConnectionProvider
     type: ConnectionType
     debug_enabled: _wrappers_pb2.BoolValue
@@ -361,9 +390,11 @@ class UpdateConnection(_message.Message):
     oauth_config: OAuthConnectionConfig
     passwordless_config: PasswordLessConfig
     static_config: StaticAuthConfig
+    webauthn_config: WebAuthConfiguration
     key_id: str
     provider_key: str
-    def __init__(self, provider: _Optional[_Union[ConnectionProvider, str]] = ..., type: _Optional[_Union[ConnectionType, str]] = ..., debug_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., ui_button_title: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., configuration_type: _Optional[_Union[ConfigurationType, str]] = ..., attribute_mapping: _Optional[_Mapping[str, str]] = ..., oidc_config: _Optional[_Union[OIDCConnectionConfig, _Mapping]] = ..., saml_config: _Optional[_Union[SAMLConnectionConfigRequest, _Mapping]] = ..., oauth_config: _Optional[_Union[OAuthConnectionConfig, _Mapping]] = ..., passwordless_config: _Optional[_Union[PasswordLessConfig, _Mapping]] = ..., static_config: _Optional[_Union[StaticAuthConfig, _Mapping]] = ..., key_id: _Optional[str] = ..., provider_key: _Optional[str] = ...) -> None: ...
+    sync_user_profile_on_signin: _wrappers_pb2.BoolValue
+    def __init__(self, provider: _Optional[_Union[ConnectionProvider, str]] = ..., type: _Optional[_Union[ConnectionType, str]] = ..., debug_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., ui_button_title: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., configuration_type: _Optional[_Union[ConfigurationType, str]] = ..., attribute_mapping: _Optional[_Mapping[str, str]] = ..., oidc_config: _Optional[_Union[OIDCConnectionConfig, _Mapping]] = ..., saml_config: _Optional[_Union[SAMLConnectionConfigRequest, _Mapping]] = ..., oauth_config: _Optional[_Union[OAuthConnectionConfig, _Mapping]] = ..., passwordless_config: _Optional[_Union[PasswordLessConfig, _Mapping]] = ..., static_config: _Optional[_Union[StaticAuthConfig, _Mapping]] = ..., webauthn_config: _Optional[_Union[WebAuthConfiguration, _Mapping]] = ..., key_id: _Optional[str] = ..., provider_key: _Optional[str] = ..., sync_user_profile_on_signin: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ...) -> None: ...
 
 class UpdateConnectionResponse(_message.Message):
     __slots__ = ("connection",)
@@ -606,6 +637,75 @@ class StaticAuthConfig(_message.Message):
     STATIC_CONFIG_FIELD_NUMBER: _ClassVar[int]
     static_config: _struct_pb2.Struct
     def __init__(self, static_config: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
+
+class WebAuthConfiguration(_message.Message):
+    __slots__ = ("rp", "attestation", "authenticators", "authenticator_selection", "timeout", "enable_auto_registration", "show_passkey_button", "enable_conditional_login")
+    class Rp(_message.Message):
+        __slots__ = ("ids", "origins")
+        IDS_FIELD_NUMBER: _ClassVar[int]
+        ORIGINS_FIELD_NUMBER: _ClassVar[int]
+        ids: _containers.RepeatedScalarFieldContainer[str]
+        origins: _containers.RepeatedScalarFieldContainer[str]
+        def __init__(self, ids: _Optional[_Iterable[str]] = ..., origins: _Optional[_Iterable[str]] = ...) -> None: ...
+    class Attestation(_message.Message):
+        __slots__ = ("conveyance_preference", "enterprise_approved_ids")
+        CONVEYANCE_PREFERENCE_FIELD_NUMBER: _ClassVar[int]
+        ENTERPRISE_APPROVED_IDS_FIELD_NUMBER: _ClassVar[int]
+        conveyance_preference: _wrappers_pb2.StringValue
+        enterprise_approved_ids: _containers.RepeatedScalarFieldContainer[str]
+        def __init__(self, conveyance_preference: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., enterprise_approved_ids: _Optional[_Iterable[str]] = ...) -> None: ...
+    class Authenticators(_message.Message):
+        __slots__ = ("validate_entry", "validate_entry_permit_zero_aaguid", "validate_anchors", "validate_status", "validate_attestation_type", "desired_authenticator_status", "undesired_authenticator_status")
+        VALIDATE_ENTRY_FIELD_NUMBER: _ClassVar[int]
+        VALIDATE_ENTRY_PERMIT_ZERO_AAGUID_FIELD_NUMBER: _ClassVar[int]
+        VALIDATE_ANCHORS_FIELD_NUMBER: _ClassVar[int]
+        VALIDATE_STATUS_FIELD_NUMBER: _ClassVar[int]
+        VALIDATE_ATTESTATION_TYPE_FIELD_NUMBER: _ClassVar[int]
+        DESIRED_AUTHENTICATOR_STATUS_FIELD_NUMBER: _ClassVar[int]
+        UNDESIRED_AUTHENTICATOR_STATUS_FIELD_NUMBER: _ClassVar[int]
+        validate_entry: _wrappers_pb2.BoolValue
+        validate_entry_permit_zero_aaguid: _wrappers_pb2.BoolValue
+        validate_anchors: _wrappers_pb2.BoolValue
+        validate_status: _wrappers_pb2.BoolValue
+        validate_attestation_type: _wrappers_pb2.BoolValue
+        desired_authenticator_status: _containers.RepeatedScalarFieldContainer[str]
+        undesired_authenticator_status: _containers.RepeatedScalarFieldContainer[str]
+        def __init__(self, validate_entry: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., validate_entry_permit_zero_aaguid: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., validate_anchors: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., validate_status: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., validate_attestation_type: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., desired_authenticator_status: _Optional[_Iterable[str]] = ..., undesired_authenticator_status: _Optional[_Iterable[str]] = ...) -> None: ...
+    class AuthenticatorSelection(_message.Message):
+        __slots__ = ("user_verification", "authenticator_attachment")
+        USER_VERIFICATION_FIELD_NUMBER: _ClassVar[int]
+        AUTHENTICATOR_ATTACHMENT_FIELD_NUMBER: _ClassVar[int]
+        user_verification: _wrappers_pb2.StringValue
+        authenticator_attachment: _wrappers_pb2.StringValue
+        def __init__(self, user_verification: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., authenticator_attachment: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ...) -> None: ...
+    class Timeout(_message.Message):
+        __slots__ = ("registration", "registration_uvd", "login", "login_uvd")
+        REGISTRATION_FIELD_NUMBER: _ClassVar[int]
+        REGISTRATION_UVD_FIELD_NUMBER: _ClassVar[int]
+        LOGIN_FIELD_NUMBER: _ClassVar[int]
+        LOGIN_UVD_FIELD_NUMBER: _ClassVar[int]
+        registration: _duration_pb2.Duration
+        registration_uvd: _duration_pb2.Duration
+        login: _duration_pb2.Duration
+        login_uvd: _duration_pb2.Duration
+        def __init__(self, registration: _Optional[_Union[_duration_pb2.Duration, _Mapping]] = ..., registration_uvd: _Optional[_Union[_duration_pb2.Duration, _Mapping]] = ..., login: _Optional[_Union[_duration_pb2.Duration, _Mapping]] = ..., login_uvd: _Optional[_Union[_duration_pb2.Duration, _Mapping]] = ...) -> None: ...
+    RP_FIELD_NUMBER: _ClassVar[int]
+    ATTESTATION_FIELD_NUMBER: _ClassVar[int]
+    AUTHENTICATORS_FIELD_NUMBER: _ClassVar[int]
+    AUTHENTICATOR_SELECTION_FIELD_NUMBER: _ClassVar[int]
+    TIMEOUT_FIELD_NUMBER: _ClassVar[int]
+    ENABLE_AUTO_REGISTRATION_FIELD_NUMBER: _ClassVar[int]
+    SHOW_PASSKEY_BUTTON_FIELD_NUMBER: _ClassVar[int]
+    ENABLE_CONDITIONAL_LOGIN_FIELD_NUMBER: _ClassVar[int]
+    rp: WebAuthConfiguration.Rp
+    attestation: WebAuthConfiguration.Attestation
+    authenticators: WebAuthConfiguration.Authenticators
+    authenticator_selection: WebAuthConfiguration.AuthenticatorSelection
+    timeout: WebAuthConfiguration.Timeout
+    enable_auto_registration: bool
+    show_passkey_button: bool
+    enable_conditional_login: bool
+    def __init__(self, rp: _Optional[_Union[WebAuthConfiguration.Rp, _Mapping]] = ..., attestation: _Optional[_Union[WebAuthConfiguration.Attestation, _Mapping]] = ..., authenticators: _Optional[_Union[WebAuthConfiguration.Authenticators, _Mapping]] = ..., authenticator_selection: _Optional[_Union[WebAuthConfiguration.AuthenticatorSelection, _Mapping]] = ..., timeout: _Optional[_Union[WebAuthConfiguration.Timeout, _Mapping]] = ..., enable_auto_registration: bool = ..., show_passkey_button: bool = ..., enable_conditional_login: bool = ...) -> None: ...
 
 class SAMLConnectionConfigRequest(_message.Message):
     __slots__ = ("idp_metadata_url", "idp_entity_id", "idp_sso_url", "idp_certificate", "idp_slo_url", "ui_button_title", "idp_name_id_format", "idp_sso_request_binding", "idp_slo_request_binding", "saml_signing_option", "force_authn", "default_redirect_uri", "assertion_encrypted", "want_request_signed", "certificate_id", "idp_slo_required", "sp_entity_id", "sp_assertion_url", "sp_slo_url")
