@@ -309,7 +309,7 @@ class CreateUser(_message.Message):
     def __init__(self, email: _Optional[str] = ..., external_id: _Optional[str] = ..., membership: _Optional[_Union[CreateMembership, _Mapping]] = ..., user_profile: _Optional[_Union[CreateUserProfile, _Mapping]] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
 
 class CreateUserProfile(_message.Message):
-    __slots__ = ("first_name", "last_name", "name", "locale", "phone_number", "metadata", "custom_attributes")
+    __slots__ = ("given_name", "family_name", "name", "locale", "phone_number", "metadata", "custom_attributes", "preferred_username", "picture", "gender", "groups", "first_name", "last_name")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -324,24 +324,36 @@ class CreateUserProfile(_message.Message):
         key: str
         value: str
         def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
-    FIRST_NAME_FIELD_NUMBER: _ClassVar[int]
-    LAST_NAME_FIELD_NUMBER: _ClassVar[int]
+    GIVEN_NAME_FIELD_NUMBER: _ClassVar[int]
+    FAMILY_NAME_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     LOCALE_FIELD_NUMBER: _ClassVar[int]
     PHONE_NUMBER_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     CUSTOM_ATTRIBUTES_FIELD_NUMBER: _ClassVar[int]
-    first_name: str
-    last_name: str
+    PREFERRED_USERNAME_FIELD_NUMBER: _ClassVar[int]
+    PICTURE_FIELD_NUMBER: _ClassVar[int]
+    GENDER_FIELD_NUMBER: _ClassVar[int]
+    GROUPS_FIELD_NUMBER: _ClassVar[int]
+    FIRST_NAME_FIELD_NUMBER: _ClassVar[int]
+    LAST_NAME_FIELD_NUMBER: _ClassVar[int]
+    given_name: str
+    family_name: str
     name: str
     locale: str
     phone_number: str
     metadata: _containers.ScalarMap[str, str]
     custom_attributes: _containers.ScalarMap[str, str]
-    def __init__(self, first_name: _Optional[str] = ..., last_name: _Optional[str] = ..., name: _Optional[str] = ..., locale: _Optional[str] = ..., phone_number: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., custom_attributes: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    preferred_username: str
+    picture: str
+    gender: str
+    groups: _containers.RepeatedScalarFieldContainer[str]
+    first_name: str
+    last_name: str
+    def __init__(self, given_name: _Optional[str] = ..., family_name: _Optional[str] = ..., name: _Optional[str] = ..., locale: _Optional[str] = ..., phone_number: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., custom_attributes: _Optional[_Mapping[str, str]] = ..., preferred_username: _Optional[str] = ..., picture: _Optional[str] = ..., gender: _Optional[str] = ..., groups: _Optional[_Iterable[str]] = ..., first_name: _Optional[str] = ..., last_name: _Optional[str] = ...) -> None: ...
 
 class UpdateUserProfile(_message.Message):
-    __slots__ = ("first_name", "last_name", "name", "locale", "phone_number", "metadata", "custom_attributes")
+    __slots__ = ("given_name", "family_name", "name", "locale", "phone_number", "metadata", "custom_attributes", "first_name", "last_name", "preferred_username", "picture", "gender", "groups")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -356,21 +368,33 @@ class UpdateUserProfile(_message.Message):
         key: str
         value: str
         def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
-    FIRST_NAME_FIELD_NUMBER: _ClassVar[int]
-    LAST_NAME_FIELD_NUMBER: _ClassVar[int]
+    GIVEN_NAME_FIELD_NUMBER: _ClassVar[int]
+    FAMILY_NAME_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     LOCALE_FIELD_NUMBER: _ClassVar[int]
     PHONE_NUMBER_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     CUSTOM_ATTRIBUTES_FIELD_NUMBER: _ClassVar[int]
-    first_name: str
-    last_name: str
+    FIRST_NAME_FIELD_NUMBER: _ClassVar[int]
+    LAST_NAME_FIELD_NUMBER: _ClassVar[int]
+    PREFERRED_USERNAME_FIELD_NUMBER: _ClassVar[int]
+    PICTURE_FIELD_NUMBER: _ClassVar[int]
+    GENDER_FIELD_NUMBER: _ClassVar[int]
+    GROUPS_FIELD_NUMBER: _ClassVar[int]
+    given_name: str
+    family_name: str
     name: str
     locale: str
     phone_number: str
     metadata: _containers.ScalarMap[str, str]
     custom_attributes: _containers.ScalarMap[str, str]
-    def __init__(self, first_name: _Optional[str] = ..., last_name: _Optional[str] = ..., name: _Optional[str] = ..., locale: _Optional[str] = ..., phone_number: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., custom_attributes: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    first_name: str
+    last_name: str
+    preferred_username: str
+    picture: str
+    gender: str
+    groups: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, given_name: _Optional[str] = ..., family_name: _Optional[str] = ..., name: _Optional[str] = ..., locale: _Optional[str] = ..., phone_number: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., custom_attributes: _Optional[_Mapping[str, str]] = ..., first_name: _Optional[str] = ..., last_name: _Optional[str] = ..., preferred_username: _Optional[str] = ..., picture: _Optional[str] = ..., gender: _Optional[str] = ..., groups: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class Invite(_message.Message):
     __slots__ = ("organization_id", "user_id", "inviter_email", "status", "created_at", "expires_at", "resent_at", "resent_count")
@@ -463,18 +487,16 @@ class ListUserPermissionsRequest(_message.Message):
     def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ...) -> None: ...
 
 class Permission(_message.Message):
-    __slots__ = ("id", "name", "display_name", "description", "tags")
+    __slots__ = ("id", "name", "description", "tags")
     ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
-    DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     TAGS_FIELD_NUMBER: _ClassVar[int]
     id: str
     name: str
-    display_name: str
     description: str
     tags: _containers.RepeatedScalarFieldContainer[str]
-    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., tags: _Optional[_Iterable[str]] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., tags: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class ListUserPermissionsResponse(_message.Message):
     __slots__ = ("permissions",)

@@ -50,13 +50,13 @@ class AuthServiceStub(object):
                 request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.GetAuthStateResponse.FromString,
                 )
+        self.GetAuthError = channel.unary_unary(
+                '/scalekit.v1.auth.AuthService/GetAuthError',
+                request_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.GetAuthErrorRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.GetAuthErrorResponse.FromString,
+                )
         self.Logout = channel.unary_unary(
                 '/scalekit.v1.auth.AuthService/Logout',
-                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                )
-        self.GetActiveSession = channel.unary_unary(
-                '/scalekit.v1.auth.AuthService/GetActiveSession',
                 request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
@@ -122,13 +122,13 @@ class AuthServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def Logout(self, request, context):
+    def GetAuthError(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def GetActiveSession(self, request, context):
+    def Logout(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -190,13 +190,13 @@ def add_AuthServiceServicer_to_server(servicer, server):
                     request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                     response_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.GetAuthStateResponse.SerializeToString,
             ),
+            'GetAuthError': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetAuthError,
+                    request_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.GetAuthErrorRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.GetAuthErrorResponse.SerializeToString,
+            ),
             'Logout': grpc.unary_unary_rpc_method_handler(
                     servicer.Logout,
-                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-            ),
-            'GetActiveSession': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetActiveSession,
                     request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
@@ -345,6 +345,23 @@ class AuthService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
+    def GetAuthError(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.auth.AuthService/GetAuthError',
+            scalekit_dot_v1_dot_auth_dot_auth__pb2.GetAuthErrorRequest.SerializeToString,
+            scalekit_dot_v1_dot_auth_dot_auth__pb2.GetAuthErrorResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
     def Logout(request,
             target,
             options=(),
@@ -356,23 +373,6 @@ class AuthService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.auth.AuthService/Logout',
-            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def GetActiveSession(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.auth.AuthService/GetActiveSession',
             google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,

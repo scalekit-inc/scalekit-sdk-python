@@ -73,7 +73,7 @@ class CreateMemberResponse(_message.Message):
     def __init__(self, member: _Optional[_Union[Member, _Mapping]] = ...) -> None: ...
 
 class UpdateMember(_message.Message):
-    __slots__ = ("role", "first_name", "last_name", "metadata", "user_profile")
+    __slots__ = ("first_name", "last_name", "metadata", "user_profile")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -81,17 +81,15 @@ class UpdateMember(_message.Message):
         key: str
         value: str
         def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
-    ROLE_FIELD_NUMBER: _ClassVar[int]
     FIRST_NAME_FIELD_NUMBER: _ClassVar[int]
     LAST_NAME_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     USER_PROFILE_FIELD_NUMBER: _ClassVar[int]
-    role: MemberRole
     first_name: str
     last_name: str
     metadata: _containers.ScalarMap[str, str]
     user_profile: _users_pb2.UpdateUserProfile
-    def __init__(self, role: _Optional[_Union[MemberRole, str]] = ..., first_name: _Optional[str] = ..., last_name: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., user_profile: _Optional[_Union[_users_pb2.UpdateUserProfile, _Mapping]] = ...) -> None: ...
+    def __init__(self, first_name: _Optional[str] = ..., last_name: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., user_profile: _Optional[_Union[_users_pb2.UpdateUserProfile, _Mapping]] = ...) -> None: ...
 
 class UpdateCurrentMemberRequest(_message.Message):
     __slots__ = ("member",)

@@ -172,12 +172,6 @@ class GetMagicLinkForConnectedAccountRequest(_message.Message):
     id: str
     def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., connector: _Optional[str] = ..., identifier: _Optional[str] = ..., id: _Optional[str] = ...) -> None: ...
 
-class GetMagicLinkForConnectedAccountRedirectRequest(_message.Message):
-    __slots__ = ("redirect_to",)
-    REDIRECT_TO_FIELD_NUMBER: _ClassVar[int]
-    redirect_to: str
-    def __init__(self, redirect_to: _Optional[str] = ...) -> None: ...
-
 class GetMagicLinkForConnectedAccountResponse(_message.Message):
     __slots__ = ("link", "expiry")
     LINK_FIELD_NUMBER: _ClassVar[int]
@@ -185,14 +179,6 @@ class GetMagicLinkForConnectedAccountResponse(_message.Message):
     link: str
     expiry: _timestamp_pb2.Timestamp
     def __init__(self, link: _Optional[str] = ..., expiry: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
-
-class GetMagicLinkForConnectedAccountRedirectResponse(_message.Message):
-    __slots__ = ("redirect_to", "expiry")
-    REDIRECT_TO_FIELD_NUMBER: _ClassVar[int]
-    EXPIRY_FIELD_NUMBER: _ClassVar[int]
-    redirect_to: str
-    expiry: _timestamp_pb2.Timestamp
-    def __init__(self, redirect_to: _Optional[str] = ..., expiry: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
 class GetConnectedAccountByIdentifierRequest(_message.Message):
     __slots__ = ("organization_id", "user_id", "connector", "identifier", "id")

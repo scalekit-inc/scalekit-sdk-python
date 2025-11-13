@@ -579,10 +579,12 @@ class GetClientResponse(_message.Message):
     def __init__(self, client: _Optional[_Union[Client, _Mapping]] = ...) -> None: ...
 
 class ListClientsRequest(_message.Message):
-    __slots__ = ("include_plain_secret",)
+    __slots__ = ("include_plain_secret", "client_type")
     INCLUDE_PLAIN_SECRET_FIELD_NUMBER: _ClassVar[int]
+    CLIENT_TYPE_FIELD_NUMBER: _ClassVar[int]
     include_plain_secret: bool
-    def __init__(self, include_plain_secret: bool = ...) -> None: ...
+    client_type: str
+    def __init__(self, include_plain_secret: bool = ..., client_type: _Optional[str] = ...) -> None: ...
 
 class ListClientsResponse(_message.Message):
     __slots__ = ("total_size", "clients")

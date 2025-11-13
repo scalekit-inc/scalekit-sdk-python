@@ -127,7 +127,7 @@ class Role(_message.Message):
     def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., display_name: _Optional[str] = ...) -> None: ...
 
 class UserProfile(_message.Message):
-    __slots__ = ("id", "first_name", "last_name", "name", "locale", "email_verified", "phone_number", "metadata", "custom_attributes")
+    __slots__ = ("id", "given_name", "family_name", "name", "locale", "email_verified", "phone_number", "metadata", "custom_attributes", "first_name", "last_name", "preferred_username", "phone_number_verified", "picture", "groups", "gender")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -143,21 +143,35 @@ class UserProfile(_message.Message):
         value: str
         def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
     ID_FIELD_NUMBER: _ClassVar[int]
-    FIRST_NAME_FIELD_NUMBER: _ClassVar[int]
-    LAST_NAME_FIELD_NUMBER: _ClassVar[int]
+    GIVEN_NAME_FIELD_NUMBER: _ClassVar[int]
+    FAMILY_NAME_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     LOCALE_FIELD_NUMBER: _ClassVar[int]
     EMAIL_VERIFIED_FIELD_NUMBER: _ClassVar[int]
     PHONE_NUMBER_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     CUSTOM_ATTRIBUTES_FIELD_NUMBER: _ClassVar[int]
+    FIRST_NAME_FIELD_NUMBER: _ClassVar[int]
+    LAST_NAME_FIELD_NUMBER: _ClassVar[int]
+    PREFERRED_USERNAME_FIELD_NUMBER: _ClassVar[int]
+    PHONE_NUMBER_VERIFIED_FIELD_NUMBER: _ClassVar[int]
+    PICTURE_FIELD_NUMBER: _ClassVar[int]
+    GROUPS_FIELD_NUMBER: _ClassVar[int]
+    GENDER_FIELD_NUMBER: _ClassVar[int]
     id: str
-    first_name: str
-    last_name: str
+    given_name: str
+    family_name: str
     name: str
     locale: str
     email_verified: bool
     phone_number: str
     metadata: _containers.ScalarMap[str, str]
     custom_attributes: _containers.ScalarMap[str, str]
-    def __init__(self, id: _Optional[str] = ..., first_name: _Optional[str] = ..., last_name: _Optional[str] = ..., name: _Optional[str] = ..., locale: _Optional[str] = ..., email_verified: bool = ..., phone_number: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., custom_attributes: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    first_name: str
+    last_name: str
+    preferred_username: str
+    phone_number_verified: bool
+    picture: str
+    groups: _containers.RepeatedScalarFieldContainer[str]
+    gender: str
+    def __init__(self, id: _Optional[str] = ..., given_name: _Optional[str] = ..., family_name: _Optional[str] = ..., name: _Optional[str] = ..., locale: _Optional[str] = ..., email_verified: bool = ..., phone_number: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., custom_attributes: _Optional[_Mapping[str, str]] = ..., first_name: _Optional[str] = ..., last_name: _Optional[str] = ..., preferred_username: _Optional[str] = ..., phone_number_verified: bool = ..., picture: _Optional[str] = ..., groups: _Optional[_Iterable[str]] = ..., gender: _Optional[str] = ...) -> None: ...
