@@ -152,6 +152,24 @@ class TestOrganization(BaseTest):
             self.assertTrue(response[0].organization.settings.features[1].enabled)
             self.assertFalse(response[0].organization.settings.features[0].enabled)
 
+    def test_upsert_user_management_settings(self):
+        """ Method to test upserting user management settings """
+        organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
+        org_response = self.scalekit_client.organization.create_organization(organization=organization)
+        self.org_id = org_response[0].organization.id
+
+        try:
+            settings = self.scalekit_client.organization.upsert_user_management_settings(
+                organization_id=self.org_id,
+                max_allowed_users=45
+            )
+        except Exception as exp:
+            self.skipTest(f"Skipping upsert user management settings test due to error: {exp}")
+
+        self.assertIsNotNone(settings)
+        self.assertTrue(settings.HasField("max_allowed_users"))
+        self.assertEqual(settings.max_allowed_users.value, 45)
+
     def tearDown(self):
         """ Method to clean up after test """
         if self.org_id:

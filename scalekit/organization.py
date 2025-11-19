@@ -1,5 +1,6 @@
 from typing import Optional, List, Dict
 
+from google.protobuf import wrappers_pb2
 from scalekit.core import CoreClient
 from scalekit.v1.organizations.organizations_pb2 import *
 from scalekit.v1.organizations.organizations_pb2_grpc import OrganizationServiceStub
@@ -170,3 +171,26 @@ class OrganizationClient:
             UpdateOrganizationSettingsRequest(
                 id=organization_id, settings={'features': settings})
         )
+
+    def upsert_user_management_settings(self, organization_id: str, max_allowed_users: Optional[int] = None):
+        """
+        Upsert organization user management settings like maximum allowed users.
+
+        :param organization_id: Organization id for update
+        :type organization_id : ``` str ```
+        :param max_allowed_users: Maximum allowed users (None to clear)
+        :type max_allowed_users: ``` int | None ```
+        :returns:
+            OrganizationUserManagementSettings
+        """
+        settings = OrganizationUserManagementSettings()
+        if max_allowed_users is not None:
+            settings.max_allowed_users.CopyFrom(wrappers_pb2.Int32Value(value=max_allowed_users))
+        response = self.core_client.grpc_exec(
+            self.organization_service.UpsertUserManagementSettings.with_call,
+            UpsertUserManagementSettingsRequest(
+                organization_id=organization_id,
+                settings=settings
+            )
+        )
+        return response[0].settings
