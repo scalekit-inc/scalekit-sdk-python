@@ -26,7 +26,7 @@ class WithCall(Protocol):
 class CoreClient:
     """Class definition for Core Client"""
 
-    sdk_version = "Scalekit-Python/2.4.13"
+    sdk_version = "Scalekit-Python/2.4.14"
     api_version = "20250104"
     user_agent = f"{sdk_version} Python/{platform.python_version()} ({platform.system()}; {platform.architecture()}"
 
@@ -83,13 +83,13 @@ class CoreClient:
             "client_secret": self.client_secret,
         }
 
-        response = self.authenticate(data=json.dumps(params))
+        response = self.authenticate(data=params)
         if response.status_code != 200:
             raise ScalekitServerException.promote(response)
         response = json.loads(response.content)
         self.access_token = response["access_token"]
 
-    def authenticate(self, data: str):
+    def authenticate(self, data: dict):
         """
         Method to execute post request for authentication with given user params
 
@@ -100,7 +100,7 @@ class CoreClient:
         response = requests.post(
             self.env_url + TOKEN_ENDPOINT,
             headers=self.get_headers(headers=headers),
-            data=json.loads(data),
+            data=data,
             verify=True,
         )
         if response.status_code != 200:

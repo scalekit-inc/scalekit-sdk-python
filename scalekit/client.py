@@ -139,7 +139,6 @@ class ScalekitClient:
         """
         try:
             response = self.core_client.authenticate(
-                json.dumps(
                     {
                         "code": code,
                         "redirect_uri": redirect_uri,
@@ -148,7 +147,6 @@ class ScalekitClient:
                         "client_secret": self.core_client.client_secret,
                         "code_verifier": options.code_verifier,
                     }
-                )
             )
             response = json.loads(response.content)
             id_token = response["id_token"]
@@ -211,13 +209,11 @@ class ScalekitClient:
         """
         try:
             response = self.core_client.authenticate(
-                json.dumps(
                     {
                         "grant_type": GrantType.ClientCredentials.value,
                         "client_id": client_id,
                         "client_secret": client_secret,
                     }
-                )
             )
             response = json.loads(response.content)
             return response
@@ -514,14 +510,12 @@ class ScalekitClient:
         """
         try:
             response = self.core_client.authenticate(
-                json.dumps(
-                    {
-                        "refresh_token": refresh_token,
-                        "grant_type": GrantType.RefreshToken.value,
-                        "client_id": self.core_client.client_id,
-                        "client_secret": self.core_client.client_secret,
-                    }
-                )
+                {
+                    "refresh_token": refresh_token,
+                    "grant_type": GrantType.RefreshToken.value,
+                    "client_id": self.core_client.client_id,
+                    "client_secret": self.core_client.client_secret,
+                }
             )
             response = json.loads(response.content)
             return {
