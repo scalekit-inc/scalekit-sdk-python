@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
 
     name="scalekit-sdk-python",
-    version="2.4.13",
+    version="2.4.1141414",
     packages=find_packages(),
     install_requires=[
         "grpcio>=1.64.1",
@@ -21,7 +21,7 @@ setup(
         "python-dotenv>=1.1.0",
         "Faker~=25.8.0",
         "pydantic>=2.10.6",
-        "mcp>= 1.15.0",
+        "mcp>= 1.23.0",
     ],
     url="https://github.com/scalekit-inc/scalekit-sdk-python",
     license="MIT",
