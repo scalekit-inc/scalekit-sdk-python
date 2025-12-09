@@ -152,6 +152,8 @@ class ScalekitClient:
             id_token = response["id_token"]
             access_token = response["access_token"]
             refresh_token = response.get("refresh_token")
+            expires_in = response.get("expires_in")
+
             # Validate id_token
             claims = self.validate_token(id_token, options=None)
             user = {}
@@ -168,7 +170,8 @@ class ScalekitClient:
                 "access_token": access_token,
                 "refresh_token": refresh_token,
                 "connection_id": connection_id,
-                "organization_id": organization_id
+                "organization_id": organization_id,
+                "expires_in": expires_in
             }
 
         except jwt.exceptions.InvalidTokenError as exp:
