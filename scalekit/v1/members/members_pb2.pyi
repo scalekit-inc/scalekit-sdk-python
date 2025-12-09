@@ -3,6 +3,7 @@ from google.api import annotations_pb2 as _annotations_pb2
 from google.api import field_behavior_pb2 as _field_behavior_pb2
 from google.protobuf import empty_pb2 as _empty_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
+from protoc_gen_openapiv2.options import annotations_pb2 as _annotations_pb2_1
 from scalekit.v1.commons import commons_pb2 as _commons_pb2
 from scalekit.v1.options import options_pb2 as _options_pb2
 from scalekit.v1.users import users_pb2 as _users_pb2
@@ -24,7 +25,7 @@ ADMIN: MemberRole
 USER: MemberRole
 
 class Member(_message.Message):
-    __slots__ = ("id", "create_time", "update_time", "workspace_id", "role", "first_name", "last_name", "email", "metadata", "organizations", "user_profile", "external_id", "workspace_ids")
+    __slots__ = ("id", "create_time", "update_time", "workspace_id", "role", "first_name", "last_name", "email", "metadata", "organizations", "user_profile", "external_id", "workspace_ids", "active_workspace_external_id")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -45,6 +46,7 @@ class Member(_message.Message):
     USER_PROFILE_FIELD_NUMBER: _ClassVar[int]
     EXTERNAL_ID_FIELD_NUMBER: _ClassVar[int]
     WORKSPACE_IDS_FIELD_NUMBER: _ClassVar[int]
+    ACTIVE_WORKSPACE_EXTERNAL_ID_FIELD_NUMBER: _ClassVar[int]
     id: str
     create_time: _timestamp_pb2.Timestamp
     update_time: _timestamp_pb2.Timestamp
@@ -58,7 +60,8 @@ class Member(_message.Message):
     user_profile: _commons_pb2.UserProfile
     external_id: str
     workspace_ids: _containers.RepeatedScalarFieldContainer[str]
-    def __init__(self, id: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., workspace_id: _Optional[str] = ..., role: _Optional[_Union[MemberRole, str]] = ..., first_name: _Optional[str] = ..., last_name: _Optional[str] = ..., email: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., organizations: _Optional[_Iterable[_Union[_commons_pb2.OrganizationMembership, _Mapping]]] = ..., user_profile: _Optional[_Union[_commons_pb2.UserProfile, _Mapping]] = ..., external_id: _Optional[str] = ..., workspace_ids: _Optional[_Iterable[str]] = ...) -> None: ...
+    active_workspace_external_id: str
+    def __init__(self, id: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., workspace_id: _Optional[str] = ..., role: _Optional[_Union[MemberRole, str]] = ..., first_name: _Optional[str] = ..., last_name: _Optional[str] = ..., email: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., organizations: _Optional[_Iterable[_Union[_commons_pb2.OrganizationMembership, _Mapping]]] = ..., user_profile: _Optional[_Union[_commons_pb2.UserProfile, _Mapping]] = ..., external_id: _Optional[str] = ..., workspace_ids: _Optional[_Iterable[str]] = ..., active_workspace_external_id: _Optional[str] = ...) -> None: ...
 
 class CreateMemberRequest(_message.Message):
     __slots__ = ("member",)

@@ -16,7 +16,7 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class User(_message.Message):
-    __slots__ = ("id", "environment_id", "create_time", "update_time", "email", "external_id", "memberships", "user_profile", "metadata", "last_login")
+    __slots__ = ("id", "environment_id", "create_time", "update_time", "email", "external_id", "memberships", "user_profile", "metadata", "last_login_time")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -33,7 +33,7 @@ class User(_message.Message):
     MEMBERSHIPS_FIELD_NUMBER: _ClassVar[int]
     USER_PROFILE_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
-    LAST_LOGIN_FIELD_NUMBER: _ClassVar[int]
+    LAST_LOGIN_TIME_FIELD_NUMBER: _ClassVar[int]
     id: str
     environment_id: str
     create_time: _timestamp_pb2.Timestamp
@@ -43,8 +43,8 @@ class User(_message.Message):
     memberships: _containers.RepeatedCompositeFieldContainer[_commons_pb2.OrganizationMembership]
     user_profile: _commons_pb2.UserProfile
     metadata: _containers.ScalarMap[str, str]
-    last_login: _timestamp_pb2.Timestamp
-    def __init__(self, id: _Optional[str] = ..., environment_id: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., email: _Optional[str] = ..., external_id: _Optional[str] = ..., memberships: _Optional[_Iterable[_Union[_commons_pb2.OrganizationMembership, _Mapping]]] = ..., user_profile: _Optional[_Union[_commons_pb2.UserProfile, _Mapping]] = ..., metadata: _Optional[_Mapping[str, str]] = ..., last_login: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+    last_login_time: _timestamp_pb2.Timestamp
+    def __init__(self, id: _Optional[str] = ..., environment_id: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., email: _Optional[str] = ..., external_id: _Optional[str] = ..., memberships: _Optional[_Iterable[_Union[_commons_pb2.OrganizationMembership, _Mapping]]] = ..., user_profile: _Optional[_Union[_commons_pb2.UserProfile, _Mapping]] = ..., metadata: _Optional[_Mapping[str, str]] = ..., last_login_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
 class CreateUserAndMembershipRequest(_message.Message):
     __slots__ = ("organization_id", "user", "send_invitation_email")

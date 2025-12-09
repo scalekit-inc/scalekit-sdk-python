@@ -105,11 +105,6 @@ class ConnectionServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ListAppConnectionsRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ListAppConnectionsResponse.FromString,
                 )
-        self.UpdateConnectionUserManagementSettings = channel.unary_unary(
-                '/scalekit.v1.connections.ConnectionService/UpdateConnectionUserManagementSettings',
-                request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.UpdateConnectionUserManagementSettingsRequest.SerializeToString,
-                response_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.UpdateConnectionUserManagementSettingsResponse.FromString,
-                )
 
 
 class ConnectionServiceServicer(object):
@@ -223,12 +218,6 @@ class ConnectionServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def UpdateConnectionUserManagementSettings(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
 
 def add_ConnectionServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -321,11 +310,6 @@ def add_ConnectionServiceServicer_to_server(servicer, server):
                     servicer.ListAppConnections,
                     request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ListAppConnectionsRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ListAppConnectionsResponse.SerializeToString,
-            ),
-            'UpdateConnectionUserManagementSettings': grpc.unary_unary_rpc_method_handler(
-                    servicer.UpdateConnectionUserManagementSettings,
-                    request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.UpdateConnectionUserManagementSettingsRequest.FromString,
-                    response_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.UpdateConnectionUserManagementSettingsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -640,22 +624,5 @@ class ConnectionService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connections.ConnectionService/ListAppConnections',
             scalekit_dot_v1_dot_connections_dot_connections__pb2.ListAppConnectionsRequest.SerializeToString,
             scalekit_dot_v1_dot_connections_dot_connections__pb2.ListAppConnectionsResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def UpdateConnectionUserManagementSettings(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connections.ConnectionService/UpdateConnectionUserManagementSettings',
-            scalekit_dot_v1_dot_connections_dot_connections__pb2.UpdateConnectionUserManagementSettingsRequest.SerializeToString,
-            scalekit_dot_v1_dot_connections_dot_connections__pb2.UpdateConnectionUserManagementSettingsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

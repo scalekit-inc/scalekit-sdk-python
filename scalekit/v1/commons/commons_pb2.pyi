@@ -84,7 +84,7 @@ SCALEKIT: IdentityProviderType
 ADFS: IdentityProviderType
 
 class OrganizationMembership(_message.Message):
-    __slots__ = ("organization_id", "join_time", "membership_status", "roles", "name", "metadata", "display_name", "inviter_email", "created_at", "accepted_at", "expires_at")
+    __slots__ = ("organization_id", "join_time", "membership_status", "roles", "name", "metadata", "display_name", "inviter_email", "created_at", "accepted_at", "expires_at", "provisioning_method")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -103,6 +103,7 @@ class OrganizationMembership(_message.Message):
     CREATED_AT_FIELD_NUMBER: _ClassVar[int]
     ACCEPTED_AT_FIELD_NUMBER: _ClassVar[int]
     EXPIRES_AT_FIELD_NUMBER: _ClassVar[int]
+    PROVISIONING_METHOD_FIELD_NUMBER: _ClassVar[int]
     organization_id: str
     join_time: _timestamp_pb2.Timestamp
     membership_status: MembershipStatus
@@ -114,7 +115,8 @@ class OrganizationMembership(_message.Message):
     created_at: _timestamp_pb2.Timestamp
     accepted_at: _timestamp_pb2.Timestamp
     expires_at: _timestamp_pb2.Timestamp
-    def __init__(self, organization_id: _Optional[str] = ..., join_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., membership_status: _Optional[_Union[MembershipStatus, str]] = ..., roles: _Optional[_Iterable[_Union[Role, _Mapping]]] = ..., name: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., display_name: _Optional[str] = ..., inviter_email: _Optional[str] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., accepted_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+    provisioning_method: str
+    def __init__(self, organization_id: _Optional[str] = ..., join_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., membership_status: _Optional[_Union[MembershipStatus, str]] = ..., roles: _Optional[_Iterable[_Union[Role, _Mapping]]] = ..., name: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., display_name: _Optional[str] = ..., inviter_email: _Optional[str] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., accepted_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., provisioning_method: _Optional[str] = ...) -> None: ...
 
 class Role(_message.Message):
     __slots__ = ("id", "name", "display_name")
@@ -127,7 +129,7 @@ class Role(_message.Message):
     def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., display_name: _Optional[str] = ...) -> None: ...
 
 class UserProfile(_message.Message):
-    __slots__ = ("id", "given_name", "family_name", "name", "locale", "email_verified", "phone_number", "metadata", "custom_attributes", "first_name", "last_name", "preferred_username", "phone_number_verified", "picture", "groups", "gender")
+    __slots__ = ("id", "given_name", "family_name", "name", "locale", "email_verified", "phone_number", "metadata", "custom_attributes", "first_name", "last_name", "preferred_username", "phone_number_verified", "picture", "groups", "gender", "external_identities")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -158,6 +160,7 @@ class UserProfile(_message.Message):
     PICTURE_FIELD_NUMBER: _ClassVar[int]
     GROUPS_FIELD_NUMBER: _ClassVar[int]
     GENDER_FIELD_NUMBER: _ClassVar[int]
+    EXTERNAL_IDENTITIES_FIELD_NUMBER: _ClassVar[int]
     id: str
     given_name: str
     family_name: str
@@ -174,4 +177,25 @@ class UserProfile(_message.Message):
     picture: str
     groups: _containers.RepeatedScalarFieldContainer[str]
     gender: str
-    def __init__(self, id: _Optional[str] = ..., given_name: _Optional[str] = ..., family_name: _Optional[str] = ..., name: _Optional[str] = ..., locale: _Optional[str] = ..., email_verified: bool = ..., phone_number: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., custom_attributes: _Optional[_Mapping[str, str]] = ..., first_name: _Optional[str] = ..., last_name: _Optional[str] = ..., preferred_username: _Optional[str] = ..., phone_number_verified: bool = ..., picture: _Optional[str] = ..., groups: _Optional[_Iterable[str]] = ..., gender: _Optional[str] = ...) -> None: ...
+    external_identities: _containers.RepeatedCompositeFieldContainer[ExternalIdentity]
+    def __init__(self, id: _Optional[str] = ..., given_name: _Optional[str] = ..., family_name: _Optional[str] = ..., name: _Optional[str] = ..., locale: _Optional[str] = ..., email_verified: bool = ..., phone_number: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., custom_attributes: _Optional[_Mapping[str, str]] = ..., first_name: _Optional[str] = ..., last_name: _Optional[str] = ..., preferred_username: _Optional[str] = ..., phone_number_verified: bool = ..., picture: _Optional[str] = ..., groups: _Optional[_Iterable[str]] = ..., gender: _Optional[str] = ..., external_identities: _Optional[_Iterable[_Union[ExternalIdentity, _Mapping]]] = ...) -> None: ...
+
+class ExternalIdentity(_message.Message):
+    __slots__ = ("connection_id", "connection_type", "connection_provider", "connection_user_id", "is_social", "last_login_time", "created_time", "last_synced_time")
+    CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_TYPE_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_PROVIDER_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_USER_ID_FIELD_NUMBER: _ClassVar[int]
+    IS_SOCIAL_FIELD_NUMBER: _ClassVar[int]
+    LAST_LOGIN_TIME_FIELD_NUMBER: _ClassVar[int]
+    CREATED_TIME_FIELD_NUMBER: _ClassVar[int]
+    LAST_SYNCED_TIME_FIELD_NUMBER: _ClassVar[int]
+    connection_id: str
+    connection_type: str
+    connection_provider: IdentityProviderType
+    connection_user_id: str
+    is_social: bool
+    last_login_time: _timestamp_pb2.Timestamp
+    created_time: _timestamp_pb2.Timestamp
+    last_synced_time: _timestamp_pb2.Timestamp
+    def __init__(self, connection_id: _Optional[str] = ..., connection_type: _Optional[str] = ..., connection_provider: _Optional[_Union[IdentityProviderType, str]] = ..., connection_user_id: _Optional[str] = ..., is_social: bool = ..., last_login_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., created_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., last_synced_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...

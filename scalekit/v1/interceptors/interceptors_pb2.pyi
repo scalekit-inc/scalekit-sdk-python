@@ -27,6 +27,7 @@ class TriggerPoint(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     PRE_SESSION_CREATION: _ClassVar[TriggerPoint]
     PRE_USER_INVITATION: _ClassVar[TriggerPoint]
     PRE_M2M_TOKEN_CREATION: _ClassVar[TriggerPoint]
+    ACCESS_TOKEN_CREATION: _ClassVar[TriggerPoint]
 
 class InterceptorType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
@@ -56,6 +57,7 @@ PRE_SIGNUP: TriggerPoint
 PRE_SESSION_CREATION: TriggerPoint
 PRE_USER_INVITATION: TriggerPoint
 PRE_M2M_TOKEN_CREATION: TriggerPoint
+ACCESS_TOKEN_CREATION: TriggerPoint
 INTERCEPTOR_TYPE_UNSPECIFIED: InterceptorType
 AUTH: InterceptorType
 FAILURE_POLICY_UNSPECIFIED: FailurePolicy
