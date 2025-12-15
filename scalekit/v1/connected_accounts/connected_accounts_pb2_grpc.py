@@ -55,43 +55,49 @@ class ConnectedAccountServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def ListConnectedAccounts(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """List Connected Accounts
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def SearchConnectedAccounts(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Search Connected Accounts
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def CreateConnectedAccount(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Create Connected Account
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def UpdateConnectedAccount(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Update Connected Account
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def DeleteConnectedAccount(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Delete Connected Account
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def GetMagicLinkForConnectedAccount(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Generate Magic Link for Account Connection
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def GetConnectedAccountAuth(self, request, context):
-        """this will return the auth details for a connected account by its identifier
+        """Get Connected Account Authentication Details
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')

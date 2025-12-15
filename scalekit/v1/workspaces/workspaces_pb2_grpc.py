@@ -75,6 +75,16 @@ class WorkspaceServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.GetProductCatalogRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.GetProductCatalogResponse.FromString,
                 )
+        self.AddSubscription = channel.unary_unary(
+                '/scalekit.v1.workspaces.WorkspaceService/AddSubscription',
+                request_serializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.AddSubscriptionRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.AddSubscriptionResponse.FromString,
+                )
+        self.CreateCheckoutSession = channel.unary_unary(
+                '/scalekit.v1.workspaces.WorkspaceService/CreateCheckoutSession',
+                request_serializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.CreateCheckoutSessionRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.CreateCheckoutSessionResponse.FromString,
+                )
 
 
 class WorkspaceServiceServicer(object):
@@ -135,19 +145,111 @@ class WorkspaceServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def GetBillingInfo(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Retrieves current billing information for the workspace.
+        Primary action: Provide a consolidated snapshot of billing state for display in billing dashboards/settings.
+        Use cases: Call on workspace dashboard load or billing settings view to show payment method, plan, and invoice status.
+        Request: GetBillingInfoRequest (must include workspace context/session); no pagination.
+        Response: GetBillingInfoResponse:
+        - payment_methods: list of saved payment instruments (e.g., card, ACH) with brand/type, last4, expiry (cards), bank name (ACH), and is_default flag.
+        - subscription: current plan/product, add-ons, status (active, past_due, canceled), billing cadence (monthly/annual), and next_renewal_at.
+        - billing_period: current invoice period window (billing_start_date, billing_end_date) for prorations and usage aggregation.
+        - last_invoice: summary of the most recent finalized invoice (number/id, issue_date, due_date, status, total_amount, currency).
+        - current_invoice_preview: snapshot of the in-progress period totals/estimates (non-final), including subtotal, taxes (if applicable), discounts/credits, and projected total.
+        Behavior notes:
+        - All amounts are returned in minor currency units with accompanying currency code.
+        - current_invoice_preview is not a finalized invoice and may change until the period closes.
+        - payment_methods indicate availability and default selection; use is_default to preselect for checkout or updates.
+        - Use billing_period dates to compute prorated changes when updating plans mid-cycle.
+
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def GetProductUsage(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Retrieves current product usage and tiered pricing for the current preview billing period.
+        Primary action: Provide dynamic, in-period usage metrics and per-product pricing breakdown for charge preview.
+        Use cases: Show customers an estimate of charges before final invoicing; display usage details per product/feature.
+        Request: GetProductUsageRequest (workspace context/session); supports filtering by product/feature where applicable.
+        Response: GetProductUsageResponse:
+        - line_items: per-product entries with usage counts (units), measurement granularity (e.g., requests, seats, GB), and aggregation window.
+        - pricing_tiers: tiered structure for each line item (thresholds, unit_price per tier, effective applied tier), and computed effective_price.
+        - totals: preview period monetary amounts (subtotal, taxes, discounts/credits, total) in minor units with currency.
+        - notes: indicators for metered vs seat-based products, and whether usage is still accumulating.
+        Behavior and differences vs GetProductCatalog:
+        - Invoice preview vs final: values are estimates until the billing period closes; final invoice may differ due to late-reported usage or adjustments.
+        - Dynamic vs static: GetProductUsage reflects actual/accumulating usage and applied tiers for the current period; GetProductCatalog exposes static product/pricing definitions without usage.
+        - Use pricing_tiers and effective_price to explain how the preview total was derived per product (including cross-tier allocations).
+        - Late or batched usage may update line_items before finalization; clients should refresh periodically for up-to-date previews.
+        Returns payment methods, plan, last invoice, current invoice period, etc.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def GetProductCatalog(self, request, context):
         """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def AddSubscription(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def CreateCheckoutSession(self, request, context):
+        """Creates a checkout session for the current workspace's billing operations.
+        Primary action: Establish a client-facing checkout experience to start, update, or complete billing
+        actions such as subscriptions, plan changes, trials, add-ons, and one-time payments.
+
+        Use cases:
+        - Initiate payment collection when upgrading/downgrading plans or adding paid features.
+        - Set up a new subscription or resume an incomplete payment.
+        - Collect payment method for future charges (setup mode) prior to enabling paid features.
+        - Start a one-time payment flow for metered usage or add-on purchases.
+
+        Request (CreateCheckoutSessionRequest):
+        - mode: Required. One of {SUBSCRIPTION | PAYMENT | SETUP}. Determines the billing flow:
+        * SUBSCRIPTION: Creates/updates a workspace subscription; may require payment method.
+        * PAYMENT: Creates a one-time payment intent for immediate charge.
+        * SETUP: Collects a payment method for future use without immediate charge.
+        - items: Optional. Line items or price identifiers; required when mode=SUBSCRIPTION or PAYMENT.
+        Each item must include a valid price_id and quantity > 0. Prices must be active.
+        - return_url: Optional. URL to redirect the client after successful completion or cancellation.
+        Must be HTTPS and belong to an allowed domain; max length constraints apply.
+        - success_url: Optional. Explicit success redirect for hosted checkout; must be HTTPS and allowed.
+        - ui_mode: Optional. One of {EMBEDDED | HOSTED | CUSTOM}. Controls client integration modality.
+        - metadata: Optional. Key-value pairs (string) for audit/correlation; keys/values length limited.
+        - customer_id / workspace_id: Optional. If omitted, inferred from the authenticated workspace session.
+        Validation rules:
+        - Authentication: Requires WORKSPACE_SESSION_CLIENT. Caller must be authorized for billing actions.
+        - For SUBSCRIPTION/PAYMENT: items must be present and valid; unsupported/archived prices are rejected.
+        - URLs (return_url/success_url) must match allowed origins; invalid URLs are rejected.
+        - Only one active session per workspace per identical parameter set is allowed (idempotency).
+
+        Response (CreateCheckoutSessionResponse):
+        - session_id: Identifier of the created checkout session; use to query status or resume flow.
+        - client_secret: Secret for client-side SDKs (e.g., embedded UI). Treat as sensitive; never log.
+        - url: Hosted checkout URL when ui_mode=HOSTED or CUSTOM; omitted for EMBEDDED flows.
+        - mode: Echoes the requested mode for clarity.
+        - expires_at: UTC timestamp when the session becomes invalid (e.g., 24 hours from creation).
+        - status: Initial session status (e.g., CREATED). May be polled for updates via billing status RPCs.
+
+        Behavior notes:
+        - Idempotency: Repeated calls with identical parameters within the expiration window return
+        the existing session (same session_id). Parameter differences create new sessions.
+        - Security: client_secret is required for embedded checkout initialization; do not expose publicly.
+        - URL population: url is provided only for HOSTED/CUSTOM UI modes; EMBEDDED flows rely on client_secret.
+        - Expiration: Sessions expire after a fixed window; clients must complete the flow before expires_at.
+        - Retries: Safe to retry on transient errors; if parameters match, the same session is returned.
+
+        Side effects:
+        - Creates a Stripe Checkout/Payment/Setup Session depending on mode and items.
+        - May create or update customer records, subscriptions, payment intents, and attach payment methods.
+        - Hosted session URLs are short-lived and will be invalid after expiration.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -214,6 +316,16 @@ def add_WorkspaceServiceServicer_to_server(servicer, server):
                     servicer.GetProductCatalog,
                     request_deserializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.GetProductCatalogRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.GetProductCatalogResponse.SerializeToString,
+            ),
+            'AddSubscription': grpc.unary_unary_rpc_method_handler(
+                    servicer.AddSubscription,
+                    request_deserializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.AddSubscriptionRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.AddSubscriptionResponse.SerializeToString,
+            ),
+            'CreateCheckoutSession': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateCheckoutSession,
+                    request_deserializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.CreateCheckoutSessionRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.CreateCheckoutSessionResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -426,5 +538,39 @@ class WorkspaceService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.workspaces.WorkspaceService/GetProductCatalog',
             scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.GetProductCatalogRequest.SerializeToString,
             scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.GetProductCatalogResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def AddSubscription(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.workspaces.WorkspaceService/AddSubscription',
+            scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.AddSubscriptionRequest.SerializeToString,
+            scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.AddSubscriptionResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def CreateCheckoutSession(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.workspaces.WorkspaceService/CreateCheckoutSession',
+            scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.CreateCheckoutSessionRequest.SerializeToString,
+            scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.CreateCheckoutSessionResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

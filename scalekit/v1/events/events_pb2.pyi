@@ -94,6 +94,7 @@ class ObjectType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     OrgMembershipEvent: _ClassVar[ObjectType]
     UserLoginEvent: _ClassVar[ObjectType]
     UserLogoutEvent: _ClassVar[ObjectType]
+    ConnectedAccount: _ClassVar[ObjectType]
 ACTOR_UNSPECIFIED: EventActor
 HUMAN: EventActor
 MACHINE: EventActor
@@ -158,6 +159,7 @@ Permission: ObjectType
 OrgMembershipEvent: ObjectType
 UserLoginEvent: ObjectType
 UserLogoutEvent: ObjectType
+ConnectedAccount: ObjectType
 
 class SendCustomEventRequest(_message.Message):
     __slots__ = ("event_type", "event")
@@ -335,7 +337,7 @@ class IEventFilter(_message.Message):
     def __init__(self, event_types: _Optional[_Iterable[str]] = ..., start_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., end_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., tenant_id: _Optional[str] = ..., target: _Optional[_Union[Target, _Mapping]] = ..., source: _Optional[_Union[Source, str]] = ..., metadata: _Optional[_Mapping[str, str]] = ..., internal_events: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class EventFilter(_message.Message):
-    __slots__ = ("event_types", "start_time", "end_time", "organization_id", "source", "auth_request_id", "interceptor_id", "interceptor_status", "interceptor_decision")
+    __slots__ = ("event_types", "start_time", "end_time", "organization_id", "source", "auth_request_id", "interceptor_id", "interceptor_status", "interceptor_decision", "connection_id", "connected_account_id")
     EVENT_TYPES_FIELD_NUMBER: _ClassVar[int]
     START_TIME_FIELD_NUMBER: _ClassVar[int]
     END_TIME_FIELD_NUMBER: _ClassVar[int]
@@ -345,6 +347,8 @@ class EventFilter(_message.Message):
     INTERCEPTOR_ID_FIELD_NUMBER: _ClassVar[int]
     INTERCEPTOR_STATUS_FIELD_NUMBER: _ClassVar[int]
     INTERCEPTOR_DECISION_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
+    CONNECTED_ACCOUNT_ID_FIELD_NUMBER: _ClassVar[int]
     event_types: _containers.RepeatedScalarFieldContainer[str]
     start_time: _timestamp_pb2.Timestamp
     end_time: _timestamp_pb2.Timestamp
@@ -354,7 +358,9 @@ class EventFilter(_message.Message):
     interceptor_id: str
     interceptor_status: str
     interceptor_decision: str
-    def __init__(self, event_types: _Optional[_Iterable[str]] = ..., start_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., end_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., organization_id: _Optional[str] = ..., source: _Optional[_Union[Source, str]] = ..., auth_request_id: _Optional[str] = ..., interceptor_id: _Optional[str] = ..., interceptor_status: _Optional[str] = ..., interceptor_decision: _Optional[str] = ...) -> None: ...
+    connection_id: str
+    connected_account_id: str
+    def __init__(self, event_types: _Optional[_Iterable[str]] = ..., start_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., end_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., organization_id: _Optional[str] = ..., source: _Optional[_Union[Source, str]] = ..., auth_request_id: _Optional[str] = ..., interceptor_id: _Optional[str] = ..., interceptor_status: _Optional[str] = ..., interceptor_decision: _Optional[str] = ..., connection_id: _Optional[str] = ..., connected_account_id: _Optional[str] = ...) -> None: ...
 
 class ScalekitEvent(_message.Message):
     __slots__ = ("spec_version", "id", "type", "occurred_at", "environment_id", "organization_id", "object", "data", "display_name")
