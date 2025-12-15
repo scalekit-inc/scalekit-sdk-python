@@ -73,18 +73,21 @@ class DomainClient:
             ),
         )
 
-    def list_domains(self, organization_id: str) -> ListDomainResponse:
+    def list_domains(self, organization_id: str, domain_type: Optional[Union[str, "DomainType"]] = None) -> ListDomainResponse:
         """
         Method to list existing domains
 
         :param organization_id  : Organization id to list domains for
         :type                   : ``` str ```
+        :param domain_type      : Type of domain ("ALLOWED_EMAIL_DOMAIN", "ORGANIZATION_DOMAIN", or "UNSPECIFIED")
+        :type                   : ``` str or DomainType ```
         :returns
             List Domain Response
         """
+        domain_type_enum = _convert_domain_type(domain_type)
         return self.core_client.grpc_exec(
             self.domain_service.ListDomains.with_call,
-            ListDomainRequest(organization_id=organization_id),
+            ListDomainRequest(organization_id=organization_id, domain_type=domain_type_enum),
             )
 
     def get_domain(self, organization_id: str, domain_id: str) -> GetDomainResponse:
