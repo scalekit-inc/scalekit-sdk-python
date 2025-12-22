@@ -1,10 +1,12 @@
 from buf.validate import validate_pb2 as _validate_pb2
 from google.api import annotations_pb2 as _annotations_pb2
 from google.api import field_behavior_pb2 as _field_behavior_pb2
+from google.api import visibility_pb2 as _visibility_pb2
 from google.protobuf import any_pb2 as _any_pb2
 from google.protobuf import duration_pb2 as _duration_pb2
 from google.protobuf import empty_pb2 as _empty_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
+from protoc_gen_openapiv2.options import annotations_pb2 as _annotations_pb2_1
 from scalekit.v1.commons import commons_pb2 as _commons_pb2
 from scalekit.v1.options import options_pb2 as _options_pb2
 from google.protobuf.internal import containers as _containers
@@ -36,6 +38,8 @@ class PaymentType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     CARD: _ClassVar[PaymentType]
     BANK_ACCOUNT: _ClassVar[PaymentType]
     OFFLINE: _ClassVar[PaymentType]
+    LINK: _ClassVar[PaymentType]
+    PAYPAL: _ClassVar[PaymentType]
 
 class PaymentMethodStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
@@ -56,6 +60,8 @@ PAYMENT_TYPE_UNSPECIFIED: PaymentType
 CARD: PaymentType
 BANK_ACCOUNT: PaymentType
 OFFLINE: PaymentType
+LINK: PaymentType
+PAYPAL: PaymentType
 PAYMENT_METHOD_STATUS_UNSPECIFIED: PaymentMethodStatus
 PAYMENT_METHOD_ACTIVE: PaymentMethodStatus
 PAYMENT_METHOD_EXPIRED: PaymentMethodStatus
@@ -72,7 +78,7 @@ class WorkspaceExtendedInfo(_message.Message):
     def __init__(self, payment_overdue: bool = ..., payment_method_present: bool = ..., free_quota_exceeded: bool = ...) -> None: ...
 
 class Workspace(_message.Message):
-    __slots__ = ("id", "create_time", "update_time", "display_name", "region_code", "extended_info", "billing_customer_id", "billing_subscription_id")
+    __slots__ = ("id", "create_time", "update_time", "display_name", "region_code", "extended_info", "billing_customer_id", "billing_subscription_id", "auth_domain")
     ID_FIELD_NUMBER: _ClassVar[int]
     CREATE_TIME_FIELD_NUMBER: _ClassVar[int]
     UPDATE_TIME_FIELD_NUMBER: _ClassVar[int]
@@ -81,6 +87,7 @@ class Workspace(_message.Message):
     EXTENDED_INFO_FIELD_NUMBER: _ClassVar[int]
     BILLING_CUSTOMER_ID_FIELD_NUMBER: _ClassVar[int]
     BILLING_SUBSCRIPTION_ID_FIELD_NUMBER: _ClassVar[int]
+    AUTH_DOMAIN_FIELD_NUMBER: _ClassVar[int]
     id: str
     create_time: _timestamp_pb2.Timestamp
     update_time: _timestamp_pb2.Timestamp
@@ -89,7 +96,8 @@ class Workspace(_message.Message):
     extended_info: WorkspaceExtendedInfo
     billing_customer_id: str
     billing_subscription_id: str
-    def __init__(self, id: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., display_name: _Optional[str] = ..., region_code: _Optional[_Union[_commons_pb2.RegionCode, str]] = ..., extended_info: _Optional[_Union[WorkspaceExtendedInfo, _Mapping]] = ..., billing_customer_id: _Optional[str] = ..., billing_subscription_id: _Optional[str] = ...) -> None: ...
+    auth_domain: str
+    def __init__(self, id: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., display_name: _Optional[str] = ..., region_code: _Optional[_Union[_commons_pb2.RegionCode, str]] = ..., extended_info: _Optional[_Union[WorkspaceExtendedInfo, _Mapping]] = ..., billing_customer_id: _Optional[str] = ..., billing_subscription_id: _Optional[str] = ..., auth_domain: _Optional[str] = ...) -> None: ...
 
 class CreateWorkspace(_message.Message):
     __slots__ = ("email", "company")
@@ -172,10 +180,12 @@ class GetWorkspaceResponse(_message.Message):
     def __init__(self, workspace: _Optional[_Union[Workspace, _Mapping]] = ...) -> None: ...
 
 class GetBillingPortalRequest(_message.Message):
-    __slots__ = ("id",)
+    __slots__ = ("id", "flow_type")
     ID_FIELD_NUMBER: _ClassVar[int]
+    FLOW_TYPE_FIELD_NUMBER: _ClassVar[int]
     id: str
-    def __init__(self, id: _Optional[str] = ...) -> None: ...
+    flow_type: str
+    def __init__(self, id: _Optional[str] = ..., flow_type: _Optional[str] = ...) -> None: ...
 
 class GetBillingPortalResponse(_message.Message):
     __slots__ = ("url", "id")
@@ -228,8 +238,10 @@ class Subscription(_message.Message):
     def __init__(self, id: _Optional[str] = ..., status: _Optional[str] = ...) -> None: ...
 
 class GetBillingInfoRequest(_message.Message):
-    __slots__ = ()
-    def __init__(self) -> None: ...
+    __slots__ = ("only_addons",)
+    ONLY_ADDONS_FIELD_NUMBER: _ClassVar[int]
+    only_addons: bool
+    def __init__(self, only_addons: bool = ...) -> None: ...
 
 class GetBillingInfoResponse(_message.Message):
     __slots__ = ("billing_info",)
@@ -238,22 +250,20 @@ class GetBillingInfoResponse(_message.Message):
     def __init__(self, billing_info: _Optional[_Union[BillingInfo, _Mapping]] = ...) -> None: ...
 
 class BillingInfo(_message.Message):
-    __slots__ = ("plan_name", "subscriptions", "current_invoice", "payment_method", "billing_contact_info", "addons", "last_invoice")
+    __slots__ = ("plan_name", "current_invoice", "payment_method", "billing_contact_info", "addons", "last_invoice")
     PLAN_NAME_FIELD_NUMBER: _ClassVar[int]
-    SUBSCRIPTIONS_FIELD_NUMBER: _ClassVar[int]
     CURRENT_INVOICE_FIELD_NUMBER: _ClassVar[int]
     PAYMENT_METHOD_FIELD_NUMBER: _ClassVar[int]
     BILLING_CONTACT_INFO_FIELD_NUMBER: _ClassVar[int]
     ADDONS_FIELD_NUMBER: _ClassVar[int]
     LAST_INVOICE_FIELD_NUMBER: _ClassVar[int]
     plan_name: str
-    subscriptions: _containers.RepeatedCompositeFieldContainer[BillingSubscription]
     current_invoice: CurrentInvoice
     payment_method: PaymentMethod
     billing_contact_info: BillingContactInfo
     addons: _containers.RepeatedCompositeFieldContainer[Addon]
     last_invoice: LastInvoice
-    def __init__(self, plan_name: _Optional[str] = ..., subscriptions: _Optional[_Iterable[_Union[BillingSubscription, _Mapping]]] = ..., current_invoice: _Optional[_Union[CurrentInvoice, _Mapping]] = ..., payment_method: _Optional[_Union[PaymentMethod, _Mapping]] = ..., billing_contact_info: _Optional[_Union[BillingContactInfo, _Mapping]] = ..., addons: _Optional[_Iterable[_Union[Addon, _Mapping]]] = ..., last_invoice: _Optional[_Union[LastInvoice, _Mapping]] = ...) -> None: ...
+    def __init__(self, plan_name: _Optional[str] = ..., current_invoice: _Optional[_Union[CurrentInvoice, _Mapping]] = ..., payment_method: _Optional[_Union[PaymentMethod, _Mapping]] = ..., billing_contact_info: _Optional[_Union[BillingContactInfo, _Mapping]] = ..., addons: _Optional[_Iterable[_Union[Addon, _Mapping]]] = ..., last_invoice: _Optional[_Union[LastInvoice, _Mapping]] = ...) -> None: ...
 
 class BillingSubscription(_message.Message):
     __slots__ = ("id", "status", "start_date", "end_date", "amount", "currency", "items")
@@ -311,7 +321,7 @@ class SubscriptionPrice(_message.Message):
     TOTAL_USAGE_FIELD_NUMBER: _ClassVar[int]
     AGGREGATION_METHOD_FIELD_NUMBER: _ClassVar[int]
     id: str
-    amount: int
+    amount: float
     type: str
     interval: str
     billing_scheme: str
@@ -319,31 +329,35 @@ class SubscriptionPrice(_message.Message):
     tiers: _containers.RepeatedCompositeFieldContainer[PriceTier]
     total_usage: int
     aggregation_method: str
-    def __init__(self, id: _Optional[str] = ..., amount: _Optional[int] = ..., type: _Optional[str] = ..., interval: _Optional[str] = ..., billing_scheme: _Optional[str] = ..., usage_type: _Optional[str] = ..., tiers: _Optional[_Iterable[_Union[PriceTier, _Mapping]]] = ..., total_usage: _Optional[int] = ..., aggregation_method: _Optional[str] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., amount: _Optional[float] = ..., type: _Optional[str] = ..., interval: _Optional[str] = ..., billing_scheme: _Optional[str] = ..., usage_type: _Optional[str] = ..., tiers: _Optional[_Iterable[_Union[PriceTier, _Mapping]]] = ..., total_usage: _Optional[int] = ..., aggregation_method: _Optional[str] = ...) -> None: ...
 
 class PriceTier(_message.Message):
     __slots__ = ("up_to", "amount")
     UP_TO_FIELD_NUMBER: _ClassVar[int]
     AMOUNT_FIELD_NUMBER: _ClassVar[int]
     up_to: int
-    amount: int
-    def __init__(self, up_to: _Optional[int] = ..., amount: _Optional[int] = ...) -> None: ...
+    amount: float
+    def __init__(self, up_to: _Optional[int] = ..., amount: _Optional[float] = ...) -> None: ...
 
 class CurrentInvoice(_message.Message):
-    __slots__ = ("id", "amount", "currency", "status", "due_date", "issued_date")
+    __slots__ = ("id", "amount", "currency", "status", "due_date", "issued_date", "billing_start_date", "billing_end_date")
     ID_FIELD_NUMBER: _ClassVar[int]
     AMOUNT_FIELD_NUMBER: _ClassVar[int]
     CURRENCY_FIELD_NUMBER: _ClassVar[int]
     STATUS_FIELD_NUMBER: _ClassVar[int]
     DUE_DATE_FIELD_NUMBER: _ClassVar[int]
     ISSUED_DATE_FIELD_NUMBER: _ClassVar[int]
+    BILLING_START_DATE_FIELD_NUMBER: _ClassVar[int]
+    BILLING_END_DATE_FIELD_NUMBER: _ClassVar[int]
     id: str
     amount: float
     currency: str
     status: InvoiceStatus
     due_date: _timestamp_pb2.Timestamp
     issued_date: _timestamp_pb2.Timestamp
-    def __init__(self, id: _Optional[str] = ..., amount: _Optional[float] = ..., currency: _Optional[str] = ..., status: _Optional[_Union[InvoiceStatus, str]] = ..., due_date: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., issued_date: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+    billing_start_date: _timestamp_pb2.Timestamp
+    billing_end_date: _timestamp_pb2.Timestamp
+    def __init__(self, id: _Optional[str] = ..., amount: _Optional[float] = ..., currency: _Optional[str] = ..., status: _Optional[_Union[InvoiceStatus, str]] = ..., due_date: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., issued_date: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., billing_start_date: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., billing_end_date: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
 class LastInvoice(_message.Message):
     __slots__ = ("id", "amount", "currency", "status", "due_date", "issued_date")
@@ -362,18 +376,29 @@ class LastInvoice(_message.Message):
     def __init__(self, id: _Optional[str] = ..., amount: _Optional[float] = ..., currency: _Optional[str] = ..., status: _Optional[_Union[InvoiceStatus, str]] = ..., due_date: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., issued_date: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
 class PaymentMethod(_message.Message):
-    __slots__ = ("id", "type", "account_number", "account_type", "status")
+    __slots__ = ("id", "type", "account_number", "account_type", "status", "account_name", "payment_info")
+    class PaymentInfoEntry(_message.Message):
+        __slots__ = ("key", "value")
+        KEY_FIELD_NUMBER: _ClassVar[int]
+        VALUE_FIELD_NUMBER: _ClassVar[int]
+        key: str
+        value: str
+        def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
     ID_FIELD_NUMBER: _ClassVar[int]
     TYPE_FIELD_NUMBER: _ClassVar[int]
     ACCOUNT_NUMBER_FIELD_NUMBER: _ClassVar[int]
     ACCOUNT_TYPE_FIELD_NUMBER: _ClassVar[int]
     STATUS_FIELD_NUMBER: _ClassVar[int]
+    ACCOUNT_NAME_FIELD_NUMBER: _ClassVar[int]
+    PAYMENT_INFO_FIELD_NUMBER: _ClassVar[int]
     id: str
     type: PaymentType
     account_number: str
     account_type: str
     status: PaymentMethodStatus
-    def __init__(self, id: _Optional[str] = ..., type: _Optional[_Union[PaymentType, str]] = ..., account_number: _Optional[str] = ..., account_type: _Optional[str] = ..., status: _Optional[_Union[PaymentMethodStatus, str]] = ...) -> None: ...
+    account_name: str
+    payment_info: _containers.ScalarMap[str, str]
+    def __init__(self, id: _Optional[str] = ..., type: _Optional[_Union[PaymentType, str]] = ..., account_number: _Optional[str] = ..., account_type: _Optional[str] = ..., status: _Optional[_Union[PaymentMethodStatus, str]] = ..., account_name: _Optional[str] = ..., payment_info: _Optional[_Mapping[str, str]] = ...) -> None: ...
 
 class BillingContactInfo(_message.Message):
     __slots__ = ("name", "email", "line1", "line2", "city", "state", "postal_code", "country")
@@ -396,22 +421,20 @@ class BillingContactInfo(_message.Message):
     def __init__(self, name: _Optional[str] = ..., email: _Optional[str] = ..., line1: _Optional[str] = ..., line2: _Optional[str] = ..., city: _Optional[str] = ..., state: _Optional[str] = ..., postal_code: _Optional[str] = ..., country: _Optional[str] = ...) -> None: ...
 
 class Addon(_message.Message):
-    __slots__ = ("id", "name", "description", "features", "enabled", "price", "currency")
+    __slots__ = ("id", "name", "features", "enabled", "price", "currency")
     ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
-    DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     FEATURES_FIELD_NUMBER: _ClassVar[int]
     ENABLED_FIELD_NUMBER: _ClassVar[int]
     PRICE_FIELD_NUMBER: _ClassVar[int]
     CURRENCY_FIELD_NUMBER: _ClassVar[int]
     id: str
     name: str
-    description: str
     features: _containers.RepeatedScalarFieldContainer[str]
     enabled: bool
     price: float
     currency: str
-    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., features: _Optional[_Iterable[str]] = ..., enabled: bool = ..., price: _Optional[float] = ..., currency: _Optional[str] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., features: _Optional[_Iterable[str]] = ..., enabled: bool = ..., price: _Optional[float] = ..., currency: _Optional[str] = ...) -> None: ...
 
 class GetProductUsageRequest(_message.Message):
     __slots__ = ()
@@ -428,20 +451,24 @@ class GetProductUsageResponse(_message.Message):
     def __init__(self, products: _Optional[_Iterable[_Union[ProductUsage, _Mapping]]] = ..., total_amount: _Optional[float] = ..., currency: _Optional[str] = ...) -> None: ...
 
 class ProductUsage(_message.Message):
-    __slots__ = ("product_id", "product_name", "description", "tiers", "total_product_amount", "currency")
+    __slots__ = ("product_id", "product_name", "description", "tiers", "total_amount", "total_count", "currency", "aggregation_method")
     PRODUCT_ID_FIELD_NUMBER: _ClassVar[int]
     PRODUCT_NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     TIERS_FIELD_NUMBER: _ClassVar[int]
-    TOTAL_PRODUCT_AMOUNT_FIELD_NUMBER: _ClassVar[int]
+    TOTAL_AMOUNT_FIELD_NUMBER: _ClassVar[int]
+    TOTAL_COUNT_FIELD_NUMBER: _ClassVar[int]
     CURRENCY_FIELD_NUMBER: _ClassVar[int]
+    AGGREGATION_METHOD_FIELD_NUMBER: _ClassVar[int]
     product_id: str
     product_name: str
     description: str
     tiers: _containers.RepeatedCompositeFieldContainer[UsageTier]
-    total_product_amount: float
+    total_amount: float
+    total_count: float
     currency: str
-    def __init__(self, product_id: _Optional[str] = ..., product_name: _Optional[str] = ..., description: _Optional[str] = ..., tiers: _Optional[_Iterable[_Union[UsageTier, _Mapping]]] = ..., total_product_amount: _Optional[float] = ..., currency: _Optional[str] = ...) -> None: ...
+    aggregation_method: str
+    def __init__(self, product_id: _Optional[str] = ..., product_name: _Optional[str] = ..., description: _Optional[str] = ..., tiers: _Optional[_Iterable[_Union[UsageTier, _Mapping]]] = ..., total_amount: _Optional[float] = ..., total_count: _Optional[float] = ..., currency: _Optional[str] = ..., aggregation_method: _Optional[str] = ...) -> None: ...
 
 class UsageTier(_message.Message):
     __slots__ = ("tier_name", "current_count", "total_available_count", "price_for_current_tier", "currency", "is_free_tier")
@@ -519,11 +546,29 @@ class CatalogPrice(_message.Message):
     USAGE_TYPE_FIELD_NUMBER: _ClassVar[int]
     TIERS_FIELD_NUMBER: _ClassVar[int]
     id: str
-    amount: int
+    amount: float
     currency: str
     type: str
     interval: str
     billing_scheme: str
     usage_type: str
     tiers: _containers.RepeatedCompositeFieldContainer[PriceTier]
-    def __init__(self, id: _Optional[str] = ..., amount: _Optional[int] = ..., currency: _Optional[str] = ..., type: _Optional[str] = ..., interval: _Optional[str] = ..., billing_scheme: _Optional[str] = ..., usage_type: _Optional[str] = ..., tiers: _Optional[_Iterable[_Union[PriceTier, _Mapping]]] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., amount: _Optional[float] = ..., currency: _Optional[str] = ..., type: _Optional[str] = ..., interval: _Optional[str] = ..., billing_scheme: _Optional[str] = ..., usage_type: _Optional[str] = ..., tiers: _Optional[_Iterable[_Union[PriceTier, _Mapping]]] = ...) -> None: ...
+
+class AddSubscriptionRequest(_message.Message):
+    __slots__ = ("product_name", "product_id")
+    PRODUCT_NAME_FIELD_NUMBER: _ClassVar[int]
+    PRODUCT_ID_FIELD_NUMBER: _ClassVar[int]
+    product_name: str
+    product_id: str
+    def __init__(self, product_name: _Optional[str] = ..., product_id: _Optional[str] = ...) -> None: ...
+
+class AddSubscriptionResponse(_message.Message):
+    __slots__ = ("subscription_id", "product_id", "quantity")
+    SUBSCRIPTION_ID_FIELD_NUMBER: _ClassVar[int]
+    PRODUCT_ID_FIELD_NUMBER: _ClassVar[int]
+    QUANTITY_FIELD_NUMBER: _ClassVar[int]
+    subscription_id: str
+    product_id: str
+    quantity: int
+    def __init__(self, subscription_id: _Optional[str] = ..., product_id: _Optional[str] = ..., quantity: _Optional[int] = ...) -> None: ...

@@ -27,8 +27,8 @@ class AuthServiceStub(object):
                 )
         self.VerifyPasswordLessOtp = channel.unary_unary(
                 '/scalekit.v1.auth.AuthService/VerifyPasswordLessOtp',
-                request_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.VerifyPasswordLessRequest.SerializeToString,
-                response_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.VerifyPasswordLessResponse.FromString,
+                request_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.VerifyPasswordLessOtpRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.VerifyPasswordLessOtpResponse.FromString,
                 )
         self.ResendPasswordless = channel.unary_unary(
                 '/scalekit.v1.auth.AuthService/ResendPasswordless',
@@ -167,8 +167,8 @@ def add_AuthServiceServicer_to_server(servicer, server):
             ),
             'VerifyPasswordLessOtp': grpc.unary_unary_rpc_method_handler(
                     servicer.VerifyPasswordLessOtp,
-                    request_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.VerifyPasswordLessRequest.FromString,
-                    response_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.VerifyPasswordLessResponse.SerializeToString,
+                    request_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.VerifyPasswordLessOtpRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.VerifyPasswordLessOtpResponse.SerializeToString,
             ),
             'ResendPasswordless': grpc.unary_unary_rpc_method_handler(
                     servicer.ResendPasswordless,
@@ -271,8 +271,8 @@ class AuthService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.auth.AuthService/VerifyPasswordLessOtp',
-            scalekit_dot_v1_dot_auth_dot_auth__pb2.VerifyPasswordLessRequest.SerializeToString,
-            scalekit_dot_v1_dot_auth_dot_auth__pb2.VerifyPasswordLessResponse.FromString,
+            scalekit_dot_v1_dot_auth_dot_auth__pb2.VerifyPasswordLessOtpRequest.SerializeToString,
+            scalekit_dot_v1_dot_auth_dot_auth__pb2.VerifyPasswordLessOtpResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

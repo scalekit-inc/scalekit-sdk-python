@@ -94,6 +94,7 @@ class ObjectType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     OrgMembershipEvent: _ClassVar[ObjectType]
     UserLoginEvent: _ClassVar[ObjectType]
     UserLogoutEvent: _ClassVar[ObjectType]
+    ConnectedAccount: _ClassVar[ObjectType]
 ACTOR_UNSPECIFIED: EventActor
 HUMAN: EventActor
 MACHINE: EventActor
@@ -158,6 +159,7 @@ Permission: ObjectType
 OrgMembershipEvent: ObjectType
 UserLoginEvent: ObjectType
 UserLogoutEvent: ObjectType
+ConnectedAccount: ObjectType
 
 class SendCustomEventRequest(_message.Message):
     __slots__ = ("event_type", "event")

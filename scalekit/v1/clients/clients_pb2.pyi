@@ -57,7 +57,7 @@ class CreateResourceRequest(_message.Message):
     def __init__(self, resource: _Optional[_Union[CreateResource, _Mapping]] = ...) -> None: ...
 
 class CreateResource(_message.Message):
-    __slots__ = ("resource_type", "name", "description", "resource_uri", "access_token_expiry", "refresh_token_expiry", "disable_dynamic_client_registration", "logo_uri", "provider", "resource_id", "scopes")
+    __slots__ = ("resource_type", "name", "description", "resource_uri", "access_token_expiry", "refresh_token_expiry", "disable_dynamic_client_registration", "logo_uri", "provider", "resource_id", "scopes", "intersect_scopes_user_permission")
     RESOURCE_TYPE_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
@@ -69,6 +69,7 @@ class CreateResource(_message.Message):
     PROVIDER_FIELD_NUMBER: _ClassVar[int]
     RESOURCE_ID_FIELD_NUMBER: _ClassVar[int]
     SCOPES_FIELD_NUMBER: _ClassVar[int]
+    INTERSECT_SCOPES_USER_PERMISSION_FIELD_NUMBER: _ClassVar[int]
     resource_type: ResourceType
     name: str
     description: str
@@ -80,7 +81,8 @@ class CreateResource(_message.Message):
     provider: str
     resource_id: str
     scopes: _containers.RepeatedScalarFieldContainer[str]
-    def __init__(self, resource_type: _Optional[_Union[ResourceType, str]] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., resource_uri: _Optional[str] = ..., access_token_expiry: _Optional[int] = ..., refresh_token_expiry: _Optional[int] = ..., disable_dynamic_client_registration: bool = ..., logo_uri: _Optional[str] = ..., provider: _Optional[str] = ..., resource_id: _Optional[str] = ..., scopes: _Optional[_Iterable[str]] = ...) -> None: ...
+    intersect_scopes_user_permission: bool
+    def __init__(self, resource_type: _Optional[_Union[ResourceType, str]] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., resource_uri: _Optional[str] = ..., access_token_expiry: _Optional[int] = ..., refresh_token_expiry: _Optional[int] = ..., disable_dynamic_client_registration: bool = ..., logo_uri: _Optional[str] = ..., provider: _Optional[str] = ..., resource_id: _Optional[str] = ..., scopes: _Optional[_Iterable[str]] = ..., intersect_scopes_user_permission: bool = ...) -> None: ...
 
 class ResourceClient(_message.Message):
     __slots__ = ("name", "description", "scopes", "audience", "custom_claims", "expiry", "redirect_uris")
@@ -159,7 +161,7 @@ class Application(_message.Message):
     def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., resource_id: _Optional[str] = ..., description: _Optional[str] = ..., application_type: _Optional[_Union[ResourceType, str]] = ..., disable_dynamic_client_registration: bool = ..., logo_uri: _Optional[str] = ..., access_token_expiry: _Optional[int] = ..., refresh_token_expiry: _Optional[int] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., provider: _Optional[str] = ...) -> None: ...
 
 class Resource(_message.Message):
-    __slots__ = ("id", "name", "resource_uri", "description", "resource_type", "disable_dynamic_client_registration", "logo_uri", "access_token_expiry", "refresh_token_expiry", "create_time", "update_time", "provider", "protected_metadata", "protected_metadata_uri", "resource_id", "scopes", "connection_details", "disallow_connection_update")
+    __slots__ = ("id", "name", "resource_uri", "description", "resource_type", "disable_dynamic_client_registration", "logo_uri", "access_token_expiry", "refresh_token_expiry", "create_time", "update_time", "provider", "protected_metadata", "protected_metadata_uri", "resource_id", "scopes", "connection_details", "disallow_connection_update", "intersect_scopes_user_permission")
     ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     RESOURCE_URI_FIELD_NUMBER: _ClassVar[int]
@@ -178,6 +180,7 @@ class Resource(_message.Message):
     SCOPES_FIELD_NUMBER: _ClassVar[int]
     CONNECTION_DETAILS_FIELD_NUMBER: _ClassVar[int]
     DISALLOW_CONNECTION_UPDATE_FIELD_NUMBER: _ClassVar[int]
+    INTERSECT_SCOPES_USER_PERMISSION_FIELD_NUMBER: _ClassVar[int]
     id: str
     name: str
     resource_uri: str
@@ -196,7 +199,8 @@ class Resource(_message.Message):
     scopes: _containers.RepeatedCompositeFieldContainer[Scope]
     connection_details: ResourceConnection
     disallow_connection_update: bool
-    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., resource_uri: _Optional[str] = ..., description: _Optional[str] = ..., resource_type: _Optional[_Union[ResourceType, str]] = ..., disable_dynamic_client_registration: bool = ..., logo_uri: _Optional[str] = ..., access_token_expiry: _Optional[int] = ..., refresh_token_expiry: _Optional[int] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., provider: _Optional[str] = ..., protected_metadata: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., protected_metadata_uri: _Optional[str] = ..., resource_id: _Optional[str] = ..., scopes: _Optional[_Iterable[_Union[Scope, _Mapping]]] = ..., connection_details: _Optional[_Union[ResourceConnection, _Mapping]] = ..., disallow_connection_update: bool = ...) -> None: ...
+    intersect_scopes_user_permission: bool
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., resource_uri: _Optional[str] = ..., description: _Optional[str] = ..., resource_type: _Optional[_Union[ResourceType, str]] = ..., disable_dynamic_client_registration: bool = ..., logo_uri: _Optional[str] = ..., access_token_expiry: _Optional[int] = ..., refresh_token_expiry: _Optional[int] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., provider: _Optional[str] = ..., protected_metadata: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., protected_metadata_uri: _Optional[str] = ..., resource_id: _Optional[str] = ..., scopes: _Optional[_Iterable[_Union[Scope, _Mapping]]] = ..., connection_details: _Optional[_Union[ResourceConnection, _Mapping]] = ..., disallow_connection_update: bool = ..., intersect_scopes_user_permission: bool = ...) -> None: ...
 
 class RegisterClientRequest(_message.Message):
     __slots__ = ("res_id", "client")
@@ -269,14 +273,16 @@ class ListResourcesRequest(_message.Message):
     def __init__(self, resource_type: _Optional[_Union[ResourceType, str]] = ..., page_token: _Optional[str] = ..., page_size: _Optional[int] = ...) -> None: ...
 
 class ListResourcesResponse(_message.Message):
-    __slots__ = ("total_size", "next_page_token", "resources")
+    __slots__ = ("total_size", "next_page_token", "resources", "prev_page_token")
     TOTAL_SIZE_FIELD_NUMBER: _ClassVar[int]
     NEXT_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
     RESOURCES_FIELD_NUMBER: _ClassVar[int]
+    PREV_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
     total_size: int
     next_page_token: str
     resources: _containers.RepeatedCompositeFieldContainer[Resource]
-    def __init__(self, total_size: _Optional[int] = ..., next_page_token: _Optional[str] = ..., resources: _Optional[_Iterable[_Union[Resource, _Mapping]]] = ...) -> None: ...
+    prev_page_token: str
+    def __init__(self, total_size: _Optional[int] = ..., next_page_token: _Optional[str] = ..., resources: _Optional[_Iterable[_Union[Resource, _Mapping]]] = ..., prev_page_token: _Optional[str] = ...) -> None: ...
 
 class UpdateResourceRequest(_message.Message):
     __slots__ = ("resource_id", "resource", "update_mask")
@@ -289,7 +295,7 @@ class UpdateResourceRequest(_message.Message):
     def __init__(self, resource_id: _Optional[str] = ..., resource: _Optional[_Union[UpdateResource, _Mapping]] = ..., update_mask: _Optional[_Union[_field_mask_pb2.FieldMask, _Mapping]] = ...) -> None: ...
 
 class UpdateResource(_message.Message):
-    __slots__ = ("name", "description", "resource_uri", "access_token_expiry", "refresh_token_expiry", "disable_dynamic_client_registration", "logo_uri", "provider", "resource_id", "scopes", "custom_connection_settings")
+    __slots__ = ("name", "description", "resource_uri", "access_token_expiry", "refresh_token_expiry", "disable_dynamic_client_registration", "logo_uri", "provider", "resource_id", "scopes", "custom_connection_settings", "intersect_scopes_user_permission")
     NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     RESOURCE_URI_FIELD_NUMBER: _ClassVar[int]
@@ -301,6 +307,7 @@ class UpdateResource(_message.Message):
     RESOURCE_ID_FIELD_NUMBER: _ClassVar[int]
     SCOPES_FIELD_NUMBER: _ClassVar[int]
     CUSTOM_CONNECTION_SETTINGS_FIELD_NUMBER: _ClassVar[int]
+    INTERSECT_SCOPES_USER_PERMISSION_FIELD_NUMBER: _ClassVar[int]
     name: str
     description: str
     resource_uri: str
@@ -312,7 +319,8 @@ class UpdateResource(_message.Message):
     resource_id: str
     scopes: _containers.RepeatedScalarFieldContainer[str]
     custom_connection_settings: ResourceCustomConnectionSettings
-    def __init__(self, name: _Optional[str] = ..., description: _Optional[str] = ..., resource_uri: _Optional[str] = ..., access_token_expiry: _Optional[int] = ..., refresh_token_expiry: _Optional[int] = ..., disable_dynamic_client_registration: bool = ..., logo_uri: _Optional[str] = ..., provider: _Optional[str] = ..., resource_id: _Optional[str] = ..., scopes: _Optional[_Iterable[str]] = ..., custom_connection_settings: _Optional[_Union[ResourceCustomConnectionSettings, _Mapping]] = ...) -> None: ...
+    intersect_scopes_user_permission: _wrappers_pb2.BoolValue
+    def __init__(self, name: _Optional[str] = ..., description: _Optional[str] = ..., resource_uri: _Optional[str] = ..., access_token_expiry: _Optional[int] = ..., refresh_token_expiry: _Optional[int] = ..., disable_dynamic_client_registration: bool = ..., logo_uri: _Optional[str] = ..., provider: _Optional[str] = ..., resource_id: _Optional[str] = ..., scopes: _Optional[_Iterable[str]] = ..., custom_connection_settings: _Optional[_Union[ResourceCustomConnectionSettings, _Mapping]] = ..., intersect_scopes_user_permission: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ...) -> None: ...
 
 class UpdateResourceResponse(_message.Message):
     __slots__ = ("resource",)

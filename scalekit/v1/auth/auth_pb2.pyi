@@ -131,13 +131,13 @@ class GetAuthFeaturesResponse(_message.Message):
     features: _struct_pb2.Struct
     def __init__(self, features: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
 
-class VerifyPasswordLessRequest(_message.Message):
+class VerifyPasswordLessOtpRequest(_message.Message):
     __slots__ = ("otp_req",)
     OTP_REQ_FIELD_NUMBER: _ClassVar[int]
     otp_req: OTPRequest
     def __init__(self, otp_req: _Optional[_Union[OTPRequest, _Mapping]] = ...) -> None: ...
 
-class VerifyPasswordLessResponse(_message.Message):
+class VerifyPasswordLessOtpResponse(_message.Message):
     __slots__ = ()
     def __init__(self) -> None: ...
 
