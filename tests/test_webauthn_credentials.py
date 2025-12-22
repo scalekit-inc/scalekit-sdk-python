@@ -71,51 +71,78 @@ class TestWebAuthnCredentials(BaseTest):
         
         print("\n✓ list_credentials test passed")
 
-    def test_update_credential(self):
-        """Method to test update credential"""
+    def test_update_and_verify_credential(self):
+        """Method to test update credential and verify it by listing
+        
+        This test performs both the update operation and verifies it by listing
+        credentials, ensuring the update was persisted correctly.
+        """
         print(f"\n=== Testing update_credential for credential_id: {self.test_credential_id} ===")
         
-        response = self.scalekit_client.webauthn.update_credential(
-            credential_id=self.test_credential_id,
-            display_name=self.test_display_name
-        )
-        
-        # Verify response structure
-        self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
-        self.assertTrue(hasattr(response[0], 'credential'))
-        
-        # Verify the credential was updated
-        updated_credential = response[0].credential
-        self.assertEqual(updated_credential.id, self.test_credential_id)
-        self.assertEqual(updated_credential.display_name, self.test_display_name)
-        
-        print(f"Credential updated successfully:")
-        print(f"  ID: {updated_credential.id}")
-        print(f"  Display Name: {updated_credential.display_name}")
-        print(f"  User ID: {updated_credential.user_id}")
-        
-        print("\n✓ update_credential test passed")
-
-    def test_verify_update_by_listing(self):
-        """Method to verify the update by listing credentials again"""
-        print(f"\n=== Verifying update by listing credentials again ===")
-        
-        response = self.scalekit_client.webauthn.list_credentials(user_id=self.test_user_id)
-        
-        self.assertEqual(response[1].code().name, "OK")
-        credentials = response[0].credentials
-        
-        # Find the updated credential
-        updated_cred = None
-        for cred in credentials:
+        # First, get the original credential to restore it later
+        list_response = self.scalekit_client.webauthn.list_credentials(user_id=self.test_user_id)
+        self.assertEqual(list_response[1].code().name, "OK")
+        original_credential = None
+        for cred in list_response[0].credentials:
             if cred.id == self.test_credential_id:
-                updated_cred = cred
+                original_credential = cred
                 break
         
-        self.assertIsNotNone(updated_cred, "Updated credential not found in list")
-        self.assertEqual(updated_cred.display_name, self.test_display_name)
+        self.assertIsNotNone(original_credential, "Test credential not found in list")
+        original_display_name = original_credential.display_name if original_credential.display_name else ""
         
-        print(f"Verified: Credential display name is '{updated_cred.display_name}'")
-        print("\n✓ verify_update_by_listing test passed")
+        try:
+            # Update the credential
+            response = self.scalekit_client.webauthn.update_credential(
+                credential_id=self.test_credential_id,
+                display_name=self.test_display_name
+            )
+            
+            # Verify response structure
+            self.assertEqual(response[1].code().name, "OK")
+            self.assertTrue(response[0] is not None)
+            self.assertTrue(hasattr(response[0], 'credential'))
+            
+            # Verify the credential was updated in the response
+            updated_credential = response[0].credential
+            self.assertEqual(updated_credential.id, self.test_credential_id)
+            self.assertEqual(updated_credential.display_name, self.test_display_name)
+            
+            print(f"Credential updated successfully:")
+            print(f"  ID: {updated_credential.id}")
+            print(f"  Display Name: {updated_credential.display_name}")
+            print(f"  User ID: {updated_credential.user_id}")
+            
+            # Verify the update by listing credentials again
+            print(f"\n=== Verifying update by listing credentials ===")
+            list_response = self.scalekit_client.webauthn.list_credentials(user_id=self.test_user_id)
+            
+            self.assertEqual(list_response[1].code().name, "OK")
+            credentials = list_response[0].credentials
+            
+            # Find the updated credential in the list
+            updated_cred = None
+            for cred in credentials:
+                if cred.id == self.test_credential_id:
+                    updated_cred = cred
+                    break
+            
+            self.assertIsNotNone(updated_cred, "Updated credential not found in list")
+            self.assertEqual(updated_cred.display_name, self.test_display_name)
+            
+            print(f"Verified: Credential display name is '{updated_cred.display_name}'")
+            print("\n✓ update_and_verify_credential test passed")
+            
+        finally:
+            # Restore the original display name
+            if original_credential is not None:
+                try:
+                    restore_response = self.scalekit_client.webauthn.update_credential(
+                        credential_id=self.test_credential_id,
+                        display_name=original_display_name
+                    )
+                    if restore_response[1].code().name == "OK":
+                        print(f"\nRestored original display name: '{original_display_name}'")
+                except Exception as e:
+                    print(f"\nWarning: Failed to restore original display name: {str(e)}")
 
