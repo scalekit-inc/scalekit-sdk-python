@@ -109,6 +109,10 @@ class GetUserResponse(_message.Message):
     user: User
     def __init__(self, user: _Optional[_Union[User, _Mapping]] = ...) -> None: ...
 
+class GetCurrentUserRequest(_message.Message):
+    __slots__ = ()
+    def __init__(self) -> None: ...
+
 class ListOrganizationUsersRequest(_message.Message):
     __slots__ = ("organization_id", "page_size", "page_token")
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]

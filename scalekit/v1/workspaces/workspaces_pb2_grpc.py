@@ -224,7 +224,7 @@ class WorkspaceServiceServicer(object):
         - metadata: Optional. Key-value pairs (string) for audit/correlation; keys/values length limited.
         - customer_id / workspace_id: Optional. If omitted, inferred from the authenticated workspace session.
         Validation rules:
-        - Authentication: Requires WORKSPACE_SESSION_CLIENT. Caller must be authorized for billing actions.
+        - Authentication: Requires WORKSPACE_CLIENT. Caller must be authorized for billing actions.
         - For SUBSCRIPTION/PAYMENT: items must be present and valid; unsupported/archived prices are rejected.
         - URLs (return_url/success_url) must match allowed origins; invalid URLs are rejected.
         - Only one active session per workspace per identical parameter set is allowed (idempotency).
