@@ -47,6 +47,27 @@ class PaymentMethodStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     PAYMENT_METHOD_ACTIVE: _ClassVar[PaymentMethodStatus]
     PAYMENT_METHOD_EXPIRED: _ClassVar[PaymentMethodStatus]
     PAYMENT_METHOD_FAILED: _ClassVar[PaymentMethodStatus]
+
+class RedirectOnCompletion(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    REDIRECT_ON_COMPLETION_UNSPECIFIED: _ClassVar[RedirectOnCompletion]
+    never: _ClassVar[RedirectOnCompletion]
+    always: _ClassVar[RedirectOnCompletion]
+    if_required: _ClassVar[RedirectOnCompletion]
+
+class UiMode(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    UI_MODE_UNSPECIFIED: _ClassVar[UiMode]
+    embedded: _ClassVar[UiMode]
+    hosted: _ClassVar[UiMode]
+    custom: _ClassVar[UiMode]
+
+class CheckoutSessionMode(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    CHECKOUT_SESSION_MODE_UNSPECIFIED: _ClassVar[CheckoutSessionMode]
+    setup: _ClassVar[CheckoutSessionMode]
+    subscription: _ClassVar[CheckoutSessionMode]
+    payment: _ClassVar[CheckoutSessionMode]
 BILLING_SUBSCRIPTION_STATUS_UNSPECIFIED: BillingSubscriptionStatus
 BILLING_SUBSCRIPTION_ACTIVE: BillingSubscriptionStatus
 BILLING_SUBSCRIPTION_CANCELED: BillingSubscriptionStatus
@@ -66,6 +87,18 @@ PAYMENT_METHOD_STATUS_UNSPECIFIED: PaymentMethodStatus
 PAYMENT_METHOD_ACTIVE: PaymentMethodStatus
 PAYMENT_METHOD_EXPIRED: PaymentMethodStatus
 PAYMENT_METHOD_FAILED: PaymentMethodStatus
+REDIRECT_ON_COMPLETION_UNSPECIFIED: RedirectOnCompletion
+never: RedirectOnCompletion
+always: RedirectOnCompletion
+if_required: RedirectOnCompletion
+UI_MODE_UNSPECIFIED: UiMode
+embedded: UiMode
+hosted: UiMode
+custom: UiMode
+CHECKOUT_SESSION_MODE_UNSPECIFIED: CheckoutSessionMode
+setup: CheckoutSessionMode
+subscription: CheckoutSessionMode
+payment: CheckoutSessionMode
 
 class WorkspaceExtendedInfo(_message.Message):
     __slots__ = ("payment_overdue", "payment_method_present", "free_quota_exceeded")
@@ -250,20 +283,22 @@ class GetBillingInfoResponse(_message.Message):
     def __init__(self, billing_info: _Optional[_Union[BillingInfo, _Mapping]] = ...) -> None: ...
 
 class BillingInfo(_message.Message):
-    __slots__ = ("plan_name", "current_invoice", "payment_method", "billing_contact_info", "addons", "last_invoice")
+    __slots__ = ("plan_name", "current_invoice", "payment_method", "billing_contact_info", "addons", "last_invoice", "publishable_token")
     PLAN_NAME_FIELD_NUMBER: _ClassVar[int]
     CURRENT_INVOICE_FIELD_NUMBER: _ClassVar[int]
     PAYMENT_METHOD_FIELD_NUMBER: _ClassVar[int]
     BILLING_CONTACT_INFO_FIELD_NUMBER: _ClassVar[int]
     ADDONS_FIELD_NUMBER: _ClassVar[int]
     LAST_INVOICE_FIELD_NUMBER: _ClassVar[int]
+    PUBLISHABLE_TOKEN_FIELD_NUMBER: _ClassVar[int]
     plan_name: str
     current_invoice: CurrentInvoice
     payment_method: PaymentMethod
     billing_contact_info: BillingContactInfo
     addons: _containers.RepeatedCompositeFieldContainer[Addon]
     last_invoice: LastInvoice
-    def __init__(self, plan_name: _Optional[str] = ..., current_invoice: _Optional[_Union[CurrentInvoice, _Mapping]] = ..., payment_method: _Optional[_Union[PaymentMethod, _Mapping]] = ..., billing_contact_info: _Optional[_Union[BillingContactInfo, _Mapping]] = ..., addons: _Optional[_Iterable[_Union[Addon, _Mapping]]] = ..., last_invoice: _Optional[_Union[LastInvoice, _Mapping]] = ...) -> None: ...
+    publishable_token: str
+    def __init__(self, plan_name: _Optional[str] = ..., current_invoice: _Optional[_Union[CurrentInvoice, _Mapping]] = ..., payment_method: _Optional[_Union[PaymentMethod, _Mapping]] = ..., billing_contact_info: _Optional[_Union[BillingContactInfo, _Mapping]] = ..., addons: _Optional[_Iterable[_Union[Addon, _Mapping]]] = ..., last_invoice: _Optional[_Union[LastInvoice, _Mapping]] = ..., publishable_token: _Optional[str] = ...) -> None: ...
 
 class BillingSubscription(_message.Message):
     __slots__ = ("id", "status", "start_date", "end_date", "amount", "currency", "items")
@@ -572,3 +607,27 @@ class AddSubscriptionResponse(_message.Message):
     product_id: str
     quantity: int
     def __init__(self, subscription_id: _Optional[str] = ..., product_id: _Optional[str] = ..., quantity: _Optional[int] = ...) -> None: ...
+
+class CreateCheckoutSessionRequest(_message.Message):
+    __slots__ = ("mode", "return_url", "success_url", "ui_mode", "redirect_on_completion")
+    MODE_FIELD_NUMBER: _ClassVar[int]
+    RETURN_URL_FIELD_NUMBER: _ClassVar[int]
+    SUCCESS_URL_FIELD_NUMBER: _ClassVar[int]
+    UI_MODE_FIELD_NUMBER: _ClassVar[int]
+    REDIRECT_ON_COMPLETION_FIELD_NUMBER: _ClassVar[int]
+    mode: CheckoutSessionMode
+    return_url: str
+    success_url: str
+    ui_mode: UiMode
+    redirect_on_completion: RedirectOnCompletion
+    def __init__(self, mode: _Optional[_Union[CheckoutSessionMode, str]] = ..., return_url: _Optional[str] = ..., success_url: _Optional[str] = ..., ui_mode: _Optional[_Union[UiMode, str]] = ..., redirect_on_completion: _Optional[_Union[RedirectOnCompletion, str]] = ...) -> None: ...
+
+class CreateCheckoutSessionResponse(_message.Message):
+    __slots__ = ("id", "client_secret", "url")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    CLIENT_SECRET_FIELD_NUMBER: _ClassVar[int]
+    URL_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    client_secret: str
+    url: str
+    def __init__(self, id: _Optional[str] = ..., client_secret: _Optional[str] = ..., url: _Optional[str] = ...) -> None: ...

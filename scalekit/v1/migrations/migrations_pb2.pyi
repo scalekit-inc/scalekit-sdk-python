@@ -59,12 +59,14 @@ class MigrationFSAResponse(_message.Message):
     def __init__(self, success_environments: _Optional[int] = ..., failed_environments: _Optional[int] = ...) -> None: ...
 
 class MigrateStripeCustomersRequest(_message.Message):
-    __slots__ = ("workspace_ids", "batch_size")
+    __slots__ = ("workspace_ids", "plan_name", "batch_size")
     WORKSPACE_IDS_FIELD_NUMBER: _ClassVar[int]
+    PLAN_NAME_FIELD_NUMBER: _ClassVar[int]
     BATCH_SIZE_FIELD_NUMBER: _ClassVar[int]
     workspace_ids: _containers.RepeatedScalarFieldContainer[int]
+    plan_name: str
     batch_size: int
-    def __init__(self, workspace_ids: _Optional[_Iterable[int]] = ..., batch_size: _Optional[int] = ...) -> None: ...
+    def __init__(self, workspace_ids: _Optional[_Iterable[int]] = ..., plan_name: _Optional[str] = ..., batch_size: _Optional[int] = ...) -> None: ...
 
 class MigrateStripeCustomersResponse(_message.Message):
     __slots__ = ("success_workspaces", "failed_workspaces", "error_messages")

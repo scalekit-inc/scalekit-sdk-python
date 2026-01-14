@@ -282,18 +282,20 @@ class UpdateDefaultRole(_message.Message):
     def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ...) -> None: ...
 
 class Permission(_message.Message):
-    __slots__ = ("id", "name", "description", "create_time", "update_time")
+    __slots__ = ("id", "name", "description", "create_time", "update_time", "is_scalekit_permission")
     ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     CREATE_TIME_FIELD_NUMBER: _ClassVar[int]
     UPDATE_TIME_FIELD_NUMBER: _ClassVar[int]
+    IS_SCALEKIT_PERMISSION_FIELD_NUMBER: _ClassVar[int]
     id: str
     name: str
     description: str
     create_time: _timestamp_pb2.Timestamp
     update_time: _timestamp_pb2.Timestamp
-    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+    is_scalekit_permission: bool
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., is_scalekit_permission: bool = ...) -> None: ...
 
 class RolePermission(_message.Message):
     __slots__ = ("id", "name", "description", "create_time", "update_time", "role_name")

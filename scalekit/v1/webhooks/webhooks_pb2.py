@@ -14,12 +14,15 @@ _sym_db = _symbol_database.Default()
 
 from buf.validate import validate_pb2 as buf_dot_validate_dot_validate__pb2
 from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
+from google.api import field_behavior_pb2 as google_dot_api_dot_field__behavior__pb2
 from google.api import visibility_pb2 as google_dot_api_dot_visibility__pb2
 from google.protobuf import struct_pb2 as google_dot_protobuf_dot_struct__pb2
+from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
+from protoc_gen_openapiv2.options import annotations_pb2 as protoc__gen__openapiv2_dot_options_dot_annotations__pb2
 from scalekit.v1.options import options_pb2 as scalekit_dot_v1_dot_options_dot_options__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n#scalekit/v1/webhooks/webhooks.proto\x12\x14scalekit.v1.webhooks\x1a\x1b\x62uf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/api/visibility.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a!scalekit/v1/options/options.proto\"A\n\x14SendTestEventRequest\x12)\n\nevent_type\x18\x01 \x01(\tB\n\xbaH\x07r\x05\x10\x01\x18\xff\x01R\teventType\"t\n\x15SendTestEventResponse\x12\x1d\n\nevent_type\x18\x01 \x01(\tR\teventType\x12<\n\revent_payload\x18\x02 \x01(\x0b\x32\x17.google.protobuf.StructR\x0c\x65ventPayload\"\x15\n\x13GetPortalURLRequest\"(\n\x14GetPortalURLResponse\x12\x10\n\x03url\x18\x01 \x01(\tR\x03url\"S\n\x15WebhookWrapperRequest\x12:\n\x0crequest_body\x18\x01 \x01(\x0b\x32\x17.google.protobuf.StructR\x0brequestBody\"V\n\x16WebhookWrapperResponse\x12<\n\rresponse_body\x18\x01 \x01(\x0b\x32\x17.google.protobuf.StructR\x0cresponseBody2\xf7\x04\n\x0eWebhookService\x12\x90\x01\n\x0cGetPortalURL\x12).scalekit.v1.webhooks.GetPortalURLRequest\x1a*.scalekit.v1.webhooks.GetPortalURLResponse\")\x82\xb5\x18\x02\x18T\x82\xd3\xe4\x93\x02\x1d\x12\x1b/api/v1/webhooks/portal-url\x12\x9f\x02\n\x0eWebhookWrapper\x12+.scalekit.v1.webhooks.WebhookWrapperRequest\x1a\x17.google.protobuf.Struct\"\xc6\x01\x82\xb5\x18\x02\x18P\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02\xaa\x01\x12\x16/api/v1/webhooks/wb/**Z&\"\x16/api/v1/webhooks/wb/**:\x0crequest_bodyZ&\x1a\x16/api/v1/webhooks/wb/**:\x0crequest_bodyZ&2\x16/api/v1/webhooks/wb/**:\x0crequest_bodyZ\x18*\x16/api/v1/webhooks/wb/**\x12\xaf\x01\n\rSendTestEvent\x12*.scalekit.v1.webhooks.SendTestEventRequest\x1a+.scalekit.v1.webhooks.SendTestEventResponse\"E\x82\xb5\x18\x02\x18T\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02*\"(/api/v1/webhooks/test-event/{event_type}B4Z2github.com/scalekit-inc/scalekit/pkg/grpc/webhooksb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n#scalekit/v1/webhooks/webhooks.proto\x12\x14scalekit.v1.webhooks\x1a\x1b\x62uf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1bgoogle/api/visibility.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a.protoc-gen-openapiv2/options/annotations.proto\x1a!scalekit/v1/options/options.proto\"A\n\x14SendTestEventRequest\x12)\n\nevent_type\x18\x01 \x01(\tB\n\xbaH\x07r\x05\x10\x01\x18\xff\x01R\teventType\"t\n\x15SendTestEventResponse\x12\x1d\n\nevent_type\x18\x01 \x01(\tR\teventType\x12<\n\revent_payload\x18\x02 \x01(\x0b\x32\x17.google.protobuf.StructR\x0c\x65ventPayload\"\x15\n\x13GetPortalURLRequest\"(\n\x14GetPortalURLResponse\x12\x10\n\x03url\x18\x01 \x01(\tR\x03url\"\xb2\x01\n\x15WebhookWrapperRequest\x12\x87\x01\n\x0crequest_body\x18\x01 \x01(\x0b\x32\x17.google.protobuf.StructBF\x92\x41\x43\x32\x41Request body payload. Only used for POST, PUT, and PATCH methods.H\x00R\x0brequestBody\x88\x01\x01\x42\x0f\n\r_request_body\"V\n\x16WebhookWrapperResponse\x12<\n\rresponse_body\x18\x01 \x01(\x0b\x32\x17.google.protobuf.StructR\x0cresponseBody\"\x9f\x04\n\x0cWebhookEvent\x12!\n\x0cspec_version\x18\x01 \x01(\tR\x0bspecVersion\x12\x1f\n\x02id\x18\x02 \x01(\tB\x0f\xbaH\x0cr\n\x10\x01\x18 :\x04\x65vt_R\x02id\x12\x38\n\x06object\x18\x03 \x01(\x0e\x32 .scalekit.v1.webhooks.ObjectTypeR\x06object\x12;\n\x0boccurred_at\x18\x04 \x01(\x0b\x32\x1a.google.protobuf.TimestampR\noccurredAt\x12\x36\n\x0e\x65nvironment_id\x18\x06 \x01(\tB\x0f\xbaH\x0cr\n\x10\x01\x18 :\x04\x65nv_R\renvironmentId\x12=\n\x0forganization_id\x18\x05 \x01(\tB\x0f\xbaH\x0cr\n\x10\x01\x18 :\x04org_H\x01R\x0eorganizationId\x88\x01\x01\x12\x33\n\x04type\x18\x07 \x01(\x0e\x32\x1f.scalekit.v1.webhooks.EventTypeR\x04type\x12Q\n\x0corganization\x18\x08 \x01(\x0b\x32+.scalekit.v1.webhooks.OrganizationEventDataH\x00R\x0corganization\x12\x39\n\x04user\x18\t \x01(\x0b\x32#.scalekit.v1.webhooks.UserEventDataH\x00R\x04userB\x06\n\x04\x64\x61taB\x12\n\x10_organization_id\"\x07\n\x05\x45mpty\"\xfd\x01\n\x15OrganizationEventData\x12\x1f\n\x02id\x18\x01 \x01(\tB\x0f\xbaH\x0cr\n\x10\x01\x18 :\x04org_R\x02id\x12$\n\x0b\x65xternal_id\x18\x02 \x01(\tH\x00R\nexternalId\x88\x01\x01\x12\x38\n\x08metadata\x18\x03 \x01(\x0b\x32\x17.google.protobuf.StructH\x01R\x08metadata\x88\x01\x01\x12\x46\n\x08settings\x18\x04 \x01(\x0b\x32*.scalekit.v1.webhooks.OrganizationSettingsR\x08settingsB\x0e\n\x0c_external_idB\x0b\n\t_metadata\"U\n\x14OrganizationSettings\x12=\n\x08\x66\x65\x61tures\x18\x01 \x03(\x0b\x32!.scalekit.v1.webhooks.FeatureFlagR\x08\x66\x65\x61tures\";\n\x0b\x46\x65\x61tureFlag\x12\x18\n\x07\x65nabled\x18\x01 \x01(\x08R\x07\x65nabled\x12\x12\n\x04name\x18\x02 \x01(\tR\x04name\"\x96\x03\n\rUserEventData\x12\x1f\n\x02id\x18\x01 \x01(\tB\x0f\xbaH\x0cr\n\x10\x01\x18 :\x04usr_R\x02id\x12\x14\n\x05\x65mail\x18\x02 \x01(\tR\x05\x65mail\x12$\n\x0b\x65xternal_id\x18\x03 \x01(\tH\x00R\nexternalId\x88\x01\x01\x12;\n\x07profile\x18\x04 \x01(\x0b\x32!.scalekit.v1.webhooks.UserProfileR\x07profile\x12\x39\n\ncreated_at\x18\x05 \x01(\x0b\x32\x1a.google.protobuf.TimestampR\tcreatedAt\x12\x39\n\nupdated_at\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.TimestampR\tupdatedAt\x12T\n\x0corganization\x18\x07 \x01(\x0b\x32+.scalekit.v1.webhooks.OrganizationReferenceH\x01R\x0corganization\x88\x01\x01\x42\x0e\n\x0c_external_idB\x0f\n\r_organization\"\xc8\x01\n\x0bUserProfile\x12\"\n\ngiven_name\x18\x01 \x01(\tH\x00R\tgivenName\x88\x01\x01\x12$\n\x0b\x66\x61mily_name\x18\x02 \x01(\tH\x01R\nfamilyName\x88\x01\x01\x12\x1d\n\x07picture\x18\x03 \x01(\tH\x02R\x07picture\x88\x01\x01\x12%\n\x0e\x65mail_verified\x18\x04 \x01(\x08R\remailVerifiedB\r\n\x0b_given_nameB\x0e\n\x0c_family_nameB\n\n\x08_picture\"n\n\x15OrganizationReference\x12\x1f\n\x02id\x18\x01 \x01(\tB\x0f\xbaH\x0cr\n\x10\x01\x18 :\x04org_R\x02id\x12$\n\x0b\x65xternal_id\x18\x02 \x01(\tH\x00R\nexternalId\x88\x01\x01\x42\x0e\n\x0c_external_id*x\n\nObjectType\x12\x1b\n\x17OBJECT_TYPE_UNSPECIFIED\x10\x00\x12\x10\n\x0cORGANIZATION\x10\x01\x12\x08\n\x04USER\x10\x02\x12\x12\n\x0e\x44IRECTORY_USER\x10\x03\x12\x0e\n\nCONNECTION\x10\x04\x12\r\n\tDIRECTORY\x10\x05*\xc7\x02\n\tEventType\x12\x1a\n\x16\x45VENT_TYPE_UNSPECIFIED\x10\x00\x12\x18\n\x14ORGANIZATION_CREATED\x10\x01\x12\x18\n\x14ORGANIZATION_UPDATED\x10\x02\x12\x18\n\x14ORGANIZATION_DELETED\x10\x03\x12\x0f\n\x0bUSER_SIGNUP\x10\x04\x12\x0e\n\nUSER_LOGIN\x10\x05\x12\x0f\n\x0bUSER_LOGOUT\x10\x06\x12 \n\x1cUSER_ORGANIZATION_INVITATION\x10\x07\x12(\n$USER_ORGANIZATION_MEMBERSHIP_CREATED\x10\x08\x12(\n$USER_ORGANIZATION_MEMBERSHIP_UPDATED\x10\t\x12(\n$USER_ORGANIZATION_MEMBERSHIP_DELETED\x10\n2\xf2\n\n\x0eWebhookService\x12\xcc\x02\n\x0cGetPortalURL\x12).scalekit.v1.webhooks.GetPortalURLRequest\x1a*.scalekit.v1.webhooks.GetPortalURLResponse\"\xe4\x01\x92\x41\xa8\x01\x12\x16Get webhook portal URL\x1a\x32Retrieves the portal URL for webhook configurationJZ\n\x03\x32\x30\x30\x12S\n!Portal URL retrieved successfully\x12.\n,\x1a*.scalekit.v1.webhooks.GetPortalURLResponse\x82\xb5\x18\x02\x18\x44\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02\x1d\x12\x1b/api/v1/webhooks/portal-url\x12\xc2\x03\n\x0eWebhookWrapper\x12+.scalekit.v1.webhooks.WebhookWrapperRequest\x1a\x17.google.protobuf.Struct\"\xe9\x02\x92\x41\x9f\x01\x12\x0fWebhook wrapper\x1a\x46Wrapper endpoint for webhook requests supporting multiple HTTP methodsJD\n\x03\x32\x30\x30\x12=\n\x1eRequest processed successfully\x12\x1b\n\x19\x1a\x17.google.protobuf.Struct\x82\xb5\x18\x02\x18@\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02\xaa\x01\x12\x16/api/v1/webhooks/wb/**Z&\"\x16/api/v1/webhooks/wb/**:\x0crequest_bodyZ&\x1a\x16/api/v1/webhooks/wb/**:\x0crequest_bodyZ&2\x16/api/v1/webhooks/wb/**:\x0crequest_bodyZ\x18*\x16/api/v1/webhooks/wb/**\x12\xd7\x02\n\rSendTestEvent\x12*.scalekit.v1.webhooks.SendTestEventRequest\x1a+.scalekit.v1.webhooks.SendTestEventResponse\"\xec\x01\x92\x41\xa3\x01\x12\x17Send test webhook event\x1a\x30Sends a test webhook event of the specified typeJV\n\x03\x32\x30\x30\x12O\n\x1cTest event sent successfully\x12/\n-\x1a+.scalekit.v1.webhooks.SendTestEventResponse\x82\xb5\x18\x02\x18\x44\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02*\"(/api/v1/webhooks/test-event/{event_type}\x12\xf1\x01\n\x10SendWebhookEvent\x12\".scalekit.v1.webhooks.WebhookEvent\x1a\x1b.scalekit.v1.webhooks.Empty\"\x9b\x01\x92\x41u\x12\x12Send webhook event\x1a\x31Receives a webhook event payload and processes itJ,\n\x03\x32\x30\x30\x12%\n#Webhook event received successfully\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02\x0e\"\t/webhooks:\x01*B4Z2github.com/scalekit-inc/scalekit/pkg/grpc/webhooksb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -29,24 +32,60 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._serialized_options = b'Z2github.com/scalekit-inc/scalekit/pkg/grpc/webhooks'
   _globals['_SENDTESTEVENTREQUEST'].fields_by_name['event_type']._loaded_options = None
   _globals['_SENDTESTEVENTREQUEST'].fields_by_name['event_type']._serialized_options = b'\272H\007r\005\020\001\030\377\001'
+  _globals['_WEBHOOKWRAPPERREQUEST'].fields_by_name['request_body']._loaded_options = None
+  _globals['_WEBHOOKWRAPPERREQUEST'].fields_by_name['request_body']._serialized_options = b'\222AC2ARequest body payload. Only used for POST, PUT, and PATCH methods.'
+  _globals['_WEBHOOKEVENT'].fields_by_name['id']._loaded_options = None
+  _globals['_WEBHOOKEVENT'].fields_by_name['id']._serialized_options = b'\272H\014r\n\020\001\030 :\004evt_'
+  _globals['_WEBHOOKEVENT'].fields_by_name['environment_id']._loaded_options = None
+  _globals['_WEBHOOKEVENT'].fields_by_name['environment_id']._serialized_options = b'\272H\014r\n\020\001\030 :\004env_'
+  _globals['_WEBHOOKEVENT'].fields_by_name['organization_id']._loaded_options = None
+  _globals['_WEBHOOKEVENT'].fields_by_name['organization_id']._serialized_options = b'\272H\014r\n\020\001\030 :\004org_'
+  _globals['_ORGANIZATIONEVENTDATA'].fields_by_name['id']._loaded_options = None
+  _globals['_ORGANIZATIONEVENTDATA'].fields_by_name['id']._serialized_options = b'\272H\014r\n\020\001\030 :\004org_'
+  _globals['_USEREVENTDATA'].fields_by_name['id']._loaded_options = None
+  _globals['_USEREVENTDATA'].fields_by_name['id']._serialized_options = b'\272H\014r\n\020\001\030 :\004usr_'
+  _globals['_ORGANIZATIONREFERENCE'].fields_by_name['id']._loaded_options = None
+  _globals['_ORGANIZATIONREFERENCE'].fields_by_name['id']._serialized_options = b'\272H\014r\n\020\001\030 :\004org_'
   _globals['_WEBHOOKSERVICE'].methods_by_name['GetPortalURL']._loaded_options = None
-  _globals['_WEBHOOKSERVICE'].methods_by_name['GetPortalURL']._serialized_options = b'\202\265\030\002\030T\202\323\344\223\002\035\022\033/api/v1/webhooks/portal-url'
+  _globals['_WEBHOOKSERVICE'].methods_by_name['GetPortalURL']._serialized_options = b'\222A\250\001\022\026Get webhook portal URL\0322Retrieves the portal URL for webhook configurationJZ\n\003200\022S\n!Portal URL retrieved successfully\022.\n,\032*.scalekit.v1.webhooks.GetPortalURLResponse\202\265\030\002\030D\372\322\344\223\002\t\022\007PREVIEW\202\323\344\223\002\035\022\033/api/v1/webhooks/portal-url'
   _globals['_WEBHOOKSERVICE'].methods_by_name['WebhookWrapper']._loaded_options = None
-  _globals['_WEBHOOKSERVICE'].methods_by_name['WebhookWrapper']._serialized_options = b'\202\265\030\002\030P\372\322\344\223\002\t\022\007PREVIEW\202\323\344\223\002\252\001\022\026/api/v1/webhooks/wb/**Z&\"\026/api/v1/webhooks/wb/**:\014request_bodyZ&\032\026/api/v1/webhooks/wb/**:\014request_bodyZ&2\026/api/v1/webhooks/wb/**:\014request_bodyZ\030*\026/api/v1/webhooks/wb/**'
+  _globals['_WEBHOOKSERVICE'].methods_by_name['WebhookWrapper']._serialized_options = b'\222A\237\001\022\017Webhook wrapper\032FWrapper endpoint for webhook requests supporting multiple HTTP methodsJD\n\003200\022=\n\036Request processed successfully\022\033\n\031\032\027.google.protobuf.Struct\202\265\030\002\030@\372\322\344\223\002\t\022\007PREVIEW\202\323\344\223\002\252\001\022\026/api/v1/webhooks/wb/**Z&\"\026/api/v1/webhooks/wb/**:\014request_bodyZ&\032\026/api/v1/webhooks/wb/**:\014request_bodyZ&2\026/api/v1/webhooks/wb/**:\014request_bodyZ\030*\026/api/v1/webhooks/wb/**'
   _globals['_WEBHOOKSERVICE'].methods_by_name['SendTestEvent']._loaded_options = None
-  _globals['_WEBHOOKSERVICE'].methods_by_name['SendTestEvent']._serialized_options = b'\202\265\030\002\030T\372\322\344\223\002\t\022\007PREVIEW\202\323\344\223\002*\"(/api/v1/webhooks/test-event/{event_type}'
-  _globals['_SENDTESTEVENTREQUEST']._serialized_start=214
-  _globals['_SENDTESTEVENTREQUEST']._serialized_end=279
-  _globals['_SENDTESTEVENTRESPONSE']._serialized_start=281
-  _globals['_SENDTESTEVENTRESPONSE']._serialized_end=397
-  _globals['_GETPORTALURLREQUEST']._serialized_start=399
-  _globals['_GETPORTALURLREQUEST']._serialized_end=420
-  _globals['_GETPORTALURLRESPONSE']._serialized_start=422
-  _globals['_GETPORTALURLRESPONSE']._serialized_end=462
-  _globals['_WEBHOOKWRAPPERREQUEST']._serialized_start=464
-  _globals['_WEBHOOKWRAPPERREQUEST']._serialized_end=547
-  _globals['_WEBHOOKWRAPPERRESPONSE']._serialized_start=549
-  _globals['_WEBHOOKWRAPPERRESPONSE']._serialized_end=635
-  _globals['_WEBHOOKSERVICE']._serialized_start=638
-  _globals['_WEBHOOKSERVICE']._serialized_end=1269
+  _globals['_WEBHOOKSERVICE'].methods_by_name['SendTestEvent']._serialized_options = b'\222A\243\001\022\027Send test webhook event\0320Sends a test webhook event of the specified typeJV\n\003200\022O\n\034Test event sent successfully\022/\n-\032+.scalekit.v1.webhooks.SendTestEventResponse\202\265\030\002\030D\372\322\344\223\002\t\022\007PREVIEW\202\323\344\223\002*\"(/api/v1/webhooks/test-event/{event_type}'
+  _globals['_WEBHOOKSERVICE'].methods_by_name['SendWebhookEvent']._loaded_options = None
+  _globals['_WEBHOOKSERVICE'].methods_by_name['SendWebhookEvent']._serialized_options = b'\222Au\022\022Send webhook event\0321Receives a webhook event payload and processes itJ,\n\003200\022%\n#Webhook event received successfully\372\322\344\223\002\t\022\007PREVIEW\202\323\344\223\002\016\"\t/webhooks:\001*'
+  _globals['_OBJECTTYPE']._serialized_start=2530
+  _globals['_OBJECTTYPE']._serialized_end=2650
+  _globals['_EVENTTYPE']._serialized_start=2653
+  _globals['_EVENTTYPE']._serialized_end=2980
+  _globals['_SENDTESTEVENTREQUEST']._serialized_start=328
+  _globals['_SENDTESTEVENTREQUEST']._serialized_end=393
+  _globals['_SENDTESTEVENTRESPONSE']._serialized_start=395
+  _globals['_SENDTESTEVENTRESPONSE']._serialized_end=511
+  _globals['_GETPORTALURLREQUEST']._serialized_start=513
+  _globals['_GETPORTALURLREQUEST']._serialized_end=534
+  _globals['_GETPORTALURLRESPONSE']._serialized_start=536
+  _globals['_GETPORTALURLRESPONSE']._serialized_end=576
+  _globals['_WEBHOOKWRAPPERREQUEST']._serialized_start=579
+  _globals['_WEBHOOKWRAPPERREQUEST']._serialized_end=757
+  _globals['_WEBHOOKWRAPPERRESPONSE']._serialized_start=759
+  _globals['_WEBHOOKWRAPPERRESPONSE']._serialized_end=845
+  _globals['_WEBHOOKEVENT']._serialized_start=848
+  _globals['_WEBHOOKEVENT']._serialized_end=1391
+  _globals['_EMPTY']._serialized_start=1393
+  _globals['_EMPTY']._serialized_end=1400
+  _globals['_ORGANIZATIONEVENTDATA']._serialized_start=1403
+  _globals['_ORGANIZATIONEVENTDATA']._serialized_end=1656
+  _globals['_ORGANIZATIONSETTINGS']._serialized_start=1658
+  _globals['_ORGANIZATIONSETTINGS']._serialized_end=1743
+  _globals['_FEATUREFLAG']._serialized_start=1745
+  _globals['_FEATUREFLAG']._serialized_end=1804
+  _globals['_USEREVENTDATA']._serialized_start=1807
+  _globals['_USEREVENTDATA']._serialized_end=2213
+  _globals['_USERPROFILE']._serialized_start=2216
+  _globals['_USERPROFILE']._serialized_end=2416
+  _globals['_ORGANIZATIONREFERENCE']._serialized_start=2418
+  _globals['_ORGANIZATIONREFERENCE']._serialized_end=2528
+  _globals['_WEBHOOKSERVICE']._serialized_start=2983
+  _globals['_WEBHOOKSERVICE']._serialized_end=4377
 # @@protoc_insertion_point(module_scope)

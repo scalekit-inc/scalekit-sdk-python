@@ -84,7 +84,7 @@ SCALEKIT: IdentityProviderType
 ADFS: IdentityProviderType
 
 class OrganizationMembership(_message.Message):
-    __slots__ = ("organization_id", "join_time", "membership_status", "roles", "name", "metadata", "display_name", "inviter_email", "created_at", "accepted_at", "expires_at", "provisioning_method")
+    __slots__ = ("organization_id", "join_time", "membership_status", "roles", "name", "metadata", "display_name", "inviter_email", "created_at", "accepted_at", "expires_at", "provisioning_method", "permissions")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -104,6 +104,7 @@ class OrganizationMembership(_message.Message):
     ACCEPTED_AT_FIELD_NUMBER: _ClassVar[int]
     EXPIRES_AT_FIELD_NUMBER: _ClassVar[int]
     PROVISIONING_METHOD_FIELD_NUMBER: _ClassVar[int]
+    PERMISSIONS_FIELD_NUMBER: _ClassVar[int]
     organization_id: str
     join_time: _timestamp_pb2.Timestamp
     membership_status: MembershipStatus
@@ -116,7 +117,8 @@ class OrganizationMembership(_message.Message):
     accepted_at: _timestamp_pb2.Timestamp
     expires_at: _timestamp_pb2.Timestamp
     provisioning_method: str
-    def __init__(self, organization_id: _Optional[str] = ..., join_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., membership_status: _Optional[_Union[MembershipStatus, str]] = ..., roles: _Optional[_Iterable[_Union[Role, _Mapping]]] = ..., name: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., display_name: _Optional[str] = ..., inviter_email: _Optional[str] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., accepted_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., provisioning_method: _Optional[str] = ...) -> None: ...
+    permissions: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, organization_id: _Optional[str] = ..., join_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., membership_status: _Optional[_Union[MembershipStatus, str]] = ..., roles: _Optional[_Iterable[_Union[Role, _Mapping]]] = ..., name: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., display_name: _Optional[str] = ..., inviter_email: _Optional[str] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., accepted_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., provisioning_method: _Optional[str] = ..., permissions: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class Role(_message.Message):
     __slots__ = ("id", "name", "display_name")

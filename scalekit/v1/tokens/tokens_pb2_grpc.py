@@ -42,10 +42,10 @@ class ApiTokenServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_tokens_dot_tokens__pb2.UpdateTokenRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_tokens_dot_tokens__pb2.UpdateTokenResponse.FromString,
                 )
-        self.RegenerateToken = channel.unary_unary(
-                '/scalekit.v1.tokens.ApiTokenService/RegenerateToken',
-                request_serializer=scalekit_dot_v1_dot_tokens_dot_tokens__pb2.RegenerateTokenRequest.SerializeToString,
-                response_deserializer=scalekit_dot_v1_dot_tokens_dot_tokens__pb2.RegenerateTokenResponse.FromString,
+        self.FetchToken = channel.unary_unary(
+                '/scalekit.v1.tokens.ApiTokenService/FetchToken',
+                request_serializer=scalekit_dot_v1_dot_tokens_dot_tokens__pb2.FetchTokenRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_tokens_dot_tokens__pb2.FetchTokenResponse.FromString,
                 )
 
 
@@ -56,7 +56,7 @@ class ApiTokenServiceServicer(object):
 
     def CreateToken(self, request, context):
         """CreateToken generates a new API token for an organization or user.
-        Returns an opaque token string and token metadata.
+        Returns an opaque token string and token claims.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -84,15 +84,14 @@ class ApiTokenServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def UpdateToken(self, request, context):
-        """UpdateToken updates the metadata and/or description of an existing token.
+        """UpdateToken updates the custom claims and description of an existing token
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def RegenerateToken(self, request, context):
-        """RegenerateToken converts a stored token_id back into the opaque token string.
-        Returns NOT_FOUND when the token is expired, invalidated, or missing.
+    def FetchToken(self, request, context):
+        """We dont wan to expose token fetch . So making the authentication empty. This would block the request.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -126,10 +125,10 @@ def add_ApiTokenServiceServicer_to_server(servicer, server):
                     request_deserializer=scalekit_dot_v1_dot_tokens_dot_tokens__pb2.UpdateTokenRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_tokens_dot_tokens__pb2.UpdateTokenResponse.SerializeToString,
             ),
-            'RegenerateToken': grpc.unary_unary_rpc_method_handler(
-                    servicer.RegenerateToken,
-                    request_deserializer=scalekit_dot_v1_dot_tokens_dot_tokens__pb2.RegenerateTokenRequest.FromString,
-                    response_serializer=scalekit_dot_v1_dot_tokens_dot_tokens__pb2.RegenerateTokenResponse.SerializeToString,
+            'FetchToken': grpc.unary_unary_rpc_method_handler(
+                    servicer.FetchToken,
+                    request_deserializer=scalekit_dot_v1_dot_tokens_dot_tokens__pb2.FetchTokenRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_tokens_dot_tokens__pb2.FetchTokenResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -229,7 +228,7 @@ class ApiTokenService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def RegenerateToken(request,
+    def FetchToken(request,
             target,
             options=(),
             channel_credentials=None,
@@ -239,8 +238,8 @@ class ApiTokenService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.tokens.ApiTokenService/RegenerateToken',
-            scalekit_dot_v1_dot_tokens_dot_tokens__pb2.RegenerateTokenRequest.SerializeToString,
-            scalekit_dot_v1_dot_tokens_dot_tokens__pb2.RegenerateTokenResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.tokens.ApiTokenService/FetchToken',
+            scalekit_dot_v1_dot_tokens_dot_tokens__pb2.FetchTokenRequest.SerializeToString,
+            scalekit_dot_v1_dot_tokens_dot_tokens__pb2.FetchTokenResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

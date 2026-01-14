@@ -58,16 +58,18 @@ class RequestInfo(_message.Message):
     def __init__(self, request_id: _Optional[str] = ..., serving_data: _Optional[str] = ...) -> None: ...
 
 class ResourceInfo(_message.Message):
-    __slots__ = ("resource_type", "resource_name", "owner", "description")
-    RESOURCE_TYPE_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("resource_name", "owner", "description", "required_permissions", "user")
     RESOURCE_NAME_FIELD_NUMBER: _ClassVar[int]
     OWNER_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
-    resource_type: str
+    REQUIRED_PERMISSIONS_FIELD_NUMBER: _ClassVar[int]
+    USER_FIELD_NUMBER: _ClassVar[int]
     resource_name: str
     owner: str
     description: str
-    def __init__(self, resource_type: _Optional[str] = ..., resource_name: _Optional[str] = ..., owner: _Optional[str] = ..., description: _Optional[str] = ...) -> None: ...
+    required_permissions: _containers.RepeatedScalarFieldContainer[str]
+    user: str
+    def __init__(self, resource_name: _Optional[str] = ..., owner: _Optional[str] = ..., description: _Optional[str] = ..., required_permissions: _Optional[_Iterable[str]] = ..., user: _Optional[str] = ...) -> None: ...
 
 class HelpInfo(_message.Message):
     __slots__ = ("links",)

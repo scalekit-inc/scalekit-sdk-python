@@ -1,6 +1,7 @@
 from buf.validate import validate_pb2 as _validate_pb2
 from google.api import annotations_pb2 as _annotations_pb2
 from google.api import field_behavior_pb2 as _field_behavior_pb2
+from google.api import visibility_pb2 as _visibility_pb2
 from google.protobuf import empty_pb2 as _empty_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
 from protoc_gen_openapiv2.options import annotations_pb2 as _annotations_pb2_1
@@ -19,8 +20,8 @@ class CreateTokenRequest(_message.Message):
     def __init__(self, token: _Optional[_Union[CreateToken, _Mapping]] = ...) -> None: ...
 
 class CreateToken(_message.Message):
-    __slots__ = ("organization_id", "user_id", "metadata", "expiry", "description")
-    class MetadataEntry(_message.Message):
+    __slots__ = ("organization_id", "user_id", "custom_claims", "expiry", "description")
+    class CustomClaimsEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
         VALUE_FIELD_NUMBER: _ClassVar[int]
@@ -29,15 +30,15 @@ class CreateToken(_message.Message):
         def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     USER_ID_FIELD_NUMBER: _ClassVar[int]
-    METADATA_FIELD_NUMBER: _ClassVar[int]
+    CUSTOM_CLAIMS_FIELD_NUMBER: _ClassVar[int]
     EXPIRY_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     organization_id: str
     user_id: str
-    metadata: _containers.ScalarMap[str, str]
+    custom_claims: _containers.ScalarMap[str, str]
     expiry: _timestamp_pb2.Timestamp
     description: str
-    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., expiry: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., description: _Optional[str] = ...) -> None: ...
+    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., custom_claims: _Optional[_Mapping[str, str]] = ..., expiry: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., description: _Optional[str] = ...) -> None: ...
 
 class CreateTokenResponse(_message.Message):
     __slots__ = ("token", "token_id", "token_info")
@@ -92,8 +93,8 @@ class ListTokensResponse(_message.Message):
     def __init__(self, tokens: _Optional[_Iterable[_Union[Token, _Mapping]]] = ..., total_count: _Optional[int] = ..., next_page_token: _Optional[str] = ..., prev_page_token: _Optional[str] = ...) -> None: ...
 
 class UpdateTokenRequest(_message.Message):
-    __slots__ = ("token", "metadata", "description")
-    class MetadataEntry(_message.Message):
+    __slots__ = ("token", "custom_claims", "description")
+    class CustomClaimsEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
         VALUE_FIELD_NUMBER: _ClassVar[int]
@@ -101,12 +102,12 @@ class UpdateTokenRequest(_message.Message):
         value: str
         def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
     TOKEN_FIELD_NUMBER: _ClassVar[int]
-    METADATA_FIELD_NUMBER: _ClassVar[int]
+    CUSTOM_CLAIMS_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     token: str
-    metadata: _containers.ScalarMap[str, str]
+    custom_claims: _containers.ScalarMap[str, str]
     description: str
-    def __init__(self, token: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., description: _Optional[str] = ...) -> None: ...
+    def __init__(self, token: _Optional[str] = ..., custom_claims: _Optional[_Mapping[str, str]] = ..., description: _Optional[str] = ...) -> None: ...
 
 class UpdateTokenResponse(_message.Message):
     __slots__ = ("token_info",)
@@ -115,8 +116,8 @@ class UpdateTokenResponse(_message.Message):
     def __init__(self, token_info: _Optional[_Union[Token, _Mapping]] = ...) -> None: ...
 
 class Token(_message.Message):
-    __slots__ = ("token_id", "organization_id", "user_id", "metadata", "expiry", "created_at", "description", "token_suffix")
-    class MetadataEntry(_message.Message):
+    __slots__ = ("token_id", "organization_id", "organization_external_id", "user_id", "user_external_id", "custom_claims", "expiry", "created_at", "description", "token_suffix", "email", "roles")
+    class CustomClaimsEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
         VALUE_FIELD_NUMBER: _ClassVar[int]
@@ -125,21 +126,29 @@ class Token(_message.Message):
         def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
     TOKEN_ID_FIELD_NUMBER: _ClassVar[int]
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
+    ORGANIZATION_EXTERNAL_ID_FIELD_NUMBER: _ClassVar[int]
     USER_ID_FIELD_NUMBER: _ClassVar[int]
-    METADATA_FIELD_NUMBER: _ClassVar[int]
+    USER_EXTERNAL_ID_FIELD_NUMBER: _ClassVar[int]
+    CUSTOM_CLAIMS_FIELD_NUMBER: _ClassVar[int]
     EXPIRY_FIELD_NUMBER: _ClassVar[int]
     CREATED_AT_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     TOKEN_SUFFIX_FIELD_NUMBER: _ClassVar[int]
+    EMAIL_FIELD_NUMBER: _ClassVar[int]
+    ROLES_FIELD_NUMBER: _ClassVar[int]
     token_id: str
     organization_id: str
+    organization_external_id: str
     user_id: str
-    metadata: _containers.ScalarMap[str, str]
+    user_external_id: str
+    custom_claims: _containers.ScalarMap[str, str]
     expiry: _timestamp_pb2.Timestamp
     created_at: _timestamp_pb2.Timestamp
     description: str
     token_suffix: str
-    def __init__(self, token_id: _Optional[str] = ..., organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., expiry: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., description: _Optional[str] = ..., token_suffix: _Optional[str] = ...) -> None: ...
+    email: str
+    roles: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, token_id: _Optional[str] = ..., organization_id: _Optional[str] = ..., organization_external_id: _Optional[str] = ..., user_id: _Optional[str] = ..., user_external_id: _Optional[str] = ..., custom_claims: _Optional[_Mapping[str, str]] = ..., expiry: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., description: _Optional[str] = ..., token_suffix: _Optional[str] = ..., email: _Optional[str] = ..., roles: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class UserProfile(_message.Message):
     __slots__ = ("user_id", "email", "name", "attributes")
@@ -160,13 +169,13 @@ class UserProfile(_message.Message):
     attributes: _containers.ScalarMap[str, str]
     def __init__(self, user_id: _Optional[str] = ..., email: _Optional[str] = ..., name: _Optional[str] = ..., attributes: _Optional[_Mapping[str, str]] = ...) -> None: ...
 
-class RegenerateTokenRequest(_message.Message):
+class FetchTokenRequest(_message.Message):
     __slots__ = ("token_id",)
     TOKEN_ID_FIELD_NUMBER: _ClassVar[int]
     token_id: str
     def __init__(self, token_id: _Optional[str] = ...) -> None: ...
 
-class RegenerateTokenResponse(_message.Message):
+class FetchTokenResponse(_message.Message):
     __slots__ = ("token", "retrieved_at", "token_info")
     TOKEN_FIELD_NUMBER: _ClassVar[int]
     RETRIEVED_AT_FIELD_NUMBER: _ClassVar[int]

@@ -8,7 +8,7 @@ from scalekit.v1.members import members_pb2 as scalekit_dot_v1_dot_members_dot_m
 
 class MembersServiceStub(object):
     """For the first closed beta build, we are not exposing the ability to create members. So, most of the APIs will have
-    WORKSPACE auth scope. when we release the members UI, we need to update those APIs to WORKSPACE_SESSION scope.
+    WORKSPACE auth scope. when we release the members UI, we need to update those APIs to WORKSPACE scope.
     """
 
     def __init__(self, channel):
@@ -56,7 +56,7 @@ class MembersServiceStub(object):
 
 class MembersServiceServicer(object):
     """For the first closed beta build, we are not exposing the ability to create members. So, most of the APIs will have
-    WORKSPACE auth scope. when we release the members UI, we need to update those APIs to WORKSPACE_SESSION scope.
+    WORKSPACE auth scope. when we release the members UI, we need to update those APIs to WORKSPACE scope.
     """
 
     def CreateMember(self, request, context):
@@ -148,7 +148,7 @@ def add_MembersServiceServicer_to_server(servicer, server):
  # This class is part of an EXPERIMENTAL API.
 class MembersService(object):
     """For the first closed beta build, we are not exposing the ability to create members. So, most of the APIs will have
-    WORKSPACE auth scope. when we release the members UI, we need to update those APIs to WORKSPACE_SESSION scope.
+    WORKSPACE auth scope. when we release the members UI, we need to update those APIs to WORKSPACE scope.
     """
 
     @staticmethod
