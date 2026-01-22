@@ -1,5 +1,3 @@
-# Reference
-
 ## ScalekitClient
 
 <details><summary><code>client.<a href="/scalekit/client.py">get_authorization_url</a>(redirect_uri, options?) -> str</code></summary>
