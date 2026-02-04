@@ -39,12 +39,12 @@ class TestTokens(BaseTest):
 
     def test_create_token_with_user_id(self):
         """Method to test create token scoped to a user"""
-        # First create a user
+        # Create a user with active membership (sendInvitationEmail=False)
         from scalekit.v1.users.users_pb2 import CreateUser
 
         user = CreateUser(email=Faker().email())
-        user_response = self.scalekit_client.users.create_user(
-            organization_id=self.org_id, user=user
+        user_response = self.scalekit_client.users.create_user_and_membership(
+            organization_id=self.org_id, user=user, send_invitation_email=False
         )
         user_id = user_response[0].user.id
 
