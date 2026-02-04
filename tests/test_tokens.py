@@ -137,12 +137,9 @@ class TestTokens(BaseTest):
         response = self.scalekit_client.tokens.invalidate_token(token=token_id)
         self.assertEqual(response[1].code().name, "OK")
 
-        # Token should not be in the list anymore
-        list_response = self.scalekit_client.tokens.list_tokens(
-            organization_id=self.org_id
-        )
-        token_ids = [t.token_id for t in list_response[0].tokens]
-        self.assertNotIn(token_id, token_ids)
+        # Verify token is no longer valid
+        with self.assertRaises(Exception):
+            self.scalekit_client.tokens.validate_token(token=token_id)
         self.token_id = None  # Already invalidated
 
     def test_invalidate_token_idempotent(self):
