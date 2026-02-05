@@ -337,8 +337,8 @@ class TestM2MClient(BaseTest):
             self.scalekit_client.m2m_client.list_organization_clients(
                 organization_id=f"org_{Faker().credit_card_number()}"
             )
-        except Exception as exp:
-            self.assertEqual(exp.args[0], "'NoneType' object has no attribute 'message'")
+        except ScalekitNotFoundException:
+            pass
 
     def __generate_token_for_org(self):
         organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
