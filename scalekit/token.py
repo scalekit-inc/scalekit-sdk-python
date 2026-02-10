@@ -55,6 +55,8 @@ class TokenClient:
         :returns:
             CreateTokenResponse with token, token_id, and token_info
         """
+        if not organization_id:
+            raise ValueError("organization_id is required")
         token = CreateToken(
             organization_id=organization_id,
         )
@@ -81,6 +83,8 @@ class TokenClient:
         :returns:
             ValidateTokenResponse with token_info
         """
+        if not token:
+            raise ValueError("token is required")
         return self.core_client.grpc_exec(
             self.token_service.ValidateToken.with_call,
             ValidateTokenRequest(token=token),
@@ -95,6 +99,8 @@ class TokenClient:
         :returns:
             Empty response (idempotent operation)
         """
+        if not token:
+            raise ValueError("token is required")
         return self.core_client.grpc_exec(
             self.token_service.InvalidateToken.with_call,
             InvalidateTokenRequest(token=token),
@@ -121,6 +127,8 @@ class TokenClient:
         :returns:
             ListTokensResponse with tokens, total_count, and pagination cursors
         """
+        if not organization_id:
+            raise ValueError("organization_id is required")
         request = ListTokensRequest(
             organization_id=organization_id,
             page_size=page_size,

@@ -37,6 +37,27 @@ class TestTokens(BaseTest):
         self.assertTrue(response[0].token_id.startswith("apit_"))
         self.token_id = response[0].token_id
 
+    def test_create_token_with_custom_claims(self):
+        """Method to test create token with custom claims"""
+        custom_claims = {"team": "engineering", "environment": "test"}
+
+        response = self.scalekit_client.tokens.create_token(
+            organization_id=self.org_id,
+            description="Token with custom claims",
+            custom_claims=custom_claims,
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertTrue(response[0] is not None)
+        self.assertTrue(response[0].token is not None)
+        self.assertTrue(response[0].token_id.startswith("apit_"))
+        self.assertEqual(
+            response[0].token_info.custom_claims["team"], "engineering"
+        )
+        self.assertEqual(
+            response[0].token_info.custom_claims["environment"], "test"
+        )
+        self.token_id = response[0].token_id
+
     def test_create_token_with_user_id(self):
         """Method to test create token scoped to a user"""
         # Create a user with active membership (sendInvitationEmail=False)
@@ -117,12 +138,27 @@ class TestTokens(BaseTest):
                 description=f"Token {i} for pagination test",
             )
 
-        # List with small page size
-        response = self.scalekit_client.tokens.list_tokens(
-            organization_id=self.org_id, page_size=2
+        # List with page size 1
+        page1 = self.scalekit_client.tokens.list_tokens(
+            organization_id=self.org_id, page_size=1
         )
-        self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(len(response[0].tokens) <= 2)
+        self.assertEqual(page1[1].code().name, "OK")
+        self.assertEqual(len(page1[0].tokens), 1)
+        self.assertTrue(page1[0].next_page_token)
+
+        # Get next page
+        page2 = self.scalekit_client.tokens.list_tokens(
+            organization_id=self.org_id,
+            page_size=1,
+            page_token=page1[0].next_page_token,
+        )
+        self.assertEqual(page2[1].code().name, "OK")
+        self.assertEqual(len(page2[0].tokens), 1)
+
+        # Ensure different tokens on different pages
+        self.assertNotEqual(
+            page1[0].tokens[0].token_id, page2[0].tokens[0].token_id
+        )
 
     def test_invalidate_token(self):
         """Method to test invalidate token"""
