@@ -1,6 +1,7 @@
 from faker import Faker
 
 from basetest import BaseTest
+from scalekit.common.exceptions import ScalekitValidateTokenFailureException
 from scalekit.v1.organizations.organizations_pb2 import CreateOrganization
 
 
@@ -174,7 +175,7 @@ class TestTokens(BaseTest):
         self.assertEqual(response[1].code().name, "OK")
 
         # Verify token is no longer valid
-        with self.assertRaises(Exception):
+        with self.assertRaises(ScalekitValidateTokenFailureException):
             self.scalekit_client.tokens.validate_token(token=token_id)
         self.token_id = None  # Already invalidated
 

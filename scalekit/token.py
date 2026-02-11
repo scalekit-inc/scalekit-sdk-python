@@ -1,6 +1,7 @@
 from typing import Optional, Dict
 
 from scalekit.core import CoreClient
+from scalekit.common.exceptions import ScalekitValidateTokenFailureException
 from scalekit.v1.tokens.tokens_pb2 import (
     CreateToken,
     CreateTokenRequest,
@@ -82,13 +83,17 @@ class TokenClient:
         :type         : ``` str ```
         :returns:
             ValidateTokenResponse with token_info
+        :raises ScalekitValidateTokenFailureException: If the token is invalid, expired, or not found
         """
         if not token:
             raise ValueError("token is required")
-        return self.core_client.grpc_exec(
-            self.token_service.ValidateToken.with_call,
-            ValidateTokenRequest(token=token),
-        )
+        try:
+            return self.core_client.grpc_exec(
+                self.token_service.ValidateToken.with_call,
+                ValidateTokenRequest(token=token),
+            )
+        except Exception as e:
+            raise ScalekitValidateTokenFailureException(e) from e
 
     def invalidate_token(self, token: str):
         """
