@@ -1,6 +1,7 @@
 from buf.validate import validate_pb2 as _validate_pb2
 from google.api import annotations_pb2 as _annotations_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
+from protoc_gen_openapiv2.options import annotations_pb2 as _annotations_pb2_1
 from scalekit.v1.options import options_pb2 as _options_pb2
 from google.protobuf.internal import containers as _containers
 from google.protobuf import descriptor as _descriptor
@@ -10,7 +11,7 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class ListAuthLogRequest(_message.Message):
-    __slots__ = ("page_size", "page_token", "email", "status", "start_time", "end_time", "resource_id", "connected_account_identifier")
+    __slots__ = ("page_size", "page_token", "email", "status", "start_time", "end_time", "resource_id", "connected_account_identifier", "client_id")
     PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
     PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
     EMAIL_FIELD_NUMBER: _ClassVar[int]
@@ -19,6 +20,7 @@ class ListAuthLogRequest(_message.Message):
     END_TIME_FIELD_NUMBER: _ClassVar[int]
     RESOURCE_ID_FIELD_NUMBER: _ClassVar[int]
     CONNECTED_ACCOUNT_IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
+    CLIENT_ID_FIELD_NUMBER: _ClassVar[int]
     page_size: int
     page_token: str
     email: str
@@ -27,7 +29,8 @@ class ListAuthLogRequest(_message.Message):
     end_time: _timestamp_pb2.Timestamp
     resource_id: str
     connected_account_identifier: str
-    def __init__(self, page_size: _Optional[int] = ..., page_token: _Optional[str] = ..., email: _Optional[str] = ..., status: _Optional[_Iterable[str]] = ..., start_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., end_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., resource_id: _Optional[str] = ..., connected_account_identifier: _Optional[str] = ...) -> None: ...
+    client_id: str
+    def __init__(self, page_size: _Optional[int] = ..., page_token: _Optional[str] = ..., email: _Optional[str] = ..., status: _Optional[_Iterable[str]] = ..., start_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., end_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., resource_id: _Optional[str] = ..., connected_account_identifier: _Optional[str] = ..., client_id: _Optional[str] = ...) -> None: ...
 
 class ListAuthLogResponse(_message.Message):
     __slots__ = ("next_page_token", "prev_page_token", "total_size", "authRequests")
@@ -42,7 +45,7 @@ class ListAuthLogResponse(_message.Message):
     def __init__(self, next_page_token: _Optional[str] = ..., prev_page_token: _Optional[str] = ..., total_size: _Optional[int] = ..., authRequests: _Optional[_Iterable[_Union[AuthLogRequest, _Mapping]]] = ...) -> None: ...
 
 class AuthLogRequest(_message.Message):
-    __slots__ = ("organization_id", "environment_id", "connection_id", "auth_request_id", "email", "connection_type", "connection_provider", "status", "timestamp", "connection_details", "workflow", "resource_id", "resource_name", "resource_type", "connected_account_identifier")
+    __slots__ = ("organization_id", "environment_id", "connection_id", "auth_request_id", "email", "connection_type", "connection_provider", "status", "timestamp", "connection_details", "workflow", "resource_id", "resource_name", "resource_type", "connected_account_identifier", "client_id", "client_name", "client_type")
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     ENVIRONMENT_ID_FIELD_NUMBER: _ClassVar[int]
     CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
@@ -58,6 +61,9 @@ class AuthLogRequest(_message.Message):
     RESOURCE_NAME_FIELD_NUMBER: _ClassVar[int]
     RESOURCE_TYPE_FIELD_NUMBER: _ClassVar[int]
     CONNECTED_ACCOUNT_IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
+    CLIENT_ID_FIELD_NUMBER: _ClassVar[int]
+    CLIENT_NAME_FIELD_NUMBER: _ClassVar[int]
+    CLIENT_TYPE_FIELD_NUMBER: _ClassVar[int]
     organization_id: str
     environment_id: str
     connection_id: str
@@ -73,7 +79,10 @@ class AuthLogRequest(_message.Message):
     resource_name: str
     resource_type: str
     connected_account_identifier: str
-    def __init__(self, organization_id: _Optional[str] = ..., environment_id: _Optional[str] = ..., connection_id: _Optional[str] = ..., auth_request_id: _Optional[str] = ..., email: _Optional[str] = ..., connection_type: _Optional[str] = ..., connection_provider: _Optional[str] = ..., status: _Optional[str] = ..., timestamp: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., connection_details: _Optional[_Iterable[_Union[ConnectionDetails, _Mapping]]] = ..., workflow: _Optional[str] = ..., resource_id: _Optional[str] = ..., resource_name: _Optional[str] = ..., resource_type: _Optional[str] = ..., connected_account_identifier: _Optional[str] = ...) -> None: ...
+    client_id: str
+    client_name: str
+    client_type: str
+    def __init__(self, organization_id: _Optional[str] = ..., environment_id: _Optional[str] = ..., connection_id: _Optional[str] = ..., auth_request_id: _Optional[str] = ..., email: _Optional[str] = ..., connection_type: _Optional[str] = ..., connection_provider: _Optional[str] = ..., status: _Optional[str] = ..., timestamp: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., connection_details: _Optional[_Iterable[_Union[ConnectionDetails, _Mapping]]] = ..., workflow: _Optional[str] = ..., resource_id: _Optional[str] = ..., resource_name: _Optional[str] = ..., resource_type: _Optional[str] = ..., connected_account_identifier: _Optional[str] = ..., client_id: _Optional[str] = ..., client_name: _Optional[str] = ..., client_type: _Optional[str] = ...) -> None: ...
 
 class ConnectionDetails(_message.Message):
     __slots__ = ("connection_id", "organization_id", "connection_type", "connection_provider")

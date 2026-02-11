@@ -9,7 +9,7 @@ from google.protobuf.internal import containers as _containers
 from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
-from typing import ClassVar as _ClassVar, Iterable as _Iterable, Optional as _Optional, Union as _Union
+from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Mapping, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
@@ -59,24 +59,34 @@ class MigrationFSAResponse(_message.Message):
     def __init__(self, success_environments: _Optional[int] = ..., failed_environments: _Optional[int] = ...) -> None: ...
 
 class MigrateStripeCustomersRequest(_message.Message):
-    __slots__ = ("workspace_ids", "plan_name", "batch_size")
+    __slots__ = ("migrate_stripe_customers",)
+    MIGRATE_STRIPE_CUSTOMERS_FIELD_NUMBER: _ClassVar[int]
+    migrate_stripe_customers: MigrateStripeCustomers
+    def __init__(self, migrate_stripe_customers: _Optional[_Union[MigrateStripeCustomers, _Mapping]] = ...) -> None: ...
+
+class MigrateStripeCustomers(_message.Message):
+    __slots__ = ("workspace_ids", "plan_name", "batch_size", "include_test_accounts")
     WORKSPACE_IDS_FIELD_NUMBER: _ClassVar[int]
     PLAN_NAME_FIELD_NUMBER: _ClassVar[int]
     BATCH_SIZE_FIELD_NUMBER: _ClassVar[int]
+    INCLUDE_TEST_ACCOUNTS_FIELD_NUMBER: _ClassVar[int]
     workspace_ids: _containers.RepeatedScalarFieldContainer[int]
     plan_name: str
     batch_size: int
-    def __init__(self, workspace_ids: _Optional[_Iterable[int]] = ..., plan_name: _Optional[str] = ..., batch_size: _Optional[int] = ...) -> None: ...
+    include_test_accounts: bool
+    def __init__(self, workspace_ids: _Optional[_Iterable[int]] = ..., plan_name: _Optional[str] = ..., batch_size: _Optional[int] = ..., include_test_accounts: bool = ...) -> None: ...
 
 class MigrateStripeCustomersResponse(_message.Message):
-    __slots__ = ("success_workspaces", "failed_workspaces", "error_messages")
-    SUCCESS_WORKSPACES_FIELD_NUMBER: _ClassVar[int]
-    FAILED_WORKSPACES_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("success_count", "failed_count", "failed_workspace_ids", "error_messages")
+    SUCCESS_COUNT_FIELD_NUMBER: _ClassVar[int]
+    FAILED_COUNT_FIELD_NUMBER: _ClassVar[int]
+    FAILED_WORKSPACE_IDS_FIELD_NUMBER: _ClassVar[int]
     ERROR_MESSAGES_FIELD_NUMBER: _ClassVar[int]
-    success_workspaces: int
-    failed_workspaces: int
+    success_count: int
+    failed_count: int
+    failed_workspace_ids: _containers.RepeatedScalarFieldContainer[int]
     error_messages: _containers.RepeatedScalarFieldContainer[str]
-    def __init__(self, success_workspaces: _Optional[int] = ..., failed_workspaces: _Optional[int] = ..., error_messages: _Optional[_Iterable[str]] = ...) -> None: ...
+    def __init__(self, success_count: _Optional[int] = ..., failed_count: _Optional[int] = ..., failed_workspace_ids: _Optional[_Iterable[int]] = ..., error_messages: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class MigrationSAMLResponse(_message.Message):
     __slots__ = ("success_environments", "failed_environments")
