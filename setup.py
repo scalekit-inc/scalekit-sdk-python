@@ -7,7 +7,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         "grpcio>=1.64.1",
-        "protobuf>=6.33.5,<7.0.0",
+        "protobuf>=5.29.5,<6",
         "google>=3.0",
         "requests>=2.32.3",
         "PyJWT>=2.8,<2.11",
@@ -16,7 +16,7 @@ setup(
         "setuptools>=78.1.1,<81.0",
         "grpcio-status>=1.64,<1.67",
         "protoc-gen-openapiv2>=0.0.1",
-        "googleapis-common-protos>=1.56.1,<1.66.0",
+        "googleapis-common-protos>=1.72.0",
         "deprecation>=2.1.0",
         "python-dotenv~=1.1.1",
         "Faker~=25.8.0",
