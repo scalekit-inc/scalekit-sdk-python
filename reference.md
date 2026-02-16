@@ -1,6 +1,6 @@
 ## ScalekitClient
 
-<details><summary><code>client.<a href="/scalekit/client.py">get_authorization_url</a>(redirect_uri, options?) -> str</code></summary>
+<details><summary><code>client.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/client.py">get_authorization_url</a>(redirect_uri, options?) -> str</code></summary>
 <dl>
 <dd>
 
@@ -84,7 +84,7 @@ auth_url = scalekit_client.get_authorization_url(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="/scalekit/client.py">authenticate_with_code</a>(code, redirect_uri, options?) -> dict</code></summary>
+<details><summary><code>client.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/client.py">authenticate_with_code</a>(code, redirect_uri, options?) -> dict</code></summary>
 <dl>
 <dd>
 
@@ -171,7 +171,7 @@ async def auth_callback(request):
 </dl>
 </details>
 
-<details><summary><code>client.<a href="/scalekit/client.py">get_idp_initiated_login_claims</a>(idp_initiated_login_token, options?) -> IdpInitiatedLoginClaims</code></summary>
+<details><summary><code>client.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/client.py">get_idp_initiated_login_claims</a>(idp_initiated_login_token, options?) -> IdpInitiatedLoginClaims</code></summary>
 <dl>
 <dd>
 
@@ -254,7 +254,7 @@ async def auth_callback(request):
 </dl>
 </details>
 
-<details><summary><code>client.<a href="/scalekit/client.py">validate_access_token</a>(token, options?) -> bool</code></summary>
+<details><summary><code>client.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/client.py">validate_access_token</a>(token, options?) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -319,7 +319,7 @@ if is_valid:
 </dl>
 </details>
 
-<details><summary><code>client.<a href="/scalekit/client.py">get_logout_url</a>(options?) -> str</code></summary>
+<details><summary><code>client.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/client.py">get_logout_url</a>(options?) -> str</code></summary>
 <dl>
 <dd>
 
@@ -380,7 +380,7 @@ logout_url = scalekit_client.get_logout_url(options)
 </dl>
 </details>
 
-<details><summary><code>client.<a href="/scalekit/client.py">verify_webhook_payload</a>(secret, headers, payload) -> bool</code></summary>
+<details><summary><code>client.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/client.py">verify_webhook_payload</a>(secret, headers, payload) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -463,7 +463,7 @@ async def webhook_handler(request):
 </dl>
 </details>
 
-<details><summary><code>client.<a href="/scalekit/client.py">refresh_access_token</a>(refresh_token) -> dict</code></summary>
+<details><summary><code>client.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/client.py">refresh_access_token</a>(refresh_token) -> dict</code></summary>
 <dl>
 <dd>
 
@@ -521,7 +521,7 @@ new_refresh_token = result['refresh_token']
 
 ## Organization
 
-<details><summary><code>client.organization.<a href="/scalekit/organization.py">list_organizations</a>(page_size, page_token?) -> ListOrganizationsResponse</code></summary>
+<details><summary><code>client.organization.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/organization.py">list_organizations</a>(page_size, page_token?) -> ListOrganizationsResponse</code></summary>
 <dl>
 <dd>
 
@@ -589,7 +589,7 @@ for org in response[0].organizations:
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="/scalekit/organization.py">create_organization</a>(organization) -> CreateOrganizationResponse</code></summary>
+<details><summary><code>client.organization.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/organization.py">create_organization</a>(organization) -> CreateOrganizationResponse</code></summary>
 <dl>
 <dd>
 
@@ -650,7 +650,7 @@ print(f"Created organization: {response[0].organization.id}")
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="/scalekit/organization.py">get_organization</a>(organization_id) -> GetOrganizationResponse</code></summary>
+<details><summary><code>client.organization.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/organization.py">get_organization</a>(organization_id) -> GetOrganizationResponse</code></summary>
 <dl>
 <dd>
 
@@ -706,7 +706,7 @@ print(f"Organization: {organization.display_name}")
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="/scalekit/organization.py">get_organization_by_external_id</a>(external_id) -> GetOrganizationResponse</code></summary>
+<details><summary><code>client.organization.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/organization.py">get_organization_by_external_id</a>(external_id) -> GetOrganizationResponse</code></summary>
 <dl>
 <dd>
 
@@ -761,7 +761,7 @@ organization = response[0].organization
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="/scalekit/organization.py">update_organization</a>(organization_id, organization) -> UpdateOrganizationResponse</code></summary>
+<details><summary><code>client.organization.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/organization.py">update_organization</a>(organization_id, organization) -> UpdateOrganizationResponse</code></summary>
 <dl>
 <dd>
 
@@ -828,7 +828,7 @@ response = scalekit_client.organization.update_organization('org_123456', org)
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="/scalekit/organization.py">delete_organization</a>(organization_id)</code></summary>
+<details><summary><code>client.organization.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/organization.py">delete_organization</a>(organization_id)</code></summary>
 <dl>
 <dd>
 
@@ -882,7 +882,7 @@ scalekit_client.organization.delete_organization('org_123456')
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="/scalekit/organization.py">generate_portal_link</a>(organization_id, features?) -> str</code></summary>
+<details><summary><code>client.organization.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/organization.py">generate_portal_link</a>(organization_id, features?) -> str</code></summary>
 <dl>
 <dd>
 
@@ -947,7 +947,7 @@ print(f"Portal Link: {portal_link}")
 
 ## Connection
 
-<details><summary><code>client.connection.<a href="/scalekit/connection.py">list_connections</a>(organization_id, include?) -> ListConnectionsResponse</code></summary>
+<details><summary><code>client.connection.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connection.py">list_connections</a>(organization_id, include?) -> ListConnectionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1015,7 +1015,7 @@ for conn in response[0].connections:
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="/scalekit/connection.py">list_connections_by_domain</a>(domain, include?) -> ListConnectionsResponse</code></summary>
+<details><summary><code>client.connection.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connection.py">list_connections_by_domain</a>(domain, include?) -> ListConnectionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1080,7 +1080,7 @@ response = scalekit_client.connection.list_connections_by_domain(
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="/scalekit/connection.py">get_connection</a>(organization_id, conn_id) -> GetConnectionResponse</code></summary>
+<details><summary><code>client.connection.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connection.py">get_connection</a>(organization_id, conn_id) -> GetConnectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1146,7 +1146,7 @@ connection = response[0].connection
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="/scalekit/connection.py">create_connection</a>(organization_id, connection) -> CreateConnectionResponse</code></summary>
+<details><summary><code>client.connection.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connection.py">create_connection</a>(organization_id, connection) -> CreateConnectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1216,7 +1216,7 @@ response = scalekit_client.connection.create_connection(
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="/scalekit/connection.py">enable_connection</a>(organization_id, conn_id) -> ToggleConnectionResponse</code></summary>
+<details><summary><code>client.connection.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connection.py">enable_connection</a>(organization_id, conn_id) -> ToggleConnectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1278,7 +1278,7 @@ scalekit_client.connection.enable_connection('org_123456', 'conn_123456')
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="/scalekit/connection.py">disable_connection</a>(organization_id, conn_id) -> ToggleConnectionResponse</code></summary>
+<details><summary><code>client.connection.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connection.py">disable_connection</a>(organization_id, conn_id) -> ToggleConnectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1340,7 +1340,7 @@ scalekit_client.connection.disable_connection('org_123456', 'conn_123456')
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="/scalekit/connection.py">delete_connection</a>(organization_id, connection_id)</code></summary>
+<details><summary><code>client.connection.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connection.py">delete_connection</a>(organization_id, connection_id)</code></summary>
 <dl>
 <dd>
 
@@ -1404,7 +1404,7 @@ scalekit_client.connection.delete_connection('org_123456', 'conn_123456')
 
 ## Domain
 
-<details><summary><code>client.domain.<a href="/scalekit/domain.py">create_domain</a>(organization_id, domain_name, domain_type?) -> CreateDomainResponse</code></summary>
+<details><summary><code>client.domain.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/domain.py">create_domain</a>(organization_id, domain_name, domain_type?) -> CreateDomainResponse</code></summary>
 <dl>
 <dd>
 
@@ -1478,7 +1478,7 @@ response = scalekit_client.domain.create_domain(
 </dl>
 </details>
 
-<details><summary><code>client.domain.<a href="/scalekit/domain.py">list_domains</a>(organization_id, domain_type?) -> ListDomainResponse</code></summary>
+<details><summary><code>client.domain.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/domain.py">list_domains</a>(organization_id, domain_type?) -> ListDomainResponse</code></summary>
 <dl>
 <dd>
 
@@ -1546,7 +1546,7 @@ for domain in response[0].domains:
 </dl>
 </details>
 
-<details><summary><code>client.domain.<a href="/scalekit/domain.py">get_domain</a>(organization_id, domain_id) -> GetDomainResponse</code></summary>
+<details><summary><code>client.domain.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/domain.py">get_domain</a>(organization_id, domain_id) -> GetDomainResponse</code></summary>
 <dl>
 <dd>
 
@@ -1609,7 +1609,7 @@ domain = response[0].domain
 </dl>
 </details>
 
-<details><summary><code>client.domain.<a href="/scalekit/domain.py">delete_domain</a>(organization_id, domain_id)</code></summary>
+<details><summary><code>client.domain.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/domain.py">delete_domain</a>(organization_id, domain_id)</code></summary>
 <dl>
 <dd>
 
@@ -1673,7 +1673,7 @@ scalekit_client.domain.delete_domain('org_123456', 'domain_123456')
 
 ## Directory
 
-<details><summary><code>client.directory.<a href="/scalekit/directory.py">list_directories</a>(organization_id) -> ListDirectoriesResponse</code></summary>
+<details><summary><code>client.directory.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/directory.py">list_directories</a>(organization_id) -> ListDirectoriesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1730,7 +1730,7 @@ for directory in response[0].directories:
 </dl>
 </details>
 
-<details><summary><code>client.directory.<a href="/scalekit/directory.py">get_directory</a>(organization_id, directory_id) -> GetDirectoryResponse</code></summary>
+<details><summary><code>client.directory.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/directory.py">get_directory</a>(organization_id, directory_id) -> GetDirectoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -1796,7 +1796,7 @@ directory = response[0].directory
 </dl>
 </details>
 
-<details><summary><code>client.directory.<a href="/scalekit/directory.py">create_directory</a>(organization_id, directory) -> CreateDirectoryResponse</code></summary>
+<details><summary><code>client.directory.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/directory.py">create_directory</a>(organization_id, directory) -> CreateDirectoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -1866,7 +1866,7 @@ response = scalekit_client.directory.create_directory(
 </dl>
 </details>
 
-<details><summary><code>client.directory.<a href="/scalekit/directory.py">list_directory_users</a>(organization_id, directory_id, page_size?, page_token?, include_detail?, updated_after?) -> tuple[ListDirUsersResponse, Any]</code></summary>
+<details><summary><code>client.directory.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/directory.py">list_directory_users</a>(organization_id, directory_id, page_size?, page_token?, include_detail?, updated_after?) -> tuple[ListDirUsersResponse, Any]</code></summary>
 <dl>
 <dd>
 
@@ -1967,7 +1967,7 @@ for user in response[0].users:
 </dl>
 </details>
 
-<details><summary><code>client.directory.<a href="/scalekit/directory.py">list_directory_groups</a>(organization_id, directory_id, page_size?, page_token?, include_detail?, updated_after?) -> tuple[ListDirGroupsResponse, Any]</code></summary>
+<details><summary><code>client.directory.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/directory.py">list_directory_groups</a>(organization_id, directory_id, page_size?, page_token?, include_detail?, updated_after?) -> tuple[ListDirGroupsResponse, Any]</code></summary>
 <dl>
 <dd>
 
@@ -2068,7 +2068,7 @@ for group in response[0].groups:
 </dl>
 </details>
 
-<details><summary><code>client.directory.<a href="/scalekit/directory.py">enable_directory</a>(organization_id, directory_id) -> ToggleDirectoryResponse</code></summary>
+<details><summary><code>client.directory.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/directory.py">enable_directory</a>(organization_id, directory_id) -> ToggleDirectoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -2130,7 +2130,7 @@ scalekit_client.directory.enable_directory('org_123456', 'directory_123456')
 </dl>
 </details>
 
-<details><summary><code>client.directory.<a href="/scalekit/directory.py">disable_directory</a>(organization_id, directory_id) -> ToggleDirectoryResponse</code></summary>
+<details><summary><code>client.directory.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/directory.py">disable_directory</a>(organization_id, directory_id) -> ToggleDirectoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -2192,7 +2192,7 @@ scalekit_client.directory.disable_directory('org_123456', 'directory_123456')
 </dl>
 </details>
 
-<details><summary><code>client.directory.<a href="/scalekit/directory.py">delete_directory</a>(organization_id, directory_id)</code></summary>
+<details><summary><code>client.directory.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/directory.py">delete_directory</a>(organization_id, directory_id)</code></summary>
 <dl>
 <dd>
 
@@ -2256,7 +2256,7 @@ scalekit_client.directory.delete_directory('org_123456', 'directory_123456')
 
 ## User
 
-<details><summary><code>client.users.<a href="/scalekit/users.py">list_users</a>(page_size?, page_token?) -> ListUsersResponse</code></summary>
+<details><summary><code>client.users.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/users.py">list_users</a>(page_size?, page_token?) -> ListUsersResponse</code></summary>
 <dl>
 <dd>
 
@@ -2324,7 +2324,7 @@ for user in response[0].users:
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="/scalekit/users.py">list_organization_users</a>(organization_id, page_size?, page_token?) -> ListOrganizationUsersResponse</code></summary>
+<details><summary><code>client.users.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/users.py">list_organization_users</a>(organization_id, page_size?, page_token?) -> ListOrganizationUsersResponse</code></summary>
 <dl>
 <dd>
 
@@ -2400,7 +2400,7 @@ for user in response[0].users:
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="/scalekit/users.py">get_user</a>(user_id) -> GetUserResponse</code></summary>
+<details><summary><code>client.users.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/users.py">get_user</a>(user_id) -> GetUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -2456,7 +2456,7 @@ print(f"User: {user.email}")
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="/scalekit/users.py">get_user_by_external_id</a>(external_id) -> GetUserResponse</code></summary>
+<details><summary><code>client.users.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/users.py">get_user_by_external_id</a>(external_id) -> GetUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -2511,7 +2511,7 @@ user = response[0].user
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="/scalekit/users.py">create_user_and_membership</a>(organization_id, user, send_invitation_email?) -> CreateUserAndMembershipResponse</code></summary>
+<details><summary><code>client.users.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/users.py">create_user_and_membership</a>(organization_id, user, send_invitation_email?) -> CreateUserAndMembershipResponse</code></summary>
 <dl>
 <dd>
 
@@ -2592,7 +2592,7 @@ response = scalekit_client.users.create_user_and_membership(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="/scalekit/users.py">update_user</a>(user_id, user) -> UpdateUserResponse</code></summary>
+<details><summary><code>client.users.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/users.py">update_user</a>(user_id, user) -> UpdateUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -2659,7 +2659,7 @@ response = scalekit_client.users.update_user('usr_123456', user)
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="/scalekit/users.py">delete_user</a>(user_id)</code></summary>
+<details><summary><code>client.users.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/users.py">delete_user</a>(user_id)</code></summary>
 <dl>
 <dd>
 
@@ -2713,7 +2713,7 @@ scalekit_client.users.delete_user('usr_123456')
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="/scalekit/users.py">create_membership</a>(organization_id, user_id, membership, send_invitation_email?) -> CreateMembershipResponse</code></summary>
+<details><summary><code>client.users.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/users.py">create_membership</a>(organization_id, user_id, membership, send_invitation_email?) -> CreateMembershipResponse</code></summary>
 <dl>
 <dd>
 
@@ -2800,7 +2800,7 @@ response = scalekit_client.users.create_membership(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="/scalekit/users.py">update_membership</a>(organization_id, user_id, membership) -> UpdateMembershipResponse</code></summary>
+<details><summary><code>client.users.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/users.py">update_membership</a>(organization_id, user_id, membership) -> UpdateMembershipResponse</code></summary>
 <dl>
 <dd>
 
@@ -2878,7 +2878,7 @@ response = scalekit_client.users.update_membership(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="/scalekit/users.py">delete_membership</a>(organization_id, user_id)</code></summary>
+<details><summary><code>client.users.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/users.py">delete_membership</a>(organization_id, user_id)</code></summary>
 <dl>
 <dd>
 
@@ -2940,7 +2940,7 @@ scalekit_client.users.delete_membership('org_123456', 'usr_123456')
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="/scalekit/users.py">resend_invite</a>(organization_id, user_id) -> ResendInviteResponse</code></summary>
+<details><summary><code>client.users.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/users.py">resend_invite</a>(organization_id, user_id) -> ResendInviteResponse</code></summary>
 <dl>
 <dd>
 
@@ -3004,7 +3004,7 @@ response = scalekit_client.users.resend_invite('org_123456', 'usr_123456')
 
 ## Role
 
-<details><summary><code>client.roles.<a href="/scalekit/role.py">list_roles</a>() -> ListRolesResponse</code></summary>
+<details><summary><code>client.roles.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/role.py">list_roles</a>() -> ListRolesResponse</code></summary>
 <dl>
 <dd>
 
@@ -3046,7 +3046,7 @@ for role in response[0].roles:
 </dl>
 </details>
 
-<details><summary><code>client.roles.<a href="/scalekit/role.py">get_role</a>(role_name) -> GetRoleResponse</code></summary>
+<details><summary><code>client.roles.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/role.py">get_role</a>(role_name) -> GetRoleResponse</code></summary>
 <dl>
 <dd>
 
@@ -3101,7 +3101,7 @@ role = response[0].role
 </dl>
 </details>
 
-<details><summary><code>client.roles.<a href="/scalekit/role.py">create_role</a>(role) -> CreateRoleResponse</code></summary>
+<details><summary><code>client.roles.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/role.py">create_role</a>(role) -> CreateRoleResponse</code></summary>
 <dl>
 <dd>
 
@@ -3161,7 +3161,7 @@ response = scalekit_client.roles.create_role(role)
 </dl>
 </details>
 
-<details><summary><code>client.roles.<a href="/scalekit/role.py">update_role</a>(role_name, role) -> UpdateRoleResponse</code></summary>
+<details><summary><code>client.roles.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/role.py">update_role</a>(role_name, role) -> UpdateRoleResponse</code></summary>
 <dl>
 <dd>
 
@@ -3228,7 +3228,7 @@ response = scalekit_client.roles.update_role('editor', role)
 </dl>
 </details>
 
-<details><summary><code>client.roles.<a href="/scalekit/role.py">delete_role</a>(role_name, reassign_role_name?)</code></summary>
+<details><summary><code>client.roles.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/role.py">delete_role</a>(role_name, reassign_role_name?)</code></summary>
 <dl>
 <dd>
 
@@ -3290,7 +3290,7 @@ scalekit_client.roles.delete_role('editor', reassign_role_name='viewer')
 </dl>
 </details>
 
-<details><summary><code>client.roles.<a href="/scalekit/role.py">get_role_users_count</a>(role_name) -> GetRoleUsersCountResponse</code></summary>
+<details><summary><code>client.roles.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/role.py">get_role_users_count</a>(role_name) -> GetRoleUsersCountResponse</code></summary>
 <dl>
 <dd>
 
@@ -3345,7 +3345,7 @@ print(f"User count: {response[0].count}")
 </dl>
 </details>
 
-<details><summary><code>client.roles.<a href="/scalekit/role.py">list_organization_roles</a>(org_id) -> ListOrganizationRolesResponse</code></summary>
+<details><summary><code>client.roles.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/role.py">list_organization_roles</a>(org_id) -> ListOrganizationRolesResponse</code></summary>
 <dl>
 <dd>
 
@@ -3402,7 +3402,7 @@ for role in response[0].roles:
 </dl>
 </details>
 
-<details><summary><code>client.roles.<a href="/scalekit/role.py">create_organization_role</a>(org_id, role) -> CreateOrganizationRoleResponse</code></summary>
+<details><summary><code>client.roles.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/role.py">create_organization_role</a>(org_id, role) -> CreateOrganizationRoleResponse</code></summary>
 <dl>
 <dd>
 
@@ -3470,7 +3470,7 @@ response = scalekit_client.roles.create_organization_role('org_123456', role)
 </dl>
 </details>
 
-<details><summary><code>client.roles.<a href="/scalekit/role.py">get_organization_role</a>(org_id, role_name) -> GetOrganizationRoleResponse</code></summary>
+<details><summary><code>client.roles.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/role.py">get_organization_role</a>(org_id, role_name) -> GetOrganizationRoleResponse</code></summary>
 <dl>
 <dd>
 
@@ -3533,7 +3533,7 @@ role = response[0].role
 </dl>
 </details>
 
-<details><summary><code>client.roles.<a href="/scalekit/role.py">update_organization_role</a>(org_id, role_name, role) -> UpdateOrganizationRoleResponse</code></summary>
+<details><summary><code>client.roles.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/role.py">update_organization_role</a>(org_id, role_name, role) -> UpdateOrganizationRoleResponse</code></summary>
 <dl>
 <dd>
 
@@ -3612,7 +3612,7 @@ response = scalekit_client.roles.update_organization_role(
 </dl>
 </details>
 
-<details><summary><code>client.roles.<a href="/scalekit/role.py">delete_organization_role</a>(org_id, role_name, reassign_role_name?)</code></summary>
+<details><summary><code>client.roles.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/role.py">delete_organization_role</a>(org_id, role_name, reassign_role_name?)</code></summary>
 <dl>
 <dd>
 
@@ -3688,7 +3688,7 @@ scalekit_client.roles.delete_organization_role(
 
 ## Permission
 
-<details><summary><code>client.permissions.<a href="/scalekit/permissions.py">list_permissions</a>(page_token?, page_size?) -> ListPermissionsResponse</code></summary>
+<details><summary><code>client.permissions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/permissions.py">list_permissions</a>(page_token?, page_size?) -> ListPermissionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3755,7 +3755,7 @@ for permission in response[0].permissions:
 </dl>
 </details>
 
-<details><summary><code>client.permissions.<a href="/scalekit/permissions.py">get_permission</a>(permission_name) -> GetPermissionResponse</code></summary>
+<details><summary><code>client.permissions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/permissions.py">get_permission</a>(permission_name) -> GetPermissionResponse</code></summary>
 <dl>
 <dd>
 
@@ -3810,7 +3810,7 @@ permission = response[0].permission
 </dl>
 </details>
 
-<details><summary><code>client.permissions.<a href="/scalekit/permissions.py">create_permission</a>(permission) -> CreatePermissionResponse</code></summary>
+<details><summary><code>client.permissions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/permissions.py">create_permission</a>(permission) -> CreatePermissionResponse</code></summary>
 <dl>
 <dd>
 
@@ -3870,7 +3870,7 @@ response = scalekit_client.permissions.create_permission(permission)
 </dl>
 </details>
 
-<details><summary><code>client.permissions.<a href="/scalekit/permissions.py">update_permission</a>(permission_name, permission) -> UpdatePermissionResponse</code></summary>
+<details><summary><code>client.permissions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/permissions.py">update_permission</a>(permission_name, permission) -> UpdatePermissionResponse</code></summary>
 <dl>
 <dd>
 
@@ -3940,7 +3940,7 @@ response = scalekit_client.permissions.update_permission(
 </dl>
 </details>
 
-<details><summary><code>client.permissions.<a href="/scalekit/permissions.py">delete_permission</a>(permission_name)</code></summary>
+<details><summary><code>client.permissions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/permissions.py">delete_permission</a>(permission_name)</code></summary>
 <dl>
 <dd>
 
@@ -3994,7 +3994,7 @@ scalekit_client.permissions.delete_permission('write:articles')
 </dl>
 </details>
 
-<details><summary><code>client.permissions.<a href="/scalekit/permissions.py">list_role_permissions</a>(role_name) -> ListRolePermissionsResponse</code></summary>
+<details><summary><code>client.permissions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/permissions.py">list_role_permissions</a>(role_name) -> ListRolePermissionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4051,7 +4051,7 @@ for permission in response[0].permissions:
 </dl>
 </details>
 
-<details><summary><code>client.permissions.<a href="/scalekit/permissions.py">add_permissions_to_role</a>(role_name, permission_names)</code></summary>
+<details><summary><code>client.permissions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/permissions.py">add_permissions_to_role</a>(role_name, permission_names)</code></summary>
 <dl>
 <dd>
 
@@ -4116,7 +4116,7 @@ scalekit_client.permissions.add_permissions_to_role(
 </dl>
 </details>
 
-<details><summary><code>client.permissions.<a href="/scalekit/permissions.py">remove_permission_from_role</a>(role_name, permission_name)</code></summary>
+<details><summary><code>client.permissions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/permissions.py">remove_permission_from_role</a>(role_name, permission_name)</code></summary>
 <dl>
 <dd>
 
@@ -4181,7 +4181,7 @@ scalekit_client.permissions.remove_permission_from_role(
 </dl>
 </details>
 
-<details><summary><code>client.permissions.<a href="/scalekit/permissions.py">list_effective_role_permissions</a>(role_name) -> ListEffectiveRolePermissionsResponse</code></summary>
+<details><summary><code>client.permissions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/permissions.py">list_effective_role_permissions</a>(role_name) -> ListEffectiveRolePermissionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4241,7 +4241,7 @@ print(f'Total effective permissions: {len(response[0].permissions)}')
 
 ## Passwordless
 
-<details><summary><code>client.passwordless.<a href="/scalekit/passwordless.py">send_passwordless_email</a>(email, template?, magiclink_auth_uri?, state?, expires_in?, template_variables?) -> SendPasswordlessResponse</code></summary>
+<details><summary><code>client.passwordless.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/passwordless.py">send_passwordless_email</a>(email, template?, magiclink_auth_uri?, state?, expires_in?, template_variables?) -> SendPasswordlessResponse</code></summary>
 <dl>
 <dd>
 
@@ -4342,7 +4342,7 @@ print(f'Auth Request ID: {response[0].auth_request_id}')
 </dl>
 </details>
 
-<details><summary><code>client.passwordless.<a href="/scalekit/passwordless.py">verify_passwordless_email</a>(code?, link_token?, auth_request_id?) -> VerifyPasswordLessResponse</code></summary>
+<details><summary><code>client.passwordless.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/passwordless.py">verify_passwordless_email</a>(code?, link_token?, auth_request_id?) -> VerifyPasswordLessResponse</code></summary>
 <dl>
 <dd>
 
@@ -4417,7 +4417,7 @@ print(f'Email: {response[0].email}')
 </dl>
 </details>
 
-<details><summary><code>client.passwordless.<a href="/scalekit/passwordless.py">resend_passwordless_email</a>(auth_request_id) -> SendPasswordlessResponse</code></summary>
+<details><summary><code>client.passwordless.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/passwordless.py">resend_passwordless_email</a>(auth_request_id) -> SendPasswordlessResponse</code></summary>
 <dl>
 <dd>
 
@@ -4473,7 +4473,7 @@ response = scalekit_client.passwordless.resend_passwordless_email('auth_request_
 
 ## WebAuthn
 
-<details><summary><code>client.webauthn.<a href="/scalekit/webauthn.py">list_credentials</a>(user_id) -> ListCredentialsResponse</code></summary>
+<details><summary><code>client.webauthn.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/webauthn.py">list_credentials</a>(user_id) -> ListCredentialsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4528,7 +4528,7 @@ print(f'Credentials: {response[0].credentials}')
 </dl>
 </details>
 
-<details><summary><code>client.webauthn.<a href="/scalekit/webauthn.py">update_credential</a>(credential_id, display_name) -> UpdateCredentialResponse</code></summary>
+<details><summary><code>client.webauthn.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/webauthn.py">update_credential</a>(credential_id, display_name) -> UpdateCredentialResponse</code></summary>
 <dl>
 <dd>
 
@@ -4593,7 +4593,7 @@ response = scalekit_client.webauthn.update_credential(
 </dl>
 </details>
 
-<details><summary><code>client.webauthn.<a href="/scalekit/webauthn.py">delete_credential</a>(credential_id) -> DeleteCredentialResponse</code></summary>
+<details><summary><code>client.webauthn.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/webauthn.py">delete_credential</a>(credential_id) -> DeleteCredentialResponse</code></summary>
 <dl>
 <dd>
 
@@ -4650,7 +4650,7 @@ print(f'Deleted: {response[0].success}')
 
 ## Auth
 
-<details><summary><code>client.auth.<a href="/scalekit/auth.py">update_login_user_details</a>(connection_id, login_request_id, user?) -> Empty</code></summary>
+<details><summary><code>client.auth.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/auth.py">update_login_user_details</a>(connection_id, login_request_id, user?) -> Empty</code></summary>
 <dl>
 <dd>
 
@@ -4745,7 +4745,7 @@ scalekit_client.auth.update_login_user_details(
 
 ## Sessions
 
-<details><summary><code>client.sessions.<a href="/scalekit/sessions.py">get_session</a>(session_id) -> SessionDetails</code></summary>
+<details><summary><code>client.sessions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/sessions.py">get_session</a>(session_id) -> SessionDetails</code></summary>
 <dl>
 <dd>
 
@@ -4800,7 +4800,7 @@ session = response[0]
 </dl>
 </details>
 
-<details><summary><code>client.sessions.<a href="/scalekit/sessions.py">get_user_sessions</a>(user_id, page_size?, page_token?, filter?) -> UserSessionDetails</code></summary>
+<details><summary><code>client.sessions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/sessions.py">get_user_sessions</a>(user_id, page_size?, page_token?, filter?) -> UserSessionDetails</code></summary>
 <dl>
 <dd>
 
@@ -4884,7 +4884,7 @@ for session in response[0].sessions:
 </dl>
 </details>
 
-<details><summary><code>client.sessions.<a href="/scalekit/sessions.py">revoke_session</a>(session_id) -> RevokeSessionResponse</code></summary>
+<details><summary><code>client.sessions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/sessions.py">revoke_session</a>(session_id) -> RevokeSessionResponse</code></summary>
 <dl>
 <dd>
 
@@ -4938,7 +4938,7 @@ response = scalekit_client.sessions.revoke_session('session_123456')
 </dl>
 </details>
 
-<details><summary><code>client.sessions.<a href="/scalekit/sessions.py">revoke_all_user_sessions</a>(user_id) -> RevokeAllUserSessionsResponse</code></summary>
+<details><summary><code>client.sessions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/sessions.py">revoke_all_user_sessions</a>(user_id) -> RevokeAllUserSessionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4994,7 +4994,7 @@ response = scalekit_client.sessions.revoke_all_user_sessions('usr_123456')
 
 ## M2M Client
 
-<details><summary><code>client.m2m_client.<a href="/scalekit/m2m_client.py">list_organization_clients</a>(organization_id, page_size?, page_token?) -> ListOrganizationClientsResponse</code></summary>
+<details><summary><code>client.m2m_client.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/m2m_client.py">list_organization_clients</a>(organization_id, page_size?, page_token?) -> ListOrganizationClientsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5070,7 +5070,7 @@ for client in response[0].clients:
 </dl>
 </details>
 
-<details><summary><code>client.m2m_client.<a href="/scalekit/m2m_client.py">get_organization_client</a>(organization_id, client_id) -> GetOrganizationClientResponse</code></summary>
+<details><summary><code>client.m2m_client.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/m2m_client.py">get_organization_client</a>(organization_id, client_id) -> GetOrganizationClientResponse</code></summary>
 <dl>
 <dd>
 
@@ -5135,7 +5135,7 @@ response = scalekit_client.m2m_client.get_organization_client(
 </dl>
 </details>
 
-<details><summary><code>client.m2m_client.<a href="/scalekit/m2m_client.py">create_organization_client</a>(organization_id, m2m_client) -> CreateOrganizationClientResponse</code></summary>
+<details><summary><code>client.m2m_client.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/m2m_client.py">create_organization_client</a>(organization_id, m2m_client) -> CreateOrganizationClientResponse</code></summary>
 <dl>
 <dd>
 
@@ -5205,7 +5205,7 @@ response = scalekit_client.m2m_client.create_organization_client(
 </dl>
 </details>
 
-<details><summary><code>client.m2m_client.<a href="/scalekit/m2m_client.py">update_organization_client</a>(organization_id, client_id, m2m_client) -> UpdateOrganizationClientResponse</code></summary>
+<details><summary><code>client.m2m_client.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/m2m_client.py">update_organization_client</a>(organization_id, client_id, m2m_client) -> UpdateOrganizationClientResponse</code></summary>
 <dl>
 <dd>
 
@@ -5284,7 +5284,7 @@ response = scalekit_client.m2m_client.update_organization_client(
 </dl>
 </details>
 
-<details><summary><code>client.m2m_client.<a href="/scalekit/m2m_client.py">delete_organization_client</a>(organization_id, client_id) -> None</code></summary>
+<details><summary><code>client.m2m_client.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/m2m_client.py">delete_organization_client</a>(organization_id, client_id) -> None</code></summary>
 <dl>
 <dd>
 
@@ -5349,7 +5349,7 @@ scalekit_client.m2m_client.delete_organization_client(
 </dl>
 </details>
 
-<details><summary><code>client.m2m_client.<a href="/scalekit/m2m_client.py">add_organization_client_secret</a>(organization_id, client_id) -> CreateOrganizationClientSecretResponse</code></summary>
+<details><summary><code>client.m2m_client.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/m2m_client.py">add_organization_client_secret</a>(organization_id, client_id) -> CreateOrganizationClientSecretResponse</code></summary>
 <dl>
 <dd>
 
@@ -5414,7 +5414,7 @@ response = scalekit_client.m2m_client.add_organization_client_secret(
 </dl>
 </details>
 
-<details><summary><code>client.m2m_client.<a href="/scalekit/m2m_client.py">remove_organization_client_secret</a>(organization_id, client_id, secret_id) -> None</code></summary>
+<details><summary><code>client.m2m_client.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/m2m_client.py">remove_organization_client_secret</a>(organization_id, client_id, secret_id) -> None</code></summary>
 <dl>
 <dd>
 
@@ -5490,7 +5490,7 @@ scalekit_client.m2m_client.remove_organization_client_secret(
 
 ## Connected Accounts
 
-<details><summary><code>client.connected_accounts.<a href="/scalekit/connected_accounts.py">list_connected_accounts</a>(organization_id?, user_id?, connector?, identifier?, provider?, page_size?, page_token?) -> ListConnectedAccountsResponse</code></summary>
+<details><summary><code>client.connected_accounts.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connected_accounts.py">list_connected_accounts</a>(organization_id?, user_id?, connector?, identifier?, provider?, page_size?, page_token?) -> ListConnectedAccountsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5599,7 +5599,7 @@ for account in response[0].connected_accounts:
 </dl>
 </details>
 
-<details><summary><code>client.connected_accounts.<a href="/scalekit/connected_accounts.py">get_connected_account_by_identifier</a>(connector, identifier, organization_id?, user_id?, connected_account_id?) -> GetConnectedAccountByIdentifierResponse</code></summary>
+<details><summary><code>client.connected_accounts.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connected_accounts.py">get_connected_account_by_identifier</a>(connector, identifier, organization_id?, user_id?, connected_account_id?) -> GetConnectedAccountByIdentifierResponse</code></summary>
 <dl>
 <dd>
 
@@ -5690,7 +5690,7 @@ response = scalekit_client.connected_accounts.get_connected_account_by_identifie
 </dl>
 </details>
 
-<details><summary><code>client.connected_accounts.<a href="/scalekit/connected_accounts.py">create_connected_account</a>(connector, identifier, connected_account, organization_id?, user_id?) -> CreateConnectedAccountResponse</code></summary>
+<details><summary><code>client.connected_accounts.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connected_accounts.py">create_connected_account</a>(connector, identifier, connected_account, organization_id?, user_id?) -> CreateConnectedAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -5786,7 +5786,7 @@ response = scalekit_client.connected_accounts.create_connected_account(
 </dl>
 </details>
 
-<details><summary><code>client.connected_accounts.<a href="/scalekit/connected_accounts.py">update_connected_account</a>(connector, identifier, connected_account, organization_id?, user_id?, connected_account_id?) -> UpdateConnectedAccountResponse</code></summary>
+<details><summary><code>client.connected_accounts.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connected_accounts.py">update_connected_account</a>(connector, identifier, connected_account, organization_id?, user_id?, connected_account_id?) -> UpdateConnectedAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -5890,7 +5890,7 @@ response = scalekit_client.connected_accounts.update_connected_account(
 </dl>
 </details>
 
-<details><summary><code>client.connected_accounts.<a href="/scalekit/connected_accounts.py">delete_connected_account</a>(connector, identifier, organization_id?, user_id?, connected_account_id?) -> DeleteConnectedAccountResponse</code></summary>
+<details><summary><code>client.connected_accounts.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connected_accounts.py">delete_connected_account</a>(connector, identifier, organization_id?, user_id?, connected_account_id?) -> DeleteConnectedAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -5981,7 +5981,7 @@ scalekit_client.connected_accounts.delete_connected_account(
 </dl>
 </details>
 
-<details><summary><code>client.connected_accounts.<a href="/scalekit/connected_accounts.py">get_magic_link_for_connected_account</a>(connector, identifier, organization_id?, user_id?, connected_account_id?) -> GetMagicLinkForConnectedAccountResponse</code></summary>
+<details><summary><code>client.connected_accounts.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connected_accounts.py">get_magic_link_for_connected_account</a>(connector, identifier, organization_id?, user_id?, connected_account_id?) -> GetMagicLinkForConnectedAccountResponse</code></summary>
 <dl>
 <dd>
 
