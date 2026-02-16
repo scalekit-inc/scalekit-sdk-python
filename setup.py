@@ -12,7 +12,7 @@ setup(
         "requests>=2.32.3",
         "PyJWT>=2.8,<2.11",
         "cffi>=1.15.1",
-        "cryptography==45.0.6",
+        "cryptography==46.0.5",
         "setuptools>=78.1.1,<81.0",
         "grpcio-status>=1.64,<1.67",
         "protoc-gen-openapiv2>=0.0.1",
