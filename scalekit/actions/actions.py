@@ -1,4 +1,5 @@
-from typing import Optional, Any, List, Dict
+from typing import Optional, Any, List, Dict, Union
+import requests
 from scalekit.actions.types import ToolRequest,ExecuteToolResponse,MagicLinkResponse,ListConnectedAccountsResponse,DeleteConnectedAccountResponse,GetConnectedAccountAuthResponse,ToolInput, \
     UpdateConnectedAccountResponse,CreateMcpConfigResponse,ListMcpConfigsResponse,UpdateMcpConfigResponse,DeleteMcpConfigResponse, \
     EnsureMcpInstanceResponse,UpdateMcpInstanceResponse,GetMcpInstanceResponse,ListMcpInstancesResponse,DeleteMcpInstanceResponse,GetMcpInstanceAuthStateResponse, \
@@ -322,6 +323,89 @@ class ActionClient:
             self.add_modifier(modifier)
             return func
         return decorator
+
+    def request(
+        self,
+        connection_name: str,
+        identifier: str,
+        path: str,
+        method: str = "GET",
+        query_params: Optional[Dict[str, Any]] = None,
+        body: Optional[Any] = None,
+        form_data: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, str]] = None,
+        **kwargs,
+    ) -> requests.Response:
+        """
+        Make a proxied REST API call through Scalekit on behalf of a connected account.
+
+        :param connection_name: Connector identifier (required)
+        :type connection_name: str
+        :param identifier: Connected account identifier (required)
+        :type identifier: str
+        :param path: API path to call, e.g. "/v1.0/me/messages" (required)
+        :type path: str
+        :param method: HTTP method — GET, POST, PUT, PATCH, DELETE, etc. (default: GET)
+        :type method: str
+        :param query_params: URL query parameters to append to the request
+        :type query_params: Optional[Dict[str, Any]]
+        :param body: Request body sent as JSON
+        :type body: Optional[Any]
+        :param form_data: Request body sent as URL-encoded form data
+        :type form_data: Optional[Dict[str, Any]]
+        :param headers: Additional HTTP headers to merge into the request
+        :type headers: Optional[Dict[str, str]]
+
+        :returns:
+            requests.Response — the raw HTTP response; call .json(), .text,
+            .status_code, .headers, etc. as needed
+        :rtype: requests.Response
+        """
+        if not connection_name:
+            raise ValueError("connection_name is required")
+        if not identifier:
+            raise ValueError("identifier is required")
+        if not path:
+            raise ValueError("path is required")
+
+        core = self.tools.core_client
+        url = core.env_url.rstrip("/") + "/proxy" + path
+
+        params = query_params or {}
+
+        proxy_headers = {
+            "connection_name": connection_name,
+            "Connection_name": connection_name,
+            "identifier": identifier,
+        }
+        if headers:
+            proxy_headers.update(headers)
+        req_headers = core.get_headers(proxy_headers)
+
+        response = requests.request(
+            method=method.upper(),
+            url=url,
+            params=params,
+            json=body,
+            data=form_data,
+            headers=req_headers,
+        )
+
+        if response.status_code == 401:
+            #retry once if unauthorized after refreshing token
+            core.__authenticate_client()
+            req_headers = core.get_headers(proxy_headers)
+            response = requests.request(
+                method=method.upper(),
+                url=url,
+                params=params,
+                json=body,
+                data=form_data,
+                headers=req_headers,
+            )
+        return response
+
+
 
     def list_configs(
         self,
