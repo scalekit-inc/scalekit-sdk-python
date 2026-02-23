@@ -382,6 +382,9 @@ class ActionClient:
             proxy_headers.update(headers)
         req_headers = core.get_headers(proxy_headers)
 
+        # add default timeout and allow override via kwargs
+        timeout = kwargs.pop("timeout", 30)
+
         response = requests.request(
             method=method.upper(),
             url=url,
@@ -389,10 +392,12 @@ class ActionClient:
             json=body,
             data=form_data,
             headers=req_headers,
+            timeout=timeout,
+            **kwargs,
         )
 
         if response.status_code == 401:
-            #retry once if unauthorized after refreshing token
+            # retry once if unauthorized after refreshing token
             core._CoreClient__authenticate_client()
             req_headers = core.get_headers(proxy_headers)
             response = requests.request(
@@ -402,9 +407,10 @@ class ActionClient:
                 json=body,
                 data=form_data,
                 headers=req_headers,
+                timeout=timeout,
+                **kwargs,
             )
         return response
-
 
 
     def list_configs(
