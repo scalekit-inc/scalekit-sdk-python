@@ -393,7 +393,7 @@ class ActionClient:
 
         if response.status_code == 401:
             #retry once if unauthorized after refreshing token
-            core.__authenticate_client()
+            core._CoreClient__authenticate_client()
             req_headers = core.get_headers(proxy_headers)
             response = requests.request(
                 method=method.upper(),
