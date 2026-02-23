@@ -1,8 +1,12 @@
+import logging
+
 from faker import Faker
 
 from basetest import BaseTest
-from scalekit.common.exceptions import ScalekitValidateTokenFailureException
+from scalekit.common.exceptions import ScalekitServerException, ScalekitValidateTokenFailureException
 from scalekit.v1.organizations.organizations_pb2 import CreateOrganization
+
+logger = logging.getLogger(__name__)
 
 
 class TestTokens(BaseTest):
@@ -190,10 +194,13 @@ class TestTokens(BaseTest):
         if self.token_id:
             try:
                 self.scalekit_client.tokens.invalidate_token(token=self.token_id)
-            except Exception:
-                pass
+            except ScalekitServerException as e:
+                logger.error("tearDown: failed to invalidate token %s: %s", self.token_id, e)
         # Delete the test organization
         if self.org_id:
-            self.scalekit_client.organization.delete_organization(
-                organization_id=self.org_id
-            )
+            try:
+                self.scalekit_client.organization.delete_organization(
+                    organization_id=self.org_id
+                )
+            except ScalekitServerException as e:
+                logger.error("tearDown: failed to delete organization %s: %s", self.org_id, e)
