@@ -3,7 +3,7 @@ from typing import Optional, Dict
 import grpc
 
 from scalekit.core import CoreClient
-from scalekit.common.exceptions import ScalekitValidateTokenFailureException
+from scalekit.common.exceptions import ScalekitServerException, ScalekitValidateTokenFailureException
 from scalekit.v1.tokens.tokens_pb2 import (
     CreateToken,
     CreateTokenRequest,
@@ -73,7 +73,7 @@ class TokenClient:
             token.description = description
 
         return self.core_client.grpc_exec(
-            self.token_service.CreateToken.with_call,
+            self.token_service.CreateToken,
             CreateTokenRequest(token=token),
         )
 
@@ -91,17 +91,17 @@ class TokenClient:
             raise ValueError("token is required")
         try:
             return self.core_client.grpc_exec(
-                self.token_service.ValidateToken.with_call,
+                self.token_service.ValidateToken,
                 ValidateTokenRequest(token=token),
             )
-        except grpc.RpcError as e:
+        except ScalekitServerException as e:
             validation_codes = {
                 grpc.StatusCode.UNAUTHENTICATED,
                 grpc.StatusCode.NOT_FOUND,
                 grpc.StatusCode.INVALID_ARGUMENT,
                 grpc.StatusCode.PERMISSION_DENIED,
             }
-            if e.code() in validation_codes:
+            if e.grpc_status in validation_codes:
                 raise ScalekitValidateTokenFailureException(e) from e
             raise
 
@@ -117,7 +117,7 @@ class TokenClient:
         if not token:
             raise ValueError("token is required")
         return self.core_client.grpc_exec(
-            self.token_service.InvalidateToken.with_call,
+            self.token_service.InvalidateToken,
             InvalidateTokenRequest(token=token),
         )
 
@@ -154,6 +154,6 @@ class TokenClient:
             request.page_token = page_token
 
         return self.core_client.grpc_exec(
-            self.token_service.ListTokens.with_call,
+            self.token_service.ListTokens,
             request,
         )

@@ -31,12 +31,11 @@ class TestTokens(BaseTest):
             description=description,
             custom_claims=custom_claims,
         )
-        self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
-        self.assertTrue(response[0].token is not None)
-        self.assertTrue(response[0].token_id is not None)
-        self.assertTrue(response[0].token_id.startswith("apit_"))
-        self.token_id = response[0].token_id
+        self.assertIsNotNone(response)
+        self.assertIsNotNone(response.token)
+        self.assertIsNotNone(response.token_id)
+        self.assertTrue(response.token_id.startswith("apit_"))
+        self.token_id = response.token_id
 
     def test_create_token_with_custom_claims(self):
         """Method to test create token with custom claims"""
@@ -47,17 +46,16 @@ class TestTokens(BaseTest):
             description="Token with custom claims",
             custom_claims=custom_claims,
         )
-        self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
-        self.assertTrue(response[0].token is not None)
-        self.assertTrue(response[0].token_id.startswith("apit_"))
+        self.assertIsNotNone(response)
+        self.assertIsNotNone(response.token)
+        self.assertTrue(response.token_id.startswith("apit_"))
         self.assertEqual(
-            response[0].token_info.custom_claims["team"], "engineering"
+            response.token_info.custom_claims["team"], "engineering"
         )
         self.assertEqual(
-            response[0].token_info.custom_claims["environment"], "test"
+            response.token_info.custom_claims["environment"], "test"
         )
-        self.token_id = response[0].token_id
+        self.token_id = response.token_id
 
     def test_create_token_with_user_id(self):
         """Method to test create token scoped to a user"""
@@ -75,10 +73,9 @@ class TestTokens(BaseTest):
             user_id=user_id,
             description="User scoped token",
         )
-        self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
-        self.assertTrue(response[0].token is not None)
-        self.token_id = response[0].token_id
+        self.assertIsNotNone(response)
+        self.assertIsNotNone(response.token)
+        self.token_id = response.token_id
 
     def test_validate_token(self):
         """Method to test validate token"""
@@ -87,15 +84,14 @@ class TestTokens(BaseTest):
             organization_id=self.org_id,
             description="Token to validate",
         )
-        self.token_id = create_response[0].token_id
-        opaque_token = create_response[0].token
+        self.token_id = create_response.token_id
+        opaque_token = create_response.token
 
         # Validate using opaque token
         response = self.scalekit_client.tokens.validate_token(token=opaque_token)
-        self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
-        self.assertTrue(response[0].token_info is not None)
-        self.assertEqual(response[0].token_info.organization_id, self.org_id)
+        self.assertIsNotNone(response)
+        self.assertIsNotNone(response.token_info)
+        self.assertEqual(response.token_info.organization_id, self.org_id)
 
     def test_validate_token_by_id(self):
         """Method to test validate token by token_id"""
@@ -104,13 +100,12 @@ class TestTokens(BaseTest):
             organization_id=self.org_id,
             description="Token to validate by ID",
         )
-        self.token_id = create_response[0].token_id
+        self.token_id = create_response.token_id
 
         # Validate using token_id
         response = self.scalekit_client.tokens.validate_token(token=self.token_id)
-        self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
-        self.assertTrue(response[0].token_info is not None)
+        self.assertIsNotNone(response)
+        self.assertIsNotNone(response.token_info)
 
     def test_list_tokens(self):
         """Method to test list tokens"""
@@ -119,16 +114,15 @@ class TestTokens(BaseTest):
             organization_id=self.org_id,
             description="Token for list test",
         )
-        self.token_id = create_response[0].token_id
+        self.token_id = create_response.token_id
 
         # List tokens for the organization
         response = self.scalekit_client.tokens.list_tokens(
             organization_id=self.org_id, page_size=10
         )
-        self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
-        self.assertTrue(len(response[0].tokens) > 0)
-        self.assertTrue(response[0].total_count > 0)
+        self.assertIsNotNone(response)
+        self.assertTrue(len(response.tokens) > 0)
+        self.assertTrue(response.total_count > 0)
 
     def test_list_tokens_with_pagination(self):
         """Method to test list tokens with pagination"""
@@ -143,22 +137,20 @@ class TestTokens(BaseTest):
         page1 = self.scalekit_client.tokens.list_tokens(
             organization_id=self.org_id, page_size=1
         )
-        self.assertEqual(page1[1].code().name, "OK")
-        self.assertEqual(len(page1[0].tokens), 1)
-        self.assertTrue(page1[0].next_page_token)
+        self.assertEqual(len(page1.tokens), 1)
+        self.assertTrue(page1.next_page_token)
 
         # Get next page
         page2 = self.scalekit_client.tokens.list_tokens(
             organization_id=self.org_id,
             page_size=1,
-            page_token=page1[0].next_page_token,
+            page_token=page1.next_page_token,
         )
-        self.assertEqual(page2[1].code().name, "OK")
-        self.assertEqual(len(page2[0].tokens), 1)
+        self.assertEqual(len(page2.tokens), 1)
 
         # Ensure different tokens on different pages
         self.assertNotEqual(
-            page1[0].tokens[0].token_id, page2[0].tokens[0].token_id
+            page1.tokens[0].token_id, page2.tokens[0].token_id
         )
 
     def test_invalidate_token(self):
@@ -168,11 +160,10 @@ class TestTokens(BaseTest):
             organization_id=self.org_id,
             description="Token to invalidate",
         )
-        token_id = create_response[0].token_id
+        token_id = create_response.token_id
 
         # Invalidate the token
-        response = self.scalekit_client.tokens.invalidate_token(token=token_id)
-        self.assertEqual(response[1].code().name, "OK")
+        self.scalekit_client.tokens.invalidate_token(token=token_id)
 
         # Verify token is no longer valid
         with self.assertRaises(ScalekitValidateTokenFailureException):
@@ -186,14 +177,11 @@ class TestTokens(BaseTest):
             organization_id=self.org_id,
             description="Token for idempotent test",
         )
-        token_id = create_response[0].token_id
+        token_id = create_response.token_id
 
-        # Invalidate the token twice
-        response1 = self.scalekit_client.tokens.invalidate_token(token=token_id)
-        self.assertEqual(response1[1].code().name, "OK")
-
-        response2 = self.scalekit_client.tokens.invalidate_token(token=token_id)
-        self.assertEqual(response2[1].code().name, "OK")
+        # Invalidate the token twice — both should succeed without error
+        self.scalekit_client.tokens.invalidate_token(token=token_id)
+        self.scalekit_client.tokens.invalidate_token(token=token_id)
         self.token_id = None  # Already invalidated
 
     def tearDown(self):
