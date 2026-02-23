@@ -1,5 +1,7 @@
 from typing import Optional, Dict
 
+import grpc
+
 from scalekit.core import CoreClient
 from scalekit.common.exceptions import ScalekitValidateTokenFailureException
 from scalekit.v1.tokens.tokens_pb2 import (
@@ -92,8 +94,16 @@ class TokenClient:
                 self.token_service.ValidateToken.with_call,
                 ValidateTokenRequest(token=token),
             )
-        except Exception as e:
-            raise ScalekitValidateTokenFailureException(e) from e
+        except grpc.RpcError as e:
+            validation_codes = {
+                grpc.StatusCode.UNAUTHENTICATED,
+                grpc.StatusCode.NOT_FOUND,
+                grpc.StatusCode.INVALID_ARGUMENT,
+                grpc.StatusCode.PERMISSION_DENIED,
+            }
+            if e.code() in validation_codes:
+                raise ScalekitValidateTokenFailureException(e) from e
+            raise
 
     def invalidate_token(self, token: str):
         """
