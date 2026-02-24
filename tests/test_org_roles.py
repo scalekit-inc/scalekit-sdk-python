@@ -23,7 +23,7 @@ class TestOrganizationRoles(BaseTest):
         org_display_name = f"Test Organization {self.faker.unique.random_number()}"
         org = CreateOrganization(
             display_name=org_display_name,
-            external_id=f"ext_{self.faker.unique.random_number()}"
+            external_id=f"ext_{self.faker.uuid4()}"
         )
         org_response = self.scalekit_client.organization.create_organization(organization=org)
         self.org_id = org_response[0].organization.id

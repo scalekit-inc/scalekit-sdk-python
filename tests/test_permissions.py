@@ -20,7 +20,7 @@ class TestPermissions(BaseTest):
         org_display_name = f"Test Organization {self.faker.unique.random_number()}"
         org = CreateOrganization(
             display_name=org_display_name,
-            external_id=f"ext_{self.faker.unique.random_number()}"
+            external_id=f"ext_{self.faker.uuid4()}"
         )
         org_response = self.scalekit_client.organization.create_organization(organization=org)
         self.org_id = org_response[0].organization.id
@@ -134,12 +134,12 @@ class TestPermissions(BaseTest):
     def test_list_role_permissions(self):
         """ Method to test list permissions for a role """
         # First create a role
-        role_name = f"test_role_{self.faker.unique.random_number()}"
-        display_name = f"Test Role {self.faker.unique.random_number()}"
+        role_display_name = f"Test Role {self.faker.random_number(digits=8)}"
+        role_name = role_display_name.lower().replace(' ', '_')
         
         role = CreateRole(
             name=role_name,
-            display_name=display_name,
+            display_name=role_display_name,
             description="Test role for permission testing"
         )
         
@@ -164,10 +164,11 @@ class TestPermissions(BaseTest):
         self.permission_name = permission_name
 
         # Create a role
-        role_name = f"test_role_{self.faker.unique.random_number()}"
+        role_display_name = f"Test Role {self.faker.random_number(digits=8)}"
+        role_name = role_display_name.lower().replace(' ', '_')
         role = CreateRole(
             name=role_name,
-            display_name=f"Test Role {self.faker.unique.random_number()}",
+            display_name=role_display_name,
             description="Role for permission testing"
         )
         role_response = self.scalekit_client.roles.create_role(role=role)
@@ -197,10 +198,11 @@ class TestPermissions(BaseTest):
         self.permission_name = permission_name
 
         # Create a role
-        role_name = f"test_role_{self.faker.unique.random_number()}"
+        role_display_name = f"Test Role {self.faker.random_number(digits=8)}"
+        role_name = role_display_name.lower().replace(' ', '_')
         role = CreateRole(
             name=role_name,
-            display_name=f"Test Role {self.faker.unique.random_number()}",
+            display_name=role_display_name,
             description="Role for permission testing"
         )
         role_response = self.scalekit_client.roles.create_role(role=role)
@@ -227,10 +229,11 @@ class TestPermissions(BaseTest):
     def test_list_effective_role_permissions(self):
         """ Method to test listing effective permissions for a role """
         # Create a role
-        role_name = f"test_role_{self.faker.unique.random_number()}"
+        role_display_name = f"Test Role {self.faker.random_number(digits=8)}"
+        role_name = role_display_name.lower().replace(' ', '_')
         role = CreateRole(
             name=role_name,
-            display_name=f"Test Role {self.faker.unique.random_number()}",
+            display_name=role_display_name,
             description="Role for effective permissions testing"
         )
         role_response = self.scalekit_client.roles.create_role(role=role)
@@ -259,10 +262,11 @@ class TestPermissions(BaseTest):
         self.permission_name = permission_names[0]
 
         # Create a role
-        role_name = f"test_role_{self.faker.unique.random_number()}"
+        role_display_name = f"Test Role {self.faker.random_number(digits=8)}"
+        role_name = role_display_name.lower().replace(' ', '_')
         role = CreateRole(
             name=role_name,
-            display_name=f"Test Role {self.faker.unique.random_number()}",
+            display_name=role_display_name,
             description="Role for multiple permissions testing"
         )
         role_response = self.scalekit_client.roles.create_role(role=role)

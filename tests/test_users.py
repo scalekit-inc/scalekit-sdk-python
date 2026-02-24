@@ -1,10 +1,12 @@
-import os
+
 from faker import Faker
 from basetest import BaseTest
 
 from scalekit.v1.users.users_pb2 import CreateUser, UpdateUser, CreateUserProfile, UpdateUserProfile, CreateMembership, UpdateMembership
-from scalekit.v1.commons.commons_pb2 import UserProfile, Role
+from scalekit.v1.commons.commons_pb2 import Role
 from scalekit.v1.organizations.organizations_pb2 import CreateOrganization
+
+from scalekit.common.exceptions import ScalekitNotFoundException
 
 
 class TestUsers(BaseTest):
@@ -20,7 +22,7 @@ class TestUsers(BaseTest):
         org_display_name = f"Test Organization {self.faker.unique.random_number()}"
         org = CreateOrganization(
             display_name=org_display_name,
-            external_id=f"ext_{self.faker.unique.random_number()}"
+            external_id=f"ext_{self.faker.uuid4()}"
         )
         org_response = self.scalekit_client.organization.create_organization(organization=org)
         self.org_id = org_response[0].organization.id
@@ -285,10 +287,7 @@ class TestUsers(BaseTest):
             self.assertEqual(response[1].code().name, "OK")
             self.user_id = None  # User deleted successfully
         except Exception as e:
-            # If delete fails, that's also acceptable for this test
-            # as the backend might have constraints
-            print(f"Delete user failed (expected in some cases): {str(e)}")
-            self.user_id = None
+            raise e
 
     def test_delete_user_by_external_id(self):
         """ Method to test delete user by external ID """
@@ -327,10 +326,7 @@ class TestUsers(BaseTest):
             self.assertEqual(response[1].code().name, "OK")
             self.external_id = None  # User deleted successfully
         except Exception as e:
-            # If delete fails, that's also acceptable for this test
-            # as the backend might have constraints
-            print(f"Delete user by external ID failed (expected in some cases): {str(e)}")
-            self.external_id = None
+            raise e
 
     def test_create_membership(self):
         """ Method to test create membership """
@@ -371,12 +367,10 @@ class TestUsers(BaseTest):
         # Clean up second organization
         try:
             self.scalekit_client.organization.delete_organization(organization_id=org2_id)
+        except ScalekitNotFoundException:
+            pass
         except Exception as exp:
-            exp_message = str(exp).lower()
-            if "not found" in exp_message or "does not exist" in exp_message:
-                pass
-            else:
-                print(f"Warning: Could not clean up organization {org2_id}: {exp}")
+            raise exp
 
     def test_create_membership_by_external_id(self):
         """ Method to test create membership by external ID - simplified approach """
@@ -551,9 +545,6 @@ class TestUsers(BaseTest):
         self.assertTrue(response[0].invite.expires_at is not None)
         self.assertEqual(response[0].invite.resent_count, 1)
 
-
-
-
     def tearDown(self):
         """ Method to clean up """
         if self.user_id:
@@ -590,11 +581,7 @@ class TestUsers(BaseTest):
         
         # Clean up created organization
         try:
-            self.scalekit_client.organization.delete_organization(organization_id=self.org_id)
+            if self.org_id:
+                self.scalekit_client.organization.delete_organization(organization_id=self.org_id)
         except Exception as exp:
-            exp_message = str(exp).lower()
-            if "not found" in exp_message or "does not exist" in exp_message:
-                # Organization already deleted or doesn't exist
-                pass
-            else:
-                print(f"Warning: Could not clean up organization {self.org_id}: {exp}")
+            raise exp

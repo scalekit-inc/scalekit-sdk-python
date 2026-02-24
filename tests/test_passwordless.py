@@ -46,7 +46,7 @@ class TestPasswordless(BaseTest):
             # Store auth_request_id for other tests
             self.auth_request_id = response[0].auth_request_id
             
-            print(f"✓ Email sent successfully! Auth Request ID: {response[0].auth_request_id}")
+            # print(f"✓ Email sent successfully! Auth Request ID: {response[0].auth_request_id}")
             
         except Exception as e:
             self.skipTest(f"Skipping test due to error: {str(e)}")
@@ -75,12 +75,10 @@ class TestPasswordless(BaseTest):
             self.assertTrue(response[0].expires_in > 0)
             self.assertIsNotNone(response[0].passwordless_type)
             
-            print(f"✓ Email sent with direct enum! Auth Request ID: {response[0].auth_request_id}")
+            # print(f"✓ Email sent with direct enum! Auth Request ID: {response[0].auth_request_id}")
             
         except Exception as e:
             self.skipTest(f"Skipping test due to error: {str(e)}")
-
-
 
     def test_send_passwordless_email_invalid_template(self):
         """Test sending passwordless email with invalid template"""
@@ -91,7 +89,7 @@ class TestPasswordless(BaseTest):
             )
         
         self.assertIn("Invalid template type", str(context.exception))
-        print("✓ Invalid template validation works correctly")
+        # print("✓ Invalid template validation works correctly")
 
 
 
@@ -145,7 +143,7 @@ class TestPasswordless(BaseTest):
             self.assertTrue(resend_response[0].expires_at > 0)
             self.assertTrue(resend_response[0].expires_in > 0)
             
-            print(f"✓ Email resent successfully! Auth Request ID: {resend_response[0].auth_request_id}")
+            # print(f"✓ Email resent successfully! Auth Request ID: {resend_response[0].auth_request_id}")
             
         except Exception as e:
             self.skipTest(f"Skipping test due to error: {str(e)}")
@@ -165,7 +163,7 @@ class TestPasswordless(BaseTest):
         except Exception as e:
             # Expected to fail with invalid code
             self.assertIsNotNone(e)
-            print(f"✓ Invalid code verification correctly failed: {str(e)}")
+            # print(f"✓ Invalid code verification correctly failed: {str(e)}")
 
     def test_verify_passwordless_email_invalid_link_token(self):
         """Test verifying passwordless email with invalid link token"""
@@ -181,11 +179,7 @@ class TestPasswordless(BaseTest):
         except Exception as e:
             # Expected to fail with invalid link token
             self.assertIsNotNone(e)
-            print(f"✓ Invalid link token verification correctly failed: {str(e)}")
-
-
-
-
+            # print(f"✓ Invalid link token verification correctly failed: {str(e)}")
 
     def test_resend_passwordless_email_invalid_auth_request_id(self):
         """Test resending passwordless email with invalid auth request ID"""
@@ -201,7 +195,7 @@ class TestPasswordless(BaseTest):
         except Exception as e:
             # Expected to fail with invalid auth request ID
             self.assertIsNotNone(e)
-            print(f"✓ Invalid auth request ID resend correctly failed: {str(e)}")
+            # print(f"✓ Invalid auth request ID resend correctly failed: {str(e)}")
 
     def test_passwordless_enums(self):
         """Test that passwordless enums are properly accessible"""
@@ -214,7 +208,7 @@ class TestPasswordless(BaseTest):
         self.assertEqual(PasswordlessType.LINK, 2)
         self.assertEqual(PasswordlessType.LINK_OTP, 3)
         
-        print("✓ All passwordless enums are properly accessible")
+        # print("✓ All passwordless enums are properly accessible")
 
     def test_template_type_conversion(self):
         """Test the template type conversion functionality"""
@@ -236,12 +230,12 @@ class TestPasswordless(BaseTest):
         with self.assertRaises(ValueError):
             _convert_template_type("INVALID")
             
-        print("✓ Template type conversion works correctly")
+        # print("✓ Template type conversion works correctly")
 
     @classmethod
     def tearDownClass(cls):
         """Clean up after all tests"""
-        print("\n✓ Passwordless tests completed")
+        # print("\n✓ Passwordless tests completed")
 
 
 if __name__ == '__main__':

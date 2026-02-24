@@ -22,6 +22,7 @@ from scalekit.actions.types import (
 from scalekit.actions.models.responses.get_connected_account_auth_response import ConnectedAccount
 from scalekit.actions.modifier import Modifier
 
+
 class TestConnect(BaseTest):
     """Class definition for Test Connect Class"""
 
@@ -42,7 +43,6 @@ class TestConnect(BaseTest):
             response = self.scalekit_client.connect.get_authorization_link(identifier = self.test_identifier, connection_name="GMAIL")
             print(f"Authorization link: {response.link}")
             input("Press Enter to continue...")
-
 
     def test_execute_tool(self):
         """Method to test execute_tool with SLACK.SEND_MESSAGE"""
@@ -287,8 +287,6 @@ class TestConnect(BaseTest):
         except Exception as e:
             raise e
 
-
-
     def test_execute_tool_with_connected_account_id(self):
         """Method to test execute_tool with connected_account_id parameter using dynamic ID"""
         
@@ -303,7 +301,6 @@ class TestConnect(BaseTest):
                 identifier=self.test_identifier,
             )
 
-            
             # Now test execute_tool with connected_account_id
             result = self.scalekit_client.connect.execute_tool(
                 tool_input=tool_input,
@@ -391,8 +388,6 @@ class TestConnect(BaseTest):
         except Exception as e:
             raise e
 
-
-
     def test_get_modifiers_no_filter(self):
         """Test get_modifiers without filtering"""
         # Add test modifiers
@@ -405,7 +400,6 @@ class TestConnect(BaseTest):
         # Get all modifiers
         modifiers = self.scalekit_client.connect.get_modifiers()
         self.assertEqual(len(modifiers), 2)
-
 
     # Tests for new create_connected_account functionality
     def test_create_connected_account_method_exists(self):
@@ -486,14 +480,11 @@ class TestConnect(BaseTest):
             self.assertEqual(auth.get("username"), "testusername")
             self.assertEqual(auth.get("password"), "testpassword")
 
-
-            #Clean up - delete the created account
+            # Clean up - delete the created account
             self.scalekit_client.connect.delete_connected_account(
                 connection_name=self.test_basic_connection_name,
                 identifier=test_id
             )
-
-
 
         except Exception as e:
             raise e
@@ -525,7 +516,6 @@ class TestConnect(BaseTest):
                 authorization_details=oauth_auth_details
             )
         self.assertIn("identifier is required", str(context.exception))
-
 
     # Tests for new get_or_create_connected_account functionality
     def test_get_or_create_connected_account_method_exists(self):
@@ -751,7 +741,6 @@ class TestConnect(BaseTest):
         self.assertIsInstance(tools, list)
         self.assertGreaterEqual(len(tools), 1)
         self.assertIsInstance(tools[0], ScalekitGoogleAdkTool)
-        print(tools)
 
     def test_langchain_adk_get_tools(self):
 
@@ -765,7 +754,6 @@ class TestConnect(BaseTest):
         )
         self.assertIsInstance(tools, list)
         self.assertGreaterEqual(len(tools), 1)
-        print(tools)
 
     # API Config Tests for Existing Methods
     def test_create_connected_account_with_api_config(self):
@@ -1701,8 +1689,6 @@ class TestConnect(BaseTest):
                 method="GET"
             )
 
-            print(response)
-
             # Verify response is a requests.Response object
             self.assertIsNotNone(response)
             import requests
@@ -1812,6 +1798,7 @@ class TestActionsMcpConfig(BaseTest):
                     config_id=created_config_id
                 )
                 self.assertIsInstance(delete_response, DeleteMcpConfigResponse)
+
 
 class TestActionsMcpInstance(BaseTest):
     """Tests for MCP instance lifecycle via the actions client."""

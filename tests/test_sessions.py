@@ -1,6 +1,6 @@
 from faker import Faker
 
-from .basetest import BaseTest
+from basetest import BaseTest
 from scalekit.v1.users.users_pb2 import CreateUser, CreateUserProfile
 from scalekit.v1.organizations.organizations_pb2 import CreateOrganization
 
@@ -15,14 +15,14 @@ class TestSessions(BaseTest):
         self.org_id = None
         
         # Create a test organization with unique external ID
-        org_display_name = f"Test Organization {self.faker.unique.random_number()}"
+        org_display_name = f"Test Organization {self.faker.company()}"
         org = CreateOrganization(
             display_name=org_display_name,
-            external_id=f"ext_{self.faker.unique.random_number()}_{self.faker.unique.random_number()}"
+            external_id=f"ext_{self.faker.uuid4()}"
         )
         org_response = self.scalekit_client.organization.create_organization(organization=org)
         self.org_id = org_response[0].organization.id
-        
+
         # Create a test user
         user_profile = CreateUserProfile(
             first_name="Test",
