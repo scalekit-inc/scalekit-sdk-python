@@ -72,7 +72,7 @@ class TestWebAuthnCredentials(BaseTest):
                 break
         
         self.assertIsNotNone(original_credential, "Test credential not found in list")
-        original_display_name = original_credential.display_name if original_credential.display_name else "Test WebAuthn Cred"
+        original_display_name = original_credential.display_name if original_credential.display_name else ""
         
         try:
             # Update the credential
@@ -109,7 +109,7 @@ class TestWebAuthnCredentials(BaseTest):
             
         finally:
             # Restore the original display name
-            if original_credential is not None:
+            if original_credential:
                 try:
                     restore_response = self.scalekit_client.webauthn.update_credential(
                         credential_id=self.test_credential_id,
