@@ -153,7 +153,7 @@ class TestOrganization(BaseTest):
             self.assertFalse(response[0].organization.settings.features[0].enabled)
 
     def test_upsert_user_management_settings(self):
-        """ Method to test upserting user management settings """
+        """ Method to test upsert on user management settings """
         organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
         org_response = self.scalekit_client.organization.create_organization(organization=organization)
         self.org_id = org_response[0].organization.id

@@ -1,7 +1,7 @@
 
 from faker import Faker
 
-from .basetest import BaseTest
+from basetest import BaseTest
 from scalekit.v1.organizations.organizations_pb2 import CreateOrganization
 from scalekit.v1.domains.domains_pb2 import DomainType
 
@@ -86,8 +86,7 @@ class TestDomain(BaseTest):
         self.org_id = org_response[0].organization.id
 
         domain_name = Faker().domain_name()
-        create_domain_response = self.scalekit_client.domain.create_domain(
-            organization_id=self.org_id, domain_name=domain_name)
+        create_domain_response = self.scalekit_client.domain.create_domain(organization_id=self.org_id, domain_name=domain_name)
         domain_id = create_domain_response[0].domain.id
 
         response = self.scalekit_client.domain.get_domain(organization_id=self.org_id, domain_id=domain_id)
