@@ -40,7 +40,7 @@ create-venv:
 tools-check:
 	@command -v git >/dev/null 2>&1 || (echo "missing git" && exit 1)
 	@command -v rsync >/dev/null 2>&1 || (echo "missing rsync" && exit 1)
-	@command -v buf >/dev/null 2>&1 || (echo "missing buf. install buf and rerun 'make setup'" && exit 1)
+    @command -v buf >/dev/null 2>&1 || (echo "missing buf. install buf (https://buf.build/docs/installation/) and rerun 'make generate'" && exit 1)
 
 generate: tools-check
 	@echo "Step 1: Fetching proto sources from $(PROTO_REPO_URL) at ref $(PROTO_REF)..."
