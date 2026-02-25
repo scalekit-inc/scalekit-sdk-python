@@ -188,6 +188,34 @@ class TestTokens(BaseTest):
         self.scalekit_client.tokens.invalidate_token(token=token_id)
         self.token_id = None  # Already invalidated
 
+    # ------------------------------------------------------------------
+    # Validation guard tests — no live backend call required
+    # ------------------------------------------------------------------
+
+    def test_create_token_raises_on_empty_organization_id(self):
+        """create_token should raise ValueError with 'Invalid organization_id' when organization_id is empty"""
+        with self.assertRaises(ValueError) as ctx:
+            self.scalekit_client.tokens.create_token(organization_id="")
+        self.assertEqual(str(ctx.exception), "Invalid organization_id")
+
+    def test_validate_token_raises_on_empty_token(self):
+        """validate_token should raise ValueError with 'Invalid token' when token is empty"""
+        with self.assertRaises(ValueError) as ctx:
+            self.scalekit_client.tokens.validate_token(token="")
+        self.assertEqual(str(ctx.exception), "Invalid token")
+
+    def test_invalidate_token_raises_on_empty_token(self):
+        """invalidate_token should raise ValueError with 'Invalid token' when token is empty"""
+        with self.assertRaises(ValueError) as ctx:
+            self.scalekit_client.tokens.invalidate_token(token="")
+        self.assertEqual(str(ctx.exception), "Invalid token")
+
+    def test_list_tokens_raises_on_empty_organization_id(self):
+        """list_tokens should raise ValueError with 'Invalid organization_id' when organization_id is empty"""
+        with self.assertRaises(ValueError) as ctx:
+            self.scalekit_client.tokens.list_tokens(organization_id="")
+        self.assertEqual(str(ctx.exception), "Invalid organization_id")
+
     def tearDown(self):
         """Method to clean up after test"""
         # Invalidate token if it exists

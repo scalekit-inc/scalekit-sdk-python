@@ -59,7 +59,7 @@ class TokenClient:
             CreateTokenResponse with token, token_id, and token_info
         """
         if not organization_id:
-            raise ValueError("organization_id is required")
+            raise ValueError("Invalid organization_id")
         token = CreateToken(
             organization_id=organization_id,
         )
@@ -88,7 +88,7 @@ class TokenClient:
         :raises ScalekitValidateTokenFailureException: If the token is invalid, expired, or not found
         """
         if not token:
-            raise ValueError("token is required")
+            raise ValueError("Invalid token")
         try:
             return self.core_client.grpc_exec(
                 self.token_service.ValidateToken,
@@ -115,7 +115,7 @@ class TokenClient:
             Empty response (idempotent operation)
         """
         if not token:
-            raise ValueError("token is required")
+            raise ValueError("Invalid token")
         return self.core_client.grpc_exec(
             self.token_service.InvalidateToken,
             InvalidateTokenRequest(token=token),
@@ -143,7 +143,7 @@ class TokenClient:
             ListTokensResponse with tokens, total_count, and pagination cursors
         """
         if not organization_id:
-            raise ValueError("organization_id is required")
+            raise ValueError("Invalid organization_id")
         request = ListTokensRequest(
             organization_id=organization_id,
             page_size=page_size,
