@@ -73,4 +73,6 @@ jobs:
           SCALEKIT_ENV_URL: ${{ secrets.SCALEKIT_ENVIRONMENT_URL }}
           SCALEKIT_CLIENT_ID: ${{ secrets.SCALEKIT_CLIENT_ID }}
           SCALEKIT_CLIENT_SECRET: ${{ secrets.SCALEKIT_CLIENT_SECRET }}
+          TEST_WEBAUTHN_CREDENTIAL_ID: ${{ secrets.TEST_WEBAUTHN_CREDENTIAL_ID }}
+          TEST_WEBAUTHN_USER_ID: ${{ secrets.TEST_WEBAUTHN_USER_ID }}
         run: make test
