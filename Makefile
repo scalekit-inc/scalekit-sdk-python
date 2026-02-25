@@ -50,7 +50,7 @@ generate: tools-check
 	trap cleanup_tmp EXIT; \
 	git clone --depth=1 --branch "$(PROTO_REF)" "$(PROTO_REPO_URL)" "$$tmp_dir/scalekit"; \
 	echo "$$tmp_dir/scalekit/$(PROTO_SUBDIR)" > .dirpath; \
-	$(MAKE) copy_proto_dir prepare buf_generate restore generate_init_files cleanup
+	$(MAKE) copy_proto_dir && $(MAKE) prepare && $(MAKE) buf_generate && $(MAKE) restore && $(MAKE) generate_init_files && $(MAKE) cleanup
 	@echo "Code generation complete."
 
 copy_proto_dir:
