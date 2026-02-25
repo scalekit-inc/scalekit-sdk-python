@@ -1688,6 +1688,43 @@ class TestConnect(BaseTest):
         except Exception as e:
             raise e
 
+    def test_request_get_user_profile(self):
+        """Method to test request function with GET method to fetch user profile"""
+
+
+        try:
+            # Make a GET request to fetch user profile
+            response = self.scalekit_client.actions.request(
+                connection_name=self.test_connection_name,
+                identifier=self.test_identifier,
+                path="/v1/users/me/profile",
+                method="GET"
+            )
+
+            print(response)
+
+            # Verify response is a requests.Response object
+            self.assertIsNotNone(response)
+            import requests
+            self.assertIsInstance(response, requests.Response)
+
+            # Verify response has expected attributes
+            self.assertTrue(hasattr(response, 'status_code'))
+            self.assertTrue(hasattr(response, 'text'))
+            self.assertTrue(hasattr(response, 'json'))
+            self.assertTrue(hasattr(response, 'headers'))
+
+            # Check if request was successful (2xx status code)
+            self.assertGreaterEqual(response.status_code, 200)
+
+            # Try to parse JSON response
+            json_data = response.json()
+            self.assertIsNotNone(json_data)
+            self.assertIsInstance(json_data, dict)
+
+        except Exception as e:
+            raise e
+
 class TestActionsMcpConfig(BaseTest):
     """Tests for MCP config operations exposed via the actions client."""
 
