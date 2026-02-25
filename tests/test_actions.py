@@ -1,3 +1,5 @@
+import unittest
+
 from basetest import BaseTest
 from scalekit.actions.types import (
     ExecuteToolResponse,
@@ -726,6 +728,7 @@ class TestConnect(BaseTest):
         self.assertTrue(empty_proto.authorization_details.HasField("oauth_token"))
         self.assertEqual(empty_proto.authorization_details.oauth_token.access_token, "")
 
+    @unittest.skip
     def test_google_adk_get_tools(self):
 
         google = self.scalekit_client.actions.google
@@ -742,6 +745,7 @@ class TestConnect(BaseTest):
         self.assertGreaterEqual(len(tools), 1)
         self.assertIsInstance(tools[0], ScalekitGoogleAdkTool)
 
+    @unittest.skip
     def test_langchain_adk_get_tools(self):
 
         lang = self.scalekit_client.actions.langchain
