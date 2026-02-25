@@ -8,6 +8,7 @@ import platform
 from urllib.parse import urlparse
 
 from cryptography.hazmat.primitives import serialization
+from scalekit._version import __version__ as _sdk_version
 from scalekit.common.scalekit import GrantType
 from scalekit.common.exceptions import ScalekitServerException, ScalekitException
 
@@ -26,7 +27,7 @@ class WithCall(Protocol):
 class CoreClient:
     """Class definition for Core Client"""
 
-    sdk_version = "Scalekit-Python/2.4.17"
+    sdk_version = f"Scalekit-Python/{_sdk_version}"
     api_version = "20260113"
     user_agent = f"{sdk_version} Python/{platform.python_version()} ({platform.system()}; {platform.architecture()}"
 
