@@ -54,6 +54,12 @@ class IdentityProviderType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     IDP_SIMULATOR: _ClassVar[IdentityProviderType]
     SCALEKIT: _ClassVar[IdentityProviderType]
     ADFS: _ClassVar[IdentityProviderType]
+
+class AuthenticationMode(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    AUTHENTICATION_MODE_UNSPECIFIED: _ClassVar[AuthenticationMode]
+    MODULAR_AUTH: _ClassVar[AuthenticationMode]
+    FULL_STACK_AUTH: _ClassVar[AuthenticationMode]
 REGION_CODE_UNSPECIFIED: RegionCode
 US: RegionCode
 EU: RegionCode
@@ -82,6 +88,9 @@ MICROSOFT: IdentityProviderType
 IDP_SIMULATOR: IdentityProviderType
 SCALEKIT: IdentityProviderType
 ADFS: IdentityProviderType
+AUTHENTICATION_MODE_UNSPECIFIED: AuthenticationMode
+MODULAR_AUTH: AuthenticationMode
+FULL_STACK_AUTH: AuthenticationMode
 
 class OrganizationMembership(_message.Message):
     __slots__ = ("organization_id", "join_time", "membership_status", "roles", "name", "metadata", "display_name", "inviter_email", "created_at", "accepted_at", "expires_at", "provisioning_method", "permissions")

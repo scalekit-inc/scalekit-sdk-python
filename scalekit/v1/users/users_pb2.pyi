@@ -109,6 +109,14 @@ class GetUserResponse(_message.Message):
     user: User
     def __init__(self, user: _Optional[_Union[User, _Mapping]] = ...) -> None: ...
 
+class GetCurrentUserResponse(_message.Message):
+    __slots__ = ("user", "current_session_id")
+    USER_FIELD_NUMBER: _ClassVar[int]
+    CURRENT_SESSION_ID_FIELD_NUMBER: _ClassVar[int]
+    user: User
+    current_session_id: str
+    def __init__(self, user: _Optional[_Union[User, _Mapping]] = ..., current_session_id: _Optional[str] = ...) -> None: ...
+
 class GetCurrentUserRequest(_message.Message):
     __slots__ = ()
     def __init__(self) -> None: ...
@@ -501,6 +509,12 @@ class Permission(_message.Message):
     description: str
     tags: _containers.RepeatedScalarFieldContainer[str]
     def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., tags: _Optional[_Iterable[str]] = ...) -> None: ...
+
+class GetSupportHashResponse(_message.Message):
+    __slots__ = ("support_hash",)
+    SUPPORT_HASH_FIELD_NUMBER: _ClassVar[int]
+    support_hash: str
+    def __init__(self, support_hash: _Optional[str] = ...) -> None: ...
 
 class ListUserPermissionsResponse(_message.Message):
     __slots__ = ("permissions",)

@@ -20,6 +20,11 @@ class ClientServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListClientsRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListClientsResponse.FromString,
                 )
+        self.CreateClient = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/CreateClient',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateClientRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateClientResponse.FromString,
+                )
         self.GetClient = channel.unary_unary(
                 '/scalekit.v1.clients.ClientService/GetClient',
                 request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetClientRequest.SerializeToString,
@@ -29,6 +34,11 @@ class ClientServiceStub(object):
                 '/scalekit.v1.clients.ClientService/UpdateClient',
                 request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateClientRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateClientResponse.FromString,
+                )
+        self.DeleteClient = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/DeleteClient',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.DeleteClientRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
         self.CreateClientSecret = channel.unary_unary(
                 '/scalekit.v1.clients.ClientService/CreateClientSecret',
@@ -191,6 +201,12 @@ class ClientServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def CreateClient(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def GetClient(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -198,6 +214,12 @@ class ClientServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def UpdateClient(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeleteClient(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -391,6 +413,11 @@ def add_ClientServiceServicer_to_server(servicer, server):
                     request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListClientsRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListClientsResponse.SerializeToString,
             ),
+            'CreateClient': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateClient,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateClientRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateClientResponse.SerializeToString,
+            ),
             'GetClient': grpc.unary_unary_rpc_method_handler(
                     servicer.GetClient,
                     request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.GetClientRequest.FromString,
@@ -400,6 +427,11 @@ def add_ClientServiceServicer_to_server(servicer, server):
                     servicer.UpdateClient,
                     request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateClientRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateClientResponse.SerializeToString,
+            ),
+            'DeleteClient': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteClient,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.DeleteClientRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'CreateClientSecret': grpc.unary_unary_rpc_method_handler(
                     servicer.CreateClientSecret,
@@ -579,6 +611,23 @@ class ClientService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
+    def CreateClient(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/CreateClient',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateClientRequest.SerializeToString,
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.CreateClientResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
     def GetClient(request,
             target,
             options=(),
@@ -609,6 +658,23 @@ class ClientService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/UpdateClient',
             scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateClientRequest.SerializeToString,
             scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateClientResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DeleteClient(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/DeleteClient',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.DeleteClientRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
