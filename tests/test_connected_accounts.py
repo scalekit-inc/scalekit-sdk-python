@@ -1,4 +1,4 @@
-import faker
+
 from faker import Faker
 from basetest import BaseTest
 
@@ -18,7 +18,7 @@ class TestConnectedAccounts(BaseTest):
         """ """
         self.faker = Faker()
         self.test_connector = "GMAIL"
-        self.test_identifier = f"test_app_{self.faker.unique.random_number()}"
+        self.test_identifier = f"test_app_{self.faker.uuid4()}"
 
     def _create_oauth_connected_account(self):
         """Helper method to create OAuth connected account"""
@@ -356,7 +356,6 @@ class TestConnectedAccounts(BaseTest):
         self.assertIsNotNone(first_response.connected_account)
         created_account = first_response.connected_account
 
-
         # Second call to get_or_create with same identifier should return the same connected account
         second_response = self.scalekit_client.actions.get_or_create_connected_account(
             connection_name=self.test_connector,
@@ -367,7 +366,6 @@ class TestConnectedAccounts(BaseTest):
 
         # Verify that both responses refer to the same connected account ID
         self.assertEqual(created_account.id, second_response.connected_account.id)
-
 
     def test_create_connected_account_with_oauth_api_info(self):
         """ Method to test create connected account with OAuth """
@@ -401,7 +399,6 @@ class TestConnectedAccounts(BaseTest):
         # Validate API config was set correctly
         self.assertTrue(hasattr(response[0].connected_account, 'api_config'))
         self.assertIsNotNone(response[0].connected_account.api_config)
-
 
         version_field = response[0].connected_account.api_config.fields["version"]
         self.assertTrue(version_field.HasField("string_value"), "Version should be a string field")
