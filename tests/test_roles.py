@@ -16,8 +16,8 @@ class TestRoles(BaseTest):
         """ """
         self.role_name = None
         self.second_role_name = None
-        self.faker = Faker()
         self.user_id = None
+        self.faker = Faker()
 
         # Always create a test organization for this test
         org_display_name = f"Test Organization {self.faker.unique.random_number()}"
@@ -79,11 +79,10 @@ class TestRoles(BaseTest):
 
         self.scalekit_client.roles.create_role(role=role)
         response = self.scalekit_client.roles.get_role(role_name=self.role_name)
-        role_id = response[0].role.id
 
         self.assertEqual(response[1].code().name, "OK")
         self.assertTrue(response[0] is not None)
-        self.assertEqual(response[0].role.id, role_id)
+        self.assertTrue(response[0].role.id is not None)
         self.assertEqual(response[0].role.name, self.role_name)
         self.assertEqual(response[0].role.display_name, display_name)
         self.assertEqual(response[0].role.description, "Test role for get operation")
@@ -228,15 +227,10 @@ class TestRoles(BaseTest):
         user1 = CreateUser(
             email=f"test.user1.{self.faker.unique.random_number()}@example.com",
             user_profile=user1_profile,
-            membership=CreateMembership(
-                roles=[Role(id=role1_id, name=self.role_name)]
-            )
+            membership=CreateMembership(roles=[Role(id=role1_id, name=self.role_name)])
         )
 
-        user1_response = self.scalekit_client.users.create_user_and_membership(
-            organization_id=self.org_id,
-            user=user1
-        )
+        user1_response = self.scalekit_client.users.create_user_and_membership(organization_id=self.org_id, user=user1)
         self.user_id = user1_response[0].user.id
 
         # Try to delete the first role WITHOUT reassignment - this should fail
@@ -258,10 +252,7 @@ class TestRoles(BaseTest):
         role2_id = create_response2[0].role.id
 
         # Delete first role with reassignment to second role 
-        response = self.scalekit_client.roles.delete_role(
-            role_name=self.role_name,
-            reassign_role_name=self.second_role_name
-        )
+        response = self.scalekit_client.roles.delete_role(role_name=self.role_name, reassign_role_name=self.second_role_name)
         self.assertEqual(response[1].code().name, "OK")
 
         # Verify first role is deleted
@@ -269,28 +260,13 @@ class TestRoles(BaseTest):
             self.scalekit_client.roles.get_role(role_name=self.role_name)
             self.fail("Role should have been deleted")
         except ScalekitNotFoundException:
+            self.role_name = None
             pass
 
         # Verify second role still exists
         get_response = self.scalekit_client.roles.get_role(role_name=self.second_role_name)
         self.assertEqual(get_response[1].code().name, "OK")
         self.assertEqual(get_response[0].role.id, role2_id)
-
-        # Clean up user
-        if self.user_id:
-            try:
-                self.scalekit_client.users.delete_membership(
-                    organization_id=self.org_id,
-                    user_id=self.user_id)
-            except ScalekitNotFoundException:
-                pass
-            except Exception as exp:
-                # Log warning but don't fail the test
-                raise Exception(f"Warning: Could not clean up user {self.user_id}: {exp}")
-            self.user_id = None
-
-        # Clean up second role
-        self.scalekit_client.roles.delete_role(role_name=self.second_role_name)
 
     def test_create_role_validation(self):
         """ Method to test role creation validation """
@@ -333,20 +309,13 @@ class TestRoles(BaseTest):
             # Expected behavior - duplicate name error
             self.assertTrue(exp.message, 'duplicate key not allowed')
 
-        # Clean up first role
-        self.scalekit_client.roles.delete_role(role_name=self.role_name)
-
     def test_get_role_users_count(self):
         """ Method to test get role users count """
         self.role_name = f"test_role_{self.faker.unique.random_number()}"
         display_name = f"Test Role {self.faker.unique.random_number()}"
         
-        role = CreateRole(
-            name=self.role_name,
-            display_name=display_name,
-            description="Test role for user count"
-        )
-        
+        role = CreateRole(name=self.role_name, display_name=display_name, description="Test role for user count")
+
         create_response = self.scalekit_client.roles.create_role(role=role)
         self.role_id = create_response[0].role.id
 
@@ -359,26 +328,29 @@ class TestRoles(BaseTest):
 
     def tearDown(self):
         """ Method to clean up """
+        errors = []
+        if self.user_id:
+            try:
+                self.scalekit_client.users.delete_membership(organization_id=self.org_id, user_id=self.user_id)
+            except Exception as exp:
+                errors.append(exp)
+
         if self.role_name:
             try:
                 self.scalekit_client.roles.delete_role(role_name=self.role_name)
-            except ScalekitNotFoundException:
-                pass
             except Exception as exp:
-                raise ScalekitException(f"Unexpected exception during role cleanup: {exp}") from exp
+                errors.append(exp)
 
         if self.second_role_name:
             try:
                 self.scalekit_client.roles.delete_role(role_name=self.second_role_name)
-            except ScalekitNotFoundException:
-                pass
             except Exception as exp:
-                raise ScalekitException(f"Unexpected exception during role cleanup: {exp}") from exp
+                errors.append(exp)
 
-        # Clean up created organization
         try:
             self.scalekit_client.organization.delete_organization(organization_id=self.org_id)
-        except ScalekitNotFoundException:
-            pass
         except Exception as exp:
-            raise ScalekitException(f"Warning: Could not clean up organization {self.org_id}: {exp}")
+            errors.append(exp)
+
+        if errors:
+            raise Exception(f"Errors during cleanup: {errors}")

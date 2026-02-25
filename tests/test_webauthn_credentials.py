@@ -110,10 +110,4 @@ class TestWebAuthnCredentials(BaseTest):
         finally:
             # Restore the original display name
             if original_credential:
-                try:
-                    restore_response = self.scalekit_client.webauthn.update_credential(
-                        credential_id=self.test_credential_id,
-                        display_name=original_display_name
-                    )
-                except Exception as exp:
-                    raise exp
+                self.scalekit_client.webauthn.update_credential(credential_id=self.test_credential_id, display_name=original_display_name)
