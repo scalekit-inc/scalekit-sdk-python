@@ -46,11 +46,23 @@ generate: tools-check
 	@echo "Step 1: Fetching proto sources from $(PROTO_REPO_URL) at ref $(PROTO_REF)..."
 	@set -euo pipefail; \
 	tmp_dir="$$(mktemp -d)"; \
+	prepared=0; \
 	cleanup_tmp() { rm -rf "$$tmp_dir"; rm -f .dirpath; }; \
-	trap cleanup_tmp EXIT; \
+	rollback_if_needed() { \
+    	if [ "$$prepared" -eq 1 ] && [ -d "$(TEMP_DIR)" ]; then \
+    		echo "Generation failed; restoring $(SCALEKIT_DIR) from $(TEMP_DIR)..."; \
+    		rsync -a "$(TEMP_DIR)/" "$(SCALEKIT_DIR)/"; \
+    	fi; \
+    }; \
+    trap 'rollback_if_needed; cleanup_tmp' EXIT; \
 	git clone --depth=1 --branch "$(PROTO_REF)" "$(PROTO_REPO_URL)" "$$tmp_dir/scalekit"; \
 	echo "$$tmp_dir/scalekit/$(PROTO_SUBDIR)" > .dirpath; \
-	$(MAKE) copy_proto_dir && $(MAKE) prepare && $(MAKE) buf_generate && $(MAKE) restore && $(MAKE) generate_init_files && $(MAKE) cleanup
+	$(MAKE) copy_proto_dir; \
+    $(MAKE) prepare; prepared=1; \
+    $(MAKE) buf_generate; \
+    $(MAKE) restore; prepared=0; \
+    $(MAKE) generate_init_files; \
+    $(MAKE) cleanup
 	@echo "Code generation complete."
 
 copy_proto_dir:
