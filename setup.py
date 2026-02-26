@@ -1,5 +1,8 @@
+import re
 from setuptools import setup, find_packages
-from scalekit._version import __version__
+
+with open('scalekit/_version.py') as f:
+    __version__ = re.search(r"^__version__ = ['\"]([^'\"]+)['\"]", f.read(), re.M).group(1)
 
 setup(
 
