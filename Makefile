@@ -40,7 +40,7 @@ create-venv:
 tools-check:
 	@command -v git >/dev/null 2>&1 || (echo "missing git" && exit 1)
 	@command -v rsync >/dev/null 2>&1 || (echo "missing rsync" && exit 1)
-    @command -v buf >/dev/null 2>&1 || (echo "missing buf. install buf (https://buf.build/docs/installation/) and rerun 'make generate'" && exit 1)
+	@command -v buf >/dev/null 2>&1 || (echo "missing buf. install buf (https://buf.build/docs/installation/) and rerun 'make generate'" && exit 1)
 
 generate: tools-check
 	@echo "Step 1: Fetching proto sources from $(PROTO_REPO_URL) at ref $(PROTO_REF)..."
@@ -72,8 +72,9 @@ copy_proto_dir:
 
 prepare:
 	@echo "Step 3: Preparing temp folder and preserving current scalekit package..."
+	rm -rf $(TEMP_DIR)
 	mkdir -p $(TEMP_DIR)
-	rsync -av --exclude 'v1' $(SCALEKIT_DIR)/ $(TEMP_DIR)/
+	rsync -av --exclude 'v1' --delete $(SCALEKIT_DIR)/ $(TEMP_DIR)/
 	rm -rf $(BUF_DIR) $(SCALEKIT_DIR)
 
 buf_generate:
