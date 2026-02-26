@@ -2,6 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
+from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 from scalekit.v1.migrations import migrations_pb2 as scalekit_dot_v1_dot_migrations_dot_migrations__pb2
 
 
@@ -24,6 +25,16 @@ class MigrationServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateStripeCustomersRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateStripeCustomersResponse.FromString,
                 )
+        self.MigrateWorkspaceFGA = channel.unary_unary(
+                '/scalekit.v1.migrations.MigrationService/MigrateWorkspaceFGA',
+                request_serializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateWorkspaceFGARequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
+        self.MigrateRolePermissions = channel.unary_unary(
+                '/scalekit.v1.migrations.MigrationService/MigrateRolePermissions',
+                request_serializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateRolePermissionsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateRolePermissionsResponse.FromString,
+                )
 
 
 class MigrationServiceServicer(object):
@@ -41,6 +52,18 @@ class MigrationServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def MigrateWorkspaceFGA(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def MigrateRolePermissions(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_MigrationServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -53,6 +76,16 @@ def add_MigrationServiceServicer_to_server(servicer, server):
                     servicer.MigrateStripeCustomers,
                     request_deserializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateStripeCustomersRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateStripeCustomersResponse.SerializeToString,
+            ),
+            'MigrateWorkspaceFGA': grpc.unary_unary_rpc_method_handler(
+                    servicer.MigrateWorkspaceFGA,
+                    request_deserializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateWorkspaceFGARequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'MigrateRolePermissions': grpc.unary_unary_rpc_method_handler(
+                    servicer.MigrateRolePermissions,
+                    request_deserializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateRolePermissionsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateRolePermissionsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -95,5 +128,39 @@ class MigrationService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.migrations.MigrationService/MigrateStripeCustomers',
             scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateStripeCustomersRequest.SerializeToString,
             scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateStripeCustomersResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def MigrateWorkspaceFGA(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.migrations.MigrationService/MigrateWorkspaceFGA',
+            scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateWorkspaceFGARequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def MigrateRolePermissions(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.migrations.MigrationService/MigrateRolePermissions',
+            scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateRolePermissionsRequest.SerializeToString,
+            scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateRolePermissionsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

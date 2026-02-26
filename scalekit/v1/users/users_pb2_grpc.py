@@ -23,7 +23,12 @@ class UserServiceStub(object):
         self.GetCurrentUser = channel.unary_unary(
                 '/scalekit.v1.users.UserService/GetCurrentUser',
                 request_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.GetCurrentUserRequest.SerializeToString,
-                response_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.GetUserResponse.FromString,
+                response_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.GetCurrentUserResponse.FromString,
+                )
+        self.GetSupportHash = channel.unary_unary(
+                '/scalekit.v1.users.UserService/GetSupportHash',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.GetSupportHashResponse.FromString,
                 )
         self.ListUsers = channel.unary_unary(
                 '/scalekit.v1.users.UserService/ListUsers',
@@ -113,6 +118,12 @@ class UserServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def GetCurrentUser(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetSupportHash(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -223,7 +234,12 @@ def add_UserServiceServicer_to_server(servicer, server):
             'GetCurrentUser': grpc.unary_unary_rpc_method_handler(
                     servicer.GetCurrentUser,
                     request_deserializer=scalekit_dot_v1_dot_users_dot_users__pb2.GetCurrentUserRequest.FromString,
-                    response_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.GetUserResponse.SerializeToString,
+                    response_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.GetCurrentUserResponse.SerializeToString,
+            ),
+            'GetSupportHash': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetSupportHash,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=scalekit_dot_v1_dot_users_dot_users__pb2.GetSupportHashResponse.SerializeToString,
             ),
             'ListUsers': grpc.unary_unary_rpc_method_handler(
                     servicer.ListUsers,
@@ -340,7 +356,24 @@ class UserService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.users.UserService/GetCurrentUser',
             scalekit_dot_v1_dot_users_dot_users__pb2.GetCurrentUserRequest.SerializeToString,
-            scalekit_dot_v1_dot_users_dot_users__pb2.GetUserResponse.FromString,
+            scalekit_dot_v1_dot_users_dot_users__pb2.GetCurrentUserResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetSupportHash(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.users.UserService/GetSupportHash',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            scalekit_dot_v1_dot_users_dot_users__pb2.GetSupportHashResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

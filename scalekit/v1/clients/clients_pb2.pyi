@@ -637,20 +637,73 @@ class GetClientResponse(_message.Message):
     def __init__(self, client: _Optional[_Union[Client, _Mapping]] = ...) -> None: ...
 
 class ListClientsRequest(_message.Message):
-    __slots__ = ("include_plain_secret", "client_type")
+    __slots__ = ("include_plain_secret", "filter", "page_token", "page_size")
+    class Filter(_message.Message):
+        __slots__ = ("client_type",)
+        CLIENT_TYPE_FIELD_NUMBER: _ClassVar[int]
+        client_type: _containers.RepeatedScalarFieldContainer[str]
+        def __init__(self, client_type: _Optional[_Iterable[str]] = ...) -> None: ...
     INCLUDE_PLAIN_SECRET_FIELD_NUMBER: _ClassVar[int]
-    CLIENT_TYPE_FIELD_NUMBER: _ClassVar[int]
+    FILTER_FIELD_NUMBER: _ClassVar[int]
+    PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
     include_plain_secret: bool
-    client_type: str
-    def __init__(self, include_plain_secret: bool = ..., client_type: _Optional[str] = ...) -> None: ...
+    filter: ListClientsRequest.Filter
+    page_token: str
+    page_size: int
+    def __init__(self, include_plain_secret: bool = ..., filter: _Optional[_Union[ListClientsRequest.Filter, _Mapping]] = ..., page_token: _Optional[str] = ..., page_size: _Optional[int] = ...) -> None: ...
 
 class ListClientsResponse(_message.Message):
-    __slots__ = ("total_size", "clients")
+    __slots__ = ("total_size", "clients", "next_page_token", "prev_page_token")
     TOTAL_SIZE_FIELD_NUMBER: _ClassVar[int]
     CLIENTS_FIELD_NUMBER: _ClassVar[int]
+    NEXT_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    PREV_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
     total_size: int
     clients: _containers.RepeatedCompositeFieldContainer[Client]
-    def __init__(self, total_size: _Optional[int] = ..., clients: _Optional[_Iterable[_Union[Client, _Mapping]]] = ...) -> None: ...
+    next_page_token: str
+    prev_page_token: str
+    def __init__(self, total_size: _Optional[int] = ..., clients: _Optional[_Iterable[_Union[Client, _Mapping]]] = ..., next_page_token: _Optional[str] = ..., prev_page_token: _Optional[str] = ...) -> None: ...
+
+class CreateClientRequest(_message.Message):
+    __slots__ = ("client",)
+    CLIENT_FIELD_NUMBER: _ClassVar[int]
+    client: CreateClient
+    def __init__(self, client: _Optional[_Union[CreateClient, _Mapping]] = ...) -> None: ...
+
+class CreateClient(_message.Message):
+    __slots__ = ("name", "client_type", "back_channel_logout_uris", "post_logout_redirect_uris", "initiate_login_uri", "post_login_uris", "access_token_expiry", "scopes", "custom_claims", "disallow_scalekit_api_access", "grant_types", "enforce_pkce")
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    CLIENT_TYPE_FIELD_NUMBER: _ClassVar[int]
+    BACK_CHANNEL_LOGOUT_URIS_FIELD_NUMBER: _ClassVar[int]
+    POST_LOGOUT_REDIRECT_URIS_FIELD_NUMBER: _ClassVar[int]
+    INITIATE_LOGIN_URI_FIELD_NUMBER: _ClassVar[int]
+    POST_LOGIN_URIS_FIELD_NUMBER: _ClassVar[int]
+    ACCESS_TOKEN_EXPIRY_FIELD_NUMBER: _ClassVar[int]
+    SCOPES_FIELD_NUMBER: _ClassVar[int]
+    CUSTOM_CLAIMS_FIELD_NUMBER: _ClassVar[int]
+    DISALLOW_SCALEKIT_API_ACCESS_FIELD_NUMBER: _ClassVar[int]
+    GRANT_TYPES_FIELD_NUMBER: _ClassVar[int]
+    ENFORCE_PKCE_FIELD_NUMBER: _ClassVar[int]
+    name: str
+    client_type: str
+    back_channel_logout_uris: _containers.RepeatedScalarFieldContainer[str]
+    post_logout_redirect_uris: _containers.RepeatedScalarFieldContainer[str]
+    initiate_login_uri: str
+    post_login_uris: _containers.RepeatedScalarFieldContainer[str]
+    access_token_expiry: int
+    scopes: _containers.RepeatedScalarFieldContainer[str]
+    custom_claims: _containers.RepeatedCompositeFieldContainer[CustomClaim]
+    disallow_scalekit_api_access: _wrappers_pb2.BoolValue
+    grant_types: _containers.RepeatedScalarFieldContainer[str]
+    enforce_pkce: _wrappers_pb2.BoolValue
+    def __init__(self, name: _Optional[str] = ..., client_type: _Optional[str] = ..., back_channel_logout_uris: _Optional[_Iterable[str]] = ..., post_logout_redirect_uris: _Optional[_Iterable[str]] = ..., initiate_login_uri: _Optional[str] = ..., post_login_uris: _Optional[_Iterable[str]] = ..., access_token_expiry: _Optional[int] = ..., scopes: _Optional[_Iterable[str]] = ..., custom_claims: _Optional[_Iterable[_Union[CustomClaim, _Mapping]]] = ..., disallow_scalekit_api_access: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., grant_types: _Optional[_Iterable[str]] = ..., enforce_pkce: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ...) -> None: ...
+
+class CreateClientResponse(_message.Message):
+    __slots__ = ("client",)
+    CLIENT_FIELD_NUMBER: _ClassVar[int]
+    client: Client
+    def __init__(self, client: _Optional[_Union[Client, _Mapping]] = ...) -> None: ...
 
 class UpdateClientRequest(_message.Message):
     __slots__ = ("client_id", "client", "mask")
@@ -663,20 +716,34 @@ class UpdateClientRequest(_message.Message):
     def __init__(self, client_id: _Optional[str] = ..., client: _Optional[_Union[UpdateClient, _Mapping]] = ..., mask: _Optional[_Union[_field_mask_pb2.FieldMask, _Mapping]] = ...) -> None: ...
 
 class UpdateClient(_message.Message):
-    __slots__ = ("redirect_uris", "default_redirect_uri", "back_channel_logout_uris", "post_logout_redirect_uris", "initiate_login_uri", "post_login_uris")
+    __slots__ = ("redirect_uris", "default_redirect_uri", "back_channel_logout_uris", "post_logout_redirect_uris", "initiate_login_uri", "post_login_uris", "name", "access_token_expiry", "scopes", "custom_claims", "disallow_scalekit_api_access", "grant_types", "enforce_pkce")
     REDIRECT_URIS_FIELD_NUMBER: _ClassVar[int]
     DEFAULT_REDIRECT_URI_FIELD_NUMBER: _ClassVar[int]
     BACK_CHANNEL_LOGOUT_URIS_FIELD_NUMBER: _ClassVar[int]
     POST_LOGOUT_REDIRECT_URIS_FIELD_NUMBER: _ClassVar[int]
     INITIATE_LOGIN_URI_FIELD_NUMBER: _ClassVar[int]
     POST_LOGIN_URIS_FIELD_NUMBER: _ClassVar[int]
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    ACCESS_TOKEN_EXPIRY_FIELD_NUMBER: _ClassVar[int]
+    SCOPES_FIELD_NUMBER: _ClassVar[int]
+    CUSTOM_CLAIMS_FIELD_NUMBER: _ClassVar[int]
+    DISALLOW_SCALEKIT_API_ACCESS_FIELD_NUMBER: _ClassVar[int]
+    GRANT_TYPES_FIELD_NUMBER: _ClassVar[int]
+    ENFORCE_PKCE_FIELD_NUMBER: _ClassVar[int]
     redirect_uris: _containers.RepeatedScalarFieldContainer[str]
     default_redirect_uri: str
     back_channel_logout_uris: _containers.RepeatedScalarFieldContainer[str]
     post_logout_redirect_uris: _containers.RepeatedScalarFieldContainer[str]
     initiate_login_uri: str
     post_login_uris: _containers.RepeatedScalarFieldContainer[str]
-    def __init__(self, redirect_uris: _Optional[_Iterable[str]] = ..., default_redirect_uri: _Optional[str] = ..., back_channel_logout_uris: _Optional[_Iterable[str]] = ..., post_logout_redirect_uris: _Optional[_Iterable[str]] = ..., initiate_login_uri: _Optional[str] = ..., post_login_uris: _Optional[_Iterable[str]] = ...) -> None: ...
+    name: str
+    access_token_expiry: int
+    scopes: _containers.RepeatedScalarFieldContainer[str]
+    custom_claims: _containers.RepeatedCompositeFieldContainer[CustomClaim]
+    disallow_scalekit_api_access: _wrappers_pb2.BoolValue
+    grant_types: _containers.RepeatedScalarFieldContainer[str]
+    enforce_pkce: _wrappers_pb2.BoolValue
+    def __init__(self, redirect_uris: _Optional[_Iterable[str]] = ..., default_redirect_uri: _Optional[str] = ..., back_channel_logout_uris: _Optional[_Iterable[str]] = ..., post_logout_redirect_uris: _Optional[_Iterable[str]] = ..., initiate_login_uri: _Optional[str] = ..., post_login_uris: _Optional[_Iterable[str]] = ..., name: _Optional[str] = ..., access_token_expiry: _Optional[int] = ..., scopes: _Optional[_Iterable[str]] = ..., custom_claims: _Optional[_Iterable[_Union[CustomClaim, _Mapping]]] = ..., disallow_scalekit_api_access: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., grant_types: _Optional[_Iterable[str]] = ..., enforce_pkce: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ...) -> None: ...
 
 class UpdateClientResponse(_message.Message):
     __slots__ = ("client",)
@@ -722,6 +789,12 @@ class UpdateClientSecretResponse(_message.Message):
     secret: ClientSecret
     def __init__(self, secret: _Optional[_Union[ClientSecret, _Mapping]] = ...) -> None: ...
 
+class DeleteClientRequest(_message.Message):
+    __slots__ = ("client_id",)
+    CLIENT_ID_FIELD_NUMBER: _ClassVar[int]
+    client_id: str
+    def __init__(self, client_id: _Optional[str] = ...) -> None: ...
+
 class DeleteClientSecretRequest(_message.Message):
     __slots__ = ("client_id", "secret_id")
     CLIENT_ID_FIELD_NUMBER: _ClassVar[int]
@@ -731,7 +804,7 @@ class DeleteClientSecretRequest(_message.Message):
     def __init__(self, client_id: _Optional[str] = ..., secret_id: _Optional[str] = ...) -> None: ...
 
 class Client(_message.Message):
-    __slots__ = ("id", "keyId", "create_time", "update_time", "redirect_uris", "default_redirect_uri", "secrets", "post_logout_redirect_uris", "back_channel_logout_uris", "initiate_login_uri", "post_login_uris")
+    __slots__ = ("id", "keyId", "create_time", "update_time", "redirect_uris", "default_redirect_uri", "secrets", "post_logout_redirect_uris", "back_channel_logout_uris", "initiate_login_uri", "post_login_uris", "name", "access_token_expiry", "scopes", "custom_claims", "disallow_scalekit_api_access", "grant_types", "client_type", "enforce_pkce")
     ID_FIELD_NUMBER: _ClassVar[int]
     KEYID_FIELD_NUMBER: _ClassVar[int]
     CREATE_TIME_FIELD_NUMBER: _ClassVar[int]
@@ -743,6 +816,14 @@ class Client(_message.Message):
     BACK_CHANNEL_LOGOUT_URIS_FIELD_NUMBER: _ClassVar[int]
     INITIATE_LOGIN_URI_FIELD_NUMBER: _ClassVar[int]
     POST_LOGIN_URIS_FIELD_NUMBER: _ClassVar[int]
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    ACCESS_TOKEN_EXPIRY_FIELD_NUMBER: _ClassVar[int]
+    SCOPES_FIELD_NUMBER: _ClassVar[int]
+    CUSTOM_CLAIMS_FIELD_NUMBER: _ClassVar[int]
+    DISALLOW_SCALEKIT_API_ACCESS_FIELD_NUMBER: _ClassVar[int]
+    GRANT_TYPES_FIELD_NUMBER: _ClassVar[int]
+    CLIENT_TYPE_FIELD_NUMBER: _ClassVar[int]
+    ENFORCE_PKCE_FIELD_NUMBER: _ClassVar[int]
     id: str
     keyId: str
     create_time: _timestamp_pb2.Timestamp
@@ -754,7 +835,15 @@ class Client(_message.Message):
     back_channel_logout_uris: _containers.RepeatedScalarFieldContainer[str]
     initiate_login_uri: str
     post_login_uris: _containers.RepeatedScalarFieldContainer[str]
-    def __init__(self, id: _Optional[str] = ..., keyId: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., redirect_uris: _Optional[_Iterable[str]] = ..., default_redirect_uri: _Optional[str] = ..., secrets: _Optional[_Iterable[_Union[ClientSecret, _Mapping]]] = ..., post_logout_redirect_uris: _Optional[_Iterable[str]] = ..., back_channel_logout_uris: _Optional[_Iterable[str]] = ..., initiate_login_uri: _Optional[str] = ..., post_login_uris: _Optional[_Iterable[str]] = ...) -> None: ...
+    name: str
+    access_token_expiry: int
+    scopes: _containers.RepeatedScalarFieldContainer[str]
+    custom_claims: _containers.RepeatedCompositeFieldContainer[CustomClaim]
+    disallow_scalekit_api_access: bool
+    grant_types: _containers.RepeatedScalarFieldContainer[str]
+    client_type: str
+    enforce_pkce: bool
+    def __init__(self, id: _Optional[str] = ..., keyId: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., redirect_uris: _Optional[_Iterable[str]] = ..., default_redirect_uri: _Optional[str] = ..., secrets: _Optional[_Iterable[_Union[ClientSecret, _Mapping]]] = ..., post_logout_redirect_uris: _Optional[_Iterable[str]] = ..., back_channel_logout_uris: _Optional[_Iterable[str]] = ..., initiate_login_uri: _Optional[str] = ..., post_login_uris: _Optional[_Iterable[str]] = ..., name: _Optional[str] = ..., access_token_expiry: _Optional[int] = ..., scopes: _Optional[_Iterable[str]] = ..., custom_claims: _Optional[_Iterable[_Union[CustomClaim, _Mapping]]] = ..., disallow_scalekit_api_access: bool = ..., grant_types: _Optional[_Iterable[str]] = ..., client_type: _Optional[str] = ..., enforce_pkce: bool = ...) -> None: ...
 
 class ClientSecret(_message.Message):
     __slots__ = ("id", "create_time", "update_time", "secret_suffix", "created_by", "status", "expire_time", "last_used_time", "plain_secret")

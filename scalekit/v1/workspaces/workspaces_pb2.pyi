@@ -5,6 +5,7 @@ from google.api import visibility_pb2 as _visibility_pb2
 from google.protobuf import any_pb2 as _any_pb2
 from google.protobuf import duration_pb2 as _duration_pb2
 from google.protobuf import empty_pb2 as _empty_pb2
+from google.protobuf import struct_pb2 as _struct_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
 from protoc_gen_openapiv2.options import annotations_pb2 as _annotations_pb2_1
 from scalekit.v1.commons import commons_pb2 as _commons_pb2
@@ -111,7 +112,7 @@ class WorkspaceExtendedInfo(_message.Message):
     def __init__(self, payment_overdue: bool = ..., payment_method_present: bool = ..., free_quota_exceeded: bool = ...) -> None: ...
 
 class Workspace(_message.Message):
-    __slots__ = ("id", "create_time", "update_time", "display_name", "region_code", "extended_info", "billing_customer_id", "billing_subscription_id", "auth_domain")
+    __slots__ = ("id", "create_time", "update_time", "display_name", "region_code", "extended_info", "billing_customer_id", "billing_subscription_id", "auth_domain", "deployment")
     ID_FIELD_NUMBER: _ClassVar[int]
     CREATE_TIME_FIELD_NUMBER: _ClassVar[int]
     UPDATE_TIME_FIELD_NUMBER: _ClassVar[int]
@@ -121,6 +122,7 @@ class Workspace(_message.Message):
     BILLING_CUSTOMER_ID_FIELD_NUMBER: _ClassVar[int]
     BILLING_SUBSCRIPTION_ID_FIELD_NUMBER: _ClassVar[int]
     AUTH_DOMAIN_FIELD_NUMBER: _ClassVar[int]
+    DEPLOYMENT_FIELD_NUMBER: _ClassVar[int]
     id: str
     create_time: _timestamp_pb2.Timestamp
     update_time: _timestamp_pb2.Timestamp
@@ -130,7 +132,8 @@ class Workspace(_message.Message):
     billing_customer_id: str
     billing_subscription_id: str
     auth_domain: str
-    def __init__(self, id: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., display_name: _Optional[str] = ..., region_code: _Optional[_Union[_commons_pb2.RegionCode, str]] = ..., extended_info: _Optional[_Union[WorkspaceExtendedInfo, _Mapping]] = ..., billing_customer_id: _Optional[str] = ..., billing_subscription_id: _Optional[str] = ..., auth_domain: _Optional[str] = ...) -> None: ...
+    deployment: str
+    def __init__(self, id: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., display_name: _Optional[str] = ..., region_code: _Optional[_Union[_commons_pb2.RegionCode, str]] = ..., extended_info: _Optional[_Union[WorkspaceExtendedInfo, _Mapping]] = ..., billing_customer_id: _Optional[str] = ..., billing_subscription_id: _Optional[str] = ..., auth_domain: _Optional[str] = ..., deployment: _Optional[str] = ...) -> None: ...
 
 class CreateWorkspace(_message.Message):
     __slots__ = ("email", "company")
@@ -147,14 +150,16 @@ class UpdateWorkspace(_message.Message):
     def __init__(self, display_name: _Optional[str] = ...) -> None: ...
 
 class OnboardWorkspace(_message.Message):
-    __slots__ = ("workspace_display_name", "user_given_name", "user_family_name")
+    __slots__ = ("workspace_display_name", "user_given_name", "user_family_name", "authentication_mode")
     WORKSPACE_DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     USER_GIVEN_NAME_FIELD_NUMBER: _ClassVar[int]
     USER_FAMILY_NAME_FIELD_NUMBER: _ClassVar[int]
+    AUTHENTICATION_MODE_FIELD_NUMBER: _ClassVar[int]
     workspace_display_name: str
     user_given_name: str
     user_family_name: str
-    def __init__(self, workspace_display_name: _Optional[str] = ..., user_given_name: _Optional[str] = ..., user_family_name: _Optional[str] = ...) -> None: ...
+    authentication_mode: _commons_pb2.AuthenticationMode
+    def __init__(self, workspace_display_name: _Optional[str] = ..., user_given_name: _Optional[str] = ..., user_family_name: _Optional[str] = ..., authentication_mode: _Optional[_Union[_commons_pb2.AuthenticationMode, str]] = ...) -> None: ...
 
 class CreateWorkspaceRequest(_message.Message):
     __slots__ = ("workspace",)
@@ -207,10 +212,12 @@ class GetCurrentWorkspaceRequest(_message.Message):
     def __init__(self) -> None: ...
 
 class GetWorkspaceResponse(_message.Message):
-    __slots__ = ("workspace",)
+    __slots__ = ("workspace", "context")
     WORKSPACE_FIELD_NUMBER: _ClassVar[int]
+    CONTEXT_FIELD_NUMBER: _ClassVar[int]
     workspace: Workspace
-    def __init__(self, workspace: _Optional[_Union[Workspace, _Mapping]] = ...) -> None: ...
+    context: _struct_pb2.Struct
+    def __init__(self, workspace: _Optional[_Union[Workspace, _Mapping]] = ..., context: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
 
 class GetBillingPortalRequest(_message.Message):
     __slots__ = ("id", "flow_type")
@@ -631,3 +638,15 @@ class CreateCheckoutSessionResponse(_message.Message):
     client_secret: str
     url: str
     def __init__(self, id: _Optional[str] = ..., client_secret: _Optional[str] = ..., url: _Optional[str] = ...) -> None: ...
+
+class UpdateWorkspaceContextRequest(_message.Message):
+    __slots__ = ("context",)
+    CONTEXT_FIELD_NUMBER: _ClassVar[int]
+    context: _struct_pb2.Struct
+    def __init__(self, context: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
+
+class UpdateWorkspaceContextResponse(_message.Message):
+    __slots__ = ("context",)
+    CONTEXT_FIELD_NUMBER: _ClassVar[int]
+    context: _struct_pb2.Struct
+    def __init__(self, context: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
