@@ -213,7 +213,7 @@ class ScalekitClient:
         :param scopes        : Optional list of scopes to be requested in the token (e.g. ["read:users", "write:users"])
         :type                            : ``` list[str] ```
         :returns:
-            str: Access token string
+            access token
         """
         try:
             payload = {
