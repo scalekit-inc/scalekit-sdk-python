@@ -1,3 +1,4 @@
+from __future__ import annotations
 import json
 from math import floor
 from typing import Any, Optional, Dict
@@ -212,7 +213,7 @@ class ScalekitClient:
         :param scopes        : Optional list of scopes to be requested in the token (e.g. ["read:users", "write:users"])
         :type                            : ``` list[str] ```
         :returns:
-            dict: authentication response
+            str: Access token string
         """
         try:
             payload = {
