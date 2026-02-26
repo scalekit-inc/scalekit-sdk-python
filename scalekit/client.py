@@ -201,7 +201,7 @@ class ScalekitClient:
         except Exception:
             return False
 
-    def generate_client_token(self, client_id: str, client_secret: str) -> str:
+    def generate_client_token(self, client_id: str, client_secret: str, scopes: Optional[list[str]] = None) -> str:
         """
         Method to generate access token
 
@@ -209,17 +209,21 @@ class ScalekitClient:
         :type                           : ``` str ```
         :param client_secret : Client Secret for access token
         :type                            : ``` str ```
+        :param scopes        : Optional list of scopes to be requested in the token (e.g. ["read:users", "write:users"])
+        :type                            : ``` list[str] ```
         :returns:
-            access token
+            dict: authentication response
         """
         try:
-            response = self.core_client.authenticate(
-                    {
-                        "grant_type": GrantType.ClientCredentials.value,
-                        "client_id": client_id,
-                        "client_secret": client_secret,
-                    }
-            )
+            payload = {
+                "grant_type": GrantType.ClientCredentials.value,
+                "client_id": client_id,
+                "client_secret": client_secret,
+                }
+            if scopes:
+                payload["scope"] = " ".join(scopes)
+
+            response = self.core_client.authenticate(payload)
             response = json.loads(response.content)
             return response
         except Exception as exp:
