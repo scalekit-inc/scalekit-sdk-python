@@ -165,6 +165,7 @@ class ScalekitClient:
             for k, v in claims.items():
                 if id_token_claim_to_user_map.get(k, None):
                     user[id_token_claim_to_user_map[k]] = v
+            access_token_claims = self.validate_token(access_token, options=None)
 
             return {
                 "user": user,
@@ -173,7 +174,10 @@ class ScalekitClient:
                 "refresh_token": refresh_token,
                 "connection_id": connection_id,
                 "organization_id": organization_id,
-                "expires_in": expires_in
+                "expires_in": expires_in,
+                "connection_ids": amr_claims,
+                "raw_id_token_claims": claims,
+                "raw_access_token_claims": access_token_claims
             }
 
         except jwt.exceptions.InvalidTokenError as exp:
@@ -181,7 +185,7 @@ class ScalekitClient:
         except Exception as exp:
             raise exp
 
-    def validate_access_token(self, token: str, options: Optional[TokenValidationOptions] = None, audience = None) -> bool:
+    def validate_access_token(self, token: str, options: Optional[TokenValidationOptions] = None, audience=None) -> bool:
         """
         Method to validate access token
 
@@ -323,8 +327,6 @@ class ScalekitClient:
             self.verify_scopes(token, options.required_scopes)
         
         return payload
-
-
 
     def verify_scopes(self, token: str, required_scopes: list[str]) -> bool:
         """
