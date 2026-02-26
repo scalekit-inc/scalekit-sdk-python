@@ -20,7 +20,7 @@ class TestPermissions(BaseTest):
         org_display_name = f"Test Organization {self.faker.unique.random_number()}"
         org = CreateOrganization(
             display_name=org_display_name,
-            external_id=f"ext_{self.faker.unique.random_number()}"
+            external_id=f"ext_{self.faker.uuid4()}"
         )
         org_response = self.scalekit_client.organization.create_organization(organization=org)
         self.org_id = org_response[0].organization.id
@@ -134,20 +134,17 @@ class TestPermissions(BaseTest):
     def test_list_role_permissions(self):
         """ Method to test list permissions for a role """
         # First create a role
-        role_name = f"test_role_{self.faker.unique.random_number()}"
-        display_name = f"Test Role {self.faker.unique.random_number()}"
+        role_display_name = f"Test Role {self.faker.random_number(digits=8)}"
+        self.role_name = role_display_name.lower().replace(' ', '_')
         
         role = CreateRole(
-            name=role_name,
-            display_name=display_name,
-            description="Test role for permission testing"
-        )
-        
-        role_response = self.scalekit_client.roles.create_role(role=role)
-        self.role_name = role_name
+            name=self.role_name,
+            display_name=role_display_name,
+            description="Test role for permission testing")
+        self.scalekit_client.roles.create_role(role=role)
 
         # List permissions for the role
-        response = self.scalekit_client.permissions.list_role_permissions(role_name=role_name)
+        response = self.scalekit_client.permissions.list_role_permissions(role_name=self.role_name)
         self.assertEqual(response[1].code().name, "OK")
         self.assertTrue(response[0] is not None)
         self.assertTrue(hasattr(response[0], 'permissions'))
@@ -155,19 +152,19 @@ class TestPermissions(BaseTest):
     def test_add_permissions_to_role(self):
         """ Method to test adding permissions to a role """
         # Create a permission
-        permission_name = f"test_permission_{self.faker.unique.random_number()}"
+        self.permission_name = f"test_permission_{self.faker.unique.random_number()}"
         permission = CreatePermission(
-            name=permission_name,
+            name=self.permission_name,
             description="Permission for role testing"
         )
-        perm_response = self.scalekit_client.permissions.create_permission(permission=permission)
-        self.permission_name = permission_name
+        self.scalekit_client.permissions.create_permission(permission=permission)
 
         # Create a role
-        role_name = f"test_role_{self.faker.unique.random_number()}"
+        role_display_name = f"Test Role {self.faker.random_number(digits=8)}"
+        role_name = role_display_name.lower().replace(' ', '_')
         role = CreateRole(
             name=role_name,
-            display_name=f"Test Role {self.faker.unique.random_number()}",
+            display_name=role_display_name,
             description="Role for permission testing"
         )
         role_response = self.scalekit_client.roles.create_role(role=role)
@@ -176,31 +173,31 @@ class TestPermissions(BaseTest):
         # Add permission to role
         response = self.scalekit_client.permissions.add_permissions_to_role(
             role_name=role_name,
-            permission_names=[permission_name]
+            permission_names=[self.permission_name]
         )
         self.assertEqual(response[1].code().name, "OK")
 
         # Verify permission was added
         list_response = self.scalekit_client.permissions.list_role_permissions(role_name=role_name)
         permission_names = [perm.name for perm in list_response[0].permissions]
-        self.assertIn(permission_name, permission_names)
+        self.assertIn(self.permission_name, permission_names)
 
     def test_remove_permission_from_role(self):
         """ Method to test removing a permission from a role """
         # Create a permission
-        permission_name = f"test_permission_{self.faker.unique.random_number()}"
+        self.permission_name = f"test_permission_{self.faker.unique.random_number()}"
         permission = CreatePermission(
-            name=permission_name,
+            name=self.permission_name,
             description="Permission for role testing"
         )
-        perm_response = self.scalekit_client.permissions.create_permission(permission=permission)
-        self.permission_name = permission_name
+        self.scalekit_client.permissions.create_permission(permission=permission)
 
         # Create a role
-        role_name = f"test_role_{self.faker.unique.random_number()}"
+        role_display_name = f"Test Role {self.faker.random_number(digits=8)}"
+        role_name = role_display_name.lower().replace(' ', '_')
         role = CreateRole(
             name=role_name,
-            display_name=f"Test Role {self.faker.unique.random_number()}",
+            display_name=role_display_name,
             description="Role for permission testing"
         )
         role_response = self.scalekit_client.roles.create_role(role=role)
@@ -209,35 +206,35 @@ class TestPermissions(BaseTest):
         # Add permission to role first
         add_response = self.scalekit_client.permissions.add_permissions_to_role(
             role_name=role_name,
-            permission_names=[permission_name]
+            permission_names=[self.permission_name]
         )
 
         # Remove permission from role
         response = self.scalekit_client.permissions.remove_permission_from_role(
             role_name=role_name,
-            permission_name=permission_name
+            permission_name=self.permission_name
         )
         self.assertEqual(response[1].code().name, "OK")
 
         # Verify permission was removed
         list_response = self.scalekit_client.permissions.list_role_permissions(role_name=role_name)
         permission_names = [perm.name for perm in list_response[0].permissions]
-        self.assertNotIn(permission_name, permission_names)
+        self.assertNotIn(self.permission_name, permission_names)
 
     def test_list_effective_role_permissions(self):
         """ Method to test listing effective permissions for a role """
         # Create a role
-        role_name = f"test_role_{self.faker.unique.random_number()}"
+        role_display_name = f"Test Role {self.faker.random_number(digits=8)}"
+        self.role_name = role_display_name.lower().replace(' ', '_')
         role = CreateRole(
-            name=role_name,
-            display_name=f"Test Role {self.faker.unique.random_number()}",
+            name=self.role_name,
+            display_name=role_display_name,
             description="Role for effective permissions testing"
         )
         role_response = self.scalekit_client.roles.create_role(role=role)
-        self.role_name = role_name
 
         # List effective permissions for the role
-        response = self.scalekit_client.permissions.list_effective_role_permissions(role_name=role_name)
+        response = self.scalekit_client.permissions.list_effective_role_permissions(role_name=self.role_name)
         self.assertEqual(response[1].code().name, "OK")
         self.assertTrue(response[0] is not None)
         self.assertTrue(hasattr(response[0], 'permissions'))
@@ -259,24 +256,24 @@ class TestPermissions(BaseTest):
         self.permission_name = permission_names[0]
 
         # Create a role
-        role_name = f"test_role_{self.faker.unique.random_number()}"
+        role_display_name = f"Test Role {self.faker.random_number(digits=8)}"
+        self.role_name = role_display_name.lower().replace(' ', '_')
         role = CreateRole(
-            name=role_name,
-            display_name=f"Test Role {self.faker.unique.random_number()}",
+            name=self.role_name,
+            display_name=role_display_name,
             description="Role for multiple permissions testing"
         )
-        role_response = self.scalekit_client.roles.create_role(role=role)
-        self.role_name = role_name
+        self.scalekit_client.roles.create_role(role=role)
 
         # Add multiple permissions to role
         response = self.scalekit_client.permissions.add_permissions_to_role(
-            role_name=role_name,
+            role_name=self.role_name,
             permission_names=permission_names
         )
         self.assertEqual(response[1].code().name, "OK")
 
         # Verify permissions were added
-        list_response = self.scalekit_client.permissions.list_role_permissions(role_name=role_name)
+        list_response = self.scalekit_client.permissions.list_role_permissions(role_name=self.role_name)
         role_permission_names = [perm.name for perm in list_response[0].permissions]
         for perm_name in permission_names:
             self.assertIn(perm_name, role_permission_names)
@@ -290,21 +287,20 @@ class TestPermissions(BaseTest):
 
     def test_create_permission_duplicate_name(self):
         """ Method to test creating permission with duplicate name """
-        permission_name = f"test_permission_{self.faker.unique.random_number()}"
+        self.permission_name = f"test_permission_{self.faker.unique.random_number()}"
         
         permission1 = CreatePermission(
-            name=permission_name,
+            name=self.permission_name,
             description="First permission"
         )
         
         permission2 = CreatePermission(
-            name=permission_name,
+            name=self.permission_name,
             description="Second permission with same name"
         )
 
         # Create first permission
-        response1 = self.scalekit_client.permissions.create_permission(permission=permission1)
-        self.permission_name = permission_name
+        self.scalekit_client.permissions.create_permission(permission=permission1)
 
         # Try to create second permission with same name - should fail
         with self.assertRaises(ScalekitBadRequestException):
@@ -312,26 +308,24 @@ class TestPermissions(BaseTest):
 
     def tearDown(self):
         """ Method to clean up """
+        errors = []
         if self.permission_name:
             try:
                 self.scalekit_client.permissions.delete_permission(permission_name=self.permission_name)
-            except ScalekitNotFoundException:
-                pass
             except Exception as exp:
-                raise ScalekitException(f"Unexpected exception during permission cleanup: {exp}") from exp
+                errors.append(exp)
 
         if self.role_name:
             try:
                 self.scalekit_client.roles.delete_role(role_name=self.role_name)
-            except ScalekitNotFoundException:
-                pass
             except Exception as exp:
-                raise ScalekitException(f"Unexpected exception during role cleanup: {exp}") from exp
+                errors.append(exp)
 
-        # Clean up created organization
-        try:
-            self.scalekit_client.organization.delete_organization(organization_id=self.org_id)
-        except ScalekitNotFoundException:
-            pass
-        except Exception as exp:
-            raise ScalekitException(f"Warning: Could not clean up organization {self.org_id}: {exp}")
+        if self.org_id:
+            try:
+                self.scalekit_client.organization.delete_organization(organization_id=self.org_id)
+            except Exception as exp:
+                errors.append(exp)
+
+        if errors:
+            raise Exception(f"Errors during cleanup: {errors}")

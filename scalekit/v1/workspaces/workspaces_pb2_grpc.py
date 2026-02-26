@@ -85,6 +85,11 @@ class WorkspaceServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.CreateCheckoutSessionRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.CreateCheckoutSessionResponse.FromString,
                 )
+        self.UpdateWorkspaceContext = channel.unary_unary(
+                '/scalekit.v1.workspaces.WorkspaceService/UpdateWorkspaceContext',
+                request_serializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.UpdateWorkspaceContextRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.UpdateWorkspaceContextResponse.FromString,
+                )
 
 
 class WorkspaceServiceServicer(object):
@@ -254,6 +259,12 @@ class WorkspaceServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def UpdateWorkspaceContext(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_WorkspaceServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -326,6 +337,11 @@ def add_WorkspaceServiceServicer_to_server(servicer, server):
                     servicer.CreateCheckoutSession,
                     request_deserializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.CreateCheckoutSessionRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.CreateCheckoutSessionResponse.SerializeToString,
+            ),
+            'UpdateWorkspaceContext': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateWorkspaceContext,
+                    request_deserializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.UpdateWorkspaceContextRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.UpdateWorkspaceContextResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -572,5 +588,22 @@ class WorkspaceService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.workspaces.WorkspaceService/CreateCheckoutSession',
             scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.CreateCheckoutSessionRequest.SerializeToString,
             scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.CreateCheckoutSessionResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def UpdateWorkspaceContext(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.workspaces.WorkspaceService/UpdateWorkspaceContext',
+            scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.UpdateWorkspaceContextRequest.SerializeToString,
+            scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.UpdateWorkspaceContextResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

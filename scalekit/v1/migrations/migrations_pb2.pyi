@@ -95,3 +95,57 @@ class MigrationSAMLResponse(_message.Message):
     success_environments: int
     failed_environments: int
     def __init__(self, success_environments: _Optional[int] = ..., failed_environments: _Optional[int] = ...) -> None: ...
+
+class MigrateWorkspaceFGARequest(_message.Message):
+    __slots__ = ("workspace_ids", "organization_ids", "directory_ids", "connection_ids", "client_ids", "environment_ids")
+    WORKSPACE_IDS_FIELD_NUMBER: _ClassVar[int]
+    ASYNC_FIELD_NUMBER: _ClassVar[int]
+    ORGANIZATION_IDS_FIELD_NUMBER: _ClassVar[int]
+    DIRECTORY_IDS_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_IDS_FIELD_NUMBER: _ClassVar[int]
+    CLIENT_IDS_FIELD_NUMBER: _ClassVar[int]
+    ENVIRONMENT_IDS_FIELD_NUMBER: _ClassVar[int]
+    workspace_ids: _containers.RepeatedScalarFieldContainer[int]
+    organization_ids: _containers.RepeatedScalarFieldContainer[int]
+    directory_ids: _containers.RepeatedScalarFieldContainer[int]
+    connection_ids: _containers.RepeatedScalarFieldContainer[int]
+    client_ids: _containers.RepeatedScalarFieldContainer[int]
+    environment_ids: _containers.RepeatedScalarFieldContainer[int]
+    def __init__(self, workspace_ids: _Optional[_Iterable[int]] = ..., organization_ids: _Optional[_Iterable[int]] = ..., directory_ids: _Optional[_Iterable[int]] = ..., connection_ids: _Optional[_Iterable[int]] = ..., client_ids: _Optional[_Iterable[int]] = ..., environment_ids: _Optional[_Iterable[int]] = ..., **kwargs) -> None: ...
+
+class PermissionList(_message.Message):
+    __slots__ = ("permissions",)
+    PERMISSIONS_FIELD_NUMBER: _ClassVar[int]
+    permissions: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, permissions: _Optional[_Iterable[str]] = ...) -> None: ...
+
+class MigrateRolePermissionsRequest(_message.Message):
+    __slots__ = ("role_permissions", "environment_ids")
+    class RolePermissionsEntry(_message.Message):
+        __slots__ = ("key", "value")
+        KEY_FIELD_NUMBER: _ClassVar[int]
+        VALUE_FIELD_NUMBER: _ClassVar[int]
+        key: str
+        value: PermissionList
+        def __init__(self, key: _Optional[str] = ..., value: _Optional[_Union[PermissionList, _Mapping]] = ...) -> None: ...
+    ROLE_PERMISSIONS_FIELD_NUMBER: _ClassVar[int]
+    ENVIRONMENT_IDS_FIELD_NUMBER: _ClassVar[int]
+    role_permissions: _containers.MessageMap[str, PermissionList]
+    environment_ids: _containers.RepeatedScalarFieldContainer[int]
+    def __init__(self, role_permissions: _Optional[_Mapping[str, PermissionList]] = ..., environment_ids: _Optional[_Iterable[int]] = ...) -> None: ...
+
+class MigrateRolePermissionsResponse(_message.Message):
+    __slots__ = ("success_environments", "failed_environments", "error_messages", "roles_created", "permissions_created", "role_permission_mappings_created")
+    SUCCESS_ENVIRONMENTS_FIELD_NUMBER: _ClassVar[int]
+    FAILED_ENVIRONMENTS_FIELD_NUMBER: _ClassVar[int]
+    ERROR_MESSAGES_FIELD_NUMBER: _ClassVar[int]
+    ROLES_CREATED_FIELD_NUMBER: _ClassVar[int]
+    PERMISSIONS_CREATED_FIELD_NUMBER: _ClassVar[int]
+    ROLE_PERMISSION_MAPPINGS_CREATED_FIELD_NUMBER: _ClassVar[int]
+    success_environments: int
+    failed_environments: int
+    error_messages: _containers.RepeatedScalarFieldContainer[str]
+    roles_created: int
+    permissions_created: int
+    role_permission_mappings_created: int
+    def __init__(self, success_environments: _Optional[int] = ..., failed_environments: _Optional[int] = ..., error_messages: _Optional[_Iterable[str]] = ..., roles_created: _Optional[int] = ..., permissions_created: _Optional[int] = ..., role_permission_mappings_created: _Optional[int] = ...) -> None: ...

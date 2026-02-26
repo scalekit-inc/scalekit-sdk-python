@@ -137,14 +137,16 @@ class Environment(_message.Message):
     def __init__(self, id: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., display_name: _Optional[str] = ..., domain: _Optional[str] = ..., region_code: _Optional[_Union[_commons_pb2.RegionCode, str]] = ..., type: _Optional[_Union[_commons_pb2.EnvironmentType, str]] = ..., custom_domain: _Optional[str] = ..., custom_domain_status: _Optional[_Union[CustomDomainStatus, str]] = ...) -> None: ...
 
 class CreateEnvironment(_message.Message):
-    __slots__ = ("display_name", "region_code", "type")
+    __slots__ = ("display_name", "region_code", "type", "authentication_mode")
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     REGION_CODE_FIELD_NUMBER: _ClassVar[int]
     TYPE_FIELD_NUMBER: _ClassVar[int]
+    AUTHENTICATION_MODE_FIELD_NUMBER: _ClassVar[int]
     display_name: str
     region_code: _commons_pb2.RegionCode
     type: _commons_pb2.EnvironmentType
-    def __init__(self, display_name: _Optional[str] = ..., region_code: _Optional[_Union[_commons_pb2.RegionCode, str]] = ..., type: _Optional[_Union[_commons_pb2.EnvironmentType, str]] = ...) -> None: ...
+    authentication_mode: _commons_pb2.AuthenticationMode
+    def __init__(self, display_name: _Optional[str] = ..., region_code: _Optional[_Union[_commons_pb2.RegionCode, str]] = ..., type: _Optional[_Union[_commons_pb2.EnvironmentType, str]] = ..., authentication_mode: _Optional[_Union[_commons_pb2.AuthenticationMode, str]] = ...) -> None: ...
 
 class UpdateEnvironment(_message.Message):
     __slots__ = ("display_name",)
@@ -266,13 +268,21 @@ class GetPortalCustomizationRequest(_message.Message):
     id: str
     def __init__(self, id: _Optional[str] = ...) -> None: ...
 
+class PortalSettings(_message.Message):
+    __slots__ = ("custom_branding",)
+    CUSTOM_BRANDING_FIELD_NUMBER: _ClassVar[int]
+    custom_branding: bool
+    def __init__(self, custom_branding: bool = ...) -> None: ...
+
 class GetPortalCustomizationResponse(_message.Message):
-    __slots__ = ("environmentId", "customization_settings")
+    __slots__ = ("environmentId", "customization_settings", "settings")
     ENVIRONMENTID_FIELD_NUMBER: _ClassVar[int]
     CUSTOMIZATION_SETTINGS_FIELD_NUMBER: _ClassVar[int]
+    SETTINGS_FIELD_NUMBER: _ClassVar[int]
     environmentId: str
     customization_settings: _struct_pb2.Struct
-    def __init__(self, environmentId: _Optional[str] = ..., customization_settings: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
+    settings: PortalSettings
+    def __init__(self, environmentId: _Optional[str] = ..., customization_settings: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., settings: _Optional[_Union[PortalSettings, _Mapping]] = ...) -> None: ...
 
 class CreateAssetUploadUrlResponse(_message.Message):
     __slots__ = ("upload_url", "fetch_url")

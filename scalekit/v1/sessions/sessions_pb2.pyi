@@ -78,7 +78,7 @@ class UserSessionDetails(_message.Message):
     def __init__(self, sessions: _Optional[_Iterable[_Union[SessionDetails, _Mapping]]] = ..., next_page_token: _Optional[str] = ..., prev_page_token: _Optional[str] = ..., total_size: _Optional[int] = ...) -> None: ...
 
 class SessionDetails(_message.Message):
-    __slots__ = ("session_id", "user_id", "authenticated_organizations", "organization_id", "created_at", "updated_at", "idle_expires_at", "absolute_expires_at", "expired_at", "logout_at", "status", "device", "last_active_at")
+    __slots__ = ("session_id", "user_id", "authenticated_organizations", "organization_id", "created_at", "updated_at", "idle_expires_at", "absolute_expires_at", "expired_at", "logout_at", "status", "device", "last_active_at", "authenticated_clients")
     SESSION_ID_FIELD_NUMBER: _ClassVar[int]
     USER_ID_FIELD_NUMBER: _ClassVar[int]
     AUTHENTICATED_ORGANIZATIONS_FIELD_NUMBER: _ClassVar[int]
@@ -92,6 +92,7 @@ class SessionDetails(_message.Message):
     STATUS_FIELD_NUMBER: _ClassVar[int]
     DEVICE_FIELD_NUMBER: _ClassVar[int]
     LAST_ACTIVE_AT_FIELD_NUMBER: _ClassVar[int]
+    AUTHENTICATED_CLIENTS_FIELD_NUMBER: _ClassVar[int]
     session_id: str
     user_id: str
     authenticated_organizations: _containers.RepeatedScalarFieldContainer[str]
@@ -105,7 +106,8 @@ class SessionDetails(_message.Message):
     status: str
     device: DeviceDetails
     last_active_at: _timestamp_pb2.Timestamp
-    def __init__(self, session_id: _Optional[str] = ..., user_id: _Optional[str] = ..., authenticated_organizations: _Optional[_Iterable[str]] = ..., organization_id: _Optional[str] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., idle_expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., absolute_expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., expired_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., logout_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., status: _Optional[str] = ..., device: _Optional[_Union[DeviceDetails, _Mapping]] = ..., last_active_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+    authenticated_clients: _containers.RepeatedCompositeFieldContainer[AuthenticatedClients]
+    def __init__(self, session_id: _Optional[str] = ..., user_id: _Optional[str] = ..., authenticated_organizations: _Optional[_Iterable[str]] = ..., organization_id: _Optional[str] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., idle_expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., absolute_expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., expired_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., logout_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., status: _Optional[str] = ..., device: _Optional[_Union[DeviceDetails, _Mapping]] = ..., last_active_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., authenticated_clients: _Optional[_Iterable[_Union[AuthenticatedClients, _Mapping]]] = ...) -> None: ...
 
 class DeviceDetails(_message.Message):
     __slots__ = ("user_agent", "os", "os_version", "browser", "browser_version", "device_type", "ip", "location")
@@ -164,3 +166,11 @@ class Location(_message.Message):
     latitude: str
     longitude: str
     def __init__(self, region: _Optional[str] = ..., region_subdivision: _Optional[str] = ..., city: _Optional[str] = ..., latitude: _Optional[str] = ..., longitude: _Optional[str] = ...) -> None: ...
+
+class AuthenticatedClients(_message.Message):
+    __slots__ = ("client_id", "organization_id")
+    CLIENT_ID_FIELD_NUMBER: _ClassVar[int]
+    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
+    client_id: str
+    organization_id: str
+    def __init__(self, client_id: _Optional[str] = ..., organization_id: _Optional[str] = ...) -> None: ...
