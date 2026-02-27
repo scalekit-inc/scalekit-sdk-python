@@ -1,9 +1,13 @@
+import re
 from setuptools import setup, find_packages
+
+with open('scalekit/_version.py') as f:
+    __version__ = re.search(r"^__version__ = ['\"]([^'\"]+)['\"]", f.read(), re.M).group(1)
 
 setup(
 
     name="scalekit-sdk-python",
-    version="2.4.17",
+    version=__version__,
     packages=find_packages(),
     install_requires=[
         "grpcio>=1.64.1",
