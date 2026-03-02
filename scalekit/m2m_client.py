@@ -61,7 +61,7 @@ class M2MClient:
         :param client_id        : client id
         :type                  : ``` str ```
         :returns:
-            None
+            GetOrganizationClientResponse
         """
         return self.core_client.grpc_exec(
             self.client_service.GetOrganizationClient.with_call,
