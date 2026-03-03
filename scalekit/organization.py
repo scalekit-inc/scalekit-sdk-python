@@ -24,21 +24,28 @@ class OrganizationClient:
         )
 
     def list_organizations(
-        self, page_size: int, page_token: Optional[str] = None
+        self,
+        page_size: Optional[int] = None,
+        page_token: Optional[str] = None,
     ) -> ListOrganizationsResponse:
         """
         Method to list organizations
 
-        :param page_size  : page size for org list fetch
+        :param page_size  : page size for org list fetch (optional, uses server default if not provided)
         :type             : ``` int ```
         :param page_token : page token for org list fetch
         :type             : ``` str ```
         :returns:
              list of organizations
         """
+        request = ListOrganizationsRequest()
+        if page_size is not None:
+            request.page_size = page_size
+        if page_token is not None:
+            request.page_token = page_token
         return self.core_client.grpc_exec(
             self.organization_service.ListOrganization.with_call,
-            ListOrganizationsRequest(page_size=page_size, page_token=page_token),
+            request,
         )
 
     def create_organization(

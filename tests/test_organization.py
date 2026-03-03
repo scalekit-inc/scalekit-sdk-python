@@ -65,6 +65,13 @@ class TestOrganization(BaseTest):
         self.assertEqual(response[0].organizations[0].id, self.org_id)
         self.assertEqual(response[0].organizations[0].display_name, organization.display_name)
 
+    def test_list_organizations_no_params(self):
+        """ Method to test list organizations with no pagination params (both optional) """
+        response = self.scalekit_client.organization.list_organizations()
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertTrue(response[0] is not None)
+        self.assertIsInstance(response[0].organizations, list)
+
     def test_update_organization(self):
         """ Method to test update organization """
         organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
