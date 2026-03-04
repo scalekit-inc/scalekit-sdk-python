@@ -372,7 +372,7 @@ class TestM2MClient(BaseTest):
     def test_token_validation(self):
         """ Method to test token validation """
         token, client_id, client_secret = self.__generate_token_for_org()
-        claims = self.scalekit_client.validate_access_token_and_get_claims(token=token, options=TokenValidationOptions(audience=["my-own-api"]))
+        claims = self.scalekit_client.validate_access_token_and_get_claims(token=token, audience="my-own-api", options=TokenValidationOptions(required_scopes=["write", "read"]))
         self.assertIsNotNone(claims)
         self.assertIn("client_id", claims)
         self.assertIn("my-own-api", claims["aud"])
@@ -381,7 +381,7 @@ class TestM2MClient(BaseTest):
         self.assertIn("wksp_id", claims["custom_claims"])
 
         # with Audience check enforced 
-        claims = self.scalekit_client.validate_access_token_and_get_claims(token=token, audience="my-own-api")
+        claims = self.scalekit_client.validate_access_token_and_get_claims(token=token, audience="my-own-api", )
 
         self.assertIsNotNone(claims)
         self.assertIn("client_id", claims)
