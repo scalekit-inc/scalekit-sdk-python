@@ -369,6 +369,13 @@ class TestM2MClient(BaseTest):
         token = token_response["access_token"]
         return token, client_id, client_secret
 
+    def test_get_client_access_token(self):
+        """ Method to test get_client_access_token uses stored credentials """
+        token = self.scalekit_client.get_client_access_token()
+        self.assertIsNotNone(token)
+        self.assertIsInstance(token, str)
+        self.assertGreater(len(token), 0)
+
     def test_token_validation(self):
         """ Method to test token validation """
         token, client_id, client_secret = self.__generate_token_for_org()

@@ -116,8 +116,26 @@ class RoleClient:
             request,
         )
 
+    def delete_role_base(
+        self,
+        role_name: str
+    ):
+        """
+        Method to delete the base inheritance relationship for an environment-level role
+
+        :param role_name      : Role name to remove base relationship for
+        :type                 : ``` str ```
+
+        :returns:
+            None
+        """
+        return self.core_client.grpc_exec(
+            self.role_service.DeleteRoleBase.with_call,
+            DeleteRoleBaseRequest(role_name=role_name),
+        )
+
     def get_role_users_count(
-        self, 
+        self,
         role_name: str
     ) -> GetRoleUsersCountResponse:
         """

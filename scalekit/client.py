@@ -232,6 +232,21 @@ class ScalekitClient:
         except Exception as exp:
             raise exp
 
+    def get_client_access_token(self) -> str:
+        """
+        Method to generate an access token using the stored client credentials.
+
+        Uses the client_id and client_secret supplied to the ScalekitClient constructor.
+
+        :returns:
+            access token string
+        """
+        response = self.generate_client_token(
+            self.core_client.client_id,
+            self.core_client.client_secret,
+        )
+        return response['access_token']
+
     def validate_access_token_and_get_claims(self, token: str, options: Optional[TokenValidationOptions] = None, audience = None) -> Dict[str, Any]:
         """
         Method to validate access token and get claims
