@@ -223,7 +223,7 @@ class ScalekitClient:
                     }
             )
             response = json.loads(response.content)
-            return response
+            return response['access_token']
         except Exception as exp:
             raise exp
 
@@ -236,11 +236,10 @@ class ScalekitClient:
         :returns:
             access token string
         """
-        response = self.generate_client_token(
+        return self.generate_client_token(
             self.core_client.client_id,
             self.core_client.client_secret,
         )
-        return response['access_token']
 
     def validate_access_token_and_get_claims(self, token: str, options: Optional[TokenValidationOptions] = None, audience = None) -> Dict[str, Any]:
         """

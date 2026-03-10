@@ -361,11 +361,10 @@ class TestM2MClient(BaseTest):
         client_id = create_response[0].client.client_id
         client_secret = create_response[0].plain_secret
 
-        token_response = self.scalekit_client.generate_client_token(
+        token = self.scalekit_client.generate_client_token(
            client_id=client_id, client_secret=client_secret
         )
 
-        token = token_response["access_token"]
         return token, client_id, client_secret
 
     def test_get_client_access_token(self):
