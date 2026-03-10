@@ -70,7 +70,7 @@ class TestOrganization(BaseTest):
         response = self.scalekit_client.organization.list_organizations()
         self.assertEqual(response[1].code().name, "OK")
         self.assertTrue(response[0] is not None)
-        self.assertTrue(hasattr(response[0].organizations, '__iter__'))
+        self.assertGreaterEqual(len(response[0].organizations), 0)
 
     def test_update_organization(self):
         """ Method to test update organization """
