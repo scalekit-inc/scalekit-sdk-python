@@ -6,7 +6,7 @@ from scalekit.v1.users.users_pb2 import CreateUser, UpdateUser, CreateUserProfil
 from scalekit.v1.commons.commons_pb2 import Role
 from scalekit.v1.organizations.organizations_pb2 import CreateOrganization
 
-from scalekit.common.exceptions import ScalekitNotFoundException
+from scalekit.common.exceptions import ScalekitNotFoundException, ScalekitBadRequestException
 
 
 class TestUsers(BaseTest):
@@ -535,13 +535,15 @@ class TestUsers(BaseTest):
                     organization_id=self.org_id,
                     external_id=self.external_id
                 )
-            except ScalekitNotFoundException:
-                pass  # membership may not exist — expected
+            except (ScalekitNotFoundException, ScalekitBadRequestException):
+                pass  # membership may not exist or user already deleted — expected
             except Exception as exp:
                 errors.append(exp)
 
             try:
                 self.scalekit_client.users.delete_user_by_external_id(external_id=self.external_id)
+            except (ScalekitNotFoundException, ScalekitBadRequestException):
+                pass  # user may have been deleted by the test itself — expected
             except Exception as exp:
                 errors.append(exp)
 
