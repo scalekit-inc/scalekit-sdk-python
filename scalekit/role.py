@@ -42,9 +42,9 @@ class RoleClient:
 
     def get_role(self, role_name: str) -> GetRoleResponse:
         """
-        Method to get role by ID
+        Method to get role by name
 
-        :param role_id        : Role id to get role details
+        :param role_name      : Role name to get role details
         :type                 : ``` str ```
 
         :returns:
@@ -73,9 +73,9 @@ class RoleClient:
         role: UpdateRole
     ) -> UpdateRoleResponse:
         """
-        Method to update an existing role by ID
+        Method to update an existing role by name
 
-        :param role_id        : Role id to update
+        :param role_name      : Role name to update
         :type                 : ``` str ```
         :param role           : UpdateRole object with expected values for role update
         :type                 : ``` obj ```
@@ -97,9 +97,9 @@ class RoleClient:
         reassign_role_name: Optional[str] = None
     ):
         """
-        Method to delete role by ID
+        Method to delete role by name
 
-        :param role_id        : Role id to be deleted
+        :param role_name      : Role name to be deleted
         :type                 : ``` str ```
         :param reassign_role_name: Role name to reassign users to when deleting this role
         :type                 : ``` str ```
@@ -116,14 +116,32 @@ class RoleClient:
             request,
         )
 
+    def delete_role_base(
+        self,
+        role_name: str
+    ):
+        """
+        Method to delete the base inheritance relationship for an environment-level role
+
+        :param role_name      : Role name to remove base relationship for
+        :type                 : ``` str ```
+
+        :returns:
+            None
+        """
+        return self.core_client.grpc_exec(
+            self.role_service.DeleteRoleBase.with_call,
+            DeleteRoleBaseRequest(role_name=role_name),
+        )
+
     def get_role_users_count(
-        self, 
+        self,
         role_name: str
     ) -> GetRoleUsersCountResponse:
         """
         Method to get the count of users associated with a role
 
-        :param role_id        : Role id to get user count for
+        :param role_name      : Role name to get user count for
         :type                 : ``` str ```
 
         :returns:

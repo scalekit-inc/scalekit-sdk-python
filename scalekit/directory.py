@@ -154,7 +154,7 @@ class DirectoryClient:
         :type                    :     ``` str ```
 
         :returns:
-             list of directory users
+             list of directory groups
         """
         response = self.core_client.grpc_exec(
             self.directory_service.ListDirectoryGroups.with_call,

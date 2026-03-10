@@ -309,6 +309,34 @@ class TestRoles(BaseTest):
             # Expected behavior - duplicate name error
             self.assertTrue(exp.message, 'duplicate key not allowed')
 
+    def test_delete_role_base(self):
+        """ Method to test deleting the base inheritance relationship for an environment-level role """
+        # Create a base role
+        base_role_name = f"test_base_role_{self.faker.unique.random_number()}"
+        base_role = CreateRole(
+            name=base_role_name,
+            display_name=f"Base Role {self.faker.unique.random_number()}",
+            description="Base role for inheritance testing"
+        )
+        self.scalekit_client.roles.create_role(role=base_role)
+
+        # Create a role that extends the base role
+        self.role_name = f"test_child_role_{self.faker.unique.random_number()}"
+        child_role = CreateRole(
+            name=self.role_name,
+            display_name=f"Child Role {self.faker.unique.random_number()}",
+            description="Child role extending base role",
+            extends=base_role_name
+        )
+        self.scalekit_client.roles.create_role(role=child_role)
+
+        # Delete the base relationship
+        response = self.scalekit_client.roles.delete_role_base(role_name=self.role_name)
+        self.assertEqual(response[1].code().name, "OK")
+
+        # Cleanup base role manually (tearDown handles child role via self.role_name)
+        self.scalekit_client.roles.delete_role(role_name=base_role_name)
+
     def test_get_role_users_count(self):
         """ Method to test get role users count """
         self.role_name = f"test_role_{self.faker.unique.random_number()}"
