@@ -511,41 +511,45 @@ class TestUsers(BaseTest):
 
     def tearDown(self):
         """ Method to clean up """
+        errors = []
+
         if self.user_id:
             try:
-                # First try to delete membership if it exists
-                try:
-                    self.scalekit_client.users.delete_membership(
-                        organization_id=self.org_id,
-                        user_id=self.user_id
-                    )
-                except Exception:
-                    pass
-                
-                # Then try to delete the user
+                self.scalekit_client.users.delete_membership(
+                    organization_id=self.org_id,
+                    user_id=self.user_id
+                )
+            except ScalekitNotFoundException:
+                pass  # membership may not exist — expected
+            except Exception as exp:
+                errors.append(exp)
+
+            try:
                 self.scalekit_client.users.delete_user(user_id=self.user_id)
-            except Exception:
-                pass
-        
+            except Exception as exp:
+                errors.append(exp)
+
         if self.external_id:
             try:
-                # First try to delete membership if it exists
-                try:
-                    self.scalekit_client.users.delete_membership_by_external_id(
-                        organization_id=self.org_id,
-                        external_id=self.external_id
-                    )
-                except Exception:
-                    pass
-                
-                # Then try to delete the user
+                self.scalekit_client.users.delete_membership_by_external_id(
+                    organization_id=self.org_id,
+                    external_id=self.external_id
+                )
+            except ScalekitNotFoundException:
+                pass  # membership may not exist — expected
+            except Exception as exp:
+                errors.append(exp)
+
+            try:
                 self.scalekit_client.users.delete_user_by_external_id(external_id=self.external_id)
-            except Exception:
-                pass
-        
-        # Clean up created organization
-        try:
-            if self.org_id:
+            except Exception as exp:
+                errors.append(exp)
+
+        if self.org_id:
+            try:
                 self.scalekit_client.organization.delete_organization(organization_id=self.org_id)
-        except Exception as exp:
-            raise exp
+            except Exception as exp:
+                errors.append(exp)
+
+        if errors:
+            raise Exception(f"Errors during tearDown cleanup: {errors}")

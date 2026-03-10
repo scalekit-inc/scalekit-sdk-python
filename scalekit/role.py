@@ -42,9 +42,9 @@ class RoleClient:
 
     def get_role(self, role_name: str) -> GetRoleResponse:
         """
-        Method to get role by ID
+        Method to get role by name
 
-        :param role_id        : Role id to get role details
+        :param role_name      : Role name to get role details
         :type                 : ``` str ```
 
         :returns:
@@ -73,9 +73,9 @@ class RoleClient:
         role: UpdateRole
     ) -> UpdateRoleResponse:
         """
-        Method to update an existing role by ID
+        Method to update an existing role by name
 
-        :param role_id        : Role id to update
+        :param role_name      : Role name to update
         :type                 : ``` str ```
         :param role           : UpdateRole object with expected values for role update
         :type                 : ``` obj ```
@@ -97,9 +97,9 @@ class RoleClient:
         reassign_role_name: Optional[str] = None
     ):
         """
-        Method to delete role by ID
+        Method to delete role by name
 
-        :param role_id        : Role id to be deleted
+        :param role_name      : Role name to be deleted
         :type                 : ``` str ```
         :param reassign_role_name: Role name to reassign users to when deleting this role
         :type                 : ``` str ```
@@ -141,7 +141,7 @@ class RoleClient:
         """
         Method to get the count of users associated with a role
 
-        :param role_id        : Role id to get user count for
+        :param role_name      : Role name to get user count for
         :type                 : ``` str ```
 
         :returns:
