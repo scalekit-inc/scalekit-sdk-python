@@ -30,9 +30,9 @@ class TestConnect(BaseTest):
 
     def setUp(self):
         """Setup test parameters"""
-        self.test_identifier = "default"
+        self.test_identifier = "default-1x"
         self.test_tool_name = "gmail_fetch_mails"
-        self.test_connection_name = "GMAIL"
+        self.test_connection_name = "gmail-GhldyT6i"
         self.test_basic_connection_name = "freshdesk-8"
 
         ca_response = self.scalekit_client.connect.get_connected_account(
@@ -640,6 +640,42 @@ class TestConnect(BaseTest):
         except Exception as e:
             raise e
 
+    def test_get_or_create_connected_account_no_auth_details(self):
+        """Method to test get_or_create_connected_account creates account without authorization_details (no empty token sent)"""
+        import uuid
+
+        test_id = f"test_no_auth_{uuid.uuid4().hex[:8]}"
+
+        try:
+            # Create with no authorization_details — should NOT send an empty OAuth token
+            result = self.scalekit_client.connect.get_or_create_connected_account(
+                connection_name="GMAIL",
+                identifier=test_id,
+            )
+
+            self.assertIsNotNone(result)
+            self.assertIsInstance(result, CreateConnectedAccountResponse)
+            self.assertIsNotNone(result.connected_account)
+            self.assertEqual(result.connected_account.identifier, test_id)
+
+            # Calling again should return the same account, not create a second one
+            result2 = self.scalekit_client.connect.get_or_create_connected_account(
+                connection_name="GMAIL",
+                identifier=test_id,
+            )
+
+            self.assertIsNotNone(result2)
+            self.assertEqual(result.connected_account.id, result2.connected_account.id)
+
+            # Clean up
+            self.scalekit_client.connect.delete_connected_account(
+                connection_name="GMAIL",
+                identifier=test_id,
+            )
+
+        except Exception as e:
+            raise e
+
     def test_get_or_create_connected_account_validation(self):
         """Method to test get_or_create_connected_account parameter validation"""
         # Test missing connection_name
@@ -715,18 +751,17 @@ class TestConnect(BaseTest):
         self.assertIsNotNone(proto)
         self.assertTrue(proto.authorization_details.HasField("oauth_token"))
 
-        # Test empty auth details
+        # Test no auth details — should not send any authorization_details in proto
         empty_request = CreateConnectedAccountRequest(
             connection_name="TEST",
             identifier="test_user"
         )
 
-        self.assertEqual(empty_request.authorization_details, {})
+        self.assertIsNone(empty_request.authorization_details)
 
         empty_proto = empty_request.to_proto()
         self.assertIsNotNone(empty_proto)
-        self.assertTrue(empty_proto.authorization_details.HasField("oauth_token"))
-        self.assertEqual(empty_proto.authorization_details.oauth_token.access_token, "")
+        self.assertFalse(empty_proto.HasField("authorization_details"))
 
     @unittest.skip
     def test_google_adk_get_tools(self):
