@@ -30,9 +30,9 @@ class TestConnect(BaseTest):
 
     def setUp(self):
         """Setup test parameters"""
-        self.test_identifier = "default-1x"
+        self.test_identifier = "default"
         self.test_tool_name = "gmail_fetch_mails"
-        self.test_connection_name = "gmail-GhldyT6i"
+        self.test_connection_name = "GMAIL"
         self.test_basic_connection_name = "freshdesk-8"
 
         ca_response = self.scalekit_client.connect.get_connected_account(
