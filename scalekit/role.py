@@ -329,7 +329,7 @@ class RoleClient:
         )
 
     def delete_organization_role_base(
-        self, 
+        self,
         org_id: str,
         role_name: str
     ):
@@ -350,4 +350,45 @@ class RoleClient:
                 org_id=org_id,
                 role_name=role_name
             ),
+        )
+
+    def update_default_roles(
+        self,
+        default_creator_role: Optional[str] = None,
+        default_member_role: Optional[str] = None,
+    ) -> UpdateDefaultRolesResponse:
+        """
+        Method to update default environment-level roles
+
+        :param default_creator_role : Name of the role to set as default creator role
+        :type                       : ``` str ```
+        :param default_member_role  : Name of the role to set as default member role
+        :type                       : ``` str ```
+
+        :returns:
+            Update Default Roles Response
+        """
+        req = UpdateDefaultRolesRequest()
+        if default_creator_role:
+            req.default_creator_role = default_creator_role
+        if default_member_role:
+            req.default_member_role = default_member_role
+        return self.core_client.grpc_exec(
+            self.role_service.UpdateDefaultRoles.with_call,
+            req,
+        )
+
+    def list_dependent_roles(self, role_name: str) -> ListDependentRolesResponse:
+        """
+        Method to list roles that directly extend (depend on) the specified base role
+
+        :param role_name : Name of the base role
+        :type            : ``` str ```
+
+        :returns:
+            List Dependent Roles Response
+        """
+        return self.core_client.grpc_exec(
+            self.role_service.ListDependentRoles.with_call,
+            ListDependentRolesRequest(role_name=role_name),
         )
