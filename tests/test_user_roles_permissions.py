@@ -4,11 +4,10 @@ from faker import Faker
 
 from tests.basetest import BaseTest
 
-from scalekit.v1.users.users_pb2 import CreateUser, CreateUserProfile, CreateMembership
-from scalekit.v1.commons.commons_pb2 import Role
+from scalekit.v1.users.users_pb2 import CreateUser, CreateUserProfile
 from scalekit.v1.organizations.organizations_pb2 import CreateOrganization
 
-from scalekit.common.exceptions import ScalekitNotFoundException, ScalekitBadRequestException
+from scalekit.common.exceptions import ScalekitNotFoundException
 
 
 class TestUserRolesPermissions(BaseTest):
@@ -16,6 +15,7 @@ class TestUserRolesPermissions(BaseTest):
 
     def setUp(self):
         """ """
+        self.org_id = None
         self.user_id = None
         self.faker = Faker()
 
