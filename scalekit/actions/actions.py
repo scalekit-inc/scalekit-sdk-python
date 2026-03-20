@@ -641,7 +641,7 @@ class ActionClient:
         :type: str
         :param identifier: Connected account identifier (required)
         :type: str
-        :param authorization_details: Authorization details (OAuth token or static auth) (optional, empty auth will be used if not provided)
+        :param authorization_details: Authorization details (OAuth token or static auth) (optional)
         :type: Optional[Dict[str, Any]]
         :param organization_id: Organization ID (optional)
         :type: str
@@ -672,13 +672,10 @@ class ActionClient:
             
         except ScalekitNotFoundException:
             # Connected account doesn't exist, create a new one
-            # Use empty authorization details if none provided
-            auth_details = authorization_details if authorization_details is not None else {}
-            
             return self.create_connected_account(
                 connection_name=connection_name,
                 identifier=identifier,
-                authorization_details=auth_details,
+                authorization_details=authorization_details,
                 organization_id=organization_id,
                 user_id=user_id,
                 api_config=api_config

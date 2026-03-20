@@ -14,7 +14,7 @@ class CreateConnectedAccountRequest(BaseModel):
 
     connection_name: str = Field(..., description="Connector identifier")
     identifier: str = Field(..., description="Connected account identifier")
-    authorization_details: Dict[str, Any] = Field(default_factory=dict, description="Authorization details (OAuth token or static auth)")
+    authorization_details: Optional[Dict[str, Any]] = Field(None, description="Authorization details (OAuth token or static auth)")
     organization_id: Optional[str] = Field(None, description="Organization ID")
     user_id: Optional[str] = Field(None, description="User ID")
     api_config: Optional[Dict[str, Any]] = Field(None, description="Optional API configuration for the connected account")
@@ -45,15 +45,6 @@ class CreateConnectedAccountRequest(BaseModel):
             static_auth = StaticAuth(details=struct_details)
             auth_details = AuthorizationDetails(static_auth=static_auth)
         
-        elif not self.authorization_details:
-            # Create empty OAuth token for empty authorization details
-            oauth_token = OauthToken(
-                access_token="",
-                refresh_token="",
-                scopes=[]
-            )
-            auth_details = AuthorizationDetails(oauth_token=oauth_token)
-
         # Handle api_config if provided
         api_config_struct = None
         if self.api_config:
