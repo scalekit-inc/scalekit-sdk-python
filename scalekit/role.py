@@ -369,9 +369,9 @@ class RoleClient:
             Update Default Roles Response
         """
         req = UpdateDefaultRolesRequest()
-        if default_creator_role:
+        if default_creator_role is not None:
             req.default_creator_role = default_creator_role
-        if default_member_role:
+        if default_member_role is not None:
             req.default_member_role = default_member_role
         return self.core_client.grpc_exec(
             self.role_service.UpdateDefaultRoles.with_call,

@@ -14,6 +14,12 @@ class TestRoleDefaultsAndDependent(BaseTest):
 
     def test_update_default_roles_with_member_role(self):
         """ Method to test update_default_roles setting default_member_role """
+        # Restore the default after the test so environment state is not permanently mutated.
+        # No getter exists for the current default, so we restore to the known baseline.
+        self.addCleanup(
+            self.scalekit_client.role.update_default_roles,
+            default_member_role="member",
+        )
         response = self.scalekit_client.role.update_default_roles(
             default_member_role="member"
         )
