@@ -13,6 +13,8 @@ from scalekit.v1.tokens.tokens_pb2 import (
     InvalidateTokenRequest,
     ListTokensRequest,
     ListTokensResponse,
+    UpdateTokenRequest,
+    UpdateTokenResponse,
 )
 from scalekit.v1.tokens.tokens_pb2_grpc import ApiTokenServiceStub
 
@@ -119,6 +121,38 @@ class TokenClient:
         return self.core_client.grpc_exec(
             self.token_service.InvalidateToken,
             InvalidateTokenRequest(token=token),
+        )
+
+    def update_token(
+        self,
+        token: str,
+        custom_claims: Optional[Dict[str, str]] = None,
+        description: Optional[str] = None,
+    ) -> UpdateTokenResponse:
+        """
+        Method to update the custom claims and/or description of an existing API token
+
+        Custom claims are merged into the existing set. To remove a claim, set its value to an empty string.
+
+        :param token       : Opaque token string or token_id (apit_xxxxx)
+        :type              : ``` str ```
+        :param custom_claims : Claims to merge; set value to "" to remove a claim
+        :type              : ``` dict[str, str] ```
+        :param description : Replacement description; empty string clears it
+        :type              : ``` str ```
+        :returns:
+            UpdateTokenResponse with updated token_info
+        """
+        if not token:
+            raise ValueError("Invalid token")
+        request = UpdateTokenRequest(token=token)
+        if custom_claims is not None:
+            request.custom_claims.update(custom_claims)
+        if description is not None:
+            request.description = description
+        return self.core_client.grpc_exec(
+            self.token_service.UpdateToken,
+            request,
         )
 
     def list_tokens(

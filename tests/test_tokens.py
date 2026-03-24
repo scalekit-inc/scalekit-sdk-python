@@ -157,6 +157,65 @@ class TestTokens(BaseTest):
             page1.tokens[0].token_id, page2.tokens[0].token_id
         )
 
+    def test_update_token_description(self):
+        """Method to test update token description"""
+        create_response = self.scalekit_client.tokens.create_token(
+            organization_id=self.org_id,
+            description="Token before update",
+        )
+        self.token_id = create_response.token_id
+
+        response = self.scalekit_client.tokens.update_token(
+            token=self.token_id,
+            description="Token after update",
+        )
+        self.assertIsNotNone(response)
+        self.assertIsNotNone(response.token_info)
+        self.assertEqual(response.token_info.description, "Token after update")
+
+    def test_update_token_merge_custom_claims(self):
+        """Method to test update token merges custom claims"""
+        create_response = self.scalekit_client.tokens.create_token(
+            organization_id=self.org_id,
+            custom_claims={"env": "staging", "scope": "read"},
+            description="Token for claims update",
+        )
+        self.token_id = create_response.token_id
+
+        response = self.scalekit_client.tokens.update_token(
+            token=self.token_id,
+            custom_claims={"env": "production", "team": "infra"},
+        )
+        self.assertIsNotNone(response)
+        self.assertIsNotNone(response.token_info)
+        self.assertEqual(response.token_info.custom_claims["env"], "production")
+        self.assertEqual(response.token_info.custom_claims["team"], "infra")
+        self.assertEqual(response.token_info.custom_claims["scope"], "read")
+
+    def test_update_token_remove_claim(self):
+        """Method to test update token removes a claim when value is empty string"""
+        create_response = self.scalekit_client.tokens.create_token(
+            organization_id=self.org_id,
+            custom_claims={"env": "staging", "scope": "read"},
+            description="Token for claim removal",
+        )
+        self.token_id = create_response.token_id
+
+        response = self.scalekit_client.tokens.update_token(
+            token=self.token_id,
+            custom_claims={"scope": ""},
+        )
+        self.assertIsNotNone(response)
+        self.assertIsNotNone(response.token_info)
+        self.assertNotIn("scope", response.token_info.custom_claims)
+        self.assertEqual(response.token_info.custom_claims["env"], "staging")
+
+    def test_update_token_raises_on_empty_token(self):
+        """update_token should raise ValueError with 'Invalid token' when token is empty"""
+        with self.assertRaises(ValueError) as ctx:
+            self.scalekit_client.tokens.update_token(token="")
+        self.assertEqual(str(ctx.exception), "Invalid token")
+
     def test_invalidate_token(self):
         """Method to test invalidate token"""
         # First create a token
