@@ -217,20 +217,17 @@ class ScalekitClient:
         :returns:
             access token
         """
-        try:
-            payload = {
-                "grant_type": GrantType.ClientCredentials.value,
-                "client_id": client_id,
-                "client_secret": client_secret,
-                }
-            if scopes:
-                payload["scope"] = " ".join(scopes)
+        payload = {
+            "grant_type": GrantType.ClientCredentials.value,
+            "client_id": client_id,
+            "client_secret": client_secret,
+        }
+        if scopes:
+            payload["scope"] = " ".join(scopes)
 
-            response = self.core_client.authenticate(payload)
-            response = json.loads(response.content)
-            return response['access_token']
-        except Exception as exp:
-            raise exp
+        response = self.core_client.authenticate(payload)
+        response = json.loads(response.content)
+        return response['access_token']
 
     def get_client_access_token(self) -> str:
         """

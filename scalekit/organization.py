@@ -2,7 +2,25 @@ from typing import Optional, List, Dict
 
 from google.protobuf import wrappers_pb2
 from scalekit.core import CoreClient
-from scalekit.v1.organizations.organizations_pb2 import *
+from scalekit.v1.organizations.organizations_pb2 import (
+    ListOrganizationsRequest,
+    ListOrganizationsResponse,
+    CreateOrganization,
+    CreateOrganizationRequest,
+    CreateOrganizationResponse,
+    UpdateOrganization,
+    UpdateOrganizationRequest,
+    UpdateOrganizationResponse,
+    GetOrganizationRequest,
+    GetOrganizationResponse,
+    DeleteOrganizationRequest,
+    Feature,
+    GeneratePortalLinkRequest,
+    GeneratePortalLinkResponse,
+    UpdateOrganizationSettingsRequest,
+    OrganizationUserManagementSettings,
+    UpsertUserManagementSettingsRequest,
+)
 from scalekit.v1.organizations.organizations_pb2_grpc import OrganizationServiceStub
 
 

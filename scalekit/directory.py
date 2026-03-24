@@ -177,10 +177,7 @@ class DirectoryClient:
             dir_group.updated_at = group.updated_at
             dir_group.group_detail = MessageToJson(group.group_detail)
 
-            if not hasattr(group_response, 'users'):
-                group_response[0].groups = [dir_group]
-            else:
-                group_response[0].groups.append(dir_group)
+            group_response[0].groups.append(dir_group)
 
             group_response[0].total_size = response[0].total_size
             group_response[0].next_page_token = response[0].next_page_token
