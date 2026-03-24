@@ -1,7 +1,34 @@
 from typing import Optional
 
 from scalekit.core import CoreClient
-from scalekit.v1.users.users_pb2 import *
+from scalekit.v1.users.users_pb2 import (
+    CreateMembership,
+    CreateMembershipRequest,
+    CreateMembershipResponse,
+    CreateUser,
+    CreateUserAndMembershipRequest,
+    CreateUserAndMembershipResponse,
+    DeleteMembershipRequest,
+    DeleteUserRequest,
+    GetUserRequest,
+    GetUserResponse,
+    ListOrganizationUsersRequest,
+    ListOrganizationUsersResponse,
+    ListUserPermissionsRequest,
+    ListUserPermissionsResponse,
+    ListUserRolesRequest,
+    ListUserRolesResponse,
+    ListUsersRequest,
+    ListUsersResponse,
+    ResendInviteRequest,
+    ResendInviteResponse,
+    UpdateMembership,
+    UpdateMembershipRequest,
+    UpdateMembershipResponse,
+    UpdateUser,
+    UpdateUserRequest,
+    UpdateUserResponse,
+)
 from scalekit.v1.users.users_pb2_grpc import UserServiceStub
 
 
