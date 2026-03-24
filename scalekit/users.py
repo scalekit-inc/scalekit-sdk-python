@@ -1,7 +1,34 @@
 from typing import Optional
 
 from scalekit.core import CoreClient
-from scalekit.v1.users.users_pb2 import *
+from scalekit.v1.users.users_pb2 import (
+    CreateMembership,
+    CreateMembershipRequest,
+    CreateMembershipResponse,
+    CreateUser,
+    CreateUserAndMembershipRequest,
+    CreateUserAndMembershipResponse,
+    DeleteMembershipRequest,
+    DeleteUserRequest,
+    GetUserRequest,
+    GetUserResponse,
+    ListOrganizationUsersRequest,
+    ListOrganizationUsersResponse,
+    ListUserPermissionsRequest,
+    ListUserPermissionsResponse,
+    ListUserRolesRequest,
+    ListUserRolesResponse,
+    ListUsersRequest,
+    ListUsersResponse,
+    ResendInviteRequest,
+    ResendInviteResponse,
+    UpdateMembership,
+    UpdateMembershipRequest,
+    UpdateMembershipResponse,
+    UpdateUser,
+    UpdateUserRequest,
+    UpdateUserResponse,
+)
 from scalekit.v1.users.users_pb2_grpc import UserServiceStub
 
 
@@ -388,4 +415,52 @@ class UserClient:
             ),
         )
 
-   
+    def list_user_roles(
+        self,
+        organization_id: str,
+        user_id: str
+    ) -> ListUserRolesResponse:
+        """
+        Method to list all roles assigned to a user in an organization
+
+        :param organization_id  : Organization id containing the user
+        :type                   : ``` str ```
+        :param user_id          : User id to list roles for
+        :type                   : ``` str ```
+
+        :returns:
+            List User Roles Response
+        """
+        return self.core_client.grpc_exec(
+            self.user_service.ListUserRoles.with_call,
+            ListUserRolesRequest(
+                organization_id=organization_id,
+                user_id=user_id
+            ),
+        )
+
+    def list_user_permissions(
+        self,
+        organization_id: str,
+        user_id: str
+    ) -> ListUserPermissionsResponse:
+        """
+        Method to list all permissions granted to a user in an organization
+
+        :param organization_id  : Organization id containing the user
+        :type                   : ``` str ```
+        :param user_id          : User id to list permissions for
+        :type                   : ``` str ```
+
+        :returns:
+            List User Permissions Response
+        """
+        return self.core_client.grpc_exec(
+            self.user_service.ListUserPermissions.with_call,
+            ListUserPermissionsRequest(
+                organization_id=organization_id,
+                user_id=user_id
+            ),
+        )
+
+
