@@ -10,7 +10,7 @@ class TestRoleDefaultsAndDependent(BaseTest):
         """ Method to test update_default_roles with no params (no-op update) """
         response = self.scalekit_client.roles.update_default_roles()
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
 
     def test_update_default_roles_with_member_role(self):
         """ Method to test update_default_roles setting default_member_role """
@@ -24,7 +24,7 @@ class TestRoleDefaultsAndDependent(BaseTest):
             default_member_role="member"
         )
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
 
     def test_list_dependent_roles_member(self):
         """ Method to test list_dependent_roles for a known base role """
@@ -35,13 +35,15 @@ class TestRoleDefaultsAndDependent(BaseTest):
 
         response = self.scalekit_client.roles.list_dependent_roles(role_name=role_name)
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         # roles field may be empty if no roles extend member — just assert the field exists
-        self.assertIsInstance(list(response[0].roles), list)
+        roles = list(response[0].roles)
+        self.assertIsInstance(roles, list)
 
     def test_list_dependent_roles_admin(self):
         """ Method to test list_dependent_roles for the admin base role """
         response = self.scalekit_client.roles.list_dependent_roles(role_name="admin")
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
-        self.assertIsInstance(list(response[0].roles), list)
+        self.assertIsNotNone(response[0])
+        roles = list(response[0].roles)
+        self.assertIsInstance(roles, list)
