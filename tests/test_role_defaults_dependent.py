@@ -8,7 +8,7 @@ class TestRoleDefaultsAndDependent(BaseTest):
 
     def test_update_default_roles_no_params(self):
         """ Method to test update_default_roles with no params (no-op update) """
-        response = self.scalekit_client.role.update_default_roles()
+        response = self.scalekit_client.roles.update_default_roles()
         self.assertEqual(response[1].code().name, "OK")
         self.assertTrue(response[0] is not None)
 
@@ -17,10 +17,10 @@ class TestRoleDefaultsAndDependent(BaseTest):
         # Restore the default after the test so environment state is not permanently mutated.
         # No getter exists for the current default, so we restore to the known baseline.
         self.addCleanup(
-            self.scalekit_client.role.update_default_roles,
+            self.scalekit_client.roles.update_default_roles,
             default_member_role="member",
         )
-        response = self.scalekit_client.role.update_default_roles(
+        response = self.scalekit_client.roles.update_default_roles(
             default_member_role="member"
         )
         self.assertEqual(response[1].code().name, "OK")
@@ -33,7 +33,7 @@ class TestRoleDefaultsAndDependent(BaseTest):
         if not role_name:
             raise EnvironmentError("TEST_BASE_ROLE_NAME env var is required (or default 'member' must exist)")
 
-        response = self.scalekit_client.role.list_dependent_roles(role_name=role_name)
+        response = self.scalekit_client.roles.list_dependent_roles(role_name=role_name)
         self.assertEqual(response[1].code().name, "OK")
         self.assertTrue(response[0] is not None)
         # roles field may be empty if no roles extend member — just assert the field exists
@@ -41,7 +41,7 @@ class TestRoleDefaultsAndDependent(BaseTest):
 
     def test_list_dependent_roles_admin(self):
         """ Method to test list_dependent_roles for the admin base role """
-        response = self.scalekit_client.role.list_dependent_roles(role_name="admin")
+        response = self.scalekit_client.roles.list_dependent_roles(role_name="admin")
         self.assertEqual(response[1].code().name, "OK")
         self.assertTrue(response[0] is not None)
         self.assertIsInstance(list(response[0].roles), list)
