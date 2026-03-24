@@ -34,7 +34,7 @@ class TestConnectedAccounts(BaseTest):
         """ Method to test list connected accounts """
         response = self.scalekit_client.connected_accounts.list_connected_accounts()
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertTrue(hasattr(response[0], 'connected_accounts'))
         self.assertTrue(hasattr(response[0], 'total_size'))
 
@@ -45,7 +45,7 @@ class TestConnectedAccounts(BaseTest):
             page_size=10
         )
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
 
     def test_create_connected_account_with_oauth(self):
         """ Method to test create connected account with OAuth """
@@ -57,7 +57,7 @@ class TestConnectedAccounts(BaseTest):
             connected_account=connected_account
         )
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertTrue(hasattr(response[0], 'connected_account'))
         self.assertEqual(response[0].connected_account.identifier, self.test_identifier)
 
@@ -73,7 +73,7 @@ class TestConnectedAccounts(BaseTest):
             connected_account=connected_account
         )
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertTrue(hasattr(response[0], 'connected_account'))
         self.assertEqual(response[0].connected_account.identifier, static_identifier)
 
@@ -96,7 +96,7 @@ class TestConnectedAccounts(BaseTest):
             identifier=get_identifier
         )
         self.assertEqual(get_response[1].code().name, "OK")
-        self.assertTrue(get_response[0] is not None)
+        self.assertIsNotNone(get_response[0])
         self.assertTrue(hasattr(get_response[0], 'connected_account'))
         self.assertEqual(get_response[0].connected_account.identifier, get_identifier)
 
@@ -131,7 +131,7 @@ class TestConnectedAccounts(BaseTest):
             connected_account=update_connected_account
         )
         self.assertEqual(update_response[1].code().name, "OK")
-        self.assertTrue(update_response[0] is not None)
+        self.assertIsNotNone(update_response[0])
         self.assertTrue(hasattr(update_response[0], 'connected_account'))
         self.assertEqual(update_response[0].connected_account.identifier, update_identifier)
 
@@ -154,7 +154,7 @@ class TestConnectedAccounts(BaseTest):
             identifier=magic_link_identifier
         )
         self.assertEqual(magic_link_response[1].code().name, "OK")
-        self.assertTrue(magic_link_response[0] is not None)
+        self.assertIsNotNone(magic_link_response[0])
         self.assertTrue(hasattr(magic_link_response[0], 'link'))
         self.assertTrue(hasattr(magic_link_response[0], 'expiry'))
 
@@ -177,7 +177,7 @@ class TestConnectedAccounts(BaseTest):
             identifier=delete_identifier
         )
         self.assertEqual(delete_response[1].code().name, "OK")
-        self.assertTrue(delete_response[0] is not None)
+        self.assertIsNotNone(delete_response[0])
 
     def test_update_connected_account_with_connected_account_id(self):
         """ Method to test update connected account with connected_account_id parameter """
@@ -212,7 +212,7 @@ class TestConnectedAccounts(BaseTest):
             connected_account_id=created_account_id
         )
         self.assertEqual(update_response[1].code().name, "OK")
-        self.assertTrue(update_response[0] is not None)
+        self.assertIsNotNone(update_response[0])
         self.assertTrue(hasattr(update_response[0], 'connected_account'))
         self.assertEqual(update_response[0].connected_account.id, created_account_id)
 
@@ -237,7 +237,7 @@ class TestConnectedAccounts(BaseTest):
             connected_account_id=created_account_id
         )
         self.assertEqual(get_response[1].code().name, "OK")
-        self.assertTrue(get_response[0] is not None)
+        self.assertIsNotNone(get_response[0])
         self.assertTrue(hasattr(get_response[0], 'connected_account'))
         self.assertEqual(get_response[0].connected_account.id, created_account_id)
         self.assertEqual(get_response[0].connected_account.identifier, get_identifier)
@@ -263,7 +263,7 @@ class TestConnectedAccounts(BaseTest):
             connected_account_id=created_account_id
         )
         self.assertEqual(magic_link_response[1].code().name, "OK")
-        self.assertTrue(magic_link_response[0] is not None)
+        self.assertIsNotNone(magic_link_response[0])
         self.assertTrue(hasattr(magic_link_response[0], 'link'))
         self.assertTrue(hasattr(magic_link_response[0], 'expiry'))
 
@@ -288,7 +288,7 @@ class TestConnectedAccounts(BaseTest):
             connected_account_id=created_account_id
         )
         self.assertEqual(delete_response[1].code().name, "OK")
-        self.assertTrue(delete_response[0] is not None)
+        self.assertIsNotNone(delete_response[0])
 
     def test_backward_compatibility_without_connected_account_id(self):
         """ Method to test that all methods still work without connected_account_id (backward compatibility) """
@@ -392,7 +392,7 @@ class TestConnectedAccounts(BaseTest):
             connected_account=connected_account
         )
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertTrue(hasattr(response[0], 'connected_account'))
         self.assertEqual(response[0].connected_account.identifier, self.test_identifier)
 

@@ -41,7 +41,7 @@ class TestRoles(BaseTest):
 
         response = self.scalekit_client.roles.create_role(role=role)
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertEqual(response[0].role.name, self.role_name)
         self.assertEqual(response[0].role.display_name, display_name)
         self.assertEqual(response[0].role.description, description)
@@ -61,7 +61,7 @@ class TestRoles(BaseTest):
 
         response = self.scalekit_client.roles.create_role(role=role)
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertEqual(response[0].role.name, self.role_name)
         self.assertEqual(response[0].role.default_creator, False)
         self.assertEqual(response[0].role.default_member, False)
@@ -81,8 +81,8 @@ class TestRoles(BaseTest):
         response = self.scalekit_client.roles.get_role(role_name=self.role_name)
 
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
-        self.assertTrue(response[0].role.id is not None)
+        self.assertIsNotNone(response[0])
+        self.assertIsNotNone(response[0].role.id)
         self.assertEqual(response[0].role.name, self.role_name)
         self.assertEqual(response[0].role.display_name, display_name)
         self.assertEqual(response[0].role.description, "Test role for get operation")
@@ -103,7 +103,7 @@ class TestRoles(BaseTest):
 
         response = self.scalekit_client.roles.list_roles()
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertTrue(len(response[0].roles) > 0)
 
         # Verify our created role is in the list
@@ -145,7 +145,7 @@ class TestRoles(BaseTest):
             role=update_role
         )
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertEqual(response[0].role.id, role_id)
         self.assertEqual(response[0].role.name, self.role_name)  # Name should not change
         self.assertEqual(response[0].role.display_name, updated_display_name)
@@ -176,7 +176,7 @@ class TestRoles(BaseTest):
             role=update_role
         )
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertEqual(response[0].role.id, role_id)
         self.assertEqual(response[0].role.display_name, updated_display_name)
         self.assertEqual(response[0].role.description, "Original description")  # Should remain unchanged
@@ -350,7 +350,7 @@ class TestRoles(BaseTest):
         # Get user count for the role
         response = self.scalekit_client.roles.get_role_users_count(role_name=self.role_name)
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertIsInstance(response[0].count, int)
         self.assertGreaterEqual(response[0].count, 0)
 

@@ -21,7 +21,7 @@ class TestDomain(BaseTest):
         domain_name = Faker().domain_name()
         response = self.scalekit_client.domain.create_domain(organization_id=self.org_id, domain_name=domain_name)
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertEqual(response[0].domain.domain, domain_name)
         self.assertEqual(response[0].domain.organization_id, self.org_id)
 
@@ -38,7 +38,7 @@ class TestDomain(BaseTest):
             domain_type=DomainType.ALLOWED_EMAIL_DOMAIN
         )
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertEqual(response[0].domain.domain, domain_name)
         self.assertEqual(response[0].domain.organization_id, self.org_id)
         self.assertEqual(response[0].domain.domain_type, DomainType.ALLOWED_EMAIL_DOMAIN)
@@ -56,7 +56,7 @@ class TestDomain(BaseTest):
             domain_type=DomainType.ORGANIZATION_DOMAIN
         )
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertEqual(response[0].domain.domain, domain_name)
         self.assertEqual(response[0].domain.organization_id, self.org_id)
         self.assertEqual(response[0].domain.domain_type, DomainType.ORGANIZATION_DOMAIN)
@@ -73,7 +73,7 @@ class TestDomain(BaseTest):
             domain_name=domain_name
         )
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertEqual(response[0].domain.domain, domain_name)
         self.assertEqual(response[0].domain.organization_id, self.org_id)
         # When domain_type is not specified, it should default to ORGANIZATION_DOMAIN
@@ -91,7 +91,7 @@ class TestDomain(BaseTest):
 
         response = self.scalekit_client.domain.get_domain(organization_id=self.org_id, domain_id=domain_id)
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertEqual(response[0].domain.id, domain_id)
         self.assertEqual(response[0].domain.domain, domain_name)
         self.assertEqual(response[0].domain.organization_id, self.org_id)
@@ -109,7 +109,7 @@ class TestDomain(BaseTest):
 
         response = self.scalekit_client.domain.list_domains(organization_id=self.org_id)
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertTrue(len(response[0].domains) > 0)
         self.assertEqual(response[0].domains[0].id, create_domain_response[0].domain.id)
         self.assertEqual(response[0].domains[0].domain, domain_name)
@@ -128,7 +128,7 @@ class TestDomain(BaseTest):
 
         response = self.scalekit_client.domain.list_domains(organization_id=self.org_id, domain_type=DomainType.ORGANIZATION_DOMAIN)
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertTrue(len(response[0].domains) == 1)
         self.assertEqual(response[0].domains[0].id, create_domain_response[0].domain.id)
         self.assertEqual(response[0].domains[0].domain, domain_name)
@@ -146,7 +146,7 @@ class TestDomain(BaseTest):
 
         response = self.scalekit_client.domain.list_domains(organization_id=self.org_id, domain_type=DomainType.ALLOWED_EMAIL_DOMAIN)
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertTrue(len(response[0].domains) == 1)
         self.assertEqual(response[0].domains[0].id, create_domain_response[0].domain.id)
         self.assertEqual(response[0].domains[0].domain, domain_name)
@@ -165,7 +165,7 @@ class TestDomain(BaseTest):
 
         # Verify domain was created
         self.assertEqual(create_domain_response[1].code().name, "OK")
-        self.assertTrue(create_domain_response[0] is not None)
+        self.assertIsNotNone(create_domain_response[0])
 
         # Delete the domain
         delete_response = self.scalekit_client.domain.delete_domain(
@@ -183,7 +183,7 @@ class TestDomain(BaseTest):
         # Verify domain is not in the list
         list_response = self.scalekit_client.domain.list_domains(organization_id=self.org_id)
         self.assertEqual(list_response[1].code().name, "OK")
-        self.assertTrue(list_response[0] is not None)
+        self.assertIsNotNone(list_response[0])
         
         # Check that the deleted domain is not in the list
         domain_ids = [domain.id for domain in list_response[0].domains]

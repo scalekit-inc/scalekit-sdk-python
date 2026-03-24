@@ -58,7 +58,7 @@ class TestMcp(BaseTest):
         mcp_config = self._create_test_mcp_config()
         create_response = self.scalekit_client.mcp.create_config(mcp_config=mcp_config)
         self.assertEqual(create_response[1].code().name, "OK")
-        self.assertTrue(create_response[0] is not None)
+        self.assertIsNotNone(create_response[0])
         self.assertTrue(hasattr(create_response[0], 'config'))
         self.assertEqual(create_response[0].config.name, mcp_config.name)
         self.assertEqual(len(create_response[0].config.connection_tool_mappings[0].tools), 2)
@@ -81,7 +81,7 @@ class TestMcp(BaseTest):
             description= "Updated description for meeting manager",
             connection_tool_mappings=mcp_config.connection_tool_mappings)
         self.assertEqual(update_response[1].code().name, "OK")
-        self.assertTrue(update_response[0] is not None)
+        self.assertIsNotNone(update_response[0])
         self.assertTrue(hasattr(update_response[0], 'config'))
         self.assertEqual(update_response[0].config.name, mcp_config.name)
         self.assertEqual(len(update_response[0].config.connection_tool_mappings[0].tools), 3)
@@ -89,13 +89,13 @@ class TestMcp(BaseTest):
         # Now list the MCP Configs
         list_response = self.scalekit_client.mcp.list_configs()
         self.assertEqual(list_response[1].code().name, "OK")
-        self.assertTrue(list_response[0] is not None)
+        self.assertIsNotNone(list_response[0])
         self.assertTrue(hasattr(list_response[0], 'configs'))
 
         # Now delete the MCP Config
         delete_response = self.scalekit_client.mcp.delete_config(config_id=created_mcp_config_id)
         self.assertEqual(delete_response[1].code().name, "OK")
-        self.assertTrue(delete_response[0] is not None)
+        self.assertIsNotNone(delete_response[0])
 
     def test_get_instance_auth_state_include_links_variants(self):
         """Ensure auth state retrieval works with include_auth_links True and False."""
@@ -119,7 +119,7 @@ class TestMcp(BaseTest):
                 user_identifier=user_identifier,
             )
             self.assertEqual(ensure_response[1].code().name, "OK")
-            self.assertTrue(ensure_response[0] is not None)
+            self.assertIsNotNone(ensure_response[0])
             self.assertTrue(hasattr(ensure_response[0], 'instance'))
 
             instance_id = ensure_response[0].instance.id
@@ -130,7 +130,7 @@ class TestMcp(BaseTest):
                 include_auth_links=True,
             )
             self.assertEqual(auth_state_with_links[1].code().name, "OK")
-            self.assertTrue(auth_state_with_links[0] is not None)
+            self.assertIsNotNone(auth_state_with_links[0])
             self.assertTrue(hasattr(auth_state_with_links[0], 'connections'))
             if auth_state_with_links[0].connections:
                 self.assertTrue(
@@ -143,7 +143,7 @@ class TestMcp(BaseTest):
                 include_auth_links=False,
             )
             self.assertEqual(auth_state_without_links[1].code().name, "OK")
-            self.assertTrue(auth_state_without_links[0] is not None)
+            self.assertIsNotNone(auth_state_without_links[0])
             self.assertTrue(hasattr(auth_state_without_links[0], 'connections'))
             if auth_state_without_links[0].connections:
                 self.assertTrue(

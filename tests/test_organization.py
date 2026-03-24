@@ -21,7 +21,7 @@ class TestOrganization(BaseTest):
         organization = CreateOrganization(display_name=display_name, external_id=external_id)
         response = self.scalekit_client.organization.create_organization(organization=organization)
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertEqual(response[0].organization.display_name, display_name)
         self.assertEqual(response[0].organization.external_id, external_id)
         self.org_id = response[0].organization.id
@@ -34,7 +34,7 @@ class TestOrganization(BaseTest):
 
         response = self.scalekit_client.organization.get_organization(organization_id=self.org_id)
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertEqual(response[0].organization.id, self.org_id)
         self.assertEqual(response[0].organization.display_name, organization.display_name)
 
@@ -48,7 +48,7 @@ class TestOrganization(BaseTest):
 
         response = self.scalekit_client.organization.get_organization_by_external_id(external_id=external_id)
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertEqual(response[0].organization.id, self.org_id)
         self.assertEqual(response[0].organization.display_name, organization.display_name)
 
@@ -60,7 +60,7 @@ class TestOrganization(BaseTest):
 
         response = self.scalekit_client.organization.list_organizations(page_size=10)
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertTrue(len(response[0].organizations) > 0)
         self.assertEqual(response[0].organizations[0].id, self.org_id)
         self.assertEqual(response[0].organizations[0].display_name, organization.display_name)
@@ -69,7 +69,7 @@ class TestOrganization(BaseTest):
         """ Method to test list organizations with no pagination params (both optional) """
         response = self.scalekit_client.organization.list_organizations()
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertGreaterEqual(len(response[0].organizations), 0)
 
     def test_update_organization(self):
@@ -87,7 +87,7 @@ class TestOrganization(BaseTest):
             organization_id=self.org_id, organization=update_organization
         )
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertEqual(response[0].organization.id, self.org_id)
         self.assertEqual(response[0].organization.display_name, updated_display_name)
         self.assertEqual(response[0].organization.metadata, metadata)
@@ -108,7 +108,7 @@ class TestOrganization(BaseTest):
             external_id=external_id, organization=update_organization
         )
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertEqual(response[0].organization.id, self.org_id)
         self.assertEqual(response[0].organization.display_name, updated_display_name)
         self.assertEqual(response[0].organization.metadata, metadata)

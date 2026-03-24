@@ -45,7 +45,7 @@ class TestUsers(BaseTest):
             user=user
         )
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertEqual(response[0].user.email, user.email)
         self.assertEqual(response[0].user.metadata["source"], user.metadata["source"])
         self.user_id = response[0].user.id
@@ -71,7 +71,7 @@ class TestUsers(BaseTest):
 
         response = self.scalekit_client.users.get_user(user_id=self.user_id)
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertEqual(response[0].user.id, self.user_id)
         self.assertEqual(response[0].user.email, user.email)
         self.assertEqual(response[0].user.metadata["source"], user.metadata["source"])
@@ -99,7 +99,7 @@ class TestUsers(BaseTest):
 
         response = self.scalekit_client.users.get_user_by_external_id(external_id=external_id)
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertEqual(response[0].user.external_id, external_id)
         self.assertEqual(response[0].user.email, user.email)
 
@@ -134,7 +134,7 @@ class TestUsers(BaseTest):
         )
         response = self.scalekit_client.users.update_user(user_id=self.user_id, user=update_user)
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertEqual(response[0].user.id, self.user_id)
         self.assertEqual(response[0].user.user_profile.first_name, "Updated")
         self.assertEqual(response[0].user.user_profile.last_name, "User")
@@ -175,7 +175,7 @@ class TestUsers(BaseTest):
         )
         response = self.scalekit_client.users.update_user_by_external_id(external_id=external_id, user=update_user)
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertEqual(response[0].user.external_id, external_id)
         self.assertEqual(response[0].user.user_profile.first_name, "Updated")
         self.assertEqual(response[0].user.metadata["source"], "updated_test")
@@ -201,7 +201,7 @@ class TestUsers(BaseTest):
 
         response = self.scalekit_client.users.list_users(page_size=10)
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertTrue(len(response[0].users) > 0)
 
         # Test pagination
@@ -211,7 +211,7 @@ class TestUsers(BaseTest):
                 page_token=response[0].next_page_token
             )
             self.assertEqual(paginated_response[1].code().name, "OK")
-            self.assertTrue(paginated_response[0] is not None)
+            self.assertIsNotNone(paginated_response[0])
             self.assertTrue(len(paginated_response[0].users) > 0)
 
     def test_list_organization_users(self):
@@ -238,7 +238,7 @@ class TestUsers(BaseTest):
             page_size=10
         )
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertTrue(len(response[0].users) > 0)
 
         # Test pagination
@@ -249,7 +249,7 @@ class TestUsers(BaseTest):
                 page_token=response[0].next_page_token
             )
             self.assertEqual(paginated_response[1].code().name, "OK")
-            self.assertTrue(paginated_response[0] is not None)
+            self.assertIsNotNone(paginated_response[0])
             self.assertTrue(len(paginated_response[0].users) > 0)
 
     def test_delete_user(self):
@@ -325,7 +325,7 @@ class TestUsers(BaseTest):
             membership=membership
         )
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertEqual(response[0].user.id, self.user_id)
         
         # Clean up second organization
@@ -355,7 +355,7 @@ class TestUsers(BaseTest):
         # Test that we can get the user by external ID
         get_response = self.scalekit_client.users.get_user_by_external_id(external_id=external_id)
         self.assertEqual(get_response[1].code().name, "OK")
-        self.assertTrue(get_response[0] is not None)
+        self.assertIsNotNone(get_response[0])
         self.assertEqual(get_response[0].user.external_id, external_id)
       
     def test_update_membership(self):
@@ -388,7 +388,7 @@ class TestUsers(BaseTest):
             membership=update_membership
         )
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertEqual(response[0].user.id, self.user_id)
 
     def test_update_membership_by_external_id(self):
@@ -419,7 +419,7 @@ class TestUsers(BaseTest):
             user=update_user
         )
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertEqual(response[0].user.external_id, external_id)
         
         # Assert the updated user profile
@@ -500,13 +500,13 @@ class TestUsers(BaseTest):
             user_id=self.user_id
         )
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
-        self.assertTrue(response[0].invite is not None)
+        self.assertIsNotNone(response[0])
+        self.assertIsNotNone(response[0].invite)
         self.assertEqual(response[0].invite.user_id, self.user_id)
         self.assertEqual(response[0].invite.organization_id, self.org_id)
         self.assertEqual(response[0].invite.status, "PENDING_INVITE")
-        self.assertTrue(response[0].invite.created_at is not None)
-        self.assertTrue(response[0].invite.expires_at is not None)
+        self.assertIsNotNone(response[0].invite.created_at)
+        self.assertIsNotNone(response[0].invite.expires_at)
         self.assertEqual(response[0].invite.resent_count, 1)
 
     def tearDown(self):

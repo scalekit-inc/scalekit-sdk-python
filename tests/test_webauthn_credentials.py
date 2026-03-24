@@ -40,7 +40,7 @@ class TestWebAuthnCredentials(BaseTest):
         
         # Verify response structure
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertTrue(hasattr(response[0], 'credentials'))
         self.assertTrue(hasattr(response[0], 'all_accepted_credentials_options'))
         
@@ -83,7 +83,7 @@ class TestWebAuthnCredentials(BaseTest):
             
             # Verify response structure
             self.assertEqual(response[1].code().name, "OK")
-            self.assertTrue(response[0] is not None)
+            self.assertIsNotNone(response[0])
             self.assertTrue(hasattr(response[0], 'credential'))
             
             # Verify the credential was updated in the response

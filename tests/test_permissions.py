@@ -37,7 +37,7 @@ class TestPermissions(BaseTest):
 
         response = self.scalekit_client.permissions.create_permission(permission=permission)
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertEqual(response[0].permission.name, permission_name)
         self.assertEqual(response[0].permission.description, description)
         
@@ -60,7 +60,7 @@ class TestPermissions(BaseTest):
         # Now test get permission
         response = self.scalekit_client.permissions.get_permission(permission_name=permission_name)
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertEqual(response[0].permission.name, permission_name)
 
     def test_get_permission_not_found(self):
@@ -72,14 +72,14 @@ class TestPermissions(BaseTest):
         """ Method to test list all permissions """
         response = self.scalekit_client.permissions.list_permissions()
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertTrue(hasattr(response[0], 'permissions'))
 
     def test_list_permissions_with_pagination(self):
         """ Method to test list permissions with pagination """
         response = self.scalekit_client.permissions.list_permissions(page_size=10)
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
 
     def test_update_permission(self):
         """ Method to test update permission """
@@ -105,7 +105,7 @@ class TestPermissions(BaseTest):
             permission=updated_permission
         )
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
 
         # Verify the update
         get_response = self.scalekit_client.permissions.get_permission(permission_name=permission_name)
@@ -146,7 +146,7 @@ class TestPermissions(BaseTest):
         # List permissions for the role
         response = self.scalekit_client.permissions.list_role_permissions(role_name=self.role_name)
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertTrue(hasattr(response[0], 'permissions'))
 
     def test_add_permissions_to_role(self):
@@ -236,7 +236,7 @@ class TestPermissions(BaseTest):
         # List effective permissions for the role
         response = self.scalekit_client.permissions.list_effective_role_permissions(role_name=self.role_name)
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertTrue(hasattr(response[0], 'permissions'))
 
     def test_add_multiple_permissions_to_role(self):

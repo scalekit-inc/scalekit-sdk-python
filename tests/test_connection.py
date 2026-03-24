@@ -24,7 +24,7 @@ class TestConnection(BaseTest):
         connection = CreateConnection(provider=conn_provider, type=conn_type)
         response = self.scalekit_client.connection.create_connection(organization_id=self.org_id, connection=connection)
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertEqual(response[0].connection.provider, conn_provider)
         self.assertEqual(response[0].connection.type, conn_type)
         self.assertEqual(response[0].connection.organization_id, self.org_id)

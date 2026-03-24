@@ -25,7 +25,7 @@ class TestDirectory(BaseTest):
         directory = CreateDirectory(directory_provider=DirectoryProvider.OKTA, directory_type=DirectoryType.SCIM)
         response = self.scalekit_client.directory.create_directory(organization_id=self.org_id, directory=directory)
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertEqual(response[0].directory.directory_provider, DirectoryProvider.OKTA)
         self.assertEqual(response[0].directory.directory_type, DirectoryType.SCIM)
         self.assertEqual(response[0].directory.organization_id, self.org_id)
@@ -58,7 +58,7 @@ class TestDirectory(BaseTest):
 
         response = self.scalekit_client.directory.list_directories(organization_id=self.org_id)
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertTrue(len(response[0].directories) > 0)
         self.assertEqual(response[0].directories[0].id, self.dir_id)
         self.assertEqual(response[0].directories[0].directory_provider, DirectoryProvider.OKTA)

@@ -47,7 +47,7 @@ class TestSessions(BaseTest):
         
         # Verify response structure
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertIsNotNone(response[0].sessions)
         # Fix: sessions can be an empty list, so check if it's a list or empty list
         self.assertTrue(isinstance(response[0].sessions, list) or response[0].sessions == [])
@@ -128,7 +128,7 @@ class TestSessions(BaseTest):
         
         # Verify response has the expected attributes
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertTrue(hasattr(response[0], 'sessions'))
         
         # Fix: sessions can be an empty list, so check if it's a list or empty list

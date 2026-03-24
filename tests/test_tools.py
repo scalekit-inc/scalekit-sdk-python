@@ -26,7 +26,7 @@ class TestTools(BaseTest):
         """ Method to test list tools """
         response = self.scalekit_client.tools.list_tools()
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertTrue(hasattr(response[0], 'tools') or hasattr(response[0], 'tool_names'))
 
     def test_list_tools_with_filters(self):
@@ -41,7 +41,7 @@ class TestTools(BaseTest):
             page_size=10
         )
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
 
     def test_execute_tool_with_identifier(self):
         """ Method to test execute tool with identifier (backward compatibility) """
@@ -56,7 +56,7 @@ class TestTools(BaseTest):
             # If the tool doesn't exist, we expect a NOT_FOUND error
             # If it exists but execution fails, we might get other errors
             # We're mainly testing that the method call works with the old signature
-            self.assertTrue(response[1] is not None)
+            self.assertIsNotNone(response[1])
         except Exception as e:
             # This is expected if the tool doesn't exist or other API issues
             # The important thing is that the method signature works
@@ -77,7 +77,7 @@ class TestTools(BaseTest):
             # If the tool doesn't exist, we expect a NOT_FOUND error
             # If it exists but execution fails, we might get other errors
             # We're mainly testing that the method call works with the new parameter
-            self.assertTrue(response[1] is not None)
+            self.assertIsNotNone(response[1])
         except Exception as e:
             # This is expected if the tool doesn't exist or other API issues
             # The important thing is that the method signature works
@@ -96,7 +96,7 @@ class TestTools(BaseTest):
                 connected_account_id=test_connected_account_id
             )
             # Testing that both parameters can be provided together
-            self.assertTrue(response[1] is not None)
+            self.assertIsNotNone(response[1])
         except Exception as e:
             # This is expected if the tool doesn't exist or other API issues
             # The important thing is that the method signature works
@@ -110,7 +110,7 @@ class TestTools(BaseTest):
                 identifier=self.test_identifier
             )
             # Testing minimal parameter set (no params, no connected_account_id)
-            self.assertTrue(response[1] is not None)
+            self.assertIsNotNone(response[1])
         except Exception as e:
             # This is expected if the tool doesn't exist or other API issues
             # The important thing is that the method signature works

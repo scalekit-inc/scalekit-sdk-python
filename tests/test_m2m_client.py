@@ -33,9 +33,9 @@ class TestM2MClient(BaseTest):
         )
 
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0].client.client_id is not None)
+        self.assertIsNotNone(response[0].client.client_id)
         self.client_id = response[0].client.client_id
-        self.assertTrue(response[0].client.secrets is not None)
+        self.assertIsNotNone(response[0].client.secrets)
         self.assertEqual(response[0].client.organization_id, self.org_id)
         self.assertEqual(response[0].client.name, m2m_client.name)
         self.assertEqual(response[0].client.description, m2m_client.description)
@@ -281,7 +281,7 @@ class TestM2MClient(BaseTest):
             organization_id=self.org_id
         )
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertTrue(len(response[0].clients) >= 3)
         self.assertTrue(response[0].total_size >= 3)
         
@@ -295,7 +295,7 @@ class TestM2MClient(BaseTest):
             organization_id=self.org_id, page_size=2
         )
         self.assertEqual(paginated_response[1].code().name, "OK")
-        self.assertTrue(paginated_response[0] is not None)
+        self.assertIsNotNone(paginated_response[0])
         self.assertTrue(len(paginated_response[0].clients) <= 2)
         self.assertTrue(paginated_response[0].total_size >= 3)
 
@@ -307,7 +307,7 @@ class TestM2MClient(BaseTest):
                 page_token=paginated_response[0].next_page_token
             )
             self.assertEqual(next_page_response[1].code().name, "OK")
-            self.assertTrue(next_page_response[0] is not None)
+            self.assertIsNotNone(next_page_response[0])
 
         # Cleanup created clients
         for client_id in client_ids:
@@ -328,7 +328,7 @@ class TestM2MClient(BaseTest):
             organization_id=self.org_id
         )
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         self.assertEqual(len(response[0].clients), 0)
         self.assertEqual(response[0].total_size, 0)
 
