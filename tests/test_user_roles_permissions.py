@@ -1,5 +1,3 @@
-import os
-
 from faker import Faker
 
 from tests.basetest import BaseTest
@@ -47,41 +45,27 @@ class TestUserRolesPermissions(BaseTest):
 
     def test_list_user_roles(self):
         """ Method to test list user roles """
-        org_id = os.environ.get("TEST_ORGANIZATION_ID", self.org_id)
-        user_id = os.environ.get("TEST_USER_ID", self.user_id)
-
-        if not org_id:
-            raise EnvironmentError("TEST_ORGANIZATION_ID env var is required (or setUp must have created an org)")
-        if not user_id:
-            raise EnvironmentError("TEST_USER_ID env var is required (or setUp must have created a user)")
-
         response = self.scalekit_client.users.list_user_roles(
-            organization_id=org_id,
-            user_id=user_id
+            organization_id=self.org_id,
+            user_id=self.user_id
         )
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         # roles may be an empty list if none are assigned — just assert the field exists
-        self.assertIsInstance(list(response[0].roles), list)
+        roles = list(response[0].roles)
+        self.assertIsInstance(roles, list)
 
     def test_list_user_permissions(self):
         """ Method to test list user permissions """
-        org_id = os.environ.get("TEST_ORGANIZATION_ID", self.org_id)
-        user_id = os.environ.get("TEST_USER_ID", self.user_id)
-
-        if not org_id:
-            raise EnvironmentError("TEST_ORGANIZATION_ID env var is required (or setUp must have created an org)")
-        if not user_id:
-            raise EnvironmentError("TEST_USER_ID env var is required (or setUp must have created a user)")
-
         response = self.scalekit_client.users.list_user_permissions(
-            organization_id=org_id,
-            user_id=user_id
+            organization_id=self.org_id,
+            user_id=self.user_id
         )
         self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
+        self.assertIsNotNone(response[0])
         # permissions may be an empty list if none are granted — just assert the field exists
-        self.assertIsInstance(list(response[0].permissions), list)
+        permissions = list(response[0].permissions)
+        self.assertIsInstance(permissions, list)
 
     def tearDown(self):
         """ Method to clean up """
