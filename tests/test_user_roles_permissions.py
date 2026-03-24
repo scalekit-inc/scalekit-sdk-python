@@ -1,4 +1,4 @@
-from faker import Faker
+import uuid
 
 from tests.basetest import BaseTest
 
@@ -15,18 +15,16 @@ class TestUserRolesPermissions(BaseTest):
         """ """
         self.org_id = None
         self.user_id = None
-        self.faker = Faker()
 
         # Create a test organization
-        org_display_name = f"Test Organization {self.faker.unique.random_number()}"
         org = CreateOrganization(
-            display_name=org_display_name,
-            external_id=f"ext_{self.faker.uuid4()}"
+            display_name=f"Test Organization {uuid.uuid4().hex}",
+            external_id=f"ext_{uuid.uuid4().hex}"
         )
         org_response = self.scalekit_client.organization.create_organization(organization=org)
         self.org_id = org_response[0].organization.id
 
-        # Create a test user in the organization
+        # Create a test user in the organization; skip invitation email to avoid external side effects
         user_profile = CreateUserProfile(
             first_name="Test",
             last_name="User",
@@ -34,12 +32,13 @@ class TestUserRolesPermissions(BaseTest):
             locale="en-US"
         )
         user = CreateUser(
-            email=f"test.user.{self.faker.unique.random_number()}@example.com",
+            email=f"test.user.{uuid.uuid4().hex}@example.com",
             user_profile=user_profile,
         )
         create_response = self.scalekit_client.users.create_user_and_membership(
             organization_id=self.org_id,
-            user=user
+            user=user,
+            send_invitation_email=False
         )
         self.user_id = create_response[0].user.id
 
@@ -84,12 +83,16 @@ class TestUserRolesPermissions(BaseTest):
 
             try:
                 self.scalekit_client.users.delete_user(user_id=self.user_id)
+            except ScalekitNotFoundException:
+                pass
             except Exception as exp:
                 errors.append(exp)
 
         if self.org_id:
             try:
                 self.scalekit_client.organization.delete_organization(organization_id=self.org_id)
+            except ScalekitNotFoundException:
+                pass
             except Exception as exp:
                 errors.append(exp)
 
