@@ -336,7 +336,10 @@ class TestRoles(BaseTest):
             self.assertEqual(response[1].code().name, "OK")
         finally:
             # Cleanup base role (tearDown handles child role via self.role_name)
-            self.scalekit_client.roles.delete_role(role_name=base_role_name)
+            try:
+                self.scalekit_client.roles.delete_role(role_name=base_role_name)
+            except ScalekitNotFoundException:
+                pass
 
     def test_get_role_users_count(self):
         """ Method to test get role users count """

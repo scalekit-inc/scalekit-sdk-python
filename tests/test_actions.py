@@ -1,6 +1,7 @@
 import unittest
 
 from basetest import BaseTest
+from scalekit.common.exceptions import ScalekitNotFoundException
 from scalekit.actions.types import (
     ExecuteToolResponse,
     MagicLinkResponse,
@@ -670,10 +671,13 @@ class TestConnect(BaseTest):
 
         finally:
             if result is not None:
-                self.scalekit_client.connect.delete_connected_account(
-                    connection_name="GMAIL",
-                    identifier=test_id,
-                )
+                try:
+                    self.scalekit_client.connect.delete_connected_account(
+                        connection_name="GMAIL",
+                        identifier=test_id,
+                    )
+                except ScalekitNotFoundException:
+                    pass
 
     def test_get_or_create_connected_account_validation(self):
         """Method to test get_or_create_connected_account parameter validation"""

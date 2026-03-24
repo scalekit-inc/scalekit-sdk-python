@@ -117,14 +117,11 @@ class DirectoryClient:
             dir_user.emails = user.emails
             dir_user.groups = user.groups
             dir_user.user_detail = MessageToJson(user.user_detail)
+            user_response[0].users.append(dir_user)
 
-            if not hasattr(user_response[0], 'users'):
-                user_response[0].users = [dir_user]
-            else:
-                user_response[0].users.append(dir_user)
-            user_response[0].total_size = response[0].total_size
-            user_response[0].next_page_token = response[0].next_page_token
-            user_response[0].prev_page_token = response[0].prev_page_token
+        user_response[0].total_size = response[0].total_size
+        user_response[0].next_page_token = response[0].next_page_token
+        user_response[0].prev_page_token = response[0].prev_page_token
 
         return user_response
 
@@ -179,9 +176,9 @@ class DirectoryClient:
 
             group_response[0].groups.append(dir_group)
 
-            group_response[0].total_size = response[0].total_size
-            group_response[0].next_page_token = response[0].next_page_token
-            group_response[0].prev_page_token = response[0].prev_page_token
+        group_response[0].total_size = response[0].total_size
+        group_response[0].next_page_token = response[0].next_page_token
+        group_response[0].prev_page_token = response[0].prev_page_token
 
         return group_response
 
