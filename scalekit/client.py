@@ -83,8 +83,8 @@ class ScalekitClient:
             self.auth = AuthClient(self.core_client)
             self.webauthn = WebAuthnClient(self.core_client)
             self.tokens = TokenClient(self.core_client)
-        except Exception as exp:
-            raise exp
+        except Exception:
+            raise
 
     def get_authorization_url(
         self, redirect_uri: str, options: AuthorizationUrlOptions | None
@@ -123,8 +123,8 @@ class ScalekitClient:
             query_string = urlencode(valid_auth_params)
 
             return f"{self.core_client.env_url}/{AUTHORIZE_ENDPOINT}?{query_string}"
-        except Exception as exp:
-            raise exp
+        except Exception:
+            raise
 
     def authenticate_with_code(
         self, code, redirect_uri, options: CodeAuthenticationOptions
@@ -181,8 +181,8 @@ class ScalekitClient:
 
         except jwt.exceptions.InvalidTokenError as exp:
             raise ScalekitValidateTokenFailureException(exp)
-        except Exception as exp:
-            raise exp
+        except Exception:
+            raise
 
     def validate_access_token(self, token: str, options: Optional[TokenValidationOptions] = None, audience = None) -> bool:
         """
@@ -263,8 +263,8 @@ class ScalekitClient:
             return claims
         except jwt.exceptions.InvalidTokenError as exp:
             raise ScalekitValidateTokenFailureException(exp)
-        except Exception as exp:
-            raise exp
+        except Exception:
+            raise
 
     def get_idp_initiated_login_claims(self, idp_initiated_login_token: str, options: Optional[TokenValidationOptions] = None, audience = None) -> IdpInitiatedLoginClaims:
         """
@@ -285,8 +285,8 @@ class ScalekitClient:
             return claims
         except jwt.exceptions.InvalidTokenError as exp:
             raise ScalekitValidateTokenFailureException(exp)
-        except Exception as exp:
-            raise exp
+        except Exception:
+            raise
 
     def validate_token(
         self, token: str, options: Optional[TokenValidationOptions] = None, audience: Optional[str] = None
@@ -408,13 +408,13 @@ class ScalekitClient:
 
         try:
             secret_bytes = base64.b64decode(secret_parts[1])
-        except Exception as exp:
-            raise exp
+        except Exception:
+            raise
 
         try:
             timestamp = self.__verify_timestamp(webhook_timestamp)
-        except Exception as exp:
-            raise exp
+        except Exception:
+            raise
 
         timestamp_str = str(floor(timestamp.replace(tzinfo=timezone.utc).timestamp()))
         data = f"{webhook_id}.{timestamp_str}.{payload}"
@@ -546,8 +546,8 @@ class ScalekitClient:
                 "refresh_token": response["refresh_token"]
             }
 
-        except Exception as exp:
-            raise exp
+        except Exception:
+            raise
 
     def get_logout_url(self, options: LogoutUrlOptions) -> str:
         """
@@ -570,5 +570,5 @@ class ScalekitClient:
             query_string = urlencode(valid_params)
 
             return f"{self.core_client.env_url}/{LOGOUT_ENDPOINT}?{query_string}"
-        except Exception as exp:
-            raise exp
+        except Exception:
+            raise
