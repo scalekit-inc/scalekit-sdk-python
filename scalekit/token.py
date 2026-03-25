@@ -147,7 +147,16 @@ class TokenClient:
             raise ValueError("Invalid token")
         request = UpdateTokenRequest(token=token)
         if custom_claims is not None:
-            request.custom_claims.update(custom_claims)
+            # Fetch current token to get existing claims for merge
+            current = self.validate_token(token)
+            merged_claims = dict(current.token_info.custom_claims)
+            # Apply updates and removals (empty string means remove)
+            for key, value in custom_claims.items():
+                if value == "":
+                    merged_claims.pop(key, None)
+                else:
+                    merged_claims[key] = value
+            request.custom_claims.update(merged_claims)
         if description is not None:
             request.description = description
         return self.core_client.grpc_exec(

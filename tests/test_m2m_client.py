@@ -1,4 +1,5 @@
 
+import jwt
 from faker import Faker
 
 from basetest import BaseTest
@@ -374,6 +375,10 @@ class TestM2MClient(BaseTest):
         self.assertIsNotNone(token)
         self.assertIsInstance(token, str)
         self.assertGreater(len(token), 0)
+
+        claims = jwt.decode(token, options={"verify_signature": False})
+        self.assertIn("exp", claims)
+        self.assertIn("sub", claims)
 
     def test_token_validation(self):
         """ Method to test token validation """
