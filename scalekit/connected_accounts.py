@@ -1,7 +1,24 @@
 from typing import Optional
 
 from scalekit.core import CoreClient
-from scalekit.v1.connected_accounts.connected_accounts_pb2 import *
+from scalekit.v1.connected_accounts.connected_accounts_pb2 import (
+    CreateConnectedAccount,
+    CreateConnectedAccountRequest,
+    CreateConnectedAccountResponse,
+    DeleteConnectedAccountRequest,
+    DeleteConnectedAccountResponse,
+    GetConnectedAccountByIdentifierRequest,
+    GetConnectedAccountByIdentifierResponse,
+    GetMagicLinkForConnectedAccountRequest,
+    GetMagicLinkForConnectedAccountResponse,
+    ListConnectedAccountsRequest,
+    ListConnectedAccountsResponse,
+    UpdateConnectedAccount,
+    UpdateConnectedAccountRequest,
+    UpdateConnectedAccountResponse,
+    VerifyConnectedAccountUserRequest,
+    VerifyConnectedAccountUserResponse,
+)
 from scalekit.v1.connected_accounts.connected_accounts_pb2_grpc import ConnectedAccountServiceStub
 
 
