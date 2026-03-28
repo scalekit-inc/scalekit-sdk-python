@@ -6073,3 +6073,2300 @@ print(f'Magic Link: {response[0].magic_link}')
 </dd>
 </dl>
 </details>
+
+## API Tokens
+
+<details><summary><code>client.tokens.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/token.py">create_token</a>(organization_id, user_id?, custom_claims?, expiry?, description?) -> CreateTokenResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Creates an API token for an organization or user.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from google.protobuf.timestamp_pb2 import Timestamp
+from datetime import datetime, timedelta
+
+# Create token with expiry
+expiry = Timestamp()
+expiry.GetCurrentTime()
+expiry.seconds += int(timedelta(days=30).total_seconds())
+
+response = scalekit_client.tokens.create_token(
+    organization_id='org_123456',
+    user_id='usr_123456',
+    custom_claims={'team': 'engineering'},
+    expiry=expiry,
+    description='CI/CD token for deployments'
+)
+
+print(f'Token: {response.token}')
+print(f'Token ID: {response.token_id}')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**organization_id:** `str` - Organization ID for token scope
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**user_id:** `Optional[str]` - Optional User ID to scope token to a specific user
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**custom_claims:** `Optional[Dict[str, str]]` - Optional custom claims key-value pairs
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**expiry:** `Optional[google.protobuf.Timestamp]` - Optional expiry timestamp
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**description:** `Optional[str]` - Optional human-readable label
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.tokens.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/token.py">validate_token</a>(token) -> ValidateTokenResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Validates an API token and returns associated context.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.tokens.validate_token('apit_xxxxx')
+print(f'Valid: {response.token_info}')
+print(f'Organization: {response.token_info.organization_id}')
+print(f'User: {response.token_info.user_id}')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**token:** `str` - Opaque token string or token_id (apit_xxxxx)
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.tokens.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/token.py">invalidate_token</a>(token)</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Invalidates (soft deletes) an API token.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+scalekit_client.tokens.invalidate_token('apit_xxxxx')
+print('Token invalidated successfully')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**token:** `str` - Opaque token string or token_id (apit_xxxxx)
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.tokens.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/token.py">update_token</a>(token, custom_claims?, description?) -> UpdateTokenResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Updates custom claims and/or description of an existing API token.
+
+Custom claims are merged into existing set. To remove a claim, set its value to an empty string.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+# Update description and add new claims
+response = scalekit_client.tokens.update_token(
+    'apit_xxxxx',
+    custom_claims={'environment': 'production'},
+    description='Production API token'
+)
+
+# Remove a claim by setting it to empty string
+response = scalekit_client.tokens.update_token(
+    'apit_xxxxx',
+    custom_claims={'team': ''}  # This removes the 'team' claim
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**token:** `str` - Opaque token string or token_id (apit_xxxxx)
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**custom_claims:** `Optional[Dict[str, str]]` - Claims to merge; set value to "" to remove a claim
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**description:** `Optional[str]` - Replacement description; empty string clears it
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.tokens.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/token.py">list_tokens</a>(organization_id, user_id?, page_size?, page_token?) -> ListTokensResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists API tokens for an organization.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.tokens.list_tokens(
+    organization_id='org_123456',
+    user_id='usr_123456',
+    page_size=10
+)
+
+print(f'Total tokens: {response.total_count}')
+for token in response.tokens:
+    print(f'Token: {token.id} - {token.description}')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**organization_id:** `str` - Organization ID to filter tokens
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**user_id:** `Optional[str]` - Optional User ID to filter tokens
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_size:** `Optional[int]` - Page size (default 10, max 30)
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_token:** `Optional[str]` - Pagination cursor for next page
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Tools
+
+<details><summary><code>client.tools.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/tools.py">list_tools</a>(filter?, page_size?, page_token?) -> ListToolsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists all tools with optional filtering and pagination.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from scalekit.v1.tools.tools_pb2 import Filter
+
+filter = Filter()
+filter.connector = 'slack'
+
+response = scalekit_client.tools.list_tools(
+    filter=filter,
+    page_size=50
+)
+
+for tool in response[0].tools:
+    print(f'Tool: {tool.name}')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**filter:** `Optional[Filter]` - Filter parameters for listing tools
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_size:** `Optional[int]` - Maximum number of tools to return per page
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_token:** `Optional[str]` - Token from a previous response for pagination
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.tools.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/tools.py">list_scoped_tools</a>(identifier, filter?, page_size?, page_token?) -> ListScopedToolsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists scoped tools for a specific identifier.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from scalekit.v1.tools.tools_pb2 import ScopedToolFilter
+
+filter = ScopedToolFilter()
+filter.connector = 'slack'
+
+response = scalekit_client.tools.list_scoped_tools(
+    identifier='workspace_id',
+    filter=filter,
+    page_size=50
+)
+
+for tool in response[0].tools:
+    print(f'Tool: {tool.name}')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**identifier:** `str` - Identifier to scope tools list
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**filter:** `Optional[ScopedToolFilter]` - Filter parameters for scoped tools
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_size:** `Optional[int]` - Maximum number of tools to return per page
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_token:** `Optional[str]` - Token from a previous response for pagination
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.tools.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/tools.py">execute_tool</a>(tool_name, identifier, params?, connected_account_id?) -> ExecuteToolResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Executes a tool using a connected account.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.tools.execute_tool(
+    tool_name='slack-send-message',
+    identifier='workspace_id',
+    params={'channel': '#general', 'text': 'Hello from Scalekit!'},
+    connected_account_id='conn_123456'
+)
+
+print(f'Result: {response.data}')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**tool_name:** `str` - Name of tool to execute
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**identifier:** `str` - Identifier of connected account
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**params:** `Optional[dict]` - Parameters for tool execution
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**connected_account_id:** `Optional[str]` - ID of connected account to use for tool execution
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Actions / Connect
+
+<details><summary><code>client.actions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">execute_tool</a>(tool_input, tool_name, identifier?, tool_request?, connected_account_id?) -> ExecuteToolResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Executes a tool with given parameters and applies pre/post modifiers.
+This is the action layer version that supports modifiers for transforming input/output.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.actions.execute_tool(
+    tool_input={'channel': '#general', 'text': 'Hello!'},
+    tool_name='slack-send-message',
+    identifier='workspace_id',
+    connected_account_id='conn_123456'
+)
+
+print(f'Result: {response.data}')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**tool_input:** `ToolInput` - Input data for tool execution (required)
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**tool_name:** `str` - Name of tool to execute (required)
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**identifier:** `Optional[str]` - Unique identifier for this execution
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**tool_request:** `Optional[ToolRequest]` - Optional ToolRequest configuration object
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**connected_account_id:** `Optional[str]` - Optional connected account ID string
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">get_authorization_link</a>(connection_name, identifier, connected_account_id?) -> MagicLinkResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Get authorization magic link for a connected account.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.actions.get_authorization_link(
+    connection_name='slack',
+    identifier='workspace_id',
+    connected_account_id='conn_123456'
+)
+
+print(f'Magic Link: {response.magic_link}')
+print(f'Expires at: {response.expires_at}')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**connection_name:** `str` - Connector identifier
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**identifier:** `str` - Connected account identifier
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**connected_account_id:** `Optional[str]` - Optional connected account ID
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">list_connected_accounts</a>(connection_name?, identifier?, provider?) -> ListConnectedAccountsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+List connected accounts with optional filtering through the action layer.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.actions.list_connected_accounts(
+    connection_name='slack',
+    identifier='workspace_id',
+    provider='slack'
+)
+
+for account in response.connected_accounts:
+    print(f'Account: {account.id}')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**connection_name:** `Optional[str]` - Optional connector identifier
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**identifier:** `Optional[str]` - Optional identifier filter
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**provider:** `Optional[str]` - Optional provider filter
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">delete_connected_account</a>(connection_name, identifier, connected_account_id?) -> DeleteConnectedAccountResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Delete a connected account through the action layer.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.actions.delete_connected_account(
+    connection_name='slack',
+    identifier='workspace_id',
+    connected_account_id='conn_123456'
+)
+
+print(f'Deleted: {response.success}')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**connection_name:** `str` - Connector identifier (required)
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**identifier:** `str` - Connected account identifier (required)
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**connected_account_id:** `Optional[str]` - Optional connected account ID
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">get_connected_account</a>(connection_name, identifier, connected_account_id?) -> GetConnectedAccountAuthResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Get connected account authorization details by identifier through the action layer.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.actions.get_connected_account(
+    connection_name='slack',
+    identifier='workspace_id',
+    connected_account_id='conn_123456'
+)
+
+print(f'Account: {response.connected_account}')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**connection_name:** `str` - Connector identifier (required)
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**identifier:** `str` - Connected account identifier (required)
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**connected_account_id:** `Optional[str]` - Optional connected account ID
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">add_modifier</a>(modifier)</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Add a modifier to the action client.
+Modifiers can transform tool input before execution or output after execution.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from scalekit.actions.modifier import Modifier
+
+modifier = Modifier(
+    tool_names=['slack-send-message'],
+    modifier_type='pre',
+    func=lambda name, data: {**data, 'custom_field': 'value'}
+)
+
+scalekit_client.actions.add_modifier(modifier)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**modifier:** `Modifier` - Modifier object to add to the list
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">get_modifiers</a>(tool_name?, modifier_type?) -> List[Modifier]</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Get modifiers, optionally filtered by tool name and/or type.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+# Get all modifiers
+all_modifiers = scalekit_client.actions.get_modifiers()
+
+# Get modifiers for a specific tool
+tool_modifiers = scalekit_client.actions.get_modifiers(tool_name='slack-send-message')
+
+# Get only pre-modifiers
+pre_modifiers = scalekit_client.actions.get_modifiers(modifier_type='pre')
+
+for modifier in tool_modifiers:
+    print(f'Modifier: {modifier.tool_names} - {modifier.modifier_type}')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**tool_name:** `Optional[str]` - Optional tool name to filter by
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**modifier_type:** `Optional[ModifierType]` - Optional modifier type to filter by
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">request</a>(connection_name, identifier, path, method?, query_params?, body?, form_data?, headers?) -> requests.Response</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Make a proxied REST API call through Scalekit on behalf of a connected account.
+
+This method enables making direct HTTP requests to third-party APIs with automatic authentication and token management.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+# GET request
+response = scalekit_client.actions.request(
+    connection_name='slack',
+    identifier='workspace_id',
+    path='/api/conversations.list',
+    method='GET',
+    query_params={'limit': 10}
+)
+
+# POST request with JSON body
+response = scalekit_client.actions.request(
+    connection_name='slack',
+    identifier='workspace_id',
+    path='/api/chat.postMessage',
+    method='POST',
+    body={'channel': '#general', 'text': 'Hello!'}
+)
+
+# POST request with form data
+response = scalekit_client.actions.request(
+    connection_name='slack',
+    identifier='workspace_id',
+    path='/api/files.upload',
+    method='POST',
+    form_data={'file': open('file.txt', 'rb')}
+)
+
+print(f'Status: {response.status_code}')
+print(f'Response: {response.text}')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**connection_name:** `str` - Connector identifier (required)
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**identifier:** `str` - Connected account identifier (required)
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**path:** `str` - API path to call, e.g. "/v1.0/me/messages" (required)
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**method:** `str` - HTTP method — GET, POST, PUT, PATCH, DELETE, etc. (default: GET)
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**query_params:** `Optional[Dict[str, Any]]` - URL query parameters to append to request
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**body:** `Optional[Any]` - Request body sent as JSON
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**form_data:** `Optional[Dict[str, Any]]` - Request body sent as URL-encoded form data
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**headers:** `Optional[Dict[str, str]]` - Additional HTTP headers to merge into request
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">create_connected_account</a>(connection_name, identifier, authorization_details?, organization_id?, user_id?, api_config?) -> CreateConnectedAccountResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Create a new connected account through the action layer.
+
+This provides a higher-level interface with additional options for authorization details and API configuration.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.actions.create_connected_account(
+    connection_name='slack',
+    identifier='workspace_id',
+    authorization_details={'token': 'xoxb-xxx-xxx'},
+    organization_id='org_123456',
+    user_id='usr_123456',
+    api_config={'scopes': ['chat:write', 'files:read']}
+)
+
+print(f'Account created: {response.connected_account.id}')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**connection_name:** `str` - Connector identifier (required)
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**identifier:** `str` - Connected account identifier (required)
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**authorization_details:** `Optional[Dict[str, Any]]` - Authorization details (OAuth token or static auth)
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**organization_id:** `Optional[str]` - Organization ID
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**user_id:** `Optional[str]` - User ID
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**api_config:** `Optional[Dict[str, Any]]` - Optional API configuration for the connected account
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">get_or_create_connected_account</a>(connection_name, identifier, authorization_details?, organization_id?, user_id?, api_config?) -> CreateConnectedAccountResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Get an existing connected account or create a new one if it doesn't exist.
+
+This is a convenience method that attempts to fetch an existing account first,
+and creates a new one only if the fetch fails with a "not found" error.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.actions.get_or_create_connected_account(
+    connection_name='slack',
+    identifier='workspace_id',
+    authorization_details={'token': 'xoxb-xxx-xxx'},
+    organization_id='org_123456',
+    user_id='usr_123456'
+)
+
+print(f'Account ID: {response.connected_account.id}')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**connection_name:** `str` - Connector identifier (required)
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**identifier:** `str` - Connected account identifier (required)
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**authorization_details:** `Optional[Dict[str, Any]]` - Authorization details (OAuth token or static auth)
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**organization_id:** `Optional[str]` - Organization ID
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**user_id:** `Optional[str]` - User ID
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**api_config:** `Optional[Dict[str, Any]]` - Optional API configuration (only used when creating)
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">update_connected_account</a>(connection_name, identifier, authorization_details?, organization_id?, user_id?, connected_account_id?, api_config?) -> UpdateConnectedAccountResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Update an existing connected account through the action layer.
+
+This provides additional options for updating authorization details and API configuration.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.actions.update_connected_account(
+    connection_name='slack',
+    identifier='workspace_id',
+    authorization_details={'token': 'xoxb-new-token'},
+    organization_id='org_123456',
+    user_id='usr_123456',
+    connected_account_id='conn_123456'
+)
+
+print(f'Updated account: {response.connected_account.id}')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**connection_name:** `str` - Connector identifier (required)
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**identifier:** `str` - Connected account identifier (required)
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**authorization_details:** `Optional[Dict[str, Any]]` - Authorization details (OAuth token or static auth)
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**organization_id:** `Optional[str]` - Organization ID
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**user_id:** `Optional[str]` - User ID
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**connected_account_id:** `Optional[str]` - Optional connected account ID
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**api_config:** `Optional[Dict[str, Any]]` - Optional API configuration for the connected account
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Actions - MCP (client.actions.mcp)
+
+<details><summary><code>client.actions.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">list_configs</a>(page_size?, page_token?, filter_id?, filter_provider?, filter_name?, search?) -> ListMcpConfigsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+List MCP configurations with optional pagination and filtering through the action layer.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.actions.mcp.list_configs(
+    page_size=50,
+    filter_provider='openai',
+    search='assistant'
+)
+
+for config in response.configs:
+    print(f'Config: {config.id} - {config.name}')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**page_size:** `Optional[int]` - Maximum number of configs to include in current page
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_token:** `Optional[str]` - Cursor token returned by a previous list_configs call
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**filter_id:** `Optional[str]` - Restrict results to a specific configuration identifier
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**filter_provider:** `Optional[str]` - Restrict results to configs for a given provider slug
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**filter_name:** `Optional[str]` - Restrict results to configs whose names match exactly
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**search:** `Optional[str]` - Free-form search query applied to name field
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">create_config</a>(name, description?, connection_tool_mappings?) -> CreateMcpConfigResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Create a new MCP configuration from supplied metadata and tool mappings through the action layer.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from scalekit.actions.types import McpConfigConnectionToolMapping
+
+mapping = McpConfigConnectionToolMapping(
+    connector='openai',
+    tool_name='gpt-4'
+)
+
+response = scalekit_client.actions.mcp.create_config(
+    name='OpenAI Assistant',
+    description='GPT-4 powered assistant',
+    connection_tool_mappings=[mapping]
+)
+
+print(f'Config created: {response.config.id}')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**name:** `str` - Human readable name for the configuration
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**description:** `Optional[str]` - Optional summary that surfaces in dashboards and APIs
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**connection_tool_mappings:** `Optional[List[McpConfigConnectionToolMapping]]` - Explicit mapping between connectors and tools
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">update_config</a>(config_id, description?, connection_tool_mappings?) -> UpdateMcpConfigResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Update mutable fields on an existing MCP configuration through the action layer.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.actions.mcp.update_config(
+    config_id='config_123456',
+    description='Updated description',
+    connection_tool_mappings=[new_mapping]
+)
+
+print(f'Config updated: {response.config.id}')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**config_id:** `str` - Identifier of the configuration to update
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**description:** `Optional[str]` - New description to persist, if provided
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**connection_tool_mappings:** `Optional[List[McpConfigConnectionToolMapping]]` - Replacement connector-to-tool mappings
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">delete_config</a>(config_id) -> DeleteMcpConfigResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Delete an MCP configuration so it can no longer be used to create instances.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.actions.mcp.delete_config('config_123456')
+print(f'Config deleted: {response.success}')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**config_id:** `str` - Identifier of the configuration to remove
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">ensure_instance</a>(config_name, user_identifier, name?) -> EnsureMcpInstanceResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Create or return an MCP instance matching a configuration and user.
+
+If an instance already exists for the given config and user, it returns the existing instance.
+Otherwise, it creates a new one.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.actions.mcp.ensure_instance(
+    config_name='openai-assistant',
+    user_identifier='user_123456',
+    name='My Assistant Instance'
+)
+
+print(f'Instance: {response.instance.id}')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**config_name:** `str` - Name of the MCP configuration to instantiate
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**user_identifier:** `str` - Identifier that represents the end user or tenant
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**name:** `Optional[str]` - Optional name applied to the generated instance
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">update_instance</a>(instance_id, name?, config_name?) -> UpdateMcpInstanceResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Apply updates to an existing MCP instance's identifying fields.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.actions.mcp.update_instance(
+    instance_id='instance_123456',
+    name='Updated Instance Name',
+    config_name='new-config-name'
+)
+
+print(f'Instance updated: {response.instance.id}')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**instance_id:** `str` - Identifier of the MCP instance to update
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**name:** `Optional[str]` - New display name to assign to the instance
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**config_name:** `Optional[str]` - New backing configuration to associate with the instance
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">get_instance</a>(instance_id) -> GetMcpInstanceResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Fetch a single MCP instance by its identifier through the action layer.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.actions.mcp.get_instance('instance_123456')
+print(f'Instance: {response.instance.name}')
+print(f'Config: {response.instance.config_name}')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**instance_id:** `str` - Identifier of the MCP instance to retrieve
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">list_instances</a>(page_size?, page_token?, filter_id?, filter_name?, filter_config_name?, filter_user_identifier?) -> ListMcpInstancesResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+List MCP instances, allowing pagination and filtering by common fields through the action layer.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.actions.mcp.list_instances(
+    page_size=50,
+    filter_config_name='openai-assistant',
+    filter_user_identifier='user_123456'
+)
+
+for instance in response.instances:
+    print(f'Instance: {instance.id} - {instance.name}')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**page_size:** `Optional[int]` - Maximum number of instances to include in current page
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_token:** `Optional[str]` - Cursor token returned by a previous list_instances call
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**filter_id:** `Optional[str]` - Restrict results to a specific instance identifier
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**filter_name:** `Optional[str]` - Restrict results to instances with a matching name
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**filter_config_name:** `Optional[str]` - Restrict results to instances bound to a configuration name
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**filter_user_identifier:** `Optional[str]` - Restrict results to instances for a specific user
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">delete_instance</a>(instance_id) -> DeleteMcpInstanceResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Delete a specific MCP instance by identifier through the action layer.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.actions.mcp.delete_instance('instance_123456')
+print(f'Instance deleted: {response.success}')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**instance_id:** `str` - Identifier of the MCP instance to delete
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">get_instance_auth_state</a>(instance_id, include_auth_links?) -> GetMcpInstanceAuthStateResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Retrieve authorization health for connectors backing an MCP instance and create new authorization links.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.actions.mcp.get_instance_auth_state(
+    instance_id='instance_123456',
+    include_auth_links=True
+)
+
+for conn_state in response.connection_states:
+    print(f'Connector: {conn_state.connector}')
+    print(f'Status: {conn_state.status}')
+    print(f'Auth Link: {conn_state.auth_link}')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**instance_id:** `str` - Identifier of the MCP instance whose auth state to inspect
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**include_auth_links:** `Optional[bool]` - When true, mint new auth links for authorization or re-authorization
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
