@@ -127,6 +127,11 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+tests/*.env
+tests/local.env
+tests/prod.env
+tests/test.env
+!tests/.env.example
 
 # Spyder project settings
 .spyderproject

@@ -565,7 +565,7 @@ class ActionClient:
         self,
         connection_name: str,
         identifier: str,
-        authorization_details: Dict[str, Any],
+        authorization_details: Optional[Dict[str, Any]] = None,
         organization_id: Optional[str] = None,
         user_id: Optional[str] = None,
         api_config: Optional[Dict[str, Any]] = None,
@@ -578,8 +578,8 @@ class ActionClient:
         :type: str
         :param identifier: Connected account identifier (required)
         :type: str
-        :param authorization_details: Authorization details (OAuth token or static auth) (required)
-        :type: Dict[str, Any]
+        :param authorization_details: Authorization details (OAuth token or static auth) (optional)
+        :type: Optional[Dict[str, Any]]
         :param organization_id: Organization ID (optional)
         :type: str
         :param user_id: User ID (optional)

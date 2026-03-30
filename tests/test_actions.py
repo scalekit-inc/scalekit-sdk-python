@@ -1,6 +1,7 @@
 import unittest
 
 from basetest import BaseTest
+from scalekit.common.exceptions import ScalekitNotFoundException
 from scalekit.actions.types import (
     ExecuteToolResponse,
     MagicLinkResponse,
@@ -605,6 +606,7 @@ class TestConnect(BaseTest):
 
         test_id = f"test_no_auth_{uuid.uuid4().hex[:8]}"
 
+        result = None
         try:
             # Create with no authorization_details — should NOT send an empty OAuth token
             result = self.scalekit_client.connect.get_or_create_connected_account(
@@ -626,14 +628,15 @@ class TestConnect(BaseTest):
             self.assertIsNotNone(result2)
             self.assertEqual(result.connected_account.id, result2.connected_account.id)
 
-            # Clean up
-            self.scalekit_client.connect.delete_connected_account(
-                connection_name="GMAIL",
-                identifier=test_id,
-            )
-
-        except Exception as e:
-            raise e
+        finally:
+            if result is not None:
+                try:
+                    self.scalekit_client.connect.delete_connected_account(
+                        connection_name="GMAIL",
+                        identifier=test_id,
+                    )
+                except ScalekitNotFoundException:
+                    pass
 
     def test_get_or_create_connected_account_validation(self):
         """Method to test get_or_create_connected_account parameter validation"""
