@@ -197,6 +197,11 @@ class ActionClient:
         :returns:
             VerifyConnectedAccountUserResponse containing the post-verification redirect URL
         """
+        if not auth_request_id:
+            raise ValueError("auth_request_id is required")
+        if not identifier:
+            raise ValueError("identifier is required")
+
         result_tuple = self.connected_accounts.verify_connected_account_user(
             auth_request_id=auth_request_id,
             identifier=identifier
