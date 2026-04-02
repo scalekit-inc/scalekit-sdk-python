@@ -342,6 +342,43 @@ class TestConnect(BaseTest):
         except Exception as e:
             raise e
 
+    def test_get_authorization_link_with_state(self):
+        """Method to test get_authorization_link accepts state parameter"""
+        result = self.scalekit_client.connect.get_authorization_link(
+            connection_name=self.test_connection_name,
+            identifier=self.test_identifier,
+            state="custom_state_value"
+        )
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, MagicLinkResponse)
+        self.assertTrue(hasattr(result, 'link'))
+        self.assertTrue(hasattr(result, 'expiry'))
+
+    def test_get_authorization_link_with_user_verify_url(self):
+        """Method to test get_authorization_link accepts user_verify_url parameter"""
+        result = self.scalekit_client.connect.get_authorization_link(
+            connection_name=self.test_connection_name,
+            identifier=self.test_identifier,
+            user_verify_url="https://example.com/verify"
+        )
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, MagicLinkResponse)
+        self.assertTrue(hasattr(result, 'link'))
+        self.assertTrue(hasattr(result, 'expiry'))
+
+    def test_get_authorization_link_with_state_and_user_verify_url(self):
+        """Method to test get_authorization_link accepts both state and user_verify_url"""
+        result = self.scalekit_client.connect.get_authorization_link(
+            connection_name=self.test_connection_name,
+            identifier=self.test_identifier,
+            state="custom_state",
+            user_verify_url="https://example.com/verify"
+        )
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, MagicLinkResponse)
+        self.assertTrue(hasattr(result, 'link'))
+        self.assertTrue(hasattr(result, 'expiry'))
+
     def test_delete_connected_account_with_connected_account_id(self):
         """Method to test delete_connected_account with connected_account_id parameter"""
         from scalekit.v1.connected_accounts.connected_accounts_pb2 import CreateConnectedAccount, AuthorizationDetails, OauthToken
@@ -1565,3 +1602,54 @@ class TestConnectUserVerify(BaseTest):
         """Test VerifyConnectedAccountUserResponse with no redirect URL"""
         response = VerifyConnectedAccountUserResponse()
         self.assertIsNone(response.post_user_verify_redirect_url)
+
+    def test_verify_connected_account_user_response_from_proto_empty_string(self):
+        """Test from_proto coerces empty string to None"""
+        class MockProto:
+            post_user_verify_redirect_url = ""
+
+        response = VerifyConnectedAccountUserResponse.from_proto(MockProto())
+        self.assertIsNone(response.post_user_verify_redirect_url)
+
+    def test_verify_connected_account_user_response_from_proto_with_url(self):
+        """Test from_proto preserves a valid URL"""
+        class MockProto:
+            post_user_verify_redirect_url = "https://example.com/redirect"
+
+        response = VerifyConnectedAccountUserResponse.from_proto(MockProto())
+        self.assertEqual(response.post_user_verify_redirect_url, "https://example.com/redirect")
+
+    def test_verify_connected_account_user_response_to_dict(self):
+        """Test to_dict returns correct dictionary"""
+        response = VerifyConnectedAccountUserResponse(
+            post_user_verify_redirect_url="https://example.com/callback"
+        )
+        result = response.to_dict()
+        self.assertEqual(result, {"post_user_verify_redirect_url": "https://example.com/callback"})
+
+    def test_verify_connected_account_user_none_auth_request_id(self):
+        """Should raise ValueError when auth_request_id is None"""
+        with self.assertRaises(ValueError):
+            self.actions_client.verify_connected_account_user(
+                auth_request_id=None,
+                identifier=self.test_identifier
+            )
+
+    def test_verify_connected_account_user_none_identifier(self):
+        """Should raise ValueError when identifier is None"""
+        with self.assertRaises(ValueError):
+            self.actions_client.verify_connected_account_user(
+                auth_request_id="test_auth_request_id",
+                identifier=None
+            )
+
+    def test_verify_connected_account_user_invalid_auth_request_id(self):
+        """Should raise ScalekitServerException for invalid auth_request_id"""
+        from scalekit.common.exceptions import ScalekitServerException
+        with self.assertRaises(ScalekitServerException):
+            self.actions_client.verify_connected_account_user(
+                auth_request_id="invalid_auth_request_id",
+                identifier="default"
+            )
+
+
