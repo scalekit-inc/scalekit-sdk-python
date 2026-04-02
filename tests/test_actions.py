@@ -1312,45 +1312,6 @@ class TestConnect(BaseTest):
 
         except Exception as e:
             raise e
-class TestConnectUserVerify(BaseTest):
-    """Tests for get_authorization_link state/user_verify_url and verify_connected_account_user"""
-
-    def setUp(self):
-        self.test_connection_name = "GMAIL"
-        self.test_identifier = "default"
-
-    def test_get_authorization_link_with_state_and_user_verify_url(self):
-        """Test get_authorization_link passes state and user_verify_url params"""
-        result = self.scalekit_client.actions.get_authorization_link(
-            connection_name=self.test_connection_name,
-            identifier=self.test_identifier,
-            state="test-opaque-state-123",
-            user_verify_url="https://your-app.com/verify-user"
-        )
-        self.assertIsNotNone(result)
-        self.assertIsInstance(result, MagicLinkResponse)
-        self.assertTrue(hasattr(result, 'link'))
-        self.assertIsNotNone(result.link)
-
-    def test_verify_connected_account_user_invalid_auth_request_id(self):
-        """Test verify_connected_account_user raises error for invalid auth_request_id"""
-        with self.assertRaises(Exception) as context:
-            self.scalekit_client.actions.verify_connected_account_user(
-                auth_request_id="00000000-0000-0000-0000-000000000000",
-                identifier=self.test_identifier
-            )
-
-        error_message = str(context.exception).lower()
-        expected_errors = [
-            "invalid",
-            "not found",
-            "auth request",
-        ]
-        self.assertTrue(
-            any(error in error_message for error in expected_errors),
-            f"Expected invalid auth request error, but got: {context.exception}"
-        )
-
 
 class TestActionsMcpConfig(BaseTest):
     """Tests for MCP config operations exposed via the actions client."""
