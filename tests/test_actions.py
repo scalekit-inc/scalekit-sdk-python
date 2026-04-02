@@ -1316,8 +1316,8 @@ class TestConnectUserVerify(BaseTest):
     """Tests for get_authorization_link state/user_verify_url and verify_connected_account_user"""
 
     def setUp(self):
-        self.test_connection_name = "gmail"
-        self.test_identifier = "srinivas.karre@scalekit.com"
+        self.test_connection_name = "GMAIL"
+        self.test_identifier = "default"
 
     def test_get_authorization_link_with_state_and_user_verify_url(self):
         """Test get_authorization_link passes state and user_verify_url params"""
