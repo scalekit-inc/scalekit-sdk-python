@@ -21,6 +21,7 @@ from scalekit.actions.types import (
     ListMcpInstancesResponse,
     DeleteMcpInstanceResponse,
     GetMcpInstanceAuthStateResponse,
+    VerifyConnectedAccountUserResponse,
 )
 from scalekit.actions.models.responses.get_connected_account_auth_response import ConnectedAccount
 from scalekit.actions.modifier import Modifier
@@ -1519,3 +1520,48 @@ class TestActionsMcpInstance(BaseTest):
                     instance_id=instance_id
                 )
                 self.assertIsInstance(delete_response, DeleteMcpInstanceResponse)
+
+
+class TestConnectUserVerify(BaseTest):
+    """Tests for verify_connected_account_user via the actions client."""
+
+    def setUp(self):
+        self.actions_client = self.scalekit_client.actions
+        self.test_identifier = "default"
+
+    def test_verify_connected_account_user_method_exists(self):
+        """Method to test verify_connected_account_user method exists"""
+        self.assertTrue(hasattr(self.actions_client, 'verify_connected_account_user'))
+        self.assertTrue(callable(self.actions_client.verify_connected_account_user))
+
+    def test_verify_connected_account_user_missing_auth_request_id(self):
+        """Should raise ValueError when auth_request_id is empty"""
+        with self.assertRaises(ValueError) as context:
+            self.actions_client.verify_connected_account_user(
+                auth_request_id="",
+                identifier=self.test_identifier
+            )
+        self.assertIn("auth_request_id is required", str(context.exception))
+
+    def test_verify_connected_account_user_missing_identifier(self):
+        """Should raise ValueError when identifier is empty"""
+        with self.assertRaises(ValueError) as context:
+            self.actions_client.verify_connected_account_user(
+                auth_request_id="test_auth_request_id",
+                identifier=""
+            )
+        self.assertIn("identifier is required", str(context.exception))
+
+    def test_verify_connected_account_user_response_model(self):
+        """Test VerifyConnectedAccountUserResponse model structure"""
+        response = VerifyConnectedAccountUserResponse(
+            post_user_verify_redirect_url="https://example.com/callback"
+        )
+        self.assertEqual(response.post_user_verify_redirect_url, "https://example.com/callback")
+        self.assertIsInstance(response.to_dict(), dict)
+        self.assertIn("post_user_verify_redirect_url", response.to_dict())
+
+    def test_verify_connected_account_user_response_model_none_url(self):
+        """Test VerifyConnectedAccountUserResponse with no redirect URL"""
+        response = VerifyConnectedAccountUserResponse()
+        self.assertIsNone(response.post_user_verify_redirect_url)

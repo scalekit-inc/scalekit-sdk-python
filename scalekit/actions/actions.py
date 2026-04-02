@@ -183,7 +183,6 @@ class ActionClient:
         self,
         auth_request_id: str,
         identifier: str,
-        **kwargs
     ) -> VerifyConnectedAccountUserResponse:
         """
         Verify a connected account user after OAuth callback
