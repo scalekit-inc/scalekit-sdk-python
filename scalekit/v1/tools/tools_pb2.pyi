@@ -186,3 +186,25 @@ class ScopedToolFilter(_message.Message):
     tool_names: _containers.RepeatedScalarFieldContainer[str]
     connection_names: _containers.RepeatedScalarFieldContainer[str]
     def __init__(self, providers: _Optional[_Iterable[str]] = ..., tool_names: _Optional[_Iterable[str]] = ..., connection_names: _Optional[_Iterable[str]] = ...) -> None: ...
+
+class ListAvailableToolsRequest(_message.Message):
+    __slots__ = ("identifier", "page_size", "page_token")
+    IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
+    PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
+    PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    identifier: str
+    page_size: int
+    page_token: str
+    def __init__(self, identifier: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ...) -> None: ...
+
+class ListAvailableToolsResponse(_message.Message):
+    __slots__ = ("next_page_token", "total_size", "prev_page_token", "tools")
+    NEXT_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    TOTAL_SIZE_FIELD_NUMBER: _ClassVar[int]
+    PREV_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    TOOLS_FIELD_NUMBER: _ClassVar[int]
+    next_page_token: str
+    total_size: int
+    prev_page_token: str
+    tools: _containers.RepeatedCompositeFieldContainer[Tool]
+    def __init__(self, next_page_token: _Optional[str] = ..., total_size: _Optional[int] = ..., prev_page_token: _Optional[str] = ..., tools: _Optional[_Iterable[_Union[Tool, _Mapping]]] = ...) -> None: ...

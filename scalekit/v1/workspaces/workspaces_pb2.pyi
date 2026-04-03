@@ -7,8 +7,10 @@ from google.protobuf import duration_pb2 as _duration_pb2
 from google.protobuf import empty_pb2 as _empty_pb2
 from google.protobuf import struct_pb2 as _struct_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
+from google.protobuf import wrappers_pb2 as _wrappers_pb2
 from protoc_gen_openapiv2.options import annotations_pb2 as _annotations_pb2_1
 from scalekit.v1.commons import commons_pb2 as _commons_pb2
+from scalekit.v1.domains import domains_pb2 as _domains_pb2
 from scalekit.v1.options import options_pb2 as _options_pb2
 from google.protobuf.internal import containers as _containers
 from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
@@ -150,16 +152,18 @@ class UpdateWorkspace(_message.Message):
     def __init__(self, display_name: _Optional[str] = ...) -> None: ...
 
 class OnboardWorkspace(_message.Message):
-    __slots__ = ("workspace_display_name", "user_given_name", "user_family_name", "authentication_mode")
+    __slots__ = ("workspace_display_name", "user_given_name", "user_family_name", "authentication_mode", "enable_allowed_domain_join")
     WORKSPACE_DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     USER_GIVEN_NAME_FIELD_NUMBER: _ClassVar[int]
     USER_FAMILY_NAME_FIELD_NUMBER: _ClassVar[int]
     AUTHENTICATION_MODE_FIELD_NUMBER: _ClassVar[int]
+    ENABLE_ALLOWED_DOMAIN_JOIN_FIELD_NUMBER: _ClassVar[int]
     workspace_display_name: str
     user_given_name: str
     user_family_name: str
     authentication_mode: _commons_pb2.AuthenticationMode
-    def __init__(self, workspace_display_name: _Optional[str] = ..., user_given_name: _Optional[str] = ..., user_family_name: _Optional[str] = ..., authentication_mode: _Optional[_Union[_commons_pb2.AuthenticationMode, str]] = ...) -> None: ...
+    enable_allowed_domain_join: bool
+    def __init__(self, workspace_display_name: _Optional[str] = ..., user_given_name: _Optional[str] = ..., user_family_name: _Optional[str] = ..., authentication_mode: _Optional[_Union[_commons_pb2.AuthenticationMode, str]] = ..., enable_allowed_domain_join: bool = ...) -> None: ...
 
 class CreateWorkspaceRequest(_message.Message):
     __slots__ = ("workspace",)
@@ -650,3 +654,45 @@ class UpdateWorkspaceContextResponse(_message.Message):
     CONTEXT_FIELD_NUMBER: _ClassVar[int]
     context: _struct_pb2.Struct
     def __init__(self, context: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
+
+class ValidateWorkspaceDomainRequest(_message.Message):
+    __slots__ = ()
+    def __init__(self) -> None: ...
+
+class CreateWorkspaceDomainRequest(_message.Message):
+    __slots__ = ("domain",)
+    DOMAIN_FIELD_NUMBER: _ClassVar[int]
+    domain: _domains_pb2.CreateDomain
+    def __init__(self, domain: _Optional[_Union[_domains_pb2.CreateDomain, _Mapping]] = ...) -> None: ...
+
+class CreateWorkspaceDomainResponse(_message.Message):
+    __slots__ = ("domain",)
+    DOMAIN_FIELD_NUMBER: _ClassVar[int]
+    domain: _domains_pb2.Domain
+    def __init__(self, domain: _Optional[_Union[_domains_pb2.Domain, _Mapping]] = ...) -> None: ...
+
+class ListWorkspaceDomainsRequest(_message.Message):
+    __slots__ = ("page_size", "page_number", "domain_type")
+    PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
+    PAGE_NUMBER_FIELD_NUMBER: _ClassVar[int]
+    DOMAIN_TYPE_FIELD_NUMBER: _ClassVar[int]
+    page_size: _wrappers_pb2.Int32Value
+    page_number: _wrappers_pb2.Int32Value
+    domain_type: _domains_pb2.DomainType
+    def __init__(self, page_size: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., page_number: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., domain_type: _Optional[_Union[_domains_pb2.DomainType, str]] = ...) -> None: ...
+
+class ListWorkspaceDomainsResponse(_message.Message):
+    __slots__ = ("page_size", "page_number", "domains")
+    PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
+    PAGE_NUMBER_FIELD_NUMBER: _ClassVar[int]
+    DOMAINS_FIELD_NUMBER: _ClassVar[int]
+    page_size: int
+    page_number: int
+    domains: _containers.RepeatedCompositeFieldContainer[_domains_pb2.Domain]
+    def __init__(self, page_size: _Optional[int] = ..., page_number: _Optional[int] = ..., domains: _Optional[_Iterable[_Union[_domains_pb2.Domain, _Mapping]]] = ...) -> None: ...
+
+class DeleteWorkspaceDomainRequest(_message.Message):
+    __slots__ = ("id",)
+    ID_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    def __init__(self, id: _Optional[str] = ...) -> None: ...

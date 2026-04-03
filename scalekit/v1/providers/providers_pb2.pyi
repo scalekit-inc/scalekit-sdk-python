@@ -8,14 +8,24 @@ from google.protobuf import wrappers_pb2 as _wrappers_pb2
 from protoc_gen_openapiv2.options import annotations_pb2 as _annotations_pb2_1
 from scalekit.v1.options import options_pb2 as _options_pb2
 from google.protobuf.internal import containers as _containers
+from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Mapping, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
+class ProviderType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    DEFAULT: _ClassVar[ProviderType]
+    CUSTOM: _ClassVar[ProviderType]
+    ALL: _ClassVar[ProviderType]
+DEFAULT: ProviderType
+CUSTOM: ProviderType
+ALL: ProviderType
+
 class Provider(_message.Message):
-    __slots__ = ("id", "identifier", "display_name", "description", "categories", "auth_patterns", "icon_src", "display_priority", "coming_soon", "proxy_url", "proxy_enabled")
+    __slots__ = ("id", "identifier", "display_name", "description", "categories", "auth_patterns", "icon_src", "display_priority", "coming_soon", "proxy_url", "proxy_enabled", "is_custom")
     ID_FIELD_NUMBER: _ClassVar[int]
     IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
@@ -27,6 +37,7 @@ class Provider(_message.Message):
     COMING_SOON_FIELD_NUMBER: _ClassVar[int]
     PROXY_URL_FIELD_NUMBER: _ClassVar[int]
     PROXY_ENABLED_FIELD_NUMBER: _ClassVar[int]
+    IS_CUSTOM_FIELD_NUMBER: _ClassVar[int]
     id: str
     identifier: str
     display_name: str
@@ -38,7 +49,8 @@ class Provider(_message.Message):
     coming_soon: bool
     proxy_url: str
     proxy_enabled: bool
-    def __init__(self, id: _Optional[str] = ..., identifier: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., categories: _Optional[_Iterable[str]] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., icon_src: _Optional[str] = ..., display_priority: _Optional[int] = ..., coming_soon: bool = ..., proxy_url: _Optional[str] = ..., proxy_enabled: bool = ...) -> None: ...
+    is_custom: bool
+    def __init__(self, id: _Optional[str] = ..., identifier: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., categories: _Optional[_Iterable[str]] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., icon_src: _Optional[str] = ..., display_priority: _Optional[int] = ..., coming_soon: bool = ..., proxy_url: _Optional[str] = ..., proxy_enabled: bool = ..., is_custom: bool = ...) -> None: ...
 
 class CreateProvider(_message.Message):
     __slots__ = ("identifier", "display_name", "description", "categories", "auth_patterns", "icon_src", "display_priority", "coming_soon", "proxy_url", "proxy_enabled")
@@ -69,6 +81,26 @@ class CreateProviderRequest(_message.Message):
     PROVIDER_FIELD_NUMBER: _ClassVar[int]
     provider: CreateProvider
     def __init__(self, provider: _Optional[_Union[CreateProvider, _Mapping]] = ...) -> None: ...
+
+class CreateCustomProvider(_message.Message):
+    __slots__ = ("display_name", "description", "auth_patterns", "proxy_url", "proxy_enabled")
+    DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
+    DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
+    AUTH_PATTERNS_FIELD_NUMBER: _ClassVar[int]
+    PROXY_URL_FIELD_NUMBER: _ClassVar[int]
+    PROXY_ENABLED_FIELD_NUMBER: _ClassVar[int]
+    display_name: str
+    description: str
+    auth_patterns: _struct_pb2.ListValue
+    proxy_url: str
+    proxy_enabled: bool
+    def __init__(self, display_name: _Optional[str] = ..., description: _Optional[str] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., proxy_url: _Optional[str] = ..., proxy_enabled: bool = ...) -> None: ...
+
+class CreateCustomProviderRequest(_message.Message):
+    __slots__ = ("provider",)
+    PROVIDER_FIELD_NUMBER: _ClassVar[int]
+    provider: CreateCustomProvider
+    def __init__(self, provider: _Optional[_Union[CreateCustomProvider, _Mapping]] = ...) -> None: ...
 
 class CreateProviderResponse(_message.Message):
     __slots__ = ("provider",)
@@ -106,6 +138,28 @@ class UpdateProviderRequest(_message.Message):
     provider: UpdateProvider
     def __init__(self, identifier: _Optional[str] = ..., provider: _Optional[_Union[UpdateProvider, _Mapping]] = ...) -> None: ...
 
+class UpdateCustomProvider(_message.Message):
+    __slots__ = ("display_name", "description", "auth_patterns", "proxy_url", "proxy_enabled")
+    DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
+    DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
+    AUTH_PATTERNS_FIELD_NUMBER: _ClassVar[int]
+    PROXY_URL_FIELD_NUMBER: _ClassVar[int]
+    PROXY_ENABLED_FIELD_NUMBER: _ClassVar[int]
+    display_name: str
+    description: str
+    auth_patterns: _struct_pb2.ListValue
+    proxy_url: str
+    proxy_enabled: bool
+    def __init__(self, display_name: _Optional[str] = ..., description: _Optional[str] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., proxy_url: _Optional[str] = ..., proxy_enabled: bool = ...) -> None: ...
+
+class UpdateCustomProviderRequest(_message.Message):
+    __slots__ = ("identifier", "provider")
+    IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
+    PROVIDER_FIELD_NUMBER: _ClassVar[int]
+    identifier: str
+    provider: UpdateCustomProvider
+    def __init__(self, identifier: _Optional[str] = ..., provider: _Optional[_Union[UpdateCustomProvider, _Mapping]] = ...) -> None: ...
+
 class UpdateProviderResponse(_message.Message):
     __slots__ = ("provider",)
     PROVIDER_FIELD_NUMBER: _ClassVar[int]
@@ -113,14 +167,21 @@ class UpdateProviderResponse(_message.Message):
     def __init__(self, provider: _Optional[_Union[Provider, _Mapping]] = ...) -> None: ...
 
 class ListProvidersRequest(_message.Message):
-    __slots__ = ("identifier", "page_size", "page_token")
+    __slots__ = ("identifier", "page_size", "page_token", "filter")
+    class Filter(_message.Message):
+        __slots__ = ("provider_type",)
+        PROVIDER_TYPE_FIELD_NUMBER: _ClassVar[int]
+        provider_type: ProviderType
+        def __init__(self, provider_type: _Optional[_Union[ProviderType, str]] = ...) -> None: ...
     IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
     PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
     PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    FILTER_FIELD_NUMBER: _ClassVar[int]
     identifier: str
     page_size: int
     page_token: str
-    def __init__(self, identifier: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ...) -> None: ...
+    filter: ListProvidersRequest.Filter
+    def __init__(self, identifier: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ..., filter: _Optional[_Union[ListProvidersRequest.Filter, _Mapping]] = ...) -> None: ...
 
 class ListProvidersResponse(_message.Message):
     __slots__ = ("providers", "next_page_token", "total_size", "prev_page_token")

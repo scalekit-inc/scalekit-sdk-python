@@ -21,6 +21,7 @@ from .models.responses.update_mcp_config_response import UpdateMcpConfigResponse
 from .models.responses.update_mcp_instance_response import UpdateMcpInstanceResponse
 from .models.responses.delete_mcp_config_response import DeleteMcpConfigResponse
 from .models.responses.delete_mcp_instance_response import DeleteMcpInstanceResponse
+from .models.responses.verify_connected_account_user_response import VerifyConnectedAccountUserResponse
 from .models.tool_input_output import ToolInput, ToolOutput
 from .models.tool_mapping import ToolMapping
 from .models.mcp_config import McpConfig, McpConfigConnectionToolMapping
@@ -58,4 +59,5 @@ __all__ = [
     'McpConfigConnectionToolMapping',
     'McpInstance',
     'McpInstanceConnectionAuthState',
+    'VerifyConnectedAccountUserResponse',
 ]

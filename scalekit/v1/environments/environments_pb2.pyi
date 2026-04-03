@@ -1,6 +1,7 @@
 from buf.validate import validate_pb2 as _validate_pb2
 from google.api import annotations_pb2 as _annotations_pb2
 from google.api import field_behavior_pb2 as _field_behavior_pb2
+from google.api import visibility_pb2 as _visibility_pb2
 from google.protobuf import any_pb2 as _any_pb2
 from google.protobuf import duration_pb2 as _duration_pb2
 from google.protobuf import empty_pb2 as _empty_pb2
@@ -9,7 +10,9 @@ from google.protobuf import timestamp_pb2 as _timestamp_pb2
 from google.protobuf import wrappers_pb2 as _wrappers_pb2
 from protoc_gen_openapiv2.options import annotations_pb2 as _annotations_pb2_1
 from scalekit.v1.commons import commons_pb2 as _commons_pb2
+from scalekit.v1.connections import connections_pb2 as _connections_pb2
 from scalekit.v1.options import options_pb2 as _options_pb2
+from scalekit.v1.organizations import organizations_pb2 as _organizations_pb2
 from google.protobuf.internal import containers as _containers
 from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
@@ -55,6 +58,13 @@ class CookieSameSiteSetting(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     CookieSameSiteSetting_UNSPECIFIED: _ClassVar[CookieSameSiteSetting]
     LAX_MODE: _ClassVar[CookieSameSiteSetting]
     NONE_MODE: _ClassVar[CookieSameSiteSetting]
+
+class ConnectedAccountUserVerifyMode(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    CONNECTED_ACCOUNT_USER_VERIFY_MODE_UNSPECIFIED: _ClassVar[ConnectedAccountUserVerifyMode]
+    USER_VERIFY_MODE_NONE: _ClassVar[ConnectedAccountUserVerifyMode]
+    USER_VERIFY_MODE_B2B: _ClassVar[ConnectedAccountUserVerifyMode]
+    USER_VERIFY_MODE_SCALEKIT_PLATFORM: _ClassVar[ConnectedAccountUserVerifyMode]
 UNSPECIFIED: CustomDomainStatus
 PENDING: CustomDomainStatus
 ACTIVE: CustomDomainStatus
@@ -75,6 +85,10 @@ SESSION: CookiePersistenceType
 CookieSameSiteSetting_UNSPECIFIED: CookieSameSiteSetting
 LAX_MODE: CookieSameSiteSetting
 NONE_MODE: CookieSameSiteSetting
+CONNECTED_ACCOUNT_USER_VERIFY_MODE_UNSPECIFIED: ConnectedAccountUserVerifyMode
+USER_VERIFY_MODE_NONE: ConnectedAccountUserVerifyMode
+USER_VERIFY_MODE_B2B: ConnectedAccountUserVerifyMode
+USER_VERIFY_MODE_SCALEKIT_PLATFORM: ConnectedAccountUserVerifyMode
 
 class CreateCustomDomainRequest(_message.Message):
     __slots__ = ("id", "custom_domain")
@@ -269,10 +283,14 @@ class GetPortalCustomizationRequest(_message.Message):
     def __init__(self, id: _Optional[str] = ...) -> None: ...
 
 class PortalSettings(_message.Message):
-    __slots__ = ("custom_branding",)
+    __slots__ = ("custom_branding", "new_self_serve_sso_scim", "enable_conn_delete")
     CUSTOM_BRANDING_FIELD_NUMBER: _ClassVar[int]
+    NEW_SELF_SERVE_SSO_SCIM_FIELD_NUMBER: _ClassVar[int]
+    ENABLE_CONN_DELETE_FIELD_NUMBER: _ClassVar[int]
     custom_branding: bool
-    def __init__(self, custom_branding: bool = ...) -> None: ...
+    new_self_serve_sso_scim: bool
+    enable_conn_delete: bool
+    def __init__(self, custom_branding: bool = ..., new_self_serve_sso_scim: bool = ..., enable_conn_delete: bool = ...) -> None: ...
 
 class GetPortalCustomizationResponse(_message.Message):
     __slots__ = ("environmentId", "customization_settings", "settings")
@@ -578,3 +596,73 @@ class ScalekitResourceResponse(_message.Message):
     RESOURCES_FIELD_NUMBER: _ClassVar[int]
     resources: _containers.MessageMap[str, _struct_pb2.Struct]
     def __init__(self, resources: _Optional[_Mapping[str, _struct_pb2.Struct]] = ...) -> None: ...
+
+class PortalBootstrapRequest(_message.Message):
+    __slots__ = ()
+    def __init__(self) -> None: ...
+
+class PortalCustomizationBootstrap(_message.Message):
+    __slots__ = ("customization_settings", "settings")
+    CUSTOMIZATION_SETTINGS_FIELD_NUMBER: _ClassVar[int]
+    SETTINGS_FIELD_NUMBER: _ClassVar[int]
+    customization_settings: _struct_pb2.Struct
+    settings: PortalSettings
+    def __init__(self, customization_settings: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., settings: _Optional[_Union[PortalSettings, _Mapping]] = ...) -> None: ...
+
+class PortalBootstrapResponse(_message.Message):
+    __slots__ = ("session", "portal_customizations", "organization", "connections")
+    SESSION_FIELD_NUMBER: _ClassVar[int]
+    PORTAL_CUSTOMIZATIONS_FIELD_NUMBER: _ClassVar[int]
+    ORGANIZATION_FIELD_NUMBER: _ClassVar[int]
+    CONNECTIONS_FIELD_NUMBER: _ClassVar[int]
+    session: GetCurrentSessionResponse
+    portal_customizations: PortalCustomizationBootstrap
+    organization: _organizations_pb2.Organization
+    connections: _containers.RepeatedCompositeFieldContainer[_connections_pb2.ListConnection]
+    def __init__(self, session: _Optional[_Union[GetCurrentSessionResponse, _Mapping]] = ..., portal_customizations: _Optional[_Union[PortalCustomizationBootstrap, _Mapping]] = ..., organization: _Optional[_Union[_organizations_pb2.Organization, _Mapping]] = ..., connections: _Optional[_Iterable[_Union[_connections_pb2.ListConnection, _Mapping]]] = ...) -> None: ...
+
+class AgentActionsConfig(_message.Message):
+    __slots__ = ("user_verify_mode",)
+    USER_VERIFY_MODE_FIELD_NUMBER: _ClassVar[int]
+    user_verify_mode: ConnectedAccountUserVerifyMode
+    def __init__(self, user_verify_mode: _Optional[_Union[ConnectedAccountUserVerifyMode, str]] = ...) -> None: ...
+
+class CreateAgentActionsConfigRequest(_message.Message):
+    __slots__ = ("id", "agent_actions_config")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    AGENT_ACTIONS_CONFIG_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    agent_actions_config: AgentActionsConfig
+    def __init__(self, id: _Optional[str] = ..., agent_actions_config: _Optional[_Union[AgentActionsConfig, _Mapping]] = ...) -> None: ...
+
+class CreateAgentActionsConfigResponse(_message.Message):
+    __slots__ = ("agent_actions_config",)
+    AGENT_ACTIONS_CONFIG_FIELD_NUMBER: _ClassVar[int]
+    agent_actions_config: AgentActionsConfig
+    def __init__(self, agent_actions_config: _Optional[_Union[AgentActionsConfig, _Mapping]] = ...) -> None: ...
+
+class GetAgentActionsConfigRequest(_message.Message):
+    __slots__ = ("id",)
+    ID_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    def __init__(self, id: _Optional[str] = ...) -> None: ...
+
+class GetAgentActionsConfigResponse(_message.Message):
+    __slots__ = ("agent_actions_config",)
+    AGENT_ACTIONS_CONFIG_FIELD_NUMBER: _ClassVar[int]
+    agent_actions_config: AgentActionsConfig
+    def __init__(self, agent_actions_config: _Optional[_Union[AgentActionsConfig, _Mapping]] = ...) -> None: ...
+
+class UpdateAgentActionsConfigRequest(_message.Message):
+    __slots__ = ("id", "agent_actions_config")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    AGENT_ACTIONS_CONFIG_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    agent_actions_config: AgentActionsConfig
+    def __init__(self, id: _Optional[str] = ..., agent_actions_config: _Optional[_Union[AgentActionsConfig, _Mapping]] = ...) -> None: ...
+
+class UpdateAgentActionsConfigResponse(_message.Message):
+    __slots__ = ("agent_actions_config",)
+    AGENT_ACTIONS_CONFIG_FIELD_NUMBER: _ClassVar[int]
+    agent_actions_config: AgentActionsConfig
+    def __init__(self, agent_actions_config: _Optional[_Union[AgentActionsConfig, _Mapping]] = ...) -> None: ...

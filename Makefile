@@ -12,7 +12,7 @@ VENV_PYTHON := $(VENV_DIR)/bin/python
 VENV_PIP := $(VENV_PYTHON) -m pip
 
 PROTO_REPO_URL := https://github.com/scalekit-inc/scalekit.git
-PROTO_REF ?= v0.1.103
+PROTO_REF ?= v0.1.109.0
 PROTO_SUBDIR := proto
 
 TEMP_DIR := temp_scalekit

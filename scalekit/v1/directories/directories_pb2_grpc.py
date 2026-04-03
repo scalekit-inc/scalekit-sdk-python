@@ -95,6 +95,16 @@ class DirectoryServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.TriggerDirectorySyncRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
+        self.GetDirectoryContext = channel.unary_unary(
+                '/scalekit.v1.directories.DirectoryService/GetDirectoryContext',
+                request_serializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.GetDirectoryContextRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.GetDirectoryContextResponse.FromString,
+                )
+        self.UpdateDirectoryContext = channel.unary_unary(
+                '/scalekit.v1.directories.DirectoryService/UpdateDirectoryContext',
+                request_serializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.UpdateDirectoryContextRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
 
 
 class DirectoryServiceServicer(object):
@@ -196,6 +206,18 @@ class DirectoryServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetDirectoryContext(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateDirectoryContext(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_DirectoryServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -277,6 +299,16 @@ def add_DirectoryServiceServicer_to_server(servicer, server):
             'TriggerDirectorySync': grpc.unary_unary_rpc_method_handler(
                     servicer.TriggerDirectorySync,
                     request_deserializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.TriggerDirectorySyncRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'GetDirectoryContext': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetDirectoryContext,
+                    request_deserializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.GetDirectoryContextRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.GetDirectoryContextResponse.SerializeToString,
+            ),
+            'UpdateDirectoryContext': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateDirectoryContext,
+                    request_deserializer=scalekit_dot_v1_dot_directories_dot_directories__pb2.UpdateDirectoryContextRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
     }
@@ -557,6 +589,40 @@ class DirectoryService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.directories.DirectoryService/TriggerDirectorySync',
             scalekit_dot_v1_dot_directories_dot_directories__pb2.TriggerDirectorySyncRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetDirectoryContext(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.directories.DirectoryService/GetDirectoryContext',
+            scalekit_dot_v1_dot_directories_dot_directories__pb2.GetDirectoryContextRequest.SerializeToString,
+            scalekit_dot_v1_dot_directories_dot_directories__pb2.GetDirectoryContextResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def UpdateDirectoryContext(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.directories.DirectoryService/UpdateDirectoryContext',
+            scalekit_dot_v1_dot_directories_dot_directories__pb2.UpdateDirectoryContextRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

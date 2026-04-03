@@ -3,7 +3,7 @@ import requests
 from scalekit.actions.types import ToolRequest,ExecuteToolResponse,MagicLinkResponse,ListConnectedAccountsResponse,DeleteConnectedAccountResponse,GetConnectedAccountAuthResponse,ToolInput, \
     UpdateConnectedAccountResponse,CreateMcpConfigResponse,ListMcpConfigsResponse,UpdateMcpConfigResponse,DeleteMcpConfigResponse, \
     EnsureMcpInstanceResponse,UpdateMcpInstanceResponse,GetMcpInstanceResponse,ListMcpInstancesResponse,DeleteMcpInstanceResponse,GetMcpInstanceAuthStateResponse, \
-    McpConfig,McpConfigConnectionToolMapping
+    McpConfig,McpConfigConnectionToolMapping,VerifyConnectedAccountUserResponse
 from scalekit.actions.models.responses.create_connected_account_response import CreateConnectedAccountResponse
 from scalekit.actions.models.requests.create_connected_account_request import CreateConnectedAccountRequest
 from scalekit.actions.models.requests.update_connected_account_request import UpdateConnectedAccountRequest
@@ -143,18 +143,24 @@ class ActionClient:
             identifier: Optional[str] = None,
             connection_name: Optional[str] = None,
             connected_account_id: Optional[str] = None,
+            state: Optional[str] = None,
+            user_verify_url: Optional[str] = None,
             **kwargs
     ) -> MagicLinkResponse:
         """
         Get authorization magic link for a connected account
-        
+
         :param connection_name: Connector identifier
         :type: str
         :param identifier: Connected account identifier
         :type: str
         :param connected_account_id: Connected account ID (optional)
         :type: str
-        
+        :param state: Opaque state value passed through to the user verify redirect URL query params (optional)
+        :type: str
+        :param user_verify_url: B2B app's user verify redirect URL (optional)
+        :type: str
+
         :returns:
             MagicLinkResponse containing magic link and expiry
         """
@@ -162,14 +168,47 @@ class ActionClient:
         result_tuple = self.connected_accounts.get_magic_link_for_connected_account(
             connector=connection_name,
             identifier=identifier,
-            connected_account_id=connected_account_id
+            connected_account_id=connected_account_id,
+            state=state,
+            user_verify_url=user_verify_url
         )
-        
+
         # Extract the response[0] (the actual GetMagicLinkForConnectedAccountResponse proto object)
         proto_response = result_tuple[0]
-        
+
         # Convert proto to our MagicLinkResponse class
         return MagicLinkResponse.from_proto(proto_response)
+
+    def verify_connected_account_user(
+        self,
+        auth_request_id: str,
+        identifier: str,
+    ) -> VerifyConnectedAccountUserResponse:
+        """
+        Verify a connected account user after OAuth callback
+
+        :param auth_request_id: Auth request ID as base64url-encoded opaque token from the
+                                user verify redirect URL query params
+        :type: str
+        :param identifier: Current logged in user's connected account identifier
+        :type: str
+
+        :returns:
+            VerifyConnectedAccountUserResponse containing the post-verification redirect URL
+        """
+        if not auth_request_id:
+            raise ValueError("auth_request_id is required")
+        if not identifier:
+            raise ValueError("identifier is required")
+
+        result_tuple = self.connected_accounts.verify_connected_account_user(
+            auth_request_id=auth_request_id,
+            identifier=identifier
+        )
+
+        proto_response = result_tuple[0]
+
+        return VerifyConnectedAccountUserResponse.from_proto(proto_response)
     
     def list_connected_accounts(
         self, 
