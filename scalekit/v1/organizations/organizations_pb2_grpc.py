@@ -30,6 +30,11 @@ class OrganizationServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationResponse.FromString,
                 )
+        self.GetOrganizationByExternalId = channel.unary_unary(
+                '/scalekit.v1.organizations.OrganizationService/GetOrganizationByExternalId',
+                request_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationResponse.FromString,
+                )
         self.ListOrganization = channel.unary_unary(
                 '/scalekit.v1.organizations.OrganizationService/ListOrganization',
                 request_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.ListOrganizationsRequest.SerializeToString,
@@ -119,6 +124,12 @@ class OrganizationServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def GetOrganization(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetOrganizationByExternalId(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -226,6 +237,11 @@ def add_OrganizationServiceServicer_to_server(servicer, server):
             ),
             'GetOrganization': grpc.unary_unary_rpc_method_handler(
                     servicer.GetOrganization,
+                    request_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationResponse.SerializeToString,
+            ),
+            'GetOrganizationByExternalId': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetOrganizationByExternalId,
                     request_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationResponse.SerializeToString,
             ),
@@ -355,6 +371,23 @@ class OrganizationService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.organizations.OrganizationService/GetOrganization',
+            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationRequest.SerializeToString,
+            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetOrganizationByExternalId(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.organizations.OrganizationService/GetOrganizationByExternalId',
             scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationRequest.SerializeToString,
             scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationResponse.FromString,
             options, channel_credentials,
