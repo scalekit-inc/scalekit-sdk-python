@@ -1,6 +1,6 @@
 # AgentKit API reference (Python)
 
-This document lists **AgentKit-related** Scalekit SDK methods: Bring-your-own-auth for MCP, tools, connected accounts, the `ActionClient` facade (`connect` / `actions`), and the low-level `McpClient`.
+This document lists **AgentKit** Scalekit SDK surfaces: tools, connected accounts, the `ActionClient` facade (`connect` / `actions`), and the low-level `McpClient` (Python).
 
 For the full SDK surface (organizations, SSO **connections**, users, sessions, etc.), see [`REFERENCE.md`](REFERENCE.md).
 
@@ -10,8 +10,6 @@ For the full SDK surface (organizations, SSO **connections**, users, sessions, e
 
 - [Initialize the client](#initialize-the-client)
 - [AgentKit namespaces](#agentkit-namespaces)
-- [`client.auth` vs login flows](#clientauth-vs-login-flows)
-- [Auth](#auth)
 - [Tools](#tools)
 - [Connected Accounts](#connected-accounts)
 - [Connect and Actions (`ActionClient`)](#connect-and-actions-actionclient)
@@ -44,114 +42,8 @@ These attributes on `scalekit_client` are the AgentKit-related entry points:
 | `connected_accounts` | List, create, update, delete connected accounts; magic links. |
 | `connect` and `actions` | Same [`ActionClient`](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py) — ergonomic facade over tools + connected accounts + MCP helpers. |
 | `mcp` | Low-level MCP server configuration and instances (gRPC protos). |
-| `auth` | **Only** for [Bring-your-own-auth / Auth-for-MCP](#clientauth-vs-login-flows) (see below) — not your default login API. |
 
-For **interactive user SSO** (authorization URL, code exchange, tokens), use the methods on **`ScalekitClient` itself** — e.g. `get_authorization_url`, `authenticate_with_code` — documented under **ScalekitClient** in [`REFERENCE.md`](REFERENCE.md).
-
-## `client.auth` vs login flows
-
-- **`scalekit_client.get_authorization_url` / `authenticate_with_code`** (on the **top-level client**, not under `.auth`) are the usual OAuth 2.0 helpers for redirecting users and exchanging codes. Use those for standard web or app login.
-- **`scalekit_client.auth.update_login_user_details`** is a **different** API: it updates Scalekit with the **currently logged-in user** during an **Auth-for-MCP / Bring-your-own-auth** flow, using `connection_id` and `login_request_id` from that flow. If you are not implementing that product mode, you typically **do not** call `client.auth` at all.
-
-If you only need Agent Connect (tools + connected accounts + actions), you can ignore `client.auth` unless your architecture explicitly uses BYOA with MCP.
-
-## Auth
-
-Bring-your-own-auth (BYOA) helper — see [`client.auth` vs login flows](#clientauth-vs-login-flows). For normal OAuth login, use `ScalekitClient` methods in [`REFERENCE.md`](REFERENCE.md) (e.g. `get_authorization_url`).
-
-<details><summary><code>client.auth.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/auth.py">update_login_user_details</a>(connection_id, login_request_id, user?) -> Empty</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Updates user details for an ongoing authentication request.
-
-If you are using Auth for MCP solution of Scalekit in "Bring your own Auth" mode, this method helps updating Scalekit with the currently logged in user details for the ongoing authentication request.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```python
-scalekit_client.auth.update_login_user_details(
-    'conn_abc123',
-    'login_xyz789',
-    {
-        'email': 'john.doe@company.com',
-        'sub': 'unique_user_id_456',
-    }
-)
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**connection_id:** `str` - The SSO connection ID being used for authentication
-
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**login_request_id:** `str` - The unique login request identifier from the auth flow
-
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**user:** `Optional[Mapping[str, Any]]` - User details to update
-- `email: Optional[str]` - User's email address
-- `sub: Optional[str]` - Unique user identifier (subject)
-- `given_name: Optional[str]` - User's first name
-- `family_name: Optional[str]` - User's last name
-- `email_verified: Optional[bool]` - Whether email is verified
-- `phone_number: Optional[str]` - User's primary phone number
-- `phone_number_verified: Optional[bool]` - Whether phone is verified
-- `name: Optional[str]` - Full display name of the user
-- `preferred_username: Optional[str]` - User's preferred username
-- `picture: Optional[str]` - URL to user's profile picture
-- `gender: Optional[str]` - User's gender
-- `locale: Optional[str]` - User's locale preference
-- `groups: Optional[list[str]]` - List of group names or IDs
-- `custom_attributes: Optional[dict]` - Custom attributes as dict
-
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
+OAuth login (`get_authorization_url`, `authenticate_with_code`, …) and MCP **Bring-your-own-auth** (`client.auth.update_login_user_details`) are documented under **ScalekitClient** / **Auth** in [`REFERENCE.md`](REFERENCE.md), not in this AgentKit guide.
 
 ## Tools
 
