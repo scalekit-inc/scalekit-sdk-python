@@ -8,13 +8,56 @@ For the full SDK surface (organizations, SSO **connections**, users, sessions, e
 
 ## Table of contents
 
+- [Initialize the client](#initialize-the-client)
+- [AgentKit namespaces](#agentkit-namespaces)
+- [`client.auth` vs login flows](#clientauth-vs-login-flows)
 - [Auth](#auth)
 - [Tools](#tools)
 - [Connected Accounts](#connected-accounts)
 - [Connect and Actions (`ActionClient`)](#connect-and-actions-actionclient)
 - [MCP (`McpClient`)](#mcp-mcpclient)
 
+## Initialize the client
+
+Create a single [`ScalekitClient`](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/client.py) with your environment URL, client ID, and client secret from **Scalekit Dashboard → Developers → API credentials**. All sections below use the same instance.
+
+```python
+import os
+from scalekit import ScalekitClient
+
+scalekit_client = ScalekitClient(
+    os.environ["SCALEKIT_ENV_URL"],
+    os.environ["SCALEKIT_CLIENT_ID"],
+    os.environ["SCALEKIT_CLIENT_SECRET"],
+)
+```
+
+Install: `pip install scalekit-sdk-python`. Load credentials from the environment (or a secret manager) in production; do not commit secrets.
+
+## AgentKit namespaces
+
+These attributes on `scalekit_client` are the AgentKit-related entry points:
+
+| Namespace | Role |
+|-----------|------|
+| `tools` | List and execute tools against connected accounts. |
+| `connected_accounts` | List, create, update, delete connected accounts; magic links. |
+| `connect` and `actions` | Same [`ActionClient`](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py) — ergonomic facade over tools + connected accounts + MCP helpers. |
+| `mcp` | Low-level MCP server configuration and instances (gRPC protos). |
+| `auth` | **Only** for [Bring-your-own-auth / Auth-for-MCP](#clientauth-vs-login-flows) (see below) — not your default login API. |
+
+For **interactive user SSO** (authorization URL, code exchange, tokens), use the methods on **`ScalekitClient` itself** — e.g. `get_authorization_url`, `authenticate_with_code` — documented under **ScalekitClient** in [`REFERENCE.md`](REFERENCE.md).
+
+## `client.auth` vs login flows
+
+- **`scalekit_client.get_authorization_url` / `authenticate_with_code`** (on the **top-level client**, not under `.auth`) are the usual OAuth 2.0 helpers for redirecting users and exchanging codes. Use those for standard web or app login.
+- **`scalekit_client.auth.update_login_user_details`** is a **different** API: it updates Scalekit with the **currently logged-in user** during an **Auth-for-MCP / Bring-your-own-auth** flow, using `connection_id` and `login_request_id` from that flow. If you are not implementing that product mode, you typically **do not** call `client.auth` at all.
+
+If you only need Agent Connect (tools + connected accounts + actions), you can ignore `client.auth` unless your architecture explicitly uses BYOA with MCP.
+
 ## Auth
+
+Bring-your-own-auth (BYOA) helper — see [`client.auth` vs login flows](#clientauth-vs-login-flows). For normal OAuth login, use `ScalekitClient` methods in [`REFERENCE.md`](REFERENCE.md) (e.g. `get_authorization_url`).
 
 <details><summary><code>client.auth.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/auth.py">update_login_user_details</a>(connection_id, login_request_id, user?) -> Empty</code></summary>
 <dl>
