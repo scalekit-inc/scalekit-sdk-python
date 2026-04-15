@@ -35,7 +35,7 @@
 - **🐍 Pythonic API**: Clean, intuitive interface following Python conventions
 
 <div>
-📚 <a target="_blank" href="https://docs.scalekit.com">Documentation</a> • 🚀 <a target="_blank" href="https://docs.scalekit.com/sso/quickstart/">SSO Quickstart</a> • 💻 <a target="_blank" href="https://docs.scalekit.com/apis">API Reference</a>
+📚 <a target="_blank" href="https://docs.scalekit.com">Documentation</a> • 🚀 <a target="_blank" href="https://docs.scalekit.com/sso/quickstart/">SSO Quickstart</a> • 💻 <a target="_blank" href="https://docs.scalekit.com/apis">API Reference</a> • 🤖 <a href="AGENTKIT.md">AgentKit (SDK)</a>
 </div>
 <hr />
 
