@@ -24,7 +24,7 @@ class TestTools(BaseTest):
 
     def test_list_tools(self):
         """ Method to test list tools """
-        response = self.scalekit_client.tools.list_tools()
+        response = self.scalekit_client.tools.list_tools(page_size=10)
         self.assertEqual(response[1].code().name, "OK")
         self.assertTrue(response[0] is not None)
         self.assertTrue(hasattr(response[0], 'tools') or hasattr(response[0], 'tool_names'))
