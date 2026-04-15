@@ -6,15 +6,6 @@ For the full SDK surface (organizations, SSO **connections**, users, sessions, e
 
 **Note:** `client.connection` (enterprise SSO IdP **connections**) is not part of AgentKit; it remains documented only in `REFERENCE.md`.
 
-## Table of contents
-
-- [Initialize the client](#initialize-the-client)
-- [AgentKit namespaces](#agentkit-namespaces)
-- [Tools](#tools)
-- [Connected Accounts](#connected-accounts)
-- [Connect and Actions (`ActionClient`)](#connect-and-actions-actionclient)
-- [MCP (`McpClient`)](#mcp-mcpclient)
-
 ## Initialize the client
 
 Create a single [`ScalekitClient`](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/client.py) with your environment URL, client ID, and client secret from **Scalekit Dashboard → Developers → API credentials**. All sections below use the same instance.
