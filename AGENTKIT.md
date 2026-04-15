@@ -44,11 +44,11 @@ Low-level gRPC helpers on `client.tools` ([`scalekit/tools.py`](https://github.c
 <dl>
 <dd>
 
-#### 📝 Description
+### 📝 Description
 
 Lists tools available in your workspace with optional filtering and pagination.
 
-#### 🔌 Usage
+### 🔌 Usage
 
 ```python
 from scalekit.v1.tools.tools_pb2 import Filter
@@ -59,7 +59,7 @@ response = scalekit_client.tools.list_tools(
 )
 ```
 
-#### ⚙️ Parameters
+### ⚙️ Parameters
 
 **filter:** `Optional[Filter]` — Filter on provider, identifier, tool metadata, etc.
 
@@ -75,11 +75,11 @@ response = scalekit_client.tools.list_tools(
 <dl>
 <dd>
 
-#### 📝 Description
+### 📝 Description
 
 Lists tools scoped to a specific connected-account identifier (for example workspace or email).
 
-#### 🔌 Usage
+### 🔌 Usage
 
 ```python
 from scalekit.v1.tools.tools_pb2 import ScopedToolFilter
@@ -90,7 +90,7 @@ response = scalekit_client.tools.list_scoped_tools(
 )
 ```
 
-#### ⚙️ Parameters
+### ⚙️ Parameters
 
 **identifier:** `str` — Connected account identifier.
 
@@ -108,11 +108,11 @@ response = scalekit_client.tools.list_scoped_tools(
 <dl>
 <dd>
 
-#### 📝 Description
+### 📝 Description
 
 Executes a named tool using credentials from a connected account.
 
-#### 🔌 Usage
+### 🔌 Usage
 
 ```python
 response = scalekit_client.tools.execute_tool(
@@ -122,7 +122,7 @@ response = scalekit_client.tools.execute_tool(
 )
 ```
 
-#### ⚙️ Parameters
+### ⚙️ Parameters
 
 **tool_name:** `str` — Tool identifier.
 
@@ -142,7 +142,7 @@ response = scalekit_client.tools.execute_tool(
 <dl>
 <dd>
 
-#### 📝 Description
+### 📝 Description
 
 <dl>
 <dd>
@@ -156,7 +156,7 @@ Lists all connected accounts with optional filtering.
 </dd>
 </dl>
 
-#### 🔌 Usage
+### 🔌 Usage
 
 <dl>
 <dd>
@@ -179,7 +179,7 @@ for account in response[0].connected_accounts:
 </dd>
 </dl>
 
-#### ⚙️ Parameters
+### ⚙️ Parameters
 
 <dl>
 <dd>
@@ -251,7 +251,7 @@ for account in response[0].connected_accounts:
 <dl>
 <dd>
 
-#### 📝 Description
+### 📝 Description
 
 <dl>
 <dd>
@@ -265,7 +265,7 @@ Retrieves a connected account by identifier.
 </dd>
 </dl>
 
-#### 🔌 Usage
+### 🔌 Usage
 
 <dl>
 <dd>
@@ -286,7 +286,7 @@ response = scalekit_client.connected_accounts.get_connected_account_by_identifie
 </dd>
 </dl>
 
-#### ⚙️ Parameters
+### ⚙️ Parameters
 
 <dl>
 <dd>
@@ -342,7 +342,7 @@ response = scalekit_client.connected_accounts.get_connected_account_by_identifie
 <dl>
 <dd>
 
-#### 📝 Description
+### 📝 Description
 
 <dl>
 <dd>
@@ -356,7 +356,7 @@ Creates a new connected account.
 </dd>
 </dl>
 
-#### 🔌 Usage
+### 🔌 Usage
 
 <dl>
 <dd>
@@ -382,7 +382,7 @@ response = scalekit_client.connected_accounts.create_connected_account(
 </dd>
 </dl>
 
-#### ⚙️ Parameters
+### ⚙️ Parameters
 
 <dl>
 <dd>
@@ -438,7 +438,7 @@ response = scalekit_client.connected_accounts.create_connected_account(
 <dl>
 <dd>
 
-#### 📝 Description
+### 📝 Description
 
 <dl>
 <dd>
@@ -452,7 +452,7 @@ Updates an existing connected account.
 </dd>
 </dl>
 
-#### 🔌 Usage
+### 🔌 Usage
 
 <dl>
 <dd>
@@ -478,7 +478,7 @@ response = scalekit_client.connected_accounts.update_connected_account(
 </dd>
 </dl>
 
-#### ⚙️ Parameters
+### ⚙️ Parameters
 
 <dl>
 <dd>
@@ -542,7 +542,7 @@ response = scalekit_client.connected_accounts.update_connected_account(
 <dl>
 <dd>
 
-#### 📝 Description
+### 📝 Description
 
 <dl>
 <dd>
@@ -556,7 +556,7 @@ Deletes a connected account.
 </dd>
 </dl>
 
-#### 🔌 Usage
+### 🔌 Usage
 
 <dl>
 <dd>
@@ -577,7 +577,7 @@ scalekit_client.connected_accounts.delete_connected_account(
 </dd>
 </dl>
 
-#### ⚙️ Parameters
+### ⚙️ Parameters
 
 <dl>
 <dd>
@@ -633,7 +633,7 @@ scalekit_client.connected_accounts.delete_connected_account(
 <dl>
 <dd>
 
-#### 📝 Description
+### 📝 Description
 
 <dl>
 <dd>
@@ -647,7 +647,7 @@ Generates a magic link for a connected account.
 </dd>
 </dl>
 
-#### 🔌 Usage
+### 🔌 Usage
 
 <dl>
 <dd>
@@ -670,7 +670,7 @@ print(f'Magic Link: {response[0].magic_link}')
 </dd>
 </dl>
 
-#### ⚙️ Parameters
+### ⚙️ Parameters
 
 <dl>
 <dd>
@@ -796,11 +796,11 @@ Low-level MCP configuration and instance APIs on `client.mcp` ([`scalekit/mcp.py
 <details><summary><code>client.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/mcp.py">list_configs</a>(page_size?, page_token?, filter_id?, filter_provider?, filter_name?, search?) -> ListMcpConfigsResponse</code></summary>
 <dl><dd>
 
-#### 📝 Description
+### 📝 Description
 
 Lists MCP server configurations with optional filters.
 
-#### ⚙️ Parameters
+### ⚙️ Parameters
 
 **page_size**, **page_token** — Pagination.
 
@@ -812,7 +812,7 @@ Lists MCP server configurations with optional filters.
 <details><summary><code>client.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/mcp.py">create_config</a>(mcp_config: McpConfig) -> CreateMcpConfigResponse</code></summary>
 <dl><dd>
 
-#### 📝 Description
+### 📝 Description
 
 Creates a configuration from a protobuf `McpConfig` message.
 
@@ -822,7 +822,7 @@ Creates a configuration from a protobuf `McpConfig` message.
 <details><summary><code>client.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/mcp.py">update_config</a>(config_id, description?, connection_tool_mappings?) -> UpdateMcpConfigResponse</code></summary>
 <dl><dd>
 
-#### 📝 Description
+### 📝 Description
 
 Updates description and/or connector–tool mappings.
 
@@ -832,7 +832,7 @@ Updates description and/or connector–tool mappings.
 <details><summary><code>client.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/mcp.py">delete_config</a>(config_id) -> DeleteMcpConfigResponse</code></summary>
 <dl><dd>
 
-#### 📝 Description
+### 📝 Description
 
 Deletes a configuration by id.
 
@@ -842,7 +842,7 @@ Deletes a configuration by id.
 <details><summary><code>client.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/mcp.py">ensure_instance</a>(name?, config_name, user_identifier) -> EnsureMcpInstanceResponse</code></summary>
 <dl><dd>
 
-#### 📝 Description
+### 📝 Description
 
 Creates or returns an MCP instance for a config and user.
 
@@ -852,7 +852,7 @@ Creates or returns an MCP instance for a config and user.
 <details><summary><code>client.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/mcp.py">update_instance</a>(instance_id, name?, config_name?) -> UpdateMcpInstanceResponse</code></summary>
 <dl><dd>
 
-#### 📝 Description
+### 📝 Description
 
 Updates mutable fields on an instance.
 
@@ -862,7 +862,7 @@ Updates mutable fields on an instance.
 <details><summary><code>client.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/mcp.py">get_instance</a>(instance_id) -> GetMcpInstanceResponse</code></summary>
 <dl><dd>
 
-#### 📝 Description
+### 📝 Description
 
 Fetches one instance by id.
 
@@ -872,7 +872,7 @@ Fetches one instance by id.
 <details><summary><code>client.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/mcp.py">list_instances</a>(page_size?, page_token?, filter_id?, filter_name?, filter_config_name?, filter_user_identifier?) -> ListMcpInstancesResponse</code></summary>
 <dl><dd>
 
-#### 📝 Description
+### 📝 Description
 
 Lists instances with optional filters.
 
@@ -882,7 +882,7 @@ Lists instances with optional filters.
 <details><summary><code>client.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/mcp.py">delete_instance</a>(instance_id) -> DeleteMcpInstanceResponse</code></summary>
 <dl><dd>
 
-#### 📝 Description
+### 📝 Description
 
 Deletes an instance.
 
@@ -892,7 +892,7 @@ Deletes an instance.
 <details><summary><code>client.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/mcp.py">get_instance_auth_state</a>(instance_id, include_auth_links?) -> GetMcpInstanceAuthStateResponse</code></summary>
 <dl><dd>
 
-#### 📝 Description
+### 📝 Description
 
 Returns authorization state for connectors used by the instance; optional fresh auth links.
 
