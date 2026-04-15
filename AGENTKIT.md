@@ -94,7 +94,7 @@ response = scalekit_client.tools.list_scoped_tools(
 
 **identifier:** `str` — Connected account identifier.
 
-**filter:** `Optional[ScopedToolFilter]` — Required filter for scoped listing.
+**filter:** `Optional[ScopedToolFilter]` — Optional; the example passes an empty `ScopedToolFilter()` — populate fields as required by your workspace.
 
 **page_size:** `Optional[int]` — Page size.
 
