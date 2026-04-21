@@ -44,7 +44,7 @@ class CreateOrganizationResponse(_message.Message):
     def __init__(self, organization: _Optional[_Union[Organization, _Mapping]] = ...) -> None: ...
 
 class CreateOrganization(_message.Message):
-    __slots__ = ("display_name", "region_code", "external_id", "metadata")
+    __slots__ = ("display_name", "region_code", "external_id", "metadata", "slug")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -56,14 +56,16 @@ class CreateOrganization(_message.Message):
     REGION_CODE_FIELD_NUMBER: _ClassVar[int]
     EXTERNAL_ID_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
+    SLUG_FIELD_NUMBER: _ClassVar[int]
     display_name: str
     region_code: _commons_pb2.RegionCode
     external_id: str
     metadata: _containers.ScalarMap[str, str]
-    def __init__(self, display_name: _Optional[str] = ..., region_code: _Optional[_Union[_commons_pb2.RegionCode, str]] = ..., external_id: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    slug: str
+    def __init__(self, display_name: _Optional[str] = ..., region_code: _Optional[_Union[_commons_pb2.RegionCode, str]] = ..., external_id: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., slug: _Optional[str] = ...) -> None: ...
 
 class Organization(_message.Message):
-    __slots__ = ("id", "create_time", "update_time", "display_name", "region_code", "external_id", "metadata", "settings")
+    __slots__ = ("id", "create_time", "update_time", "display_name", "region_code", "external_id", "metadata", "settings", "slug")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -79,6 +81,7 @@ class Organization(_message.Message):
     EXTERNAL_ID_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     SETTINGS_FIELD_NUMBER: _ClassVar[int]
+    SLUG_FIELD_NUMBER: _ClassVar[int]
     id: str
     create_time: _timestamp_pb2.Timestamp
     update_time: _timestamp_pb2.Timestamp
@@ -87,7 +90,8 @@ class Organization(_message.Message):
     external_id: str
     metadata: _containers.ScalarMap[str, str]
     settings: OrganizationSettings
-    def __init__(self, id: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., display_name: _Optional[str] = ..., region_code: _Optional[_Union[_commons_pb2.RegionCode, str]] = ..., external_id: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., settings: _Optional[_Union[OrganizationSettings, _Mapping]] = ...) -> None: ...
+    slug: str
+    def __init__(self, id: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., display_name: _Optional[str] = ..., region_code: _Optional[_Union[_commons_pb2.RegionCode, str]] = ..., external_id: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., settings: _Optional[_Union[OrganizationSettings, _Mapping]] = ..., slug: _Optional[str] = ...) -> None: ...
 
 class UpdateOrganizationRequest(_message.Message):
     __slots__ = ("id", "external_id", "organization", "update_mask")
@@ -102,7 +106,7 @@ class UpdateOrganizationRequest(_message.Message):
     def __init__(self, id: _Optional[str] = ..., external_id: _Optional[str] = ..., organization: _Optional[_Union[UpdateOrganization, _Mapping]] = ..., update_mask: _Optional[_Union[_field_mask_pb2.FieldMask, _Mapping]] = ...) -> None: ...
 
 class UpdateOrganization(_message.Message):
-    __slots__ = ("display_name", "external_id", "metadata")
+    __slots__ = ("display_name", "external_id", "metadata", "slug")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -113,10 +117,12 @@ class UpdateOrganization(_message.Message):
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     EXTERNAL_ID_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
+    SLUG_FIELD_NUMBER: _ClassVar[int]
     display_name: str
     external_id: str
     metadata: _containers.ScalarMap[str, str]
-    def __init__(self, display_name: _Optional[str] = ..., external_id: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    slug: str
+    def __init__(self, display_name: _Optional[str] = ..., external_id: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., slug: _Optional[str] = ...) -> None: ...
 
 class UpdateOrganizationResponse(_message.Message):
     __slots__ = ("organization",)
