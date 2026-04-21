@@ -25,7 +25,7 @@ CUSTOM: ProviderType
 ALL: ProviderType
 
 class Provider(_message.Message):
-    __slots__ = ("id", "identifier", "display_name", "description", "categories", "auth_patterns", "icon_src", "display_priority", "coming_soon", "proxy_url", "proxy_enabled", "is_custom", "is_custom_mcp")
+    __slots__ = ("id", "identifier", "display_name", "description", "categories", "auth_patterns", "icon_src", "display_priority", "coming_soon", "proxy_url", "proxy_enabled", "is_custom")
     ID_FIELD_NUMBER: _ClassVar[int]
     IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
@@ -38,7 +38,6 @@ class Provider(_message.Message):
     PROXY_URL_FIELD_NUMBER: _ClassVar[int]
     PROXY_ENABLED_FIELD_NUMBER: _ClassVar[int]
     IS_CUSTOM_FIELD_NUMBER: _ClassVar[int]
-    IS_CUSTOM_MCP_FIELD_NUMBER: _ClassVar[int]
     id: str
     identifier: str
     display_name: str
@@ -51,8 +50,7 @@ class Provider(_message.Message):
     proxy_url: str
     proxy_enabled: bool
     is_custom: bool
-    is_custom_mcp: bool
-    def __init__(self, id: _Optional[str] = ..., identifier: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., categories: _Optional[_Iterable[str]] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., icon_src: _Optional[str] = ..., display_priority: _Optional[int] = ..., coming_soon: bool = ..., proxy_url: _Optional[str] = ..., proxy_enabled: bool = ..., is_custom: bool = ..., is_custom_mcp: bool = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., identifier: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., categories: _Optional[_Iterable[str]] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., icon_src: _Optional[str] = ..., display_priority: _Optional[int] = ..., coming_soon: bool = ..., proxy_url: _Optional[str] = ..., proxy_enabled: bool = ..., is_custom: bool = ...) -> None: ...
 
 class CreateProvider(_message.Message):
     __slots__ = ("identifier", "display_name", "description", "categories", "auth_patterns", "icon_src", "display_priority", "coming_soon", "proxy_url", "proxy_enabled")
