@@ -3,7 +3,8 @@ from basetest import BaseTest
 
 from scalekit.v1.tools.tools_pb2 import (
     Tool,
-    Filter
+    Filter,
+    ScopedToolFilter
 )
 from google.protobuf import struct_pb2, wrappers_pb2
 
@@ -42,6 +43,48 @@ class TestTools(BaseTest):
         )
         self.assertEqual(response[1].code().name, "OK")
         self.assertTrue(response[0] is not None)
+
+    def test_list_tools_with_identifier_and_connector(self):
+        """ Method to test list tools filtered by identifier and connector """
+        filter_obj = Filter(
+            identifier="akshay.parihar",
+            connector="myapifymcp"
+        )
+        response = self.scalekit_client.tools.list_tools(
+            filter=filter_obj,
+            page_size=100
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertTrue(response[0] is not None)
+        self.assertIn("c-myapifymcp_fetch-apify-docs", response[0].tool_names)
+
+    def test_list_tools_with_connected_account_id(self):
+        """ Method to test list tools filtered by connected_account_id """
+        filter_obj = Filter(
+            connected_account_id="ca_121970114953216076"
+        )
+        response = self.scalekit_client.tools.list_tools(
+            filter=filter_obj,
+            page_size=100
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertTrue(response[0] is not None)
+        self.assertIn("c-myapifymcp_fetch-apify-docs", response[0].tool_names)
+
+    def test_list_scoped_tools_with_connection_names(self):
+        """ Method to test list scoped tools filtered by connection_names """
+        filter_obj = ScopedToolFilter(
+            connection_names=["myapifymcp"]
+        )
+        response = self.scalekit_client.tools.list_scoped_tools(
+            identifier="akshay.parihar",
+            filter=filter_obj,
+            page_size=100
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertTrue(response[0] is not None)
+        tool_names = [scoped_tool.tool.definition["name"] for scoped_tool in response[0].tools]
+        self.assertIn("c-myapifymcp_fetch-apify-docs", tool_names)
 
     def test_execute_tool_with_identifier(self):
         """ Method to test execute tool with identifier (backward compatibility) """
