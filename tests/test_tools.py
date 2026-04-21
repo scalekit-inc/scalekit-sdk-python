@@ -48,7 +48,8 @@ class TestTools(BaseTest):
         """ Method to test list tools filtered by identifier and connector """
         filter_obj = Filter(
             identifier="akshay.parihar",
-            connector="myapifymcp"
+            connector="myapifymcp",
+            summary=wrappers_pb2.BoolValue(value=True)
         )
         response = self.scalekit_client.tools.list_tools(
             filter=filter_obj,
@@ -61,7 +62,8 @@ class TestTools(BaseTest):
     def test_list_tools_with_connected_account_id(self):
         """ Method to test list tools filtered by connected_account_id """
         filter_obj = Filter(
-            connected_account_id="ca_121970114953216076"
+            connected_account_id="ca_121970114953216076",
+            summary=wrappers_pb2.BoolValue(value=True)
         )
         response = self.scalekit_client.tools.list_tools(
             filter=filter_obj,
