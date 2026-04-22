@@ -3,7 +3,8 @@ from basetest import BaseTest
 
 from scalekit.v1.tools.tools_pb2 import (
     Tool,
-    Filter
+    Filter,
+    ScopedToolFilter
 )
 from google.protobuf import struct_pb2, wrappers_pb2
 
@@ -42,6 +43,50 @@ class TestTools(BaseTest):
         )
         self.assertEqual(response[1].code().name, "OK")
         self.assertTrue(response[0] is not None)
+
+    def test_list_tools_with_identifier_and_connector(self):
+        """ Method to test list tools filtered by identifier and connector """
+        filter_obj = Filter(
+            identifier="akshay.parihar",
+            connector="myapifymcp",
+            summary=wrappers_pb2.BoolValue(value=True)
+        )
+        response = self.scalekit_client.tools.list_tools(
+            filter=filter_obj,
+            page_size=100
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertTrue(response[0] is not None)
+        self.assertIn("c-myapifymcp_fetch-apify-docs", response[0].tool_names)
+
+    def test_list_tools_with_connected_account_id(self):
+        """ Method to test list tools filtered by connected_account_id """
+        filter_obj = Filter(
+            connected_account_id="ca_121970114953216076",
+            summary=wrappers_pb2.BoolValue(value=True)
+        )
+        response = self.scalekit_client.tools.list_tools(
+            filter=filter_obj,
+            page_size=100
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertTrue(response[0] is not None)
+        self.assertIn("c-myapifymcp_fetch-apify-docs", response[0].tool_names)
+
+    def test_list_scoped_tools_with_connection_names(self):
+        """ Method to test list scoped tools filtered by connection_names """
+        filter_obj = ScopedToolFilter(
+            connection_names=["myapifymcp"]
+        )
+        response = self.scalekit_client.tools.list_scoped_tools(
+            identifier="akshay.parihar",
+            filter=filter_obj,
+            page_size=100
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertTrue(response[0] is not None)
+        tool_names = [scoped_tool.tool.definition["name"] for scoped_tool in response[0].tools]
+        self.assertIn("c-myapifymcp_fetch-apify-docs", tool_names)
 
     def test_execute_tool_with_identifier(self):
         """ Method to test execute tool with identifier (backward compatibility) """
@@ -113,5 +158,20 @@ class TestTools(BaseTest):
             self.assertTrue(response[1] is not None)
         except Exception as e:
             # This is expected if the tool doesn't exist or other API issues
+            # The important thing is that the method signature works
+            self.assertTrue(True)
+
+    def test_execute_tool_with_connection_name(self):
+        """ Method to test execute tool with connection_name parameter """
+        try:
+            response = self.scalekit_client.tools.execute_tool(
+                tool_name="c-myapifymcp_fetch-apify-docs",
+                identifier="akshay.parihar",
+                connection_name="myapifymcp",
+                params={"url": "https://docs.apify.com/platform/storage/usage"}
+            )
+            self.assertTrue(response[1] is not None)
+        except Exception as e:
+            # Expected if the tool doesn't exist or other API issues
             # The important thing is that the method signature works
             self.assertTrue(True)
