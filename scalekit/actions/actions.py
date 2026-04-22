@@ -103,14 +103,22 @@ class ActionClient:
         Args:
             tool_input: Input data for the tool execution (required)
             tool_name: Name of the tool to execute (required)
-            identifier: Unique identifier for this execution (required)
-            tool_request: Optional ToolRequest configuration object
-            connected_account_id: Optional connected account ID string
-            connection_name: Optional connector/provider name (e.g., 'slack-b1fqL2Dr', 'notion-arffP5Ff')
             **kwargs: Additional optional parameters
+
+        Account resolution (one of the following combinations is required):
+            connected_account_id: ID of the connected account to use. Provide this
+                OR the (identifier + connection_name) pair — not both.
+            identifier + connection_name: Resolve the connected account by user
+                identifier (e.g. a user ID or email) together with the connection
+                name (e.g. 'slack-b1fqL2Dr', 'notion-arffP5Ff').
 
         Returns:
             ExecuteToolResponse containing execution results
+
+        Raises:
+            ValueError: If tool_name is not provided, or if neither
+                connected_account_id nor the (identifier, connection_name) pair
+                is supplied.
         """
         # Validate required parameters
         if not tool_name:
