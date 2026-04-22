@@ -115,6 +115,11 @@ class EnvironmentServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetFeaturesRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetFeaturesResponse.FromString,
                 )
+        self.GetHostScopedPublicFeatureFlags = channel.unary_unary(
+                '/scalekit.v1.environments.EnvironmentService/GetHostScopedPublicFeatureFlags',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetHostScopedPublicFeatureFlagsResponse.FromString,
+                )
         self.CreateEnvironmentSessionSettings = channel.unary_unary(
                 '/scalekit.v1.environments.EnvironmentService/CreateEnvironmentSessionSettings',
                 request_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.CreateEnvironmentSessionSettingsRequest.SerializeToString,
@@ -310,6 +315,15 @@ class EnvironmentServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetHostScopedPublicFeatureFlags(self, request, context):
+        """Returns allowlisted public feature flags for the environment implied by the request
+        host (typically HTTP Host). No environment id in path, query, or headers; unauthenticated.
+        404 when the host does not resolve to an environment.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def CreateEnvironmentSessionSettings(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -496,6 +510,11 @@ def add_EnvironmentServiceServicer_to_server(servicer, server):
                     servicer.GetFeatures,
                     request_deserializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetFeaturesRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetFeaturesResponse.SerializeToString,
+            ),
+            'GetHostScopedPublicFeatureFlags': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetHostScopedPublicFeatureFlags,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=scalekit_dot_v1_dot_environments_dot_environments__pb2.GetHostScopedPublicFeatureFlagsResponse.SerializeToString,
             ),
             'CreateEnvironmentSessionSettings': grpc.unary_unary_rpc_method_handler(
                     servicer.CreateEnvironmentSessionSettings,
@@ -914,6 +933,23 @@ class EnvironmentService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.environments.EnvironmentService/GetFeatures',
             scalekit_dot_v1_dot_environments_dot_environments__pb2.GetFeaturesRequest.SerializeToString,
             scalekit_dot_v1_dot_environments_dot_environments__pb2.GetFeaturesResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetHostScopedPublicFeatureFlags(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.environments.EnvironmentService/GetHostScopedPublicFeatureFlags',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            scalekit_dot_v1_dot_environments_dot_environments__pb2.GetHostScopedPublicFeatureFlagsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
