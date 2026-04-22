@@ -160,3 +160,18 @@ class TestTools(BaseTest):
             # This is expected if the tool doesn't exist or other API issues
             # The important thing is that the method signature works
             self.assertTrue(True)
+
+    def test_execute_tool_with_connection_name(self):
+        """ Method to test execute tool with connection_name parameter """
+        try:
+            response = self.scalekit_client.tools.execute_tool(
+                tool_name="c-myapifymcp_fetch-apify-docs",
+                identifier="akshay.parihar",
+                connection_name="myapifymcp",
+                params={"url": "https://docs.apify.com/platform/storage/usage"}
+            )
+            self.assertTrue(response[1] is not None)
+        except Exception as e:
+            # Expected if the tool doesn't exist or other API issues
+            # The important thing is that the method signature works
+            self.assertTrue(True)

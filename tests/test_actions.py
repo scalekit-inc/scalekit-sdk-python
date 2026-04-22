@@ -322,6 +322,23 @@ class TestConnect(BaseTest):
         except Exception as e:
             raise e
 
+    def test_execute_tool_with_connection_name(self):
+        """Method to test execute_tool with connection_name parameter"""
+        try:
+            result = self.scalekit_client.actions.execute_tool(
+                tool_input={"url": "https://docs.apify.com/platform/storage/usage"},
+                tool_name="c-myapifymcp_fetch-apify-docs",
+                identifier="akshay.parihar",
+                connection_name="myapifymcp",
+            )
+            self.assertIsNotNone(result)
+            self.assertIsInstance(result, ExecuteToolResponse)
+            self.assertTrue(hasattr(result, 'data'))
+            self.assertTrue(hasattr(result, 'execution_id'))
+            self.assertIsNotNone(result.data)
+        except Exception as e:
+            raise e
+
     def test_get_authorization_link_with_connected_account_id(self):
         """Method to test get_authorization_link with connected_account_id parameter"""
         try:
