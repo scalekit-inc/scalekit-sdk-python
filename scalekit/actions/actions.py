@@ -94,35 +94,46 @@ class ActionClient:
         identifier: Optional[str] = None,
         tool_request: Optional[ToolRequest] = None,
         connected_account_id: Optional[str] = None,
+        connection_name: Optional[str] = None,
         **kwargs
     ) -> ExecuteToolResponse:
         """
         Execute a tool with the given parameters.
-        
+
         Args:
             tool_input: Input data for the tool execution (required)
             tool_name: Name of the tool to execute (required)
-            identifier: Unique identifier for this execution (required)
-            tool_request: Optional ToolRequest configuration object
-            connected_account_id: Optional connected account ID string
             **kwargs: Additional optional parameters
-            
+
+        Account resolution (one of the following combinations is required):
+            connected_account_id: ID of the connected account to use. Provide this
+                OR the (identifier + connection_name) pair — not both.
+            identifier + connection_name: Resolve the connected account by user
+                identifier (e.g. a user ID or email) together with the connection
+                name (e.g. 'slack-b1fqL2Dr', 'notion-arffP5Ff').
+
         Returns:
             ExecuteToolResponse containing execution results
+
+        Raises:
+            ValueError: If tool_name is not provided, or if neither
+                connected_account_id nor the (identifier, connection_name) pair
+                is supplied.
         """
         # Validate required parameters
         if not tool_name:
             raise ValueError("tool_name is required")
-        
+
         # Apply pre-modifications to the input parameters
         modified_tool_input = apply_pre_modifiers(tool_name, tool_input, self._modifiers)
-        
+
         # Call the existing tools.execute_tool which returns (response, metadata) tuple
         result_tuple = self.tools.execute_tool(
             tool_name=tool_name,
             identifier=identifier,
             params=modified_tool_input,
-            connected_account_id=connected_account_id
+            connected_account_id=connected_account_id,
+            connection_name=connection_name
         )
         
         # Extract the response[0] (the actual ExecuteToolResponse proto object)
