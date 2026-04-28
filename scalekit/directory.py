@@ -110,6 +110,7 @@ class DirectoryClient:
         )
 
         user_response = (ListDirUsersResponse(), response[1])
+        user_response[0].users = []
         for user in response[0].users:
             dir_user = DirUser()
             dir_user.id = user.id
@@ -170,6 +171,7 @@ class DirectoryClient:
         )
 
         group_response = (ListDirGroupsResponse(), response[1])
+        group_response[0].groups = []
         for group in response[0].groups:
             dir_group = DirGroup()
             dir_group.id = group.id
