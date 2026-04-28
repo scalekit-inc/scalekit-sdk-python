@@ -8,6 +8,7 @@ from scalekit.actions.types import (
     ListConnectedAccountsResponse,
     DeleteConnectedAccountResponse,
     GetConnectedAccountAuthResponse,
+    GetConnectedAccountDetailsResponse,
     CreateConnectedAccountResponse,
     UpdateConnectedAccountResponse,
     CreateMcpConfigResponse,
@@ -1708,4 +1709,21 @@ class TestActionsRawBody(BaseTest):
 
         self.assertIsNotNone(response)
         self.assertIsInstance(response, requests.Response)
+
+    def test_get_connected_account_details(self):
+        """Fetch Salesforce connected account details (no auth credentials) via get_connected_account_details."""
+        result = self.actions_client.get_connected_account_details(
+            connection_name="salesforce-1hpnGzcD",
+            identifier="john.doe",
+        )
+
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, GetConnectedAccountDetailsResponse)
+        self.assertIsNotNone(result.connected_account)
+
+        account = result.connected_account
+        self.assertEqual(account.identifier, "john.doe")
+        self.assertTrue(hasattr(account, 'id'))
+        self.assertTrue(hasattr(account, 'status'))
+        self.assertTrue(hasattr(account, 'connector'))
 
