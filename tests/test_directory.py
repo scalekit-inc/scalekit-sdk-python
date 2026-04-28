@@ -158,7 +158,7 @@ class TestDirectory(BaseTest):
         )
         self.assertEqual(response[1].code().name, "OK")
         self.assertTrue(response[0] is not None)
-        self.assertEqual(len(response[0].users), 0)
+        self.assertEqual(response[0].total_size, 0)
 
     def test_list_directory_groups(self):
         """ Method to test list directory groups """
