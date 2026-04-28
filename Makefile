@@ -12,7 +12,7 @@ VENV_PYTHON := $(VENV_DIR)/bin/python
 VENV_PIP := $(VENV_PYTHON) -m pip
 
 PROTO_REPO_URL := https://github.com/scalekit-inc/scalekit.git
-PROTO_REF ?= v0.1.109.0
+PROTO_REF ?= v0.1.114.0
 PROTO_SUBDIR := proto
 
 TEMP_DIR := temp_scalekit
@@ -53,6 +53,8 @@ generate: tools-check
     		echo "Generation failed; restoring $(SCALEKIT_DIR) from $(TEMP_DIR)..."; \
     		rsync -a "$(TEMP_DIR)/" "$(SCALEKIT_DIR)/"; \
     	fi; \
+    	rm -f buf.yaml buf.lock; \
+    	if [ -f buf.work.yaml.bak ]; then mv buf.work.yaml.bak buf.work.yaml; fi; \
     }; \
     trap 'rollback_if_needed; cleanup_tmp' EXIT; \
 	git clone --depth=1 --branch "$(PROTO_REF)" "$(PROTO_REPO_URL)" "$$tmp_dir/scalekit"; \
@@ -68,7 +70,14 @@ generate: tools-check
 copy_proto_dir:
 	@proto_dir=$$(cat .dirpath); \
 	echo "Step 2: Syncing proto files from $$proto_dir"; \
-	rsync -av "$$proto_dir/" proto/
+	rsync -av "$$proto_dir/" proto/; \
+	repo_root=$$(dirname "$$proto_dir"); \
+	if [ -f "$$repo_root/buf.yaml" ]; then \
+		echo "Copying buf.yaml from repo root and suspending buf.work.yaml..."; \
+		cp "$$repo_root/buf.yaml" buf.yaml; \
+		[ -f "$$repo_root/buf.lock" ] && cp "$$repo_root/buf.lock" buf.lock || true; \
+		mv buf.work.yaml buf.work.yaml.bak; \
+	fi
 
 prepare:
 	@echo "Step 3: Preparing temp folder and preserving current scalekit package..."
@@ -97,7 +106,8 @@ generate_init_files:
 cleanup:
 	@echo "Step 7: Cleaning temporary generated source directories..."
 	rm -rf $(GOOGLE_DIR) $(PROTO_DIR) $(PROTOC_DIR)
-	rm -f .dirpath
+	rm -f .dirpath buf.yaml buf.lock
+	@if [ -f buf.work.yaml.bak ]; then mv buf.work.yaml.bak buf.work.yaml; fi
 
 lint: create-venv
 	@echo "Running static checks..."
