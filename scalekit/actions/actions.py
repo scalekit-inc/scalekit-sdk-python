@@ -360,6 +360,14 @@ class ActionClient:
             without auth credentials
         :rtype: GetConnectedAccountDetailsResponse
         """
+        if connected_account_id:
+            connection_name = None
+            identifier = None
+        elif not (connection_name and identifier):
+            raise ValueError(
+                "Either connected_account_id or both connection_name and identifier are required"
+            )
+
         result_tuple = self.connected_accounts.get_connected_account_details_by_identifier(
             connector=connection_name,
             identifier=identifier,
@@ -507,8 +515,8 @@ class ActionClient:
                 method=method.upper(),
                 url=url,
                 params=params,
-                json=body,
-                data=form_data,
+                json=body if raw_body is None else None,
+                data=raw_body if raw_body is not None else form_data,
                 headers=req_headers,
                 timeout=timeout,
                 **kwargs,

@@ -146,6 +146,8 @@ class GetConnectedAccountDetailsResponse(BaseModel):
         connected_account = None
         if proto_response.connected_account:
             connected_account = ConnectedAccount.from_proto(proto_response.connected_account)
+            # Defense-in-depth: strip auth credentials regardless of server response
+            connected_account.authorization_details = None
         return cls(connected_account=connected_account)
 
     def to_dict(self) -> dict:
