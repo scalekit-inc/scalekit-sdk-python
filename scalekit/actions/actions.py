@@ -383,6 +383,7 @@ class ActionClient:
         query_params: Optional[Dict[str, Any]] = None,
         body: Optional[Any] = None,
         form_data: Optional[Dict[str, Any]] = None,
+        raw_body: Optional[Union[bytes, str]] = None,
         headers: Optional[Dict[str, str]] = None,
         **kwargs,
     ) -> requests.Response:
@@ -403,6 +404,14 @@ class ActionClient:
         :type body: Optional[Any]
         :param form_data: Request body sent as URL-encoded form data
         :type form_data: Optional[Dict[str, Any]]
+        :param raw_body: Raw request body sent as-is, without any serialization.
+            Use this **only** when the request payload is not JSON — for example,
+            when the downstream API expects an XML body, a plain-text payload, or
+            any other non-JSON content type. For JSON payloads use ``body`` instead.
+            When ``raw_body`` is provided it takes priority over both ``body`` and
+            ``form_data``. You must also pass a matching ``Content-Type`` header via
+            ``headers`` (e.g. ``"Content-Type": "application/xml"``).
+        :type raw_body: Optional[Union[bytes, str]]
         :param headers: Additional HTTP headers to merge into the request
         :type headers: Optional[Dict[str, str]]
 
@@ -439,8 +448,8 @@ class ActionClient:
             method=method.upper(),
             url=url,
             params=params,
-            json=body,
-            data=form_data,
+            json=body if raw_body is None else None,
+            data=raw_body or form_data,
             headers=req_headers,
             timeout=timeout,
             **kwargs,

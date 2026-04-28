@@ -1368,6 +1368,7 @@ class TestConnect(BaseTest):
         except Exception as e:
             raise e
 
+
 class TestActionsMcpConfig(BaseTest):
     """Tests for MCP config operations exposed via the actions client."""
 
@@ -1669,4 +1670,42 @@ class TestConnectUserVerify(BaseTest):
                 identifier="default"
             )
 
+
+class TestActionsRawBody(BaseTest):
+    """Tests for the raw_body parameter on ActionClient.request() — used for non-JSON payloads such as XML/SOAP."""
+
+    def setUp(self):
+        self.actions_client = self.scalekit_client.actions
+
+    def test_request_salesforce_soap_xml_body(self):
+        """POST a SOAP/XML body to the Salesforce Metadata API via the proxy."""
+        import requests
+
+        soap_body = """<?xml version="1.0" encoding="utf-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:met="http://soap.sforce.com/2006/04/metadata">
+  <soapenv:Header>
+    <met:client>my-client-id</met:client>
+  </soapenv:Header>
+  <soapenv:Body>
+    <met:describeMetadata>
+      <met:asOfVersion>66.0</met:asOfVersion>
+    </met:describeMetadata>
+  </soapenv:Body>
+</soapenv:Envelope>"""
+
+        response = self.actions_client.request(
+            connection_name="salesforce-1hpnGzcD",
+            identifier="john.doe",
+            path="/services/Soap/m/66.0",
+            method="POST",
+            raw_body=soap_body,
+            headers={
+                "Content-Type": "text/xml; charset=UTF-8",
+                "SOAPAction": "describeMetadata",
+            },
+        )
+
+        self.assertIsNotNone(response)
+        self.assertIsInstance(response, requests.Response)
 
