@@ -72,6 +72,7 @@ class DirectoryClient:
             page_size: Optional[int] = None,
             page_token: Optional[str] = None,
             include_detail: Optional[bool] = None,
+            directory_group_id: Optional[str] = None,
             updated_after: Optional[str] = None
     ) -> tuple[ListDirUsersResponse, Any]:
         """
@@ -87,6 +88,8 @@ class DirectoryClient:
         :type                    :     ``` str ```
         :param include_detail     :     param to include detailed data
         :type                    :     ``` bool ```
+        :param directory_group_id :     filter users by membership in a specific directory group
+        :type                    :     ``` str ```
         :param updated_after      :     param to get updated after detail
         :type                    :     ``` str ```
 
@@ -101,6 +104,7 @@ class DirectoryClient:
                 page_size=page_size,
                 page_token=page_token,
                 include_detail=include_detail,
+                directory_group_id=directory_group_id,
                 updated_after=updated_after
             ),
         )

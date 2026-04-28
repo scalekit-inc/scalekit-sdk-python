@@ -124,6 +124,59 @@ class TestDirectory(BaseTest):
         self.assertEqual(response.id, self.dir_id)
         self.assertEqual(response.organization_id, self.org_id)
 
+    def test_list_directory_users(self):
+        """ Method to test list directory users """
+        organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
+        org_response = self.scalekit_client.organization.create_organization(organization=organization)
+        self.org_id = org_response[0].organization.id
+
+        directory = CreateDirectory(directory_provider=DirectoryProvider.OKTA, directory_type=DirectoryType.SCIM)
+        create_response = self.scalekit_client.directory.create_directory(organization_id=self.org_id, directory=directory)
+        self.dir_id = create_response[0].directory.id
+
+        response = self.scalekit_client.directory.list_directory_users(
+            organization_id=self.org_id,
+            directory_id=self.dir_id
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertTrue(response[0] is not None)
+
+    def test_list_directory_users_filter_by_group(self):
+        """ Method to test list directory users filtered by directory_group_id """
+        organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
+        org_response = self.scalekit_client.organization.create_organization(organization=organization)
+        self.org_id = org_response[0].organization.id
+
+        directory = CreateDirectory(directory_provider=DirectoryProvider.OKTA, directory_type=DirectoryType.SCIM)
+        create_response = self.scalekit_client.directory.create_directory(organization_id=self.org_id, directory=directory)
+        self.dir_id = create_response[0].directory.id
+
+        response = self.scalekit_client.directory.list_directory_users(
+            organization_id=self.org_id,
+            directory_id=self.dir_id,
+            directory_group_id="dirgroup_nonexistent"
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertTrue(response[0] is not None)
+        self.assertEqual(len(response[0].users), 0)
+
+    def test_list_directory_groups(self):
+        """ Method to test list directory groups """
+        organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
+        org_response = self.scalekit_client.organization.create_organization(organization=organization)
+        self.org_id = org_response[0].organization.id
+
+        directory = CreateDirectory(directory_provider=DirectoryProvider.OKTA, directory_type=DirectoryType.SCIM)
+        create_response = self.scalekit_client.directory.create_directory(organization_id=self.org_id, directory=directory)
+        self.dir_id = create_response[0].directory.id
+
+        response = self.scalekit_client.directory.list_directory_groups(
+            organization_id=self.org_id,
+            directory_id=self.dir_id
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertTrue(response[0] is not None)
+
     def tearDown(self):
         """ Method to clean up """
         if self.dir_id:
