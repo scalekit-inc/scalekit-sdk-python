@@ -360,14 +360,6 @@ class ActionClient:
             without auth credentials
         :rtype: GetConnectedAccountDetailsResponse
         """
-        if connected_account_id:
-            connection_name = None
-            identifier = None
-        elif not (connection_name and identifier):
-            raise ValueError(
-                "Either connected_account_id or both connection_name and identifier are required"
-            )
-
         result_tuple = self.connected_accounts.get_connected_account_details_by_identifier(
             connector=connection_name,
             identifier=identifier,
