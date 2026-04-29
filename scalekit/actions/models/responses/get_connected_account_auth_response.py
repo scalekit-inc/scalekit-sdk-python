@@ -123,3 +123,38 @@ class GetConnectedAccountAuthResponse(BaseModel):
         json_encoders = {
             datetime: lambda v: v.isoformat() if v else None
         }
+
+
+class GetConnectedAccountDetailsResponse(BaseModel):
+    """Connected account details response — same structure as GetConnectedAccountAuthResponse
+    but auth credentials (access/refresh tokens) are omitted by the server."""
+
+    connected_account: Optional[ConnectedAccount] = Field(
+        None,
+        description="Connected account details (without auth credentials)"
+    )
+
+    @classmethod
+    def from_proto(cls, proto_response) -> 'GetConnectedAccountDetailsResponse':
+        """
+        Create GetConnectedAccountDetailsResponse from protobuf GetConnectedAccountByIdentifierResponse
+
+        :param proto_response: The protobuf GetConnectedAccountByIdentifierResponse object
+        :returns:
+            GetConnectedAccountDetailsResponse instance
+        """
+        connected_account = None
+        if proto_response.connected_account:
+            connected_account = ConnectedAccount.from_proto(proto_response.connected_account)
+        return cls(connected_account=connected_account)
+
+    def to_dict(self) -> dict:
+        return {
+            "connected_account": self.connected_account.model_dump() if self.connected_account else None
+        }
+
+    class Config:
+        validate_assignment = True
+        json_encoders = {
+            datetime: lambda v: v.isoformat() if v else None
+        }

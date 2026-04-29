@@ -128,10 +128,12 @@ class GetAuthCustomizationsRequest(_message.Message):
     def __init__(self) -> None: ...
 
 class PortalSettings(_message.Message):
-    __slots__ = ("custom_branding",)
+    __slots__ = ("custom_branding", "new_self_serve_sso_scim")
     CUSTOM_BRANDING_FIELD_NUMBER: _ClassVar[int]
+    NEW_SELF_SERVE_SSO_SCIM_FIELD_NUMBER: _ClassVar[int]
     custom_branding: bool
-    def __init__(self, custom_branding: bool = ...) -> None: ...
+    new_self_serve_sso_scim: bool
+    def __init__(self, custom_branding: bool = ..., new_self_serve_sso_scim: bool = ...) -> None: ...
 
 class GetAuthCustomizationsResponse(_message.Message):
     __slots__ = ("customization_settings", "settings")

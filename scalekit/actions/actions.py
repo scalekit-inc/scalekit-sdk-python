@@ -1,6 +1,6 @@
 from typing import Optional, Any, List, Dict, Union
 import requests
-from scalekit.actions.types import ToolRequest,ExecuteToolResponse,MagicLinkResponse,ListConnectedAccountsResponse,DeleteConnectedAccountResponse,GetConnectedAccountAuthResponse,ToolInput, \
+from scalekit.actions.types import ToolRequest,ExecuteToolResponse,MagicLinkResponse,ListConnectedAccountsResponse,DeleteConnectedAccountResponse,GetConnectedAccountAuthResponse,GetConnectedAccountDetailsResponse,ToolInput, \
     UpdateConnectedAccountResponse,CreateMcpConfigResponse,ListMcpConfigsResponse,UpdateMcpConfigResponse,DeleteMcpConfigResponse, \
     EnsureMcpInstanceResponse,UpdateMcpInstanceResponse,GetMcpInstanceResponse,ListMcpInstancesResponse,DeleteMcpInstanceResponse,GetMcpInstanceAuthStateResponse, \
     McpConfig,McpConfigConnectionToolMapping,VerifyConnectedAccountUserResponse
@@ -323,7 +323,51 @@ class ActionClient:
         
         # Convert proto to our GetConnectedAccountAuthResponse class
         return GetConnectedAccountAuthResponse.from_proto(proto_response)
-    
+
+    def get_connected_account_details(
+        self,
+        connection_name: Optional[str] = None,
+        identifier: Optional[str] = None,
+        connected_account_id: Optional[str] = None,
+        **kwargs
+    ) -> GetConnectedAccountDetailsResponse:
+        """
+        Get connected account details by identifier, without auth credentials.
+
+        Use this instead of :meth:`get_connected_account` when you only need
+        account metadata (status, connector, api_config, etc.) and do not
+        require the access/refresh tokens.
+
+        You must provide **one** of the following to identify the connected account:
+
+        - ``connection_name`` **and** ``identifier`` — use when you know the
+          connector name and the end-user's identifier (e.g. email address).
+        - ``connected_account_id`` — use when you already hold the Scalekit
+          connected account ID.
+
+        :param connection_name: Connector identifier, e.g. ``"salesforce-1hpnGzcD"``.
+            Required when ``connected_account_id`` is not provided.
+        :type connection_name: str
+        :param identifier: End-user identifier tied to the connected account,
+            e.g. ``"john.doe"``. Required when ``connected_account_id`` is not provided.
+        :type identifier: str
+        :param connected_account_id: Scalekit connected account ID. When supplied,
+            ``connection_name`` and ``identifier`` are ignored.
+        :type connected_account_id: str
+
+        :returns:
+            GetConnectedAccountDetailsResponse containing account metadata
+            without auth credentials
+        :rtype: GetConnectedAccountDetailsResponse
+        """
+        result_tuple = self.connected_accounts.get_connected_account_details_by_identifier(
+            connector=connection_name,
+            identifier=identifier,
+            connected_account_id=connected_account_id
+        )
+        proto_response = result_tuple[0]
+        return GetConnectedAccountDetailsResponse.from_proto(proto_response)
+
     def add_modifier(self, modifier: Modifier) -> None:
         """Add a modifier to the private list"""
         self._modifiers.append(modifier)
@@ -383,6 +427,7 @@ class ActionClient:
         query_params: Optional[Dict[str, Any]] = None,
         body: Optional[Any] = None,
         form_data: Optional[Dict[str, Any]] = None,
+        raw_body: Optional[Union[bytes, str]] = None,
         headers: Optional[Dict[str, str]] = None,
         **kwargs,
     ) -> requests.Response:
@@ -403,6 +448,14 @@ class ActionClient:
         :type body: Optional[Any]
         :param form_data: Request body sent as URL-encoded form data
         :type form_data: Optional[Dict[str, Any]]
+        :param raw_body: Raw request body sent as-is, without any serialization.
+            Use this **only** when the request payload is not JSON — for example,
+            when the downstream API expects an XML body, a plain-text payload, or
+            any other non-JSON content type. For JSON payloads use ``body`` instead.
+            When ``raw_body`` is provided it takes priority over both ``body`` and
+            ``form_data``. You must also pass a matching ``Content-Type`` header via
+            ``headers`` (e.g. ``"Content-Type": "application/xml"``).
+        :type raw_body: Optional[Union[bytes, str]]
         :param headers: Additional HTTP headers to merge into the request
         :type headers: Optional[Dict[str, str]]
 
@@ -439,8 +492,8 @@ class ActionClient:
             method=method.upper(),
             url=url,
             params=params,
-            json=body,
-            data=form_data,
+            json=body if raw_body is None else None,
+            data=raw_body or form_data,
             headers=req_headers,
             timeout=timeout,
             **kwargs,
@@ -454,8 +507,8 @@ class ActionClient:
                 method=method.upper(),
                 url=url,
                 params=params,
-                json=body,
-                data=form_data,
+                json=body if raw_body is None else None,
+                data=raw_body if raw_body is not None else form_data,
                 headers=req_headers,
                 timeout=timeout,
                 **kwargs,
