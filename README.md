@@ -1,164 +1,136 @@
-<p align="left">
-  <a href="https://scalekit.com" target="_blank" rel="noopener noreferrer">
-    <picture>
-      <img src="https://cdn.scalekit.cloud/v1/scalekit-logo-dark.svg" height="64">
-    </picture>
-  </a>
-  <br/>
-</p>
+<div align="center">
 
-# Official Python SDK
+<a href="https://scalekit.com" target="_blank" rel="noopener noreferrer">
+  <picture>
+    <img src="https://cdn.scalekit.cloud/v1/scalekit-logo-dark.svg" height="64">
+  </picture>
+</a>
 
-[![PyPI version](https://img.shields.io/pypi/v/scalekit-sdk-python.svg?style=flat-square)](https://pypi.org/project/scalekit-sdk-python/)
+<p><strong>Official Python SDK for Scalekit — the auth stack for agents.</strong><br>
+authentication, authorization, and tool-calling for human-in-the-loop and autonomous agent flows.</p>
+
+[![PyPI version](https://img.shields.io/pypi/v/scalekit-sdk-python.svg)](https://pypi.org/project/scalekit-sdk-python/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python versions](https://img.shields.io/pypi/pyversions/scalekit-sdk-python.svg?style=flat-square)](https://pypi.org/project/scalekit-sdk-python/)
+[![Python versions](https://img.shields.io/pypi/pyversions/scalekit-sdk-python.svg)](https://pypi.org/project/scalekit-sdk-python)
 
-<a href="https://scalekit.com" target="_blank" rel="noopener noreferrer">Scalekit</a> is the **auth stack for AI apps** - from human authentication to agent authorization. Build secure AI products faster with authentication for humans (SSO, passwordless, full-stack auth) and agents (MCP/APIs, delegated actions), all unified on one platform. This Python SDK enables both traditional B2B authentication and cutting-edge agentic workflows.
+**[📖 Documentation](https://docs.scalekit.com)** · **[🐛 Report an Issue](https://github.com/scalekit-inc/scalekit-sdk-python/issues)** · **[💬 Join our Slack](https://join.slack.com/t/scalekit-community/shared_invite/zt-3gsxwr4hc-0tvhwT2b_qgVSIZQBQCWRw)**
 
-## 🤖 Agent-First Features
-
-- **🔐 Agent Identity**: Agents as first-class actors with human ownership and org context
-- **🎯 MCP-Native OAuth 2.1**: Purpose-built for Model Context Protocol with DCR/PKCE support
-- **⏰ Ephemeral Credentials**: Time-bound, task-based authorization (minutes, not days)
-- **🔒 Token Vault**: Per-user, per-tool token storage with rotation and progressive consent
-- **👥 Human-in-the-Loop**: Step-up authentication when risk crosses thresholds
-- **📊 Immutable Audit**: Track which user initiated, which agent acted, what resource was accessed
-
-## 👨‍💼 Human Authentication
-
-- **🔐 Enterprise SSO**: Support for SAML and OIDC protocols
-- **👥 SCIM Provisioning**: Automated user provisioning and deprovisioning  
-- **🚀 Passwordless Authentication**: Magic links, OTP, and modern auth flows
-- **🏢 Multi-tenant Architecture**: Organization-level authentication policies
-- **📱 Social Logins**: Support for popular social identity providers
-- **🛡️ Full-Stack Auth**: Complete IdP-of-record solution for B2B SaaS
-- **🐍 Pythonic API**: Clean, intuitive interface following Python conventions
-
-<div>
-📚 <a target="_blank" href="https://docs.scalekit.com">Documentation</a> • 🚀 <a target="_blank" href="https://docs.scalekit.com/sso/quickstart/">SSO Quickstart</a> • 💻 <a target="_blank" href="https://docs.scalekit.com/apis">API Reference</a>
 </div>
-<hr />
 
-## Pre-requisites
+---
 
-1. [Sign up](https://scalekit.com) for a Scalekit account.
-2. Get your ```env_url```, ```client_id``` and ```client_secret``` from the Scalekit dashboard.
-
-## Installation
-
-Install Scalekit SDK using your preferred package manager. 
-
+this is the official Python SDK for [Scalekit](https://scalekit.com), — the auth stack for agents. Build secure AI products faster with authentication for humans (SSO, passwordless, full-stack auth) and agents (Mcp/APIs, delegated actions), all unified on one platform.
+This Python SDK enables both traditional B2B authentication and cutting-edge agentic workflows.
+#### Agent-First Features
+- **Agent Identity** — Agents as first-class actors with human ownership and org context
+- **Mcp-Native OAuth 2.1** — Purpose-built for Model Context Protocol with Dcr/pkce support
+- **Ephemeral Credentials** — Time-bound, task-based authorization (minutes, not days)
+- **Token Vault** — per-user, per-tool token storage with rotation and progressive consent
+- **Human-in-the-Loop** — step-up authentication when risk crosses thresholds
+- **Immutable Audit** — track which user initiated, which agent acted, what resource was accessed
+#### Human Authentication
+- **Enterprise SSO** — support for SAML and OIDC protocols
+- **SCIM Provisioning** — automated user provisioning and deprovisioning
+- **passwordless Authentication** — magic links, OTP, and modern auth flows
+- **Multi-tenant Architecture** — organization-level authentication policies
+- **Social Logins** — support for popular social identity providers
+- **Full-Stack Auth** — complete IdP-of-record solution for B2B SaaS
+- **Pythonic API** — idiomatic Python with clean, intuitive interfaces
+---
+### Getting started
+#### Prerequisites
+- **Python** ≥ 3.8
+- [Scalekit account](https://scalekit.com) with `env_url`, `client_id`, and `client_secret`
+#### Installation
 ```sh
 pip install scalekit-sdk-python
-
+# or
+poetry add scalekit-sdk-python
 ```
+#### Usage
+```python
+from scalekit import Scalekit
 
-## Usage
-
-```py
-
-from scalekit import ScalekitClient
-
-sc = ScalekitClient(
-  env_url, 
-  client_id, 
-  client_secret
+scalekit_client = Scalekit(
+    client_id="your-client-id",
+    client_secret="your-client-secret",
+    environment_url="https://your-env.scalekit.com"
 )
 
-# Use the sc object to interact with the Scalekit API
-auth_url = sc.get_authorization_url(
-  "https://acme-corp.com/redirect-uri",
-  state="state",
-  connection_id="con_123456789"
+# use scalekit_client to interact with the Scalekit API
+auth_url = scalekit_client.get_authorization_url(
+    "https://acme-corp.com/redirect-uri",
+    state="state",
+    connection_id="con_123456789"
 )
-
 ```
-
-##### Minimum Requirements
-
-To use the Scalekit Python SDK, you must have the following:
-
-| Component | Version |
-| --------- | ------- |
-| Python    | 3.8+    |
-
-> **Tip:** Although Python 3.8 meets the minimum requirement, using a more recent version (such as Python 3.9 or later) is advisable.
-
-
-## Examples - SSO with FastAPI
-
-Below is a simple code sample that showcases how to implement Single Sign-on using Scalekit SDK
-
-```py
+---
+### Example — SSO with FastAPI
+```python
 from fastapi import FastAPI, Request, Response
-from scalekit import ScalekitClient
-import uvicorn
+from scalekit import Scalekit
 
 app = FastAPI()
-
-sc = ScalekitClient(
-  env_url, 
-  client_id, 
-  client_secret
+scalekit_client = Scalekit(
+    env_url="https://your-env.scalekit.com",
+    client_id="your-client-id",
+    client_secret="your-client-secret"
 )
-
 redirect_uri = "http://localhost:8000/auth/callback"
 
 @app.get("/auth/login")
 async def auth_login(request: Request):
-  auth_url = sc.get_authorization_url(
-    redirect_uri,
-    state="state",
-    connection_id="con_123456789"
-  )
-  return Response(status_code=302, headers={"Location": auth_url})
-
+    auth_url = scalekit_client.get_authorization_url(
+        redirect_uri,
+        state="state",
+        connection_id="con_123456789"
+    )
+    return Response(status_code=302, headers={"Location": auth_url})
 @app.get("/auth/callback")
 async def auth_callback(request: Request):
-  code = request.query_params.get("code")
-  token = sc.authenticate_with_code(
-    code, 
-    redirect_uri
-  )
-  response = JSONResponse(content=token)
-  response.set_cookie("access_token", token["access_token"])
-
-  return response
-
+    code = request.query_params.get("code")
+    token = scalekit_client.authenticate_with_code(code, redirect_uri)
+    response = Response(content=token["access_token"])
+    response.set_cookie("access_token", token["access_token"])
+    return response
 if __name__ == "__main__":
-  uvicorn.run(app, port=8080)
-
+    import uvicorn
+    uvicorn.run(app, port=8080)
 ```
-
-## 📱 Example Apps
-
-Explore fully functional sample applications built with popular Python frameworks and the Scalekit SDK:
-
 | Framework | Repository | Description |
 |-----------|------------|-------------|
 | **FastAPI** | [scalekit-fastapi-example](https://github.com/scalekit-developers/scalekit-fastapi-example) | Modern async Python API framework |
+| **Django** | [scalekit-django-auth-example](https://github.com/scalekit-inc/scalekit-django-auth-example) | Django web framework integration |
+| **Flask** | [scalekit-flask-auth-example](https://github.com/scalekit-inc/scalekit-flask-auth-example) | Flask microframework integration |
+---
+### Helpful links
+#### Quickstart Guides
+- [SSO Integration](https://docs.scalekit.com/sso/quickstart/) — implement enterprise Single Sign-on
+- [Full Stack Auth](https://docs.scalekit.com/fsa/quickstart/) — complete authentication solution
+- [Passwordless Auth](https://docs.scalekit.com/passwordless/quickstart/) — modern authentication flows
+- [Social Logins](https://docs.scalekit.com/social-logins/quickstart/) — popular social identity providers
+- [Machine-to-Machine](https://docs.scalekit.com/m2m/quickstart/) — API authentication
+#### Documentation & Reference
+- [API Reference](https://docs.scalekit.com/apis) — complete API documentation
+- [Developer Kit](https://docs.scalekit.com/dev-kit/) — tools and utilities
+- [API authentication guide](https://docs.scalekit.com/guides/authenticate-scalekit-api/) — secure API access
+#### Additional resources
+- [setup Guide](https://docs.scalekit.com/guides/setup-scalekit/) — initial platform configuration
+- [Code examples](https://docs.scalekit.com/directory/code-examples/) — ready-to-use code snippets
+- [Admin Portal Guide](https://docs.scalekit.com/directory/guides/admin-portal/) — administrative interface
+- [Launch Checklist](https://docs.scalekit.com/directory/guides/launch-checklist/) — pre-production checklist
+---
+### Contributing
 
-## 🔗 Helpful Links
+Contributions are welcome! Coming soon: contribution guidelines.
 
-### 📖 Quickstart Guides
-- [**SSO Integration**](https://docs.scalekit.com/sso/quickstart/) - Implement enterprise Single Sign-on
-- [**Full Stack Auth**](https://docs.scalekit.com/fsa/quickstart/) - Complete authentication solution
-- [**Passwordless Auth**](https://docs.scalekit.com/passwordless/quickstart/) - Modern authentication flows
-- [**Social Logins**](https://docs.scalekit.com/social-logins/quickstart/) - Popular social identity providers
-- [**Machine-to-Machine**](https://docs.scalekit.com/m2m/quickstart/) - API authentication
+For now:
+1. Fork this repository
+2. Create a branch — `git checkout -b fix/my-improvement`
+3. Make your changes
+4. Run tests — `pytest`
+5. Open a Pull Request
 
-### 📚 Documentation & Reference
-- [**API Reference**](https://docs.scalekit.com/apis) - Complete API documentation
-- [**Developer Kit**](https://docs.scalekit.com/dev-kit/) - Tools and utilities
-- [**API Authentication Guide**](https://docs.scalekit.com/guides/authenticate-scalekit-api/) - Secure API access
-
-### 🛠️ Additional Resources
-- [**Setup Guide**](https://docs.scalekit.com/guides/setup-scalekit/) - Initial platform configuration
-- [**Code Examples**](https://docs.scalekit.com/directory/code-examples/) - Ready-to-use code snippets
-- [**Admin Portal Guide**](https://docs.scalekit.com/directory/guides/admin-portal/) - Administrative interface
-- [**Launch Checklist**](https://docs.scalekit.com/directory/guides/launch-checklist/) - Pre-production checklist
-
-## License
-
-This project is licensed under the **MIT license**.
-See the [LICENSE](LICENSE) file for more information.
+---
+### License
+This project is licensed under the **MIT license**. See the [LICENSE](LICENSE) file for more information.
