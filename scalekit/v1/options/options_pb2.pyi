@@ -31,6 +31,7 @@ class AuthenticationType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     SESSION_CLIENT: _ClassVar[AuthenticationType]
     WORKSPACE_SESSION_CLIENT: _ClassVar[AuthenticationType]
     CUSTOMER_PORTAL_SESSION_CLIENT: _ClassVar[AuthenticationType]
+    SESSION_USER: _ClassVar[AuthenticationType]
 DENY: Policy
 PARTIAL: Policy
 ALLOW: Policy
@@ -50,6 +51,7 @@ CLIENT: AuthenticationType
 SESSION_CLIENT: AuthenticationType
 WORKSPACE_SESSION_CLIENT: AuthenticationType
 CUSTOMER_PORTAL_SESSION_CLIENT: AuthenticationType
+SESSION_USER: AuthenticationType
 AUTH_OPTION_FIELD_NUMBER: _ClassVar[int]
 auth_option: _descriptor.FieldDescriptor
 

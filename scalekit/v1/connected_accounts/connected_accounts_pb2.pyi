@@ -31,6 +31,8 @@ class ConnectorType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     BEARER_TOKEN: _ClassVar[ConnectorType]
     CUSTOM: _ClassVar[ConnectorType]
     BASIC: _ClassVar[ConnectorType]
+    OAUTH_M2M: _ClassVar[ConnectorType]
+    TRELLO_OAUTH1: _ClassVar[ConnectorType]
 CONNECTION_STATUS_UNSPECIFIED: ConnectorStatus
 ACTIVE: ConnectorStatus
 EXPIRED: ConnectorStatus
@@ -43,6 +45,8 @@ BASIC_AUTH: ConnectorType
 BEARER_TOKEN: ConnectorType
 CUSTOM: ConnectorType
 BASIC: ConnectorType
+OAUTH_M2M: ConnectorType
+TRELLO_OAUTH1: ConnectorType
 
 class ListConnectedAccountsRequest(_message.Message):
     __slots__ = ("organization_id", "user_id", "connector", "identifier", "provider", "page_size", "page_token", "query")

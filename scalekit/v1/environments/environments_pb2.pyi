@@ -382,6 +382,26 @@ class EnvironmentFeature(_message.Message):
     enabled: bool
     def __init__(self, name: _Optional[str] = ..., enabled: bool = ...) -> None: ...
 
+class GetHostScopedPublicFeatureFlagsResponse(_message.Message):
+    __slots__ = ("flags",)
+    FLAGS_FIELD_NUMBER: _ClassVar[int]
+    flags: _containers.RepeatedCompositeFieldContainer[PublicHostFeatureFlag]
+    def __init__(self, flags: _Optional[_Iterable[_Union[PublicHostFeatureFlag, _Mapping]]] = ...) -> None: ...
+
+class PublicHostFeatureFlag(_message.Message):
+    __slots__ = ("key", "value", "variant", "reason", "error")
+    KEY_FIELD_NUMBER: _ClassVar[int]
+    VALUE_FIELD_NUMBER: _ClassVar[int]
+    VARIANT_FIELD_NUMBER: _ClassVar[int]
+    REASON_FIELD_NUMBER: _ClassVar[int]
+    ERROR_FIELD_NUMBER: _ClassVar[int]
+    key: str
+    value: _struct_pb2.Value
+    variant: str
+    reason: str
+    error: str
+    def __init__(self, key: _Optional[str] = ..., value: _Optional[_Union[_struct_pb2.Value, _Mapping]] = ..., variant: _Optional[str] = ..., reason: _Optional[str] = ..., error: _Optional[str] = ...) -> None: ...
+
 class GetEnvironmentSessionSettingsRequest(_message.Message):
     __slots__ = ("id",)
     ID_FIELD_NUMBER: _ClassVar[int]
