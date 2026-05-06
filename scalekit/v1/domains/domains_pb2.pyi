@@ -154,10 +154,12 @@ class ListDomainResponse(_message.Message):
     def __init__(self, page_size: _Optional[int] = ..., page_number: _Optional[int] = ..., domains: _Optional[_Iterable[_Union[Domain, _Mapping]]] = ...) -> None: ...
 
 class ListAuthorizedDomainRequest(_message.Message):
-    __slots__ = ("origin",)
+    __slots__ = ("origin", "link_id")
     ORIGIN_FIELD_NUMBER: _ClassVar[int]
+    LINK_ID_FIELD_NUMBER: _ClassVar[int]
     origin: str
-    def __init__(self, origin: _Optional[str] = ...) -> None: ...
+    link_id: str
+    def __init__(self, origin: _Optional[str] = ..., link_id: _Optional[str] = ...) -> None: ...
 
 class ListAuthorizedDomainResponse(_message.Message):
     __slots__ = ("domains",)
