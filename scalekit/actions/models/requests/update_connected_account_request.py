@@ -49,7 +49,10 @@ class UpdateConnectedAccountRequest(BaseModel):
 
         elif self.authorization_details and "google_dwd" in self.authorization_details:
             dwd_data = self.authorization_details["google_dwd"]
-            google_dwd = GoogleDWDAuth(subject=dwd_data.get("subject", ""))
+            subject = dwd_data.get("subject")
+            if not subject:
+                raise ValueError("authorization_details.google_dwd.subject is required")
+            google_dwd = GoogleDWDAuth(subject=subject)
             auth_details = AuthorizationDetails(google_dwd=google_dwd)
 
         # Handle api_config if provided
