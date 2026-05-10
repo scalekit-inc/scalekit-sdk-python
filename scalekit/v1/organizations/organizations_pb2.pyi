@@ -27,18 +27,18 @@ class Feature(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     dir_sync: _ClassVar[Feature]
     sso: _ClassVar[Feature]
 
-class SessionPolicySource(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+class SessionPolicyType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
-    SESSION_POLICY_UNSPECIFIED: _ClassVar[SessionPolicySource]
-    APPLICATION: _ClassVar[SessionPolicySource]
-    CUSTOM: _ClassVar[SessionPolicySource]
+    SESSION_POLICY_TYPE_UNSPECIFIED: _ClassVar[SessionPolicyType]
+    APPLICATION: _ClassVar[SessionPolicyType]
+    CUSTOM: _ClassVar[SessionPolicyType]
 FEATURE_UNSPECIFIED: Feature
 UNSPECIFIED: Feature
 dir_sync: Feature
 sso: Feature
-SESSION_POLICY_UNSPECIFIED: SessionPolicySource
-APPLICATION: SessionPolicySource
-CUSTOM: SessionPolicySource
+SESSION_POLICY_TYPE_UNSPECIFIED: SessionPolicyType
+APPLICATION: SessionPolicyType
+CUSTOM: SessionPolicyType
 
 class CreateOrganizationRequest(_message.Message):
     __slots__ = ("organization",)
@@ -275,13 +275,13 @@ class OrganizationSessionPolicySettings(_message.Message):
     IDLE_SESSION_TIMEOUT_ENABLED_FIELD_NUMBER: _ClassVar[int]
     IDLE_SESSION_TIMEOUT_FIELD_NUMBER: _ClassVar[int]
     IDLE_SESSION_TIMEOUT_UNIT_FIELD_NUMBER: _ClassVar[int]
-    policy_source: SessionPolicySource
+    policy_source: SessionPolicyType
     absolute_session_timeout: _wrappers_pb2.Int32Value
     absolute_session_timeout_unit: _commons_pb2.TimeUnit
     idle_session_timeout_enabled: _wrappers_pb2.BoolValue
     idle_session_timeout: _wrappers_pb2.Int32Value
     idle_session_timeout_unit: _commons_pb2.TimeUnit
-    def __init__(self, policy_source: _Optional[_Union[SessionPolicySource, str]] = ..., absolute_session_timeout: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., absolute_session_timeout_unit: _Optional[_Union[_commons_pb2.TimeUnit, str]] = ..., idle_session_timeout_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., idle_session_timeout: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., idle_session_timeout_unit: _Optional[_Union[_commons_pb2.TimeUnit, str]] = ...) -> None: ...
+    def __init__(self, policy_source: _Optional[_Union[SessionPolicyType, str]] = ..., absolute_session_timeout: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., absolute_session_timeout_unit: _Optional[_Union[_commons_pb2.TimeUnit, str]] = ..., idle_session_timeout_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., idle_session_timeout: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., idle_session_timeout_unit: _Optional[_Union[_commons_pb2.TimeUnit, str]] = ...) -> None: ...
 
 class GetOrganizationSessionPolicyRequest(_message.Message):
     __slots__ = ("organization_id",)
@@ -296,18 +296,52 @@ class GetOrganizationSessionPolicyResponse(_message.Message):
     def __init__(self, policy: _Optional[_Union[OrganizationSessionPolicySettings, _Mapping]] = ...) -> None: ...
 
 class UpdateOrganizationSessionPolicyRequest(_message.Message):
-    __slots__ = ("organization_id", "policy")
+    __slots__ = ("organization_id", "policy_source", "absolute_session_timeout", "absolute_session_timeout_unit", "idle_session_timeout_enabled", "idle_session_timeout", "idle_session_timeout_unit")
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
-    POLICY_FIELD_NUMBER: _ClassVar[int]
+    POLICY_SOURCE_FIELD_NUMBER: _ClassVar[int]
+    ABSOLUTE_SESSION_TIMEOUT_FIELD_NUMBER: _ClassVar[int]
+    ABSOLUTE_SESSION_TIMEOUT_UNIT_FIELD_NUMBER: _ClassVar[int]
+    IDLE_SESSION_TIMEOUT_ENABLED_FIELD_NUMBER: _ClassVar[int]
+    IDLE_SESSION_TIMEOUT_FIELD_NUMBER: _ClassVar[int]
+    IDLE_SESSION_TIMEOUT_UNIT_FIELD_NUMBER: _ClassVar[int]
     organization_id: str
-    policy: OrganizationSessionPolicySettings
-    def __init__(self, organization_id: _Optional[str] = ..., policy: _Optional[_Union[OrganizationSessionPolicySettings, _Mapping]] = ...) -> None: ...
+    policy_source: SessionPolicyType
+    absolute_session_timeout: _wrappers_pb2.Int32Value
+    absolute_session_timeout_unit: _commons_pb2.TimeUnit
+    idle_session_timeout_enabled: _wrappers_pb2.BoolValue
+    idle_session_timeout: _wrappers_pb2.Int32Value
+    idle_session_timeout_unit: _commons_pb2.TimeUnit
+    def __init__(self, organization_id: _Optional[str] = ..., policy_source: _Optional[_Union[SessionPolicyType, str]] = ..., absolute_session_timeout: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., absolute_session_timeout_unit: _Optional[_Union[_commons_pb2.TimeUnit, str]] = ..., idle_session_timeout_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., idle_session_timeout: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., idle_session_timeout_unit: _Optional[_Union[_commons_pb2.TimeUnit, str]] = ...) -> None: ...
 
 class UpdateOrganizationSessionPolicyResponse(_message.Message):
     __slots__ = ("policy",)
     POLICY_FIELD_NUMBER: _ClassVar[int]
     policy: OrganizationSessionPolicySettings
     def __init__(self, policy: _Optional[_Union[OrganizationSessionPolicySettings, _Mapping]] = ...) -> None: ...
+
+class GetApplicationSessionPolicyRequest(_message.Message):
+    __slots__ = ("organization_id",)
+    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
+    organization_id: str
+    def __init__(self, organization_id: _Optional[str] = ...) -> None: ...
+
+class ApplicationSessionPolicySettings(_message.Message):
+    __slots__ = ("absolute_session_timeout", "idle_session_timeout_enabled", "idle_session_timeout", "access_token_expiry")
+    ABSOLUTE_SESSION_TIMEOUT_FIELD_NUMBER: _ClassVar[int]
+    IDLE_SESSION_TIMEOUT_ENABLED_FIELD_NUMBER: _ClassVar[int]
+    IDLE_SESSION_TIMEOUT_FIELD_NUMBER: _ClassVar[int]
+    ACCESS_TOKEN_EXPIRY_FIELD_NUMBER: _ClassVar[int]
+    absolute_session_timeout: int
+    idle_session_timeout_enabled: bool
+    idle_session_timeout: int
+    access_token_expiry: int
+    def __init__(self, absolute_session_timeout: _Optional[int] = ..., idle_session_timeout_enabled: bool = ..., idle_session_timeout: _Optional[int] = ..., access_token_expiry: _Optional[int] = ...) -> None: ...
+
+class GetApplicationSessionPolicyResponse(_message.Message):
+    __slots__ = ("application_policy",)
+    APPLICATION_POLICY_FIELD_NUMBER: _ClassVar[int]
+    application_policy: ApplicationSessionPolicySettings
+    def __init__(self, application_policy: _Optional[_Union[ApplicationSessionPolicySettings, _Mapping]] = ...) -> None: ...
 
 class OrganizationUserManagementSettings(_message.Message):
     __slots__ = ("max_allowed_users",)

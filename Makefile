@@ -117,6 +117,7 @@ generate-local: tools-check
 	$(MAKE) prepare; prepared=1; \
 	buf generate ../scalekit; \
 	$(MAKE) restore; prepared=0; \
+	mkdir -p $(BUF_DIR); \
 	$(MAKE) generate_init_files; \
 	$(MAKE) cleanup
 	@echo "Code generation complete."

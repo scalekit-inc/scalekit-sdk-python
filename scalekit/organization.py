@@ -23,7 +23,7 @@ from scalekit.v1.organizations.organizations_pb2 import (
     OrganizationSessionPolicySettings,
     GetOrganizationSessionPolicyRequest,
     UpdateOrganizationSessionPolicyRequest,
-    SessionPolicySource,
+    SessionPolicyType,
 )
 from scalekit.v1.commons.commons_pb2 import TimeUnit
 from scalekit.v1.organizations.organizations_pb2_grpc import OrganizationServiceStub
@@ -243,7 +243,7 @@ class OrganizationClient:
     def update_organization_session_policy(
         self,
         organization_id: str,
-        policy_source: SessionPolicySource,
+        policy_source: SessionPolicyType,
         absolute_session_timeout: Optional[int] = None,
         absolute_session_timeout_unit: Optional[TimeUnit] = None,
         idle_session_timeout_enabled: Optional[bool] = None,
@@ -255,8 +255,8 @@ class OrganizationClient:
 
         :param organization_id: Organization id
         :type organization_id: ``` str ```
-        :param policy_source: SessionPolicySource.APPLICATION or SessionPolicySource.CUSTOM
-        :type policy_source: ``` SessionPolicySource ```
+        :param policy_source: SessionPolicyType.APPLICATION or SessionPolicyType.CUSTOM
+        :type policy_source: ``` SessionPolicyType ```
         :param absolute_session_timeout: Absolute session timeout value (optional)
         :type absolute_session_timeout: ``` int | None ```
         :param absolute_session_timeout_unit: Unit for absolute timeout (optional)
@@ -270,28 +270,28 @@ class OrganizationClient:
         :returns:
             OrganizationSessionPolicySettings
         """
-        policy = OrganizationSessionPolicySettings(policy_source=policy_source)
+        req = UpdateOrganizationSessionPolicyRequest(
+            organization_id=organization_id,
+            policy_source=policy_source,
+        )
         if absolute_session_timeout is not None:
-            policy.absolute_session_timeout.CopyFrom(
+            req.absolute_session_timeout.CopyFrom(
                 wrappers_pb2.Int32Value(value=absolute_session_timeout)
             )
         if absolute_session_timeout_unit is not None:
-            policy.absolute_session_timeout_unit = absolute_session_timeout_unit
+            req.absolute_session_timeout_unit = absolute_session_timeout_unit
         if idle_session_timeout_enabled is not None:
-            policy.idle_session_timeout_enabled.CopyFrom(
+            req.idle_session_timeout_enabled.CopyFrom(
                 wrappers_pb2.BoolValue(value=idle_session_timeout_enabled)
             )
         if idle_session_timeout is not None:
-            policy.idle_session_timeout.CopyFrom(
+            req.idle_session_timeout.CopyFrom(
                 wrappers_pb2.Int32Value(value=idle_session_timeout)
             )
         if idle_session_timeout_unit is not None:
-            policy.idle_session_timeout_unit = idle_session_timeout_unit
+            req.idle_session_timeout_unit = idle_session_timeout_unit
         response = self.core_client.grpc_exec(
             self.organization_service.UpdateOrganizationSessionPolicy.with_call,
-            UpdateOrganizationSessionPolicyRequest(
-                organization_id=organization_id,
-                policy=policy,
-            ),
+            req,
         )
         return response[0].policy

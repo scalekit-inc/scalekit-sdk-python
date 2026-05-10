@@ -34,6 +34,13 @@ class AssetCategory(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     ASSET_CATEGORY_UNSPECIFIED: _ClassVar[AssetCategory]
     PORTAL_CUSTOMIZATION_IMAGE: _ClassVar[AssetCategory]
 
+class TimeUnit(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    SESSION_TIME_UNIT_UNSPECIFIED: _ClassVar[TimeUnit]
+    MINUTES: _ClassVar[TimeUnit]
+    HOURS: _ClassVar[TimeUnit]
+    DAYS: _ClassVar[TimeUnit]
+
 class OrgUserRelationshipType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
     OrgUserRelationshipType_UNSPECIFIED: _ClassVar[OrgUserRelationshipType]
@@ -65,6 +72,10 @@ FAILED: CustomDomainStatus
 INITIAL: CustomDomainStatus
 ASSET_CATEGORY_UNSPECIFIED: AssetCategory
 PORTAL_CUSTOMIZATION_IMAGE: AssetCategory
+SESSION_TIME_UNIT_UNSPECIFIED: TimeUnit
+MINUTES: TimeUnit
+HOURS: TimeUnit
+DAYS: TimeUnit
 OrgUserRelationshipType_UNSPECIFIED: OrgUserRelationshipType
 SINGLE_ORGANIZATION: OrgUserRelationshipType
 MULTIPLE_ORGANIZATIONS: OrgUserRelationshipType
@@ -502,10 +513,10 @@ class SessionSettings(_message.Message):
     cookie_persistence_type: CookiePersistenceType
     cookie_same_site_setting: CookieSameSiteSetting
     cookie_custom_domain: _wrappers_pb2.StringValue
-    access_token_expiry_unit: _commons_pb2.TimeUnit
-    absolute_session_timeout_unit: _commons_pb2.TimeUnit
-    idle_session_timeout_unit: _commons_pb2.TimeUnit
-    def __init__(self, access_token_expiry: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., client_access_token_expiry: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., absolute_session_timeout: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., session_management_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., idle_session_timeout: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., idle_session_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., cookie_persistence_type: _Optional[_Union[CookiePersistenceType, str]] = ..., cookie_same_site_setting: _Optional[_Union[CookieSameSiteSetting, str]] = ..., cookie_custom_domain: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., access_token_expiry_unit: _Optional[_Union[_commons_pb2.TimeUnit, str]] = ..., absolute_session_timeout_unit: _Optional[_Union[_commons_pb2.TimeUnit, str]] = ..., idle_session_timeout_unit: _Optional[_Union[_commons_pb2.TimeUnit, str]] = ...) -> None: ...
+    access_token_expiry_unit: TimeUnit
+    absolute_session_timeout_unit: TimeUnit
+    idle_session_timeout_unit: TimeUnit
+    def __init__(self, access_token_expiry: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., client_access_token_expiry: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., absolute_session_timeout: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., session_management_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., idle_session_timeout: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., idle_session_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., cookie_persistence_type: _Optional[_Union[CookiePersistenceType, str]] = ..., cookie_same_site_setting: _Optional[_Union[CookieSameSiteSetting, str]] = ..., cookie_custom_domain: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., access_token_expiry_unit: _Optional[_Union[TimeUnit, str]] = ..., absolute_session_timeout_unit: _Optional[_Union[TimeUnit, str]] = ..., idle_session_timeout_unit: _Optional[_Union[TimeUnit, str]] = ...) -> None: ...
 
 class UserManagement(_message.Message):
     __slots__ = ("allow_duplicate_user_identities", "allow_multiple_memberships", "allow_organization_signup", "org_user_relationship", "enable_max_users_limit", "max_users_limit", "invitation_expiry", "block_disposable_email_domains", "block_public_email_domains", "sync_user_profile_on_signin")
@@ -633,10 +644,12 @@ class PortalBootstrapResponse(_message.Message):
     def __init__(self, session: _Optional[_Union[GetCurrentSessionResponse, _Mapping]] = ..., portal_customizations: _Optional[_Union[PortalCustomizationBootstrap, _Mapping]] = ..., organization: _Optional[_Union[_organizations_pb2.Organization, _Mapping]] = ..., connections: _Optional[_Iterable[_Union[_connections_pb2.ListConnection, _Mapping]]] = ...) -> None: ...
 
 class AgentActionsConfig(_message.Message):
-    __slots__ = ("user_verify_mode",)
+    __slots__ = ("user_verify_mode", "detailed_error_logging")
     USER_VERIFY_MODE_FIELD_NUMBER: _ClassVar[int]
+    DETAILED_ERROR_LOGGING_FIELD_NUMBER: _ClassVar[int]
     user_verify_mode: ConnectedAccountUserVerifyMode
-    def __init__(self, user_verify_mode: _Optional[_Union[ConnectedAccountUserVerifyMode, str]] = ...) -> None: ...
+    detailed_error_logging: bool
+    def __init__(self, user_verify_mode: _Optional[_Union[ConnectedAccountUserVerifyMode, str]] = ..., detailed_error_logging: bool = ...) -> None: ...
 
 class CreateAgentActionsConfigRequest(_message.Message):
     __slots__ = ("id", "agent_actions_config")

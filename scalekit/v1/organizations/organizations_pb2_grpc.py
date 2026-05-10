@@ -95,6 +95,11 @@ class OrganizationServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationUserManagementSettingsRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationUserManagementSettingsResponse.FromString,
                 )
+        self.GetApplicationSessionPolicy = channel.unary_unary(
+                '/scalekit.v1.organizations.OrganizationService/GetApplicationSessionPolicy',
+                request_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetApplicationSessionPolicyRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetApplicationSessionPolicyResponse.FromString,
+                )
 
 
 class OrganizationServiceServicer(object):
@@ -200,6 +205,12 @@ class OrganizationServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetApplicationSessionPolicy(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_OrganizationServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -282,6 +293,11 @@ def add_OrganizationServiceServicer_to_server(servicer, server):
                     servicer.GetOrganizationUserManagementSetting,
                     request_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationUserManagementSettingsRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationUserManagementSettingsResponse.SerializeToString,
+            ),
+            'GetApplicationSessionPolicy': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetApplicationSessionPolicy,
+                    request_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetApplicationSessionPolicyRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetApplicationSessionPolicyResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -562,5 +578,22 @@ class OrganizationService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.organizations.OrganizationService/GetOrganizationUserManagementSetting',
             scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationUserManagementSettingsRequest.SerializeToString,
             scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationUserManagementSettingsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetApplicationSessionPolicy(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.organizations.OrganizationService/GetApplicationSessionPolicy',
+            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetApplicationSessionPolicyRequest.SerializeToString,
+            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetApplicationSessionPolicyResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
