@@ -24,18 +24,6 @@ FSA_DATA_TYPE_CONNECTION: FSADataType
 FSA_DATA_TYPE_SESSION: FSADataType
 FSA_DATA_TYPE_USER_MANAGEMENT: FSADataType
 
-class MigrateEnvKeysRequest(_message.Message):
-    __slots__ = ("environment_ids",)
-    ENVIRONMENT_IDS_FIELD_NUMBER: _ClassVar[int]
-    environment_ids: _containers.RepeatedScalarFieldContainer[str]
-    def __init__(self, environment_ids: _Optional[_Iterable[str]] = ...) -> None: ...
-
-class MigrateEnvKeysResponse(_message.Message):
-    __slots__ = ("environments_processed",)
-    ENVIRONMENTS_PROCESSED_FIELD_NUMBER: _ClassVar[int]
-    environments_processed: int
-    def __init__(self, environments_processed: _Optional[int] = ...) -> None: ...
-
 class MigrationServiceResponse(_message.Message):
     __slots__ = ("success_environments", "failed_environments")
     SUCCESS_ENVIRONMENTS_FIELD_NUMBER: _ClassVar[int]

@@ -1,7 +1,6 @@
 from buf.validate import validate_pb2 as _validate_pb2
 from google.api import annotations_pb2 as _annotations_pb2
 from google.api import field_behavior_pb2 as _field_behavior_pb2
-from google.api import visibility_pb2 as _visibility_pb2
 from google.protobuf import empty_pb2 as _empty_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
 from protoc_gen_openapiv2.options import annotations_pb2 as _annotations_pb2_1

@@ -474,27 +474,3 @@ class TriggerDirectorySyncRequest(_message.Message):
     directory_id: str
     organization_id: str
     def __init__(self, directory_id: _Optional[str] = ..., organization_id: _Optional[str] = ...) -> None: ...
-
-class GetDirectoryContextRequest(_message.Message):
-    __slots__ = ("directory_id", "organization_id")
-    DIRECTORY_ID_FIELD_NUMBER: _ClassVar[int]
-    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
-    directory_id: str
-    organization_id: str
-    def __init__(self, directory_id: _Optional[str] = ..., organization_id: _Optional[str] = ...) -> None: ...
-
-class GetDirectoryContextResponse(_message.Message):
-    __slots__ = ("context",)
-    CONTEXT_FIELD_NUMBER: _ClassVar[int]
-    context: _struct_pb2.Struct
-    def __init__(self, context: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
-
-class UpdateDirectoryContextRequest(_message.Message):
-    __slots__ = ("directory_id", "organization_id", "context")
-    DIRECTORY_ID_FIELD_NUMBER: _ClassVar[int]
-    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
-    CONTEXT_FIELD_NUMBER: _ClassVar[int]
-    directory_id: str
-    organization_id: str
-    context: _struct_pb2.Struct
-    def __init__(self, directory_id: _Optional[str] = ..., organization_id: _Optional[str] = ..., context: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...

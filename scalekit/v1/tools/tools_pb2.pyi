@@ -66,26 +66,18 @@ class ListToolsRequest(_message.Message):
     def __init__(self, filter: _Optional[_Union[Filter, _Mapping]] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ...) -> None: ...
 
 class Filter(_message.Message):
-    __slots__ = ("summary", "provider", "identifier", "tool_name", "query", "connector", "organization_id", "user_id", "connected_account_id")
+    __slots__ = ("summary", "provider", "identifier", "tool_name", "query")
     SUMMARY_FIELD_NUMBER: _ClassVar[int]
     PROVIDER_FIELD_NUMBER: _ClassVar[int]
     IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
     TOOL_NAME_FIELD_NUMBER: _ClassVar[int]
     QUERY_FIELD_NUMBER: _ClassVar[int]
-    CONNECTOR_FIELD_NUMBER: _ClassVar[int]
-    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
-    USER_ID_FIELD_NUMBER: _ClassVar[int]
-    CONNECTED_ACCOUNT_ID_FIELD_NUMBER: _ClassVar[int]
     summary: _wrappers_pb2.BoolValue
     provider: str
     identifier: str
     tool_name: _containers.RepeatedScalarFieldContainer[str]
     query: str
-    connector: str
-    organization_id: str
-    user_id: str
-    connected_account_id: str
-    def __init__(self, summary: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., provider: _Optional[str] = ..., identifier: _Optional[str] = ..., tool_name: _Optional[_Iterable[str]] = ..., query: _Optional[str] = ..., connector: _Optional[str] = ..., organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., connected_account_id: _Optional[str] = ...) -> None: ...
+    def __init__(self, summary: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., provider: _Optional[str] = ..., identifier: _Optional[str] = ..., tool_name: _Optional[_Iterable[str]] = ..., query: _Optional[str] = ...) -> None: ...
 
 class ListToolsResponse(_message.Message):
     __slots__ = ("next_page_token", "total_size", "prev_page_token", "tool_names", "tools")
@@ -102,7 +94,7 @@ class ListToolsResponse(_message.Message):
     def __init__(self, next_page_token: _Optional[str] = ..., total_size: _Optional[int] = ..., prev_page_token: _Optional[str] = ..., tool_names: _Optional[_Iterable[str]] = ..., tools: _Optional[_Iterable[_Union[Tool, _Mapping]]] = ...) -> None: ...
 
 class ExecuteToolRequest(_message.Message):
-    __slots__ = ("tool_name", "identifier", "params", "connected_account_id", "connector", "organization_id", "user_id", "agent_run_id")
+    __slots__ = ("tool_name", "identifier", "params", "connected_account_id", "connector", "organization_id", "user_id")
     TOOL_NAME_FIELD_NUMBER: _ClassVar[int]
     IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
     PARAMS_FIELD_NUMBER: _ClassVar[int]
@@ -110,7 +102,6 @@ class ExecuteToolRequest(_message.Message):
     CONNECTOR_FIELD_NUMBER: _ClassVar[int]
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     USER_ID_FIELD_NUMBER: _ClassVar[int]
-    AGENT_RUN_ID_FIELD_NUMBER: _ClassVar[int]
     tool_name: str
     identifier: str
     params: _struct_pb2.Struct
@@ -118,8 +109,7 @@ class ExecuteToolRequest(_message.Message):
     connector: str
     organization_id: str
     user_id: str
-    agent_run_id: str
-    def __init__(self, tool_name: _Optional[str] = ..., identifier: _Optional[str] = ..., params: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., connected_account_id: _Optional[str] = ..., connector: _Optional[str] = ..., organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., agent_run_id: _Optional[str] = ...) -> None: ...
+    def __init__(self, tool_name: _Optional[str] = ..., identifier: _Optional[str] = ..., params: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., connected_account_id: _Optional[str] = ..., connector: _Optional[str] = ..., organization_id: _Optional[str] = ..., user_id: _Optional[str] = ...) -> None: ...
 
 class ExecuteToolResponse(_message.Message):
     __slots__ = ("data", "execution_id")
@@ -196,25 +186,3 @@ class ScopedToolFilter(_message.Message):
     tool_names: _containers.RepeatedScalarFieldContainer[str]
     connection_names: _containers.RepeatedScalarFieldContainer[str]
     def __init__(self, providers: _Optional[_Iterable[str]] = ..., tool_names: _Optional[_Iterable[str]] = ..., connection_names: _Optional[_Iterable[str]] = ...) -> None: ...
-
-class ListAvailableToolsRequest(_message.Message):
-    __slots__ = ("identifier", "page_size", "page_token")
-    IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
-    PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
-    PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
-    identifier: str
-    page_size: int
-    page_token: str
-    def __init__(self, identifier: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ...) -> None: ...
-
-class ListAvailableToolsResponse(_message.Message):
-    __slots__ = ("next_page_token", "total_size", "prev_page_token", "tools")
-    NEXT_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
-    TOTAL_SIZE_FIELD_NUMBER: _ClassVar[int]
-    PREV_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
-    TOOLS_FIELD_NUMBER: _ClassVar[int]
-    next_page_token: str
-    total_size: int
-    prev_page_token: str
-    tools: _containers.RepeatedCompositeFieldContainer[Tool]
-    def __init__(self, next_page_token: _Optional[str] = ..., total_size: _Optional[int] = ..., prev_page_token: _Optional[str] = ..., tools: _Optional[_Iterable[_Union[Tool, _Mapping]]] = ...) -> None: ...

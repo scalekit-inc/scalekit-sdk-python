@@ -3,7 +3,6 @@
 import grpc
 
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
-from google.protobuf import wrappers_pb2 as google_dot_protobuf_dot_wrappers__pb2
 from scalekit.v1.workspaces import workspaces_pb2 as scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2
 
 
@@ -90,26 +89,6 @@ class WorkspaceServiceStub(object):
                 '/scalekit.v1.workspaces.WorkspaceService/UpdateWorkspaceContext',
                 request_serializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.UpdateWorkspaceContextRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.UpdateWorkspaceContextResponse.FromString,
-                )
-        self.ListWorkspaceDomains = channel.unary_unary(
-                '/scalekit.v1.workspaces.WorkspaceService/ListWorkspaceDomains',
-                request_serializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.ListWorkspaceDomainsRequest.SerializeToString,
-                response_deserializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.ListWorkspaceDomainsResponse.FromString,
-                )
-        self.CreateWorkspaceDomain = channel.unary_unary(
-                '/scalekit.v1.workspaces.WorkspaceService/CreateWorkspaceDomain',
-                request_serializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.CreateWorkspaceDomainRequest.SerializeToString,
-                response_deserializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.CreateWorkspaceDomainResponse.FromString,
-                )
-        self.DeleteWorkspaceDomain = channel.unary_unary(
-                '/scalekit.v1.workspaces.WorkspaceService/DeleteWorkspaceDomain',
-                request_serializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.DeleteWorkspaceDomainRequest.SerializeToString,
-                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                )
-        self.ValidateWorkspaceDomain = channel.unary_unary(
-                '/scalekit.v1.workspaces.WorkspaceService/ValidateWorkspaceDomain',
-                request_serializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.ValidateWorkspaceDomainRequest.SerializeToString,
-                response_deserializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
                 )
 
 
@@ -286,30 +265,6 @@ class WorkspaceServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def ListWorkspaceDomains(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def CreateWorkspaceDomain(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def DeleteWorkspaceDomain(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def ValidateWorkspaceDomain(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
 
 def add_WorkspaceServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -387,26 +342,6 @@ def add_WorkspaceServiceServicer_to_server(servicer, server):
                     servicer.UpdateWorkspaceContext,
                     request_deserializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.UpdateWorkspaceContextRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.UpdateWorkspaceContextResponse.SerializeToString,
-            ),
-            'ListWorkspaceDomains': grpc.unary_unary_rpc_method_handler(
-                    servicer.ListWorkspaceDomains,
-                    request_deserializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.ListWorkspaceDomainsRequest.FromString,
-                    response_serializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.ListWorkspaceDomainsResponse.SerializeToString,
-            ),
-            'CreateWorkspaceDomain': grpc.unary_unary_rpc_method_handler(
-                    servicer.CreateWorkspaceDomain,
-                    request_deserializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.CreateWorkspaceDomainRequest.FromString,
-                    response_serializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.CreateWorkspaceDomainResponse.SerializeToString,
-            ),
-            'DeleteWorkspaceDomain': grpc.unary_unary_rpc_method_handler(
-                    servicer.DeleteWorkspaceDomain,
-                    request_deserializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.DeleteWorkspaceDomainRequest.FromString,
-                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-            ),
-            'ValidateWorkspaceDomain': grpc.unary_unary_rpc_method_handler(
-                    servicer.ValidateWorkspaceDomain,
-                    request_deserializer=scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.ValidateWorkspaceDomainRequest.FromString,
-                    response_serializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -670,73 +605,5 @@ class WorkspaceService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.workspaces.WorkspaceService/UpdateWorkspaceContext',
             scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.UpdateWorkspaceContextRequest.SerializeToString,
             scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.UpdateWorkspaceContextResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def ListWorkspaceDomains(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.workspaces.WorkspaceService/ListWorkspaceDomains',
-            scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.ListWorkspaceDomainsRequest.SerializeToString,
-            scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.ListWorkspaceDomainsResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def CreateWorkspaceDomain(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.workspaces.WorkspaceService/CreateWorkspaceDomain',
-            scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.CreateWorkspaceDomainRequest.SerializeToString,
-            scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.CreateWorkspaceDomainResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def DeleteWorkspaceDomain(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.workspaces.WorkspaceService/DeleteWorkspaceDomain',
-            scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.DeleteWorkspaceDomainRequest.SerializeToString,
-            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def ValidateWorkspaceDomain(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.workspaces.WorkspaceService/ValidateWorkspaceDomain',
-            scalekit_dot_v1_dot_workspaces_dot_workspaces__pb2.ValidateWorkspaceDomainRequest.SerializeToString,
-            google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

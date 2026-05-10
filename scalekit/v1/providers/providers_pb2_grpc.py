@@ -20,28 +20,13 @@ class ProviderServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.CreateProviderRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.CreateProviderResponse.FromString,
                 )
-        self.CreateCustomProvider = channel.unary_unary(
-                '/scalekit.v1.providers.ProviderService/CreateCustomProvider',
-                request_serializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.CreateCustomProviderRequest.SerializeToString,
-                response_deserializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.CreateProviderResponse.FromString,
-                )
         self.UpdateProvider = channel.unary_unary(
                 '/scalekit.v1.providers.ProviderService/UpdateProvider',
                 request_serializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.UpdateProviderRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.UpdateProviderResponse.FromString,
                 )
-        self.UpdateCustomProvider = channel.unary_unary(
-                '/scalekit.v1.providers.ProviderService/UpdateCustomProvider',
-                request_serializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.UpdateCustomProviderRequest.SerializeToString,
-                response_deserializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.UpdateProviderResponse.FromString,
-                )
         self.DeleteProvider = channel.unary_unary(
                 '/scalekit.v1.providers.ProviderService/DeleteProvider',
-                request_serializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.DeleteProviderRequest.SerializeToString,
-                response_deserializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.DeleteProviderResponse.FromString,
-                )
-        self.DeleteCustomProvider = channel.unary_unary(
-                '/scalekit.v1.providers.ProviderService/DeleteCustomProvider',
                 request_serializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.DeleteProviderRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.DeleteProviderResponse.FromString,
                 )
@@ -62,31 +47,13 @@ class ProviderServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def CreateCustomProvider(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
     def UpdateProvider(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def UpdateCustomProvider(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
     def DeleteProvider(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def DeleteCustomProvider(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -106,28 +73,13 @@ def add_ProviderServiceServicer_to_server(servicer, server):
                     request_deserializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.CreateProviderRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.CreateProviderResponse.SerializeToString,
             ),
-            'CreateCustomProvider': grpc.unary_unary_rpc_method_handler(
-                    servicer.CreateCustomProvider,
-                    request_deserializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.CreateCustomProviderRequest.FromString,
-                    response_serializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.CreateProviderResponse.SerializeToString,
-            ),
             'UpdateProvider': grpc.unary_unary_rpc_method_handler(
                     servicer.UpdateProvider,
                     request_deserializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.UpdateProviderRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.UpdateProviderResponse.SerializeToString,
             ),
-            'UpdateCustomProvider': grpc.unary_unary_rpc_method_handler(
-                    servicer.UpdateCustomProvider,
-                    request_deserializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.UpdateCustomProviderRequest.FromString,
-                    response_serializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.UpdateProviderResponse.SerializeToString,
-            ),
             'DeleteProvider': grpc.unary_unary_rpc_method_handler(
                     servicer.DeleteProvider,
-                    request_deserializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.DeleteProviderRequest.FromString,
-                    response_serializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.DeleteProviderResponse.SerializeToString,
-            ),
-            'DeleteCustomProvider': grpc.unary_unary_rpc_method_handler(
-                    servicer.DeleteCustomProvider,
                     request_deserializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.DeleteProviderRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.DeleteProviderResponse.SerializeToString,
             ),
@@ -165,23 +117,6 @@ class ProviderService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def CreateCustomProvider(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.providers.ProviderService/CreateCustomProvider',
-            scalekit_dot_v1_dot_providers_dot_providers__pb2.CreateCustomProviderRequest.SerializeToString,
-            scalekit_dot_v1_dot_providers_dot_providers__pb2.CreateProviderResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
     def UpdateProvider(request,
             target,
             options=(),
@@ -199,23 +134,6 @@ class ProviderService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def UpdateCustomProvider(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.providers.ProviderService/UpdateCustomProvider',
-            scalekit_dot_v1_dot_providers_dot_providers__pb2.UpdateCustomProviderRequest.SerializeToString,
-            scalekit_dot_v1_dot_providers_dot_providers__pb2.UpdateProviderResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
     def DeleteProvider(request,
             target,
             options=(),
@@ -227,23 +145,6 @@ class ProviderService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.providers.ProviderService/DeleteProvider',
-            scalekit_dot_v1_dot_providers_dot_providers__pb2.DeleteProviderRequest.SerializeToString,
-            scalekit_dot_v1_dot_providers_dot_providers__pb2.DeleteProviderResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def DeleteCustomProvider(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.providers.ProviderService/DeleteCustomProvider',
             scalekit_dot_v1_dot_providers_dot_providers__pb2.DeleteProviderRequest.SerializeToString,
             scalekit_dot_v1_dot_providers_dot_providers__pb2.DeleteProviderResponse.FromString,
             options, channel_credentials,
