@@ -116,3 +116,4 @@ lint: create-venv
 test: create-venv
 	@echo "Running tests..."
 	$(VENV_PYTHON) -m unittest discover -s tests -p "test_*.py" -v
+
