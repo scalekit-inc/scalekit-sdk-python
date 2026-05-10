@@ -115,7 +115,7 @@ generate-local: tools-check
 	mkdir -p proto; \
 	rsync -av "$(LOCAL_PROTO_DIR)/" proto/; \
 	$(MAKE) prepare; prepared=1; \
-	buf generate ../scalekit; \
+	buf generate --include-imports ../scalekit; \
 	$(MAKE) restore; prepared=0; \
 	mkdir -p $(BUF_DIR); \
 	$(MAKE) generate_init_files; \
