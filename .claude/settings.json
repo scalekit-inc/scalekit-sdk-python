@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(make:*)",
+      "Bash(python3:*)",
+      "Bash(python:*)",
+      "Bash(uv:*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'FILE=$(jq -r \".tool_input.file_path // empty\"); [[ \"$FILE\" == *.py ]] && [[ \"$FILE\" != *_pb2.py ]] && [[ \"$FILE\" != *_pb2_grpc.py ]] && [[ \"$FILE\" != *.pyi ]] && { ERR=$(python3 -m py_compile \"$FILE\" 2>&1); [ -n \"$ERR\" ] && jq -Rn --arg e \"$ERR\" \"{hookSpecificOutput:{hookEventName:\\\"PostToolUse\\\",additionalContext:(\\\"Syntax error in $FILE:\\\\n\\\" + $e)}}\"; } || true'",
+            "timeout": 15,
+            "statusMessage": "Syntax-checking..."
+          }
+        ]
+      }
+    ]
+  }
+}

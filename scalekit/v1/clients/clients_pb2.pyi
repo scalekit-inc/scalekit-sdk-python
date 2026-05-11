@@ -934,18 +934,28 @@ class DeleteScopeRequest(_message.Message):
     def __init__(self, id: _Optional[str] = ...) -> None: ...
 
 class GetConsentDetailsResponse(_message.Message):
-    __slots__ = ("resource", "user", "client", "scopes", "application")
+    __slots__ = ("resource", "user", "client", "scopes", "application", "organization")
     RESOURCE_FIELD_NUMBER: _ClassVar[int]
     USER_FIELD_NUMBER: _ClassVar[int]
     CLIENT_FIELD_NUMBER: _ClassVar[int]
     SCOPES_FIELD_NUMBER: _ClassVar[int]
     APPLICATION_FIELD_NUMBER: _ClassVar[int]
+    ORGANIZATION_FIELD_NUMBER: _ClassVar[int]
     resource: Resource
     user: User
     client: ConsentClient
     scopes: _containers.RepeatedCompositeFieldContainer[ConsentScope]
     application: Application
-    def __init__(self, resource: _Optional[_Union[Resource, _Mapping]] = ..., user: _Optional[_Union[User, _Mapping]] = ..., client: _Optional[_Union[ConsentClient, _Mapping]] = ..., scopes: _Optional[_Iterable[_Union[ConsentScope, _Mapping]]] = ..., application: _Optional[_Union[Application, _Mapping]] = ...) -> None: ...
+    organization: ConsentOrganization
+    def __init__(self, resource: _Optional[_Union[Resource, _Mapping]] = ..., user: _Optional[_Union[User, _Mapping]] = ..., client: _Optional[_Union[ConsentClient, _Mapping]] = ..., scopes: _Optional[_Iterable[_Union[ConsentScope, _Mapping]]] = ..., application: _Optional[_Union[Application, _Mapping]] = ..., organization: _Optional[_Union[ConsentOrganization, _Mapping]] = ...) -> None: ...
+
+class ConsentOrganization(_message.Message):
+    __slots__ = ("organization_name", "organization_meta_name")
+    ORGANIZATION_NAME_FIELD_NUMBER: _ClassVar[int]
+    ORGANIZATION_META_NAME_FIELD_NUMBER: _ClassVar[int]
+    organization_name: str
+    organization_meta_name: str
+    def __init__(self, organization_name: _Optional[str] = ..., organization_meta_name: _Optional[str] = ...) -> None: ...
 
 class ConsentClient(_message.Message):
     __slots__ = ("name", "privacy_uri", "tos_uri", "client_id", "metadata_uri", "logo_uri")

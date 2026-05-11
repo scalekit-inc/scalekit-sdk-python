@@ -21,6 +21,7 @@ class ConnectorStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     EXPIRED: _ClassVar[ConnectorStatus]
     PENDING_AUTH: _ClassVar[ConnectorStatus]
     PENDING_VERIFICATION: _ClassVar[ConnectorStatus]
+    DISCONNECTED: _ClassVar[ConnectorStatus]
 
 class ConnectorType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
@@ -38,6 +39,7 @@ ACTIVE: ConnectorStatus
 EXPIRED: ConnectorStatus
 PENDING_AUTH: ConnectorStatus
 PENDING_VERIFICATION: ConnectorStatus
+DISCONNECTED: ConnectorStatus
 CONNECTION_TYPE_UNSPECIFIED: ConnectorType
 OAUTH: ConnectorType
 API_KEY: ConnectorType
@@ -317,3 +319,27 @@ class StaticAuth(_message.Message):
     DETAILS_FIELD_NUMBER: _ClassVar[int]
     details: _struct_pb2.Struct
     def __init__(self, details: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
+
+class GetConnectedAccountRequest(_message.Message):
+    __slots__ = ("id",)
+    ID_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    def __init__(self, id: _Optional[str] = ...) -> None: ...
+
+class GetConnectedAccountResponse(_message.Message):
+    __slots__ = ("connected_account",)
+    CONNECTED_ACCOUNT_FIELD_NUMBER: _ClassVar[int]
+    connected_account: ConnectedAccount
+    def __init__(self, connected_account: _Optional[_Union[ConnectedAccount, _Mapping]] = ...) -> None: ...
+
+class DisconnectConnectedAccountRequest(_message.Message):
+    __slots__ = ("id",)
+    ID_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    def __init__(self, id: _Optional[str] = ...) -> None: ...
+
+class DisconnectConnectedAccountResponse(_message.Message):
+    __slots__ = ("connected_account",)
+    CONNECTED_ACCOUNT_FIELD_NUMBER: _ClassVar[int]
+    connected_account: ConnectedAccount
+    def __init__(self, connected_account: _Optional[_Union[ConnectedAccount, _Mapping]] = ...) -> None: ...

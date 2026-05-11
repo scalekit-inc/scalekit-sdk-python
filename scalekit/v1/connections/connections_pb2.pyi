@@ -571,7 +571,7 @@ class OIDCConnectionConfig(_message.Message):
     def __init__(self, issuer: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., discovery_endpoint: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., authorize_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., token_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., user_info_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., jwks_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_id: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_secret: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., scopes: _Optional[_Iterable[_Union[OIDCScope, str]]] = ..., token_auth_type: _Optional[_Union[TokenAuthType, str]] = ..., redirect_uri: _Optional[str] = ..., pkce_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., idp_logout_required: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., post_logout_redirect_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., backchannel_logout_redirect_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., sync_user_profile_on_login: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., jit_provisioning_with_sso_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ...) -> None: ...
 
 class OAuthConnectionConfig(_message.Message):
-    __slots__ = ("authorize_uri", "token_uri", "user_info_uri", "client_id", "client_secret", "scopes", "redirect_uri", "pkce_enabled", "prompt", "use_platform_creds", "access_type", "custom_scope_name", "sync_user_profile_on_login", "token_access_type", "tenant_id", "is_cimd", "app_name")
+    __slots__ = ("authorize_uri", "token_uri", "user_info_uri", "client_id", "client_secret", "scopes", "redirect_uri", "pkce_enabled", "prompt", "use_platform_creds", "access_type", "custom_scope_name", "sync_user_profile_on_login", "token_access_type", "tenant_id", "is_cimd", "app_name", "optional_scopes")
     AUTHORIZE_URI_FIELD_NUMBER: _ClassVar[int]
     TOKEN_URI_FIELD_NUMBER: _ClassVar[int]
     USER_INFO_URI_FIELD_NUMBER: _ClassVar[int]
@@ -589,6 +589,7 @@ class OAuthConnectionConfig(_message.Message):
     TENANT_ID_FIELD_NUMBER: _ClassVar[int]
     IS_CIMD_FIELD_NUMBER: _ClassVar[int]
     APP_NAME_FIELD_NUMBER: _ClassVar[int]
+    OPTIONAL_SCOPES_FIELD_NUMBER: _ClassVar[int]
     authorize_uri: _wrappers_pb2.StringValue
     token_uri: _wrappers_pb2.StringValue
     user_info_uri: _wrappers_pb2.StringValue
@@ -606,7 +607,16 @@ class OAuthConnectionConfig(_message.Message):
     tenant_id: _wrappers_pb2.StringValue
     is_cimd: _wrappers_pb2.BoolValue
     app_name: _wrappers_pb2.StringValue
-    def __init__(self, authorize_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., token_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., user_info_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_id: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_secret: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., scopes: _Optional[_Iterable[str]] = ..., redirect_uri: _Optional[str] = ..., pkce_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., prompt: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., use_platform_creds: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., access_type: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., custom_scope_name: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., sync_user_profile_on_login: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., token_access_type: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., tenant_id: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., is_cimd: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., app_name: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ...) -> None: ...
+    optional_scopes: OptionalScopes
+    def __init__(self, authorize_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., token_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., user_info_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_id: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_secret: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., scopes: _Optional[_Iterable[str]] = ..., redirect_uri: _Optional[str] = ..., pkce_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., prompt: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., use_platform_creds: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., access_type: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., custom_scope_name: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., sync_user_profile_on_login: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., token_access_type: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., tenant_id: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., is_cimd: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., app_name: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., optional_scopes: _Optional[_Union[OptionalScopes, _Mapping]] = ...) -> None: ...
+
+class OptionalScopes(_message.Message):
+    __slots__ = ("scopes", "field_name")
+    SCOPES_FIELD_NUMBER: _ClassVar[int]
+    FIELD_NAME_FIELD_NUMBER: _ClassVar[int]
+    scopes: _containers.RepeatedScalarFieldContainer[str]
+    field_name: str
+    def __init__(self, scopes: _Optional[_Iterable[str]] = ..., field_name: _Optional[str] = ...) -> None: ...
 
 class PasswordLessConfig(_message.Message):
     __slots__ = ("type", "frequency", "validity", "enforce_same_browser_origin", "code_challenge_length", "code_challenge_type", "regenerate_passwordless_credentials_on_resend")

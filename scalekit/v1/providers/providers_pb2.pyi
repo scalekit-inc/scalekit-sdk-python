@@ -85,18 +85,20 @@ class CreateProviderRequest(_message.Message):
     def __init__(self, provider: _Optional[_Union[CreateProvider, _Mapping]] = ...) -> None: ...
 
 class CreateCustomProvider(_message.Message):
-    __slots__ = ("display_name", "description", "auth_patterns", "proxy_url", "proxy_enabled")
+    __slots__ = ("display_name", "description", "auth_patterns", "proxy_url", "proxy_enabled", "icon_src")
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     AUTH_PATTERNS_FIELD_NUMBER: _ClassVar[int]
     PROXY_URL_FIELD_NUMBER: _ClassVar[int]
     PROXY_ENABLED_FIELD_NUMBER: _ClassVar[int]
+    ICON_SRC_FIELD_NUMBER: _ClassVar[int]
     display_name: str
     description: str
     auth_patterns: _struct_pb2.ListValue
     proxy_url: str
     proxy_enabled: bool
-    def __init__(self, display_name: _Optional[str] = ..., description: _Optional[str] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., proxy_url: _Optional[str] = ..., proxy_enabled: bool = ...) -> None: ...
+    icon_src: str
+    def __init__(self, display_name: _Optional[str] = ..., description: _Optional[str] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., proxy_url: _Optional[str] = ..., proxy_enabled: bool = ..., icon_src: _Optional[str] = ...) -> None: ...
 
 class CreateCustomProviderRequest(_message.Message):
     __slots__ = ("provider",)
@@ -141,18 +143,20 @@ class UpdateProviderRequest(_message.Message):
     def __init__(self, identifier: _Optional[str] = ..., provider: _Optional[_Union[UpdateProvider, _Mapping]] = ...) -> None: ...
 
 class UpdateCustomProvider(_message.Message):
-    __slots__ = ("display_name", "description", "auth_patterns", "proxy_url", "proxy_enabled")
+    __slots__ = ("display_name", "description", "auth_patterns", "proxy_url", "proxy_enabled", "icon_src")
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     AUTH_PATTERNS_FIELD_NUMBER: _ClassVar[int]
     PROXY_URL_FIELD_NUMBER: _ClassVar[int]
     PROXY_ENABLED_FIELD_NUMBER: _ClassVar[int]
+    ICON_SRC_FIELD_NUMBER: _ClassVar[int]
     display_name: str
     description: str
     auth_patterns: _struct_pb2.ListValue
     proxy_url: str
     proxy_enabled: bool
-    def __init__(self, display_name: _Optional[str] = ..., description: _Optional[str] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., proxy_url: _Optional[str] = ..., proxy_enabled: bool = ...) -> None: ...
+    icon_src: str
+    def __init__(self, display_name: _Optional[str] = ..., description: _Optional[str] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., proxy_url: _Optional[str] = ..., proxy_enabled: bool = ..., icon_src: _Optional[str] = ...) -> None: ...
 
 class UpdateCustomProviderRequest(_message.Message):
     __slots__ = ("identifier", "provider")
