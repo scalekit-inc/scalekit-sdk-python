@@ -35,6 +35,11 @@ class MigrationServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateRolePermissionsRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateRolePermissionsResponse.FromString,
                 )
+        self.MigrateEnvKeys = channel.unary_unary(
+                '/scalekit.v1.migrations.MigrationService/MigrateEnvKeys',
+                request_serializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateEnvKeysRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateEnvKeysResponse.FromString,
+                )
 
 
 class MigrationServiceServicer(object):
@@ -64,6 +69,12 @@ class MigrationServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def MigrateEnvKeys(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_MigrationServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -86,6 +97,11 @@ def add_MigrationServiceServicer_to_server(servicer, server):
                     servicer.MigrateRolePermissions,
                     request_deserializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateRolePermissionsRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateRolePermissionsResponse.SerializeToString,
+            ),
+            'MigrateEnvKeys': grpc.unary_unary_rpc_method_handler(
+                    servicer.MigrateEnvKeys,
+                    request_deserializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateEnvKeysRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateEnvKeysResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -162,5 +178,22 @@ class MigrationService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.migrations.MigrationService/MigrateRolePermissions',
             scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateRolePermissionsRequest.SerializeToString,
             scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateRolePermissionsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def MigrateEnvKeys(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.migrations.MigrationService/MigrateEnvKeys',
+            scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateEnvKeysRequest.SerializeToString,
+            scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateEnvKeysResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

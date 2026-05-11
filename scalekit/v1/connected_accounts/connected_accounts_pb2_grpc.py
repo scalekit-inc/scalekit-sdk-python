@@ -44,10 +44,30 @@ class ConnectedAccountServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetMagicLinkForConnectedAccountRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetMagicLinkForConnectedAccountResponse.FromString,
                 )
+        self.GetConnectedAccount = channel.unary_unary(
+                '/scalekit.v1.connected_accounts.ConnectedAccountService/GetConnectedAccount',
+                request_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetConnectedAccountRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetConnectedAccountResponse.FromString,
+                )
+        self.DisconnectConnectedAccount = channel.unary_unary(
+                '/scalekit.v1.connected_accounts.ConnectedAccountService/DisconnectConnectedAccount',
+                request_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.DisconnectConnectedAccountRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.DisconnectConnectedAccountResponse.FromString,
+                )
         self.GetConnectedAccountAuth = channel.unary_unary(
                 '/scalekit.v1.connected_accounts.ConnectedAccountService/GetConnectedAccountAuth',
                 request_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetConnectedAccountByIdentifierRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetConnectedAccountByIdentifierResponse.FromString,
+                )
+        self.GetConnectedAccountDetails = channel.unary_unary(
+                '/scalekit.v1.connected_accounts.ConnectedAccountService/GetConnectedAccountDetails',
+                request_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetConnectedAccountByIdentifierRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetConnectedAccountByIdentifierResponse.FromString,
+                )
+        self.VerifyConnectedAccountUser = channel.unary_unary(
+                '/scalekit.v1.connected_accounts.ConnectedAccountService/VerifyConnectedAccountUser',
+                request_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.VerifyConnectedAccountUserRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.VerifyConnectedAccountUserResponse.FromString,
                 )
 
 
@@ -96,8 +116,36 @@ class ConnectedAccountServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetConnectedAccount(self, request, context):
+        """Get Connected Account by ID
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DisconnectConnectedAccount(self, request, context):
+        """Disconnect a Connected Account
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def GetConnectedAccountAuth(self, request, context):
         """Get Connected Account Authentication Details
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetConnectedAccountDetails(self, request, context):
+        """Get Connected Account Details (without auth credentials)
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def VerifyConnectedAccountUser(self, request, context):
+        """Verify connected account user after OAuth callback
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -136,10 +184,30 @@ def add_ConnectedAccountServiceServicer_to_server(servicer, server):
                     request_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetMagicLinkForConnectedAccountRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetMagicLinkForConnectedAccountResponse.SerializeToString,
             ),
+            'GetConnectedAccount': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetConnectedAccount,
+                    request_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetConnectedAccountRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetConnectedAccountResponse.SerializeToString,
+            ),
+            'DisconnectConnectedAccount': grpc.unary_unary_rpc_method_handler(
+                    servicer.DisconnectConnectedAccount,
+                    request_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.DisconnectConnectedAccountRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.DisconnectConnectedAccountResponse.SerializeToString,
+            ),
             'GetConnectedAccountAuth': grpc.unary_unary_rpc_method_handler(
                     servicer.GetConnectedAccountAuth,
                     request_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetConnectedAccountByIdentifierRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetConnectedAccountByIdentifierResponse.SerializeToString,
+            ),
+            'GetConnectedAccountDetails': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetConnectedAccountDetails,
+                    request_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetConnectedAccountByIdentifierRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetConnectedAccountByIdentifierResponse.SerializeToString,
+            ),
+            'VerifyConnectedAccountUser': grpc.unary_unary_rpc_method_handler(
+                    servicer.VerifyConnectedAccountUser,
+                    request_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.VerifyConnectedAccountUserRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.VerifyConnectedAccountUserResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -254,6 +322,40 @@ class ConnectedAccountService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
+    def GetConnectedAccount(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connected_accounts.ConnectedAccountService/GetConnectedAccount',
+            scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetConnectedAccountRequest.SerializeToString,
+            scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetConnectedAccountResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DisconnectConnectedAccount(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connected_accounts.ConnectedAccountService/DisconnectConnectedAccount',
+            scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.DisconnectConnectedAccountRequest.SerializeToString,
+            scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.DisconnectConnectedAccountResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
     def GetConnectedAccountAuth(request,
             target,
             options=(),
@@ -267,5 +369,39 @@ class ConnectedAccountService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connected_accounts.ConnectedAccountService/GetConnectedAccountAuth',
             scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetConnectedAccountByIdentifierRequest.SerializeToString,
             scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetConnectedAccountByIdentifierResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetConnectedAccountDetails(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connected_accounts.ConnectedAccountService/GetConnectedAccountDetails',
+            scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetConnectedAccountByIdentifierRequest.SerializeToString,
+            scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetConnectedAccountByIdentifierResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def VerifyConnectedAccountUser(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connected_accounts.ConnectedAccountService/VerifyConnectedAccountUser',
+            scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.VerifyConnectedAccountUserRequest.SerializeToString,
+            scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.VerifyConnectedAccountUserResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

@@ -128,10 +128,12 @@ class GetAuthCustomizationsRequest(_message.Message):
     def __init__(self) -> None: ...
 
 class PortalSettings(_message.Message):
-    __slots__ = ("custom_branding",)
+    __slots__ = ("custom_branding", "new_self_serve_sso_scim")
     CUSTOM_BRANDING_FIELD_NUMBER: _ClassVar[int]
+    NEW_SELF_SERVE_SSO_SCIM_FIELD_NUMBER: _ClassVar[int]
     custom_branding: bool
-    def __init__(self, custom_branding: bool = ...) -> None: ...
+    new_self_serve_sso_scim: bool
+    def __init__(self, custom_branding: bool = ..., new_self_serve_sso_scim: bool = ...) -> None: ...
 
 class GetAuthCustomizationsResponse(_message.Message):
     __slots__ = ("customization_settings", "settings")
@@ -234,7 +236,7 @@ class UpdateLoginUserDetailsRequest(_message.Message):
     def __init__(self, connection_id: _Optional[str] = ..., login_request_id: _Optional[str] = ..., user: _Optional[_Union[User, _Mapping]] = ...) -> None: ...
 
 class User(_message.Message):
-    __slots__ = ("sub", "email", "given_name", "family_name", "email_verified", "phone_number", "phone_number_verified", "name", "preferred_username", "picture", "gender", "locale", "groups", "custom_attributes", "organization_external_id")
+    __slots__ = ("sub", "email", "given_name", "family_name", "email_verified", "phone_number", "phone_number_verified", "name", "preferred_username", "picture", "gender", "locale", "groups", "custom_attributes", "organization_external_id", "roles", "organization_external_name")
     SUB_FIELD_NUMBER: _ClassVar[int]
     EMAIL_FIELD_NUMBER: _ClassVar[int]
     GIVEN_NAME_FIELD_NUMBER: _ClassVar[int]
@@ -250,6 +252,8 @@ class User(_message.Message):
     GROUPS_FIELD_NUMBER: _ClassVar[int]
     CUSTOM_ATTRIBUTES_FIELD_NUMBER: _ClassVar[int]
     ORGANIZATION_EXTERNAL_ID_FIELD_NUMBER: _ClassVar[int]
+    ROLES_FIELD_NUMBER: _ClassVar[int]
+    ORGANIZATION_EXTERNAL_NAME_FIELD_NUMBER: _ClassVar[int]
     sub: str
     email: str
     given_name: str
@@ -265,15 +269,19 @@ class User(_message.Message):
     groups: _containers.RepeatedScalarFieldContainer[str]
     custom_attributes: _struct_pb2.Struct
     organization_external_id: str
-    def __init__(self, sub: _Optional[str] = ..., email: _Optional[str] = ..., given_name: _Optional[str] = ..., family_name: _Optional[str] = ..., email_verified: bool = ..., phone_number: _Optional[str] = ..., phone_number_verified: bool = ..., name: _Optional[str] = ..., preferred_username: _Optional[str] = ..., picture: _Optional[str] = ..., gender: _Optional[str] = ..., locale: _Optional[str] = ..., groups: _Optional[_Iterable[str]] = ..., custom_attributes: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., organization_external_id: _Optional[str] = ...) -> None: ...
+    roles: _containers.RepeatedScalarFieldContainer[str]
+    organization_external_name: str
+    def __init__(self, sub: _Optional[str] = ..., email: _Optional[str] = ..., given_name: _Optional[str] = ..., family_name: _Optional[str] = ..., email_verified: bool = ..., phone_number: _Optional[str] = ..., phone_number_verified: bool = ..., name: _Optional[str] = ..., preferred_username: _Optional[str] = ..., picture: _Optional[str] = ..., gender: _Optional[str] = ..., locale: _Optional[str] = ..., groups: _Optional[_Iterable[str]] = ..., custom_attributes: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., organization_external_id: _Optional[str] = ..., roles: _Optional[_Iterable[str]] = ..., organization_external_name: _Optional[str] = ...) -> None: ...
 
 class GetAuthStateResponse(_message.Message):
-    __slots__ = ("auth_state", "user")
+    __slots__ = ("auth_state", "user", "login_hint")
     AUTH_STATE_FIELD_NUMBER: _ClassVar[int]
     USER_FIELD_NUMBER: _ClassVar[int]
+    LOGIN_HINT_FIELD_NUMBER: _ClassVar[int]
     auth_state: AuthState
     user: UserDetails
-    def __init__(self, auth_state: _Optional[_Union[AuthState, str]] = ..., user: _Optional[_Union[UserDetails, _Mapping]] = ...) -> None: ...
+    login_hint: str
+    def __init__(self, auth_state: _Optional[_Union[AuthState, str]] = ..., user: _Optional[_Union[UserDetails, _Mapping]] = ..., login_hint: _Optional[str] = ...) -> None: ...
 
 class GetAuthErrorRequest(_message.Message):
     __slots__ = ("error_id",)
