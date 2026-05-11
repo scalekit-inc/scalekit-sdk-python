@@ -1,7 +1,10 @@
-from typing import Optional
+from typing import List, Optional
 
+from google.protobuf.empty_pb2 import Empty
 from scalekit.core import CoreClient
 from scalekit.v1.users.users_pb2 import (
+    AssignUserRolesRequest,
+    AssignUserRolesResponse,
     CreateMembership,
     CreateMembershipRequest,
     CreateMembershipResponse,
@@ -10,6 +13,9 @@ from scalekit.v1.users.users_pb2 import (
     CreateUserAndMembershipResponse,
     DeleteMembershipRequest,
     DeleteUserRequest,
+    GetCurrentUserRequest,
+    GetCurrentUserResponse,
+    GetSupportHashResponse,
     GetUserRequest,
     GetUserResponse,
     ListOrganizationUsersRequest,
@@ -20,8 +26,13 @@ from scalekit.v1.users.users_pb2 import (
     ListUserRolesResponse,
     ListUsersRequest,
     ListUsersResponse,
+    RemoveUserRoleRequest,
     ResendInviteRequest,
     ResendInviteResponse,
+    SearchOrganizationUsersRequest,
+    SearchOrganizationUsersResponse,
+    SearchUsersRequest,
+    SearchUsersResponse,
     UpdateMembership,
     UpdateMembershipRequest,
     UpdateMembershipResponse,
@@ -463,4 +474,167 @@ class UserClient:
             ),
         )
 
+    def get_current_user(self) -> GetCurrentUserResponse:
+        """
+        Fetch the user associated with the currently authenticated session token.
+
+        When to use: Call immediately after a user signs in to retrieve their profile
+        for display in the app or to populate session state.
+
+        :returns:
+            GetCurrentUserResponse — user (User object with id, email, and profile fields),
+            current_session_id (ID of the active session)
+        """
+        return self.core_client.grpc_exec(
+            self.user_service.GetCurrentUser.with_call,
+            GetCurrentUserRequest(),
+        )
+
+    def get_support_hash(self) -> GetSupportHashResponse:
+        """
+        Retrieve a support hash for the current user for use with third-party support widgets.
+
+        When to use: Call when initializing a customer support chat widget (e.g. Intercom)
+        that requires an HMAC hash to verify the user's identity.
+
+        :returns:
+            GetSupportHashResponse — support_hash (HMAC string to pass to the support widget)
+        """
+        return self.core_client.grpc_exec(
+            self.user_service.GetSupportHash.with_call,
+            Empty(),
+        )
+
+    def search_users(
+        self,
+        query: str,
+        page_size: int = 20,
+        page_token: Optional[str] = None,
+    ) -> SearchUsersResponse:
+        """
+        Search all users in the environment by email, name, or other profile fields.
+
+        When to use: Call when building an admin user lookup UI that needs to find
+        users across all organizations by partial email or name.
+
+        :param query       : Search string matched against email, name, and external_id
+        :type              : ``` str ```
+        :param page_size   : Maximum number of results to return per page (default 20)
+        :type              : ``` int ```
+        :param page_token  : Pagination cursor from a previous response's next_page_token
+        :type              : ``` str | None ```
+
+        :returns:
+            SearchUsersResponse — users (list of matching User objects),
+            total_size, next_page_token, and prev_page_token for pagination
+        """
+        return self.core_client.grpc_exec(
+            self.user_service.SearchUsers.with_call,
+            SearchUsersRequest(
+                query=query,
+                page_size=page_size,
+                page_token=page_token,
+            ),
+        )
+
+    def search_organization_users(
+        self,
+        organization_id: str,
+        query: str,
+        page_size: int = 20,
+        page_token: Optional[str] = None,
+    ) -> SearchOrganizationUsersResponse:
+        """
+        Search users within a specific organization by email, name, or other profile fields.
+
+        When to use: Call when an org admin uses the member search box to find a user
+        within their tenant without scrolling through a full list.
+
+        :param organization_id  : ID of the organization to search within
+        :type                   : ``` str ```
+        :param query            : Search string matched against email, name, and external_id
+        :type                   : ``` str ```
+        :param page_size        : Maximum number of results to return per page (default 20)
+        :type                   : ``` int ```
+        :param page_token       : Pagination cursor from a previous response's next_page_token
+        :type                   : ``` str | None ```
+
+        :returns:
+            SearchOrganizationUsersResponse — users (list of matching User objects scoped to the org),
+            total_size, next_page_token, and prev_page_token for pagination
+        """
+        return self.core_client.grpc_exec(
+            self.user_service.SearchOrganizationUsers.with_call,
+            SearchOrganizationUsersRequest(
+                organization_id=organization_id,
+                query=query,
+                page_size=page_size,
+                page_token=page_token,
+            ),
+        )
+
+    def assign_user_roles(
+        self,
+        organization_id: str,
+        user_id: str,
+        roles: List[str],
+    ) -> AssignUserRolesResponse:
+        """
+        Assign one or more roles to a user within an organization.
+
+        When to use: Call when an org admin promotes a member to admin, or when your
+        onboarding flow assigns a default role to a newly invited user.
+
+        :param organization_id  : ID of the organization in which to assign the roles
+        :type                   : ``` str ```
+        :param user_id          : ID of the user to assign roles to
+        :type                   : ``` str ```
+        :param roles            : List of role name strings to assign (e.g. ["admin", "member"])
+        :type                   : ``` list[str] ```
+
+        :returns:
+            AssignUserRolesResponse — roles (list of Role objects now active for the user
+            in this organization)
+        """
+        from scalekit.v1.commons.commons_pb2 import Role
+        role_objects = [Role(name=r) for r in roles]
+        return self.core_client.grpc_exec(
+            self.user_service.AssignUserRoles.with_call,
+            AssignUserRolesRequest(
+                organization_id=organization_id,
+                user_id=user_id,
+                roles=role_objects,
+            ),
+        )
+
+    def remove_user_role(
+        self,
+        organization_id: str,
+        user_id: str,
+        role_name: str,
+    ):
+        """
+        Remove a single role from a user within an organization.
+
+        When to use: Call when demoting a user from admin to member, or when revoking
+        a temporary elevated role after a task is complete.
+
+        :param organization_id  : ID of the organization in which to remove the role
+        :type                   : ``` str ```
+        :param user_id          : ID of the user to remove the role from
+        :type                   : ``` str ```
+        :param role_name        : Name of the role to remove (e.g. "admin")
+        :type                   : ``` str ```
+
+        :returns:
+            None
+        """
+        return self.core_client.grpc_exec(
+            self.user_service.RemoveUserRole.with_call,
+            RemoveUserRoleRequest(
+                organization_id=organization_id,
+                user_id=user_id,
+                role_name=role_name,
+            ),
+        )
 
