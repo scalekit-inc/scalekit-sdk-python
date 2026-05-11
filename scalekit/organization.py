@@ -20,6 +20,22 @@ from scalekit.v1.organizations.organizations_pb2 import (
     UpdateOrganizationSettingsRequest,
     OrganizationUserManagementSettings,
     UpsertUserManagementSettingsRequest,
+    SearchOrganizationsRequest,
+    SearchOrganizationsResponse,
+    DeletePortalLinkRequest,
+    DeletePortalLinkByIdRequest,
+    GetPortalLinkRequest,
+    GetPortalLinksResponse,
+    CreateOrganizationSessionSettingsRequest,
+    CreateOrganizationSessionSettingsResponse,
+    GetOrganizationSessionSettingsRequest,
+    GetOrganizationSessionSettingsResponse,
+    UpdateOrganizationSessionSettingsRequest,
+    UpdateOrganizationSessionSettingsResponse,
+    DeleteOrganizationSessionSettingsRequest,
+    OrganizationSessionSettings,
+    GetOrganizationUserManagementSettingsRequest,
+    GetOrganizationUserManagementSettingsResponse,
 )
 from scalekit.v1.organizations.organizations_pb2_grpc import OrganizationServiceStub
 
@@ -143,7 +159,7 @@ class OrganizationClient:
             Get Organization Response
         """
         return self.core_client.grpc_exec(
-            self.organization_service.GetOrganization.with_call,
+            self.organization_service.GetOrganizationByExternalId.with_call,
             GetOrganizationRequest(external_id=external_id),
         )
 
@@ -219,3 +235,222 @@ class OrganizationClient:
             )
         )
         return response[0].settings
+
+    def search_organizations(
+        self,
+        query: str,
+        page_size: int = 20,
+        page_token: Optional[str] = None,
+    ) -> SearchOrganizationsResponse:
+        """
+        Search organizations by name, external ID, or other attributes.
+
+        When to use: Call when building an admin UI that needs to find organizations by
+        partial name or external ID rather than paginating through the full list.
+
+        :param query       : Search string matched against organization name, external_id, and metadata
+        :type              : ``` str ```
+        :param page_size   : Maximum number of results to return per page (default 20)
+        :type              : ``` int ```
+        :param page_token  : Pagination cursor from a previous response's next_page_token
+        :type              : ``` str | None ```
+
+        :returns:
+            SearchOrganizationsResponse — organizations (list of matching orgs),
+            total_size (total match count), next_page_token and prev_page_token for pagination
+        """
+        return self.core_client.grpc_exec(
+            self.organization_service.SearchOrganization.with_call,
+            SearchOrganizationsRequest(
+                query=query,
+                page_size=page_size,
+                page_token=page_token,
+            ),
+        )
+
+    def delete_portal_link(self, organization_id: str):
+        """
+        Delete all active portal links for an organization.
+
+        When to use: Call when revoking a customer's admin portal access entirely,
+        for example after offboarding or when rotating portal credentials.
+
+        :param organization_id  : ID of the organization whose portal links should be revoked
+        :type                   : ``` str ```
+
+        :returns:
+            None
+        """
+        return self.core_client.grpc_exec(
+            self.organization_service.DeletePortalLink.with_call,
+            DeletePortalLinkRequest(id=organization_id),
+        )
+
+    def delete_portal_link_by_id(self, organization_id: str, link_id: str):
+        """
+        Delete a specific portal link for an organization by its link ID.
+
+        When to use: Call when revoking a single portal link without affecting other
+        active links for the same organization.
+
+        :param organization_id  : ID of the organization that owns the link
+        :type                   : ``` str ```
+        :param link_id          : ID of the specific portal link to delete
+        :type                   : ``` str ```
+
+        :returns:
+            None
+        """
+        return self.core_client.grpc_exec(
+            self.organization_service.DeletePortalLinkByID.with_call,
+            DeletePortalLinkByIdRequest(id=organization_id, link_id=link_id),
+        )
+
+    def get_portal_links(self, organization_id: str) -> GetPortalLinksResponse:
+        """
+        Retrieve all active portal links for an organization.
+
+        When to use: Call when displaying the list of outstanding portal invitations
+        in your admin dashboard, or before generating a new link to avoid duplicates.
+
+        :param organization_id  : ID of the organization whose portal links to fetch
+        :type                   : ``` str ```
+
+        :returns:
+            GetPortalLinksResponse — links (list of Link objects, each with id, location,
+            and expire_time)
+        """
+        return self.core_client.grpc_exec(
+            self.organization_service.GetPortalLinks.with_call,
+            GetPortalLinkRequest(id=organization_id),
+        )
+
+    def create_organization_session_settings(
+        self, organization_id: str, environment_id: str
+    ) -> CreateOrganizationSessionSettingsResponse:
+        """
+        Create session settings for an organization in a specific environment.
+
+        When to use: Call during organization onboarding when you need to initialize
+        custom session duration or token lifetime rules for a new tenant.
+
+        :param organization_id  : ID of the organization to configure session settings for
+        :type                   : ``` str ```
+        :param environment_id   : ID of the environment the settings apply to
+        :type                   : ``` str ```
+
+        :returns:
+            CreateOrganizationSessionSettingsResponse — environment_id, organization_id,
+            and session_settings (OrganizationSessionSettings with token lifetime fields)
+        """
+        return self.core_client.grpc_exec(
+            self.organization_service.CreateOrganizationSessionSettings.with_call,
+            CreateOrganizationSessionSettingsRequest(
+                id=organization_id,
+                environment_id=environment_id,
+            ),
+        )
+
+    def get_organization_session_settings(
+        self, organization_id: str, environment_id: str
+    ) -> GetOrganizationSessionSettingsResponse:
+        """
+        Fetch the current session settings for an organization in a specific environment.
+
+        When to use: Call when rendering an admin settings page that shows session
+        timeout and token expiry values configured for a tenant.
+
+        :param organization_id  : ID of the organization whose session settings to fetch
+        :type                   : ``` str ```
+        :param environment_id   : ID of the environment the settings apply to
+        :type                   : ``` str ```
+
+        :returns:
+            GetOrganizationSessionSettingsResponse — environment_id, organization_id,
+            and session_settings (OrganizationSessionSettings with current token lifetime values)
+        """
+        return self.core_client.grpc_exec(
+            self.organization_service.GetOrganizationSessionSettings.with_call,
+            GetOrganizationSessionSettingsRequest(
+                id=organization_id,
+                environment_id=environment_id,
+            ),
+        )
+
+    def update_organization_session_settings(
+        self,
+        organization_id: str,
+        environment_id: str,
+        session_settings: OrganizationSessionSettings,
+    ) -> UpdateOrganizationSessionSettingsResponse:
+        """
+        Update session settings for an organization in a specific environment.
+
+        When to use: Call when a customer admin changes their session timeout policy
+        or token lifetime from the settings UI.
+
+        :param organization_id    : ID of the organization to update
+        :type                     : ``` str ```
+        :param environment_id     : ID of the environment the settings apply to
+        :type                     : ``` str ```
+        :param session_settings   : OrganizationSessionSettings object with the new values
+        :type                     : ``` OrganizationSessionSettings ```
+
+        :returns:
+            UpdateOrganizationSessionSettingsResponse — environment_id, organization_id,
+            and session_settings reflecting the updated configuration
+        """
+        return self.core_client.grpc_exec(
+            self.organization_service.UpdateOrganizationSessionSettings.with_call,
+            UpdateOrganizationSessionSettingsRequest(
+                id=organization_id,
+                environment_id=environment_id,
+                session_settings=session_settings,
+            ),
+        )
+
+    def delete_organization_session_settings(
+        self, organization_id: str, environment_id: str
+    ):
+        """
+        Delete custom session settings for an organization, reverting to environment defaults.
+
+        When to use: Call when a customer needs to reset their session configuration
+        back to the environment-level defaults.
+
+        :param organization_id  : ID of the organization whose session settings to delete
+        :type                   : ``` str ```
+        :param environment_id   : ID of the environment the settings apply to
+        :type                   : ``` str ```
+
+        :returns:
+            None
+        """
+        return self.core_client.grpc_exec(
+            self.organization_service.DeleteOrganizationSessionSettings.with_call,
+            DeleteOrganizationSessionSettingsRequest(
+                id=organization_id,
+                environment_id=environment_id,
+            ),
+        )
+
+    def get_organization_user_management_setting(
+        self, organization_id: str
+    ) -> GetOrganizationUserManagementSettingsResponse:
+        """
+        Fetch user management settings for an organization, such as maximum allowed users.
+
+        When to use: Call before adding a new user to check whether the organization
+        has reached its user limit.
+
+        :param organization_id  : ID of the organization whose user management settings to fetch
+        :type                   : ``` str ```
+
+        :returns:
+            GetOrganizationUserManagementSettingsResponse — settings (OrganizationUserManagementSettings
+            with max_allowed_users and current user count)
+        """
+        return self.core_client.grpc_exec(
+            self.organization_service.GetOrganizationUserManagementSetting.with_call,
+            GetOrganizationUserManagementSettingsRequest(organization_id=organization_id),
+        )
