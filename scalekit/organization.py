@@ -326,28 +326,56 @@ class OrganizationClient:
         )
 
     def create_organization_session_settings(
-        self, organization_id: str, environment_id: str
-    ) -> CreateOrganizationSessionSettingsResponse:
+        self,
+        organization_id: str,
+        environment_id: str,
+        session_management_enabled: Optional[bool] = None,
+        absolute_session_timeout: Optional[int] = None,
+        idle_session_enabled: Optional[bool] = None,
+        idle_session_timeout: Optional[int] = None,
+    ) -> UpdateOrganizationSessionSettingsResponse:
         """
-        Create session settings for an organization in a specific environment.
+        Create session settings for an organization, optionally configuring them in one call.
 
-        When to use: Call during organization onboarding when you need to initialize
-        custom session duration or token lifetime rules for a new tenant.
+        When to use: Call during organization onboarding to initialize session policy.
+        Pass the desired settings directly rather than following up with a separate update.
 
-        :param organization_id  : ID of the organization to configure session settings for
-        :type                   : ``` str ```
-        :param environment_id   : ID of the environment the settings apply to
-        :type                   : ``` str ```
+        :param organization_id          : ID of the organization
+        :type                           : ``` str ```
+        :param environment_id           : ID of the environment the settings apply to
+        :type                           : ``` str ```
+        :param session_management_enabled : Whether custom session management is active
+        :type                           : ``` Optional[bool] ```
+        :param absolute_session_timeout : Maximum session duration in seconds regardless of activity
+        :type                           : ``` Optional[int] ```
+        :param idle_session_enabled     : Whether idle timeout is enforced
+        :type                           : ``` Optional[bool] ```
+        :param idle_session_timeout     : Seconds of inactivity before the session expires
+        :type                           : ``` Optional[int] ```
 
         :returns:
-            CreateOrganizationSessionSettingsResponse — environment_id, organization_id,
-            and session_settings (OrganizationSessionSettings with token lifetime fields)
+            UpdateOrganizationSessionSettingsResponse — environment_id, organization_id,
+            and session_settings reflecting the configured values
         """
-        return self.core_client.grpc_exec(
+        self.core_client.grpc_exec(
             self.organization_service.CreateOrganizationSessionSettings.with_call,
             CreateOrganizationSessionSettingsRequest(
                 id=organization_id,
                 environment_id=environment_id,
+            ),
+        )
+        settings = OrganizationSessionSettings(
+            **({} if session_management_enabled is None else {"session_management_enabled": wrappers_pb2.BoolValue(value=session_management_enabled)}),
+            **({} if absolute_session_timeout is None else {"absolute_session_timeout": wrappers_pb2.Int32Value(value=absolute_session_timeout)}),
+            **({} if idle_session_enabled is None else {"idle_session_enabled": wrappers_pb2.BoolValue(value=idle_session_enabled)}),
+            **({} if idle_session_timeout is None else {"idle_session_timeout": wrappers_pb2.Int32Value(value=idle_session_timeout)}),
+        )
+        return self.core_client.grpc_exec(
+            self.organization_service.UpdateOrganizationSessionSettings.with_call,
+            UpdateOrganizationSessionSettingsRequest(
+                id=organization_id,
+                environment_id=environment_id,
+                session_settings=settings,
             ),
         )
 
