@@ -230,7 +230,12 @@ class TestOrganization(BaseTest):
         try:
             env_id = "test-env"
             create_response = self.scalekit_client.organization.create_organization_session_settings(
-                organization_id=self.org_id, environment_id=env_id
+                organization_id=self.org_id,
+                environment_id=env_id,
+                session_management_enabled=True,
+                absolute_session_timeout=3600,
+                idle_session_enabled=True,
+                idle_session_timeout=900,
             )
             self.assertEqual(create_response[1].code().name, "OK")
 
