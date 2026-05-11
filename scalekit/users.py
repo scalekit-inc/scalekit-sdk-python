@@ -1,6 +1,5 @@
 from typing import List, Optional
 
-from google.protobuf.empty_pb2 import Empty
 from scalekit.core import CoreClient
 from scalekit.v1.users.users_pb2 import (
     AssignUserRolesRequest,
@@ -13,9 +12,6 @@ from scalekit.v1.users.users_pb2 import (
     CreateUserAndMembershipResponse,
     DeleteMembershipRequest,
     DeleteUserRequest,
-    GetCurrentUserRequest,
-    GetCurrentUserResponse,
-    GetSupportHashResponse,
     GetUserRequest,
     GetUserResponse,
     ListOrganizationUsersRequest,
@@ -472,37 +468,6 @@ class UserClient:
                 organization_id=organization_id,
                 user_id=user_id
             ),
-        )
-
-    def get_current_user(self) -> GetCurrentUserResponse:
-        """
-        Fetch the user associated with the currently authenticated session token.
-
-        When to use: Call immediately after a user signs in to retrieve their profile
-        for display in the app or to populate session state.
-
-        :returns:
-            GetCurrentUserResponse — user (User object with id, email, and profile fields),
-            current_session_id (ID of the active session)
-        """
-        return self.core_client.grpc_exec(
-            self.user_service.GetCurrentUser.with_call,
-            GetCurrentUserRequest(),
-        )
-
-    def get_support_hash(self) -> GetSupportHashResponse:
-        """
-        Retrieve a support hash for the current user for use with third-party support widgets.
-
-        When to use: Call when initializing a customer support chat widget (e.g. Intercom)
-        that requires an HMAC hash to verify the user's identity.
-
-        :returns:
-            GetSupportHashResponse — support_hash (HMAC string to pass to the support widget)
-        """
-        return self.core_client.grpc_exec(
-            self.user_service.GetSupportHash.with_call,
-            Empty(),
         )
 
     def search_users(
