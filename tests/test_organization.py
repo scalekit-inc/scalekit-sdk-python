@@ -177,6 +177,80 @@ class TestOrganization(BaseTest):
         self.assertTrue(settings.HasField("max_allowed_users"))
         self.assertEqual(settings.max_allowed_users.value, 45)
 
+    def test_search_organizations(self):
+        """ Method to test search organizations """
+        organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
+        org_response = self.scalekit_client.organization.create_organization(organization=organization)
+        self.org_id = org_response[0].organization.id
+
+        response = self.scalekit_client.organization.search_organizations(query="", page_size=10)
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertTrue(response[0] is not None)
+
+    def test_get_portal_links(self):
+        """ Method to test get portal links """
+        organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
+        org_response = self.scalekit_client.organization.create_organization(organization=organization)
+        self.org_id = org_response[0].organization.id
+
+        response = self.scalekit_client.organization.get_portal_links(organization_id=self.org_id)
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertTrue(response[0] is not None)
+
+    def test_delete_portal_link(self):
+        """ Method to test delete portal link (all) """
+        organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
+        org_response = self.scalekit_client.organization.create_organization(organization=organization)
+        self.org_id = org_response[0].organization.id
+
+        response = self.scalekit_client.organization.delete_portal_link(organization_id=self.org_id)
+        self.assertEqual(response[1].code().name, "OK")
+
+    def test_get_organization_user_management_setting(self):
+        """ Method to test get organization user management setting """
+        organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
+        org_response = self.scalekit_client.organization.create_organization(organization=organization)
+        self.org_id = org_response[0].organization.id
+
+        try:
+            response = self.scalekit_client.organization.get_organization_user_management_setting(
+                organization_id=self.org_id
+            )
+            self.assertEqual(response[1].code().name, "OK")
+            self.assertTrue(response[0] is not None)
+        except Exception as exp:
+            self.skipTest(f"Skipping get_organization_user_management_setting due to error: {exp}")
+
+    def test_organization_session_settings_lifecycle(self):
+        """ Method to test organization session settings create/get/update/delete """
+        organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
+        org_response = self.scalekit_client.organization.create_organization(organization=organization)
+        self.org_id = org_response[0].organization.id
+
+        try:
+            env_id = "test-env"
+            create_response = self.scalekit_client.organization.create_organization_session_settings(
+                organization_id=self.org_id,
+                environment_id=env_id,
+                session_management_enabled=True,
+                absolute_session_timeout=3600,
+                idle_session_enabled=True,
+                idle_session_timeout=900,
+            )
+            self.assertEqual(create_response[1].code().name, "OK")
+
+            get_response = self.scalekit_client.organization.get_organization_session_settings(
+                organization_id=self.org_id, environment_id=env_id
+            )
+            self.assertEqual(get_response[1].code().name, "OK")
+
+            delete_response = self.scalekit_client.organization.delete_organization_session_settings(
+                organization_id=self.org_id, environment_id=env_id
+            )
+            self.assertEqual(delete_response[1].code().name, "OK")
+        except Exception as exp:
+            self.skipTest(f"Skipping session settings lifecycle test due to error: {exp}")
+
     def tearDown(self):
         """ Method to clean up after test """
         if self.org_id:

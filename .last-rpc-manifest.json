@@ -1,0 +1,2396 @@
+[
+  {
+    "service": "OrganizationService",
+    "rpc": "CreateOrganization",
+    "request_type": "CreateOrganizationRequest",
+    "response_type": "CreateOrganizationResponse",
+    "stub_file": "scalekit/v1/organizations/organizations_pb2_grpc.py"
+  },
+  {
+    "service": "OrganizationService",
+    "rpc": "UpdateOrganization",
+    "request_type": "UpdateOrganizationRequest",
+    "response_type": "UpdateOrganizationResponse",
+    "stub_file": "scalekit/v1/organizations/organizations_pb2_grpc.py"
+  },
+  {
+    "service": "OrganizationService",
+    "rpc": "GetOrganization",
+    "request_type": "GetOrganizationRequest",
+    "response_type": "GetOrganizationResponse",
+    "stub_file": "scalekit/v1/organizations/organizations_pb2_grpc.py"
+  },
+  {
+    "service": "OrganizationService",
+    "rpc": "GetOrganizationByExternalId",
+    "request_type": "GetOrganizationRequest",
+    "response_type": "GetOrganizationResponse",
+    "stub_file": "scalekit/v1/organizations/organizations_pb2_grpc.py"
+  },
+  {
+    "service": "OrganizationService",
+    "rpc": "ListOrganization",
+    "request_type": "ListOrganizationsRequest",
+    "response_type": "ListOrganizationsResponse",
+    "stub_file": "scalekit/v1/organizations/organizations_pb2_grpc.py"
+  },
+  {
+    "service": "OrganizationService",
+    "rpc": "SearchOrganization",
+    "request_type": "SearchOrganizationsRequest",
+    "response_type": "SearchOrganizationsResponse",
+    "stub_file": "scalekit/v1/organizations/organizations_pb2_grpc.py"
+  },
+  {
+    "service": "OrganizationService",
+    "rpc": "DeleteOrganization",
+    "request_type": "DeleteOrganizationRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/organizations/organizations_pb2_grpc.py"
+  },
+  {
+    "service": "OrganizationService",
+    "rpc": "GeneratePortalLink",
+    "request_type": "GeneratePortalLinkRequest",
+    "response_type": "GeneratePortalLinkResponse",
+    "stub_file": "scalekit/v1/organizations/organizations_pb2_grpc.py"
+  },
+  {
+    "service": "OrganizationService",
+    "rpc": "DeletePortalLink",
+    "request_type": "DeletePortalLinkRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/organizations/organizations_pb2_grpc.py"
+  },
+  {
+    "service": "OrganizationService",
+    "rpc": "DeletePortalLinkByID",
+    "request_type": "DeletePortalLinkByIdRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/organizations/organizations_pb2_grpc.py"
+  },
+  {
+    "service": "OrganizationService",
+    "rpc": "GetPortalLinks",
+    "request_type": "GetPortalLinkRequest",
+    "response_type": "GetPortalLinksResponse",
+    "stub_file": "scalekit/v1/organizations/organizations_pb2_grpc.py"
+  },
+  {
+    "service": "OrganizationService",
+    "rpc": "UpdateOrganizationSettings",
+    "request_type": "UpdateOrganizationSettingsRequest",
+    "response_type": "GetOrganizationResponse",
+    "stub_file": "scalekit/v1/organizations/organizations_pb2_grpc.py"
+  },
+  {
+    "service": "OrganizationService",
+    "rpc": "CreateOrganizationSessionSettings",
+    "request_type": "CreateOrganizationSessionSettingsRequest",
+    "response_type": "CreateOrganizationSessionSettingsResponse",
+    "stub_file": "scalekit/v1/organizations/organizations_pb2_grpc.py"
+  },
+  {
+    "service": "OrganizationService",
+    "rpc": "GetOrganizationSessionSettings",
+    "request_type": "GetOrganizationSessionSettingsRequest",
+    "response_type": "GetOrganizationSessionSettingsResponse",
+    "stub_file": "scalekit/v1/organizations/organizations_pb2_grpc.py"
+  },
+  {
+    "service": "OrganizationService",
+    "rpc": "UpdateOrganizationSessionSettings",
+    "request_type": "UpdateOrganizationSessionSettingsRequest",
+    "response_type": "UpdateOrganizationSessionSettingsResponse",
+    "stub_file": "scalekit/v1/organizations/organizations_pb2_grpc.py"
+  },
+  {
+    "service": "OrganizationService",
+    "rpc": "DeleteOrganizationSessionSettings",
+    "request_type": "DeleteOrganizationSessionSettingsRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/organizations/organizations_pb2_grpc.py"
+  },
+  {
+    "service": "OrganizationService",
+    "rpc": "UpsertUserManagementSettings",
+    "request_type": "UpsertUserManagementSettingsRequest",
+    "response_type": "UpsertUserManagementSettingsResponse",
+    "stub_file": "scalekit/v1/organizations/organizations_pb2_grpc.py"
+  },
+  {
+    "service": "OrganizationService",
+    "rpc": "GetOrganizationUserManagementSetting",
+    "request_type": "GetOrganizationUserManagementSettingsRequest",
+    "response_type": "GetOrganizationUserManagementSettingsResponse",
+    "stub_file": "scalekit/v1/organizations/organizations_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "ListClient",
+    "request_type": "ListClientsRequest",
+    "response_type": "ListClientsResponse",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "CreateClient",
+    "request_type": "CreateClientRequest",
+    "response_type": "CreateClientResponse",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "GetClient",
+    "request_type": "GetClientRequest",
+    "response_type": "GetClientResponse",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "UpdateClient",
+    "request_type": "UpdateClientRequest",
+    "response_type": "UpdateClientResponse",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "DeleteClient",
+    "request_type": "DeleteClientRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "CreateClientSecret",
+    "request_type": "CreateClientSecretRequest",
+    "response_type": "CreateClientSecretResponse",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "UpdateClientSecret",
+    "request_type": "UpdateClientSecretRequest",
+    "response_type": "UpdateClientSecretResponse",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "DeleteClientSecret",
+    "request_type": "DeleteClientSecretRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "CreateOrganizationClient",
+    "request_type": "CreateOrganizationClientRequest",
+    "response_type": "CreateOrganizationClientResponse",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "GetOrganizationClient",
+    "request_type": "GetOrganizationClientRequest",
+    "response_type": "GetOrganizationClientResponse",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "CreateOrganizationClientSecret",
+    "request_type": "CreateOrganizationClientSecretRequest",
+    "response_type": "CreateOrganizationClientSecretResponse",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "DeleteOrganizationClientSecret",
+    "request_type": "DeleteOrganizationClientSecretRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "UpdateOrganizationClient",
+    "request_type": "UpdateOrganizationClientRequest",
+    "response_type": "UpdateOrganizationClientResponse",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "DeleteOrganizationClient",
+    "request_type": "DeleteOrganizationClientRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "ListOrganizationClients",
+    "request_type": "ListOrganizationClientsRequest",
+    "response_type": "ListOrganizationClientsResponse",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "CreateResource",
+    "request_type": "CreateResourceRequest",
+    "response_type": "CreateResourceResponse",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "GetResource",
+    "request_type": "GetResourceRequest",
+    "response_type": "GetResourceResponse",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "ListResources",
+    "request_type": "ListResourcesRequest",
+    "response_type": "ListResourcesResponse",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "UpdateResource",
+    "request_type": "UpdateResourceRequest",
+    "response_type": "UpdateResourceResponse",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "DeleteResource",
+    "request_type": "DeleteResourceRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "DeleteResourceProvider",
+    "request_type": "DeleteResourceProviderRequest",
+    "response_type": "GetResourceResponse",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "CreateResourceClient",
+    "request_type": "CreateResourceClientRequest",
+    "response_type": "CreateResourceClientResponse",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "UpdateResourceClient",
+    "request_type": "UpdateResourceClientRequest",
+    "response_type": "UpdateResourceClientResponse",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "GetResourceClient",
+    "request_type": "GetResourceClientRequest",
+    "response_type": "GetResourceClientResponse",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "ListResourceClients",
+    "request_type": "ListResourceClientsRequest",
+    "response_type": "ListResourceClientsResponse",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "ListResourceUserConsents",
+    "request_type": "ListResourceUserConsentsRequest",
+    "response_type": "ListResourceUserConsentsResponse",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "DeleteResourceClient",
+    "request_type": "DeleteResourceClientRequest",
+    "response_type": "DeleteResourceClientResponse",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "RegisterClient",
+    "request_type": "RegisterClientRequest",
+    "response_type": "RegisterClientResponse",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "CreateScope",
+    "request_type": "CreateScopeRequest",
+    "response_type": "CreateScopeResponse",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "ListScopes",
+    "request_type": "ListScopesRequest",
+    "response_type": "ListScopesResponse",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "UpdateScope",
+    "request_type": "UpdateScopeRequest",
+    "response_type": "UpdateScopeResponse",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "DeleteScope",
+    "request_type": "DeleteScopeRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "GetConsentDetails",
+    "request_type": "Empty",
+    "response_type": "GetConsentDetailsResponse",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "RevokeUserConsent",
+    "request_type": "RevokeUserConsentRequest",
+    "response_type": "RevokeUserConsentResponse",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "ClientService",
+    "rpc": "EnsureResourceConnection",
+    "request_type": "EnsureResourceConnectionRequest",
+    "response_type": "EnsureResourceConnectionResponse",
+    "stub_file": "scalekit/v1/clients/clients_pb2_grpc.py"
+  },
+  {
+    "service": "InterceptorService",
+    "rpc": "CreateInterceptor",
+    "request_type": "CreateInterceptorRequest",
+    "response_type": "CreateInterceptorResponse",
+    "stub_file": "scalekit/v1/interceptors/interceptors_pb2_grpc.py"
+  },
+  {
+    "service": "InterceptorService",
+    "rpc": "GetInterceptor",
+    "request_type": "GetInterceptorRequest",
+    "response_type": "GetInterceptorResponse",
+    "stub_file": "scalekit/v1/interceptors/interceptors_pb2_grpc.py"
+  },
+  {
+    "service": "InterceptorService",
+    "rpc": "ListInterceptors",
+    "request_type": "ListInterceptorsRequest",
+    "response_type": "ListInterceptorsResponse",
+    "stub_file": "scalekit/v1/interceptors/interceptors_pb2_grpc.py"
+  },
+  {
+    "service": "InterceptorService",
+    "rpc": "UpdateInterceptor",
+    "request_type": "UpdateInterceptorRequest",
+    "response_type": "UpdateInterceptorResponse",
+    "stub_file": "scalekit/v1/interceptors/interceptors_pb2_grpc.py"
+  },
+  {
+    "service": "InterceptorService",
+    "rpc": "DeleteInterceptor",
+    "request_type": "DeleteInterceptorRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/interceptors/interceptors_pb2_grpc.py"
+  },
+  {
+    "service": "InterceptorService",
+    "rpc": "EnableInterceptor",
+    "request_type": "EnableInterceptorRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/interceptors/interceptors_pb2_grpc.py"
+  },
+  {
+    "service": "InterceptorService",
+    "rpc": "DisableInterceptor",
+    "request_type": "DisableInterceptorRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/interceptors/interceptors_pb2_grpc.py"
+  },
+  {
+    "service": "InterceptorService",
+    "rpc": "TestInterceptor",
+    "request_type": "TestInterceptorRequest",
+    "response_type": "TestInterceptorResponse",
+    "stub_file": "scalekit/v1/interceptors/interceptors_pb2_grpc.py"
+  },
+  {
+    "service": "MigrationService",
+    "rpc": "MigrateFSAData",
+    "request_type": "MigrateFSARequest",
+    "response_type": "MigrationFSAResponse",
+    "stub_file": "scalekit/v1/migrations/migrations_pb2_grpc.py"
+  },
+  {
+    "service": "MigrationService",
+    "rpc": "MigrateStripeCustomers",
+    "request_type": "MigrateStripeCustomersRequest",
+    "response_type": "MigrateStripeCustomersResponse",
+    "stub_file": "scalekit/v1/migrations/migrations_pb2_grpc.py"
+  },
+  {
+    "service": "MigrationService",
+    "rpc": "MigrateWorkspaceFGA",
+    "request_type": "MigrateWorkspaceFGARequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/migrations/migrations_pb2_grpc.py"
+  },
+  {
+    "service": "MigrationService",
+    "rpc": "MigrateRolePermissions",
+    "request_type": "MigrateRolePermissionsRequest",
+    "response_type": "MigrateRolePermissionsResponse",
+    "stub_file": "scalekit/v1/migrations/migrations_pb2_grpc.py"
+  },
+  {
+    "service": "MigrationService",
+    "rpc": "MigrateEnvKeys",
+    "request_type": "MigrateEnvKeysRequest",
+    "response_type": "MigrateEnvKeysResponse",
+    "stub_file": "scalekit/v1/migrations/migrations_pb2_grpc.py"
+  },
+  {
+    "service": "ToolService",
+    "rpc": "CreateTool",
+    "request_type": "CreateToolRequest",
+    "response_type": "CreateToolResponse",
+    "stub_file": "scalekit/v1/tools/tools_pb2_grpc.py"
+  },
+  {
+    "service": "ToolService",
+    "rpc": "ListTools",
+    "request_type": "ListToolsRequest",
+    "response_type": "ListToolsResponse",
+    "stub_file": "scalekit/v1/tools/tools_pb2_grpc.py"
+  },
+  {
+    "service": "ToolService",
+    "rpc": "ListScopedTools",
+    "request_type": "ListScopedToolsRequest",
+    "response_type": "ListScopedToolsResponse",
+    "stub_file": "scalekit/v1/tools/tools_pb2_grpc.py"
+  },
+  {
+    "service": "ToolService",
+    "rpc": "ListAvailableTools",
+    "request_type": "ListAvailableToolsRequest",
+    "response_type": "ListAvailableToolsResponse",
+    "stub_file": "scalekit/v1/tools/tools_pb2_grpc.py"
+  },
+  {
+    "service": "ToolService",
+    "rpc": "SetToolDefault",
+    "request_type": "SetToolDefaultRequest",
+    "response_type": "SetToolDefaultResponse",
+    "stub_file": "scalekit/v1/tools/tools_pb2_grpc.py"
+  },
+  {
+    "service": "ToolService",
+    "rpc": "UpdateTool",
+    "request_type": "UpdateToolRequest",
+    "response_type": "UpdateToolResponse",
+    "stub_file": "scalekit/v1/tools/tools_pb2_grpc.py"
+  },
+  {
+    "service": "ToolService",
+    "rpc": "DeleteTool",
+    "request_type": "DeleteToolRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/tools/tools_pb2_grpc.py"
+  },
+  {
+    "service": "ToolService",
+    "rpc": "ExecuteTool",
+    "request_type": "ExecuteToolRequest",
+    "response_type": "ExecuteToolResponse",
+    "stub_file": "scalekit/v1/tools/tools_pb2_grpc.py"
+  },
+  {
+    "service": "UserAttributeService",
+    "rpc": "CreateSsoUserAttribute",
+    "request_type": "CreateUserAttributeRequest",
+    "response_type": "CreateUserAttributeResponse",
+    "stub_file": "scalekit/v1/user_attributes/user_attributes_pb2_grpc.py"
+  },
+  {
+    "service": "UserAttributeService",
+    "rpc": "ListSsoUserAttributes",
+    "request_type": "Empty",
+    "response_type": "ListUserAttributesResponse",
+    "stub_file": "scalekit/v1/user_attributes/user_attributes_pb2_grpc.py"
+  },
+  {
+    "service": "UserAttributeService",
+    "rpc": "UpdateSsoUserAttribute",
+    "request_type": "UpdateUserAttributeRequest",
+    "response_type": "UpdateUserAttributeResponse",
+    "stub_file": "scalekit/v1/user_attributes/user_attributes_pb2_grpc.py"
+  },
+  {
+    "service": "UserAttributeService",
+    "rpc": "DeleteSsoUserAttribute",
+    "request_type": "DeleteUserAttributeRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/user_attributes/user_attributes_pb2_grpc.py"
+  },
+  {
+    "service": "UserAttributeService",
+    "rpc": "CreateDirectoryUserAttribute",
+    "request_type": "CreateUserAttributeRequest",
+    "response_type": "CreateUserAttributeResponse",
+    "stub_file": "scalekit/v1/user_attributes/user_attributes_pb2_grpc.py"
+  },
+  {
+    "service": "UserAttributeService",
+    "rpc": "ListDirectoryUserAttributes",
+    "request_type": "Empty",
+    "response_type": "ListUserAttributesResponse",
+    "stub_file": "scalekit/v1/user_attributes/user_attributes_pb2_grpc.py"
+  },
+  {
+    "service": "UserAttributeService",
+    "rpc": "UpdateDirectoryUserAttribute",
+    "request_type": "UpdateUserAttributeRequest",
+    "response_type": "UpdateUserAttributeResponse",
+    "stub_file": "scalekit/v1/user_attributes/user_attributes_pb2_grpc.py"
+  },
+  {
+    "service": "UserAttributeService",
+    "rpc": "DeleteDirectoryUserAttribute",
+    "request_type": "DeleteUserAttributeRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/user_attributes/user_attributes_pb2_grpc.py"
+  },
+  {
+    "service": "DomainService",
+    "rpc": "CreateDomain",
+    "request_type": "CreateDomainRequest",
+    "response_type": "CreateDomainResponse",
+    "stub_file": "scalekit/v1/domains/domains_pb2_grpc.py"
+  },
+  {
+    "service": "DomainService",
+    "rpc": "UpdateDomain",
+    "request_type": "UpdateDomainRequest",
+    "response_type": "UpdateDomainResponse",
+    "stub_file": "scalekit/v1/domains/domains_pb2_grpc.py"
+  },
+  {
+    "service": "DomainService",
+    "rpc": "VerifyDomain",
+    "request_type": "VerifyDomainRequest",
+    "response_type": "BoolValue",
+    "stub_file": "scalekit/v1/domains/domains_pb2_grpc.py"
+  },
+  {
+    "service": "DomainService",
+    "rpc": "GetDomain",
+    "request_type": "GetDomainRequest",
+    "response_type": "GetDomainResponse",
+    "stub_file": "scalekit/v1/domains/domains_pb2_grpc.py"
+  },
+  {
+    "service": "DomainService",
+    "rpc": "DeleteDomain",
+    "request_type": "DeleteDomainRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/domains/domains_pb2_grpc.py"
+  },
+  {
+    "service": "DomainService",
+    "rpc": "ListDomains",
+    "request_type": "ListDomainRequest",
+    "response_type": "ListDomainResponse",
+    "stub_file": "scalekit/v1/domains/domains_pb2_grpc.py"
+  },
+  {
+    "service": "DomainService",
+    "rpc": "ListAuthorizedDomains",
+    "request_type": "ListAuthorizedDomainRequest",
+    "response_type": "ListAuthorizedDomainResponse",
+    "stub_file": "scalekit/v1/domains/domains_pb2_grpc.py"
+  },
+  {
+    "service": "ConnectedAccountService",
+    "rpc": "ListConnectedAccounts",
+    "request_type": "ListConnectedAccountsRequest",
+    "response_type": "ListConnectedAccountsResponse",
+    "stub_file": "scalekit/v1/connected_accounts/connected_accounts_pb2_grpc.py"
+  },
+  {
+    "service": "ConnectedAccountService",
+    "rpc": "SearchConnectedAccounts",
+    "request_type": "SearchConnectedAccountsRequest",
+    "response_type": "SearchConnectedAccountsResponse",
+    "stub_file": "scalekit/v1/connected_accounts/connected_accounts_pb2_grpc.py"
+  },
+  {
+    "service": "ConnectedAccountService",
+    "rpc": "CreateConnectedAccount",
+    "request_type": "CreateConnectedAccountRequest",
+    "response_type": "CreateConnectedAccountResponse",
+    "stub_file": "scalekit/v1/connected_accounts/connected_accounts_pb2_grpc.py"
+  },
+  {
+    "service": "ConnectedAccountService",
+    "rpc": "UpdateConnectedAccount",
+    "request_type": "UpdateConnectedAccountRequest",
+    "response_type": "UpdateConnectedAccountResponse",
+    "stub_file": "scalekit/v1/connected_accounts/connected_accounts_pb2_grpc.py"
+  },
+  {
+    "service": "ConnectedAccountService",
+    "rpc": "DeleteConnectedAccount",
+    "request_type": "DeleteConnectedAccountRequest",
+    "response_type": "DeleteConnectedAccountResponse",
+    "stub_file": "scalekit/v1/connected_accounts/connected_accounts_pb2_grpc.py"
+  },
+  {
+    "service": "ConnectedAccountService",
+    "rpc": "GetMagicLinkForConnectedAccount",
+    "request_type": "GetMagicLinkForConnectedAccountRequest",
+    "response_type": "GetMagicLinkForConnectedAccountResponse",
+    "stub_file": "scalekit/v1/connected_accounts/connected_accounts_pb2_grpc.py"
+  },
+  {
+    "service": "ConnectedAccountService",
+    "rpc": "GetConnectedAccountAuth",
+    "request_type": "GetConnectedAccountByIdentifierRequest",
+    "response_type": "GetConnectedAccountByIdentifierResponse",
+    "stub_file": "scalekit/v1/connected_accounts/connected_accounts_pb2_grpc.py"
+  },
+  {
+    "service": "ConnectedAccountService",
+    "rpc": "GetConnectedAccountDetails",
+    "request_type": "GetConnectedAccountByIdentifierRequest",
+    "response_type": "GetConnectedAccountByIdentifierResponse",
+    "stub_file": "scalekit/v1/connected_accounts/connected_accounts_pb2_grpc.py"
+  },
+  {
+    "service": "ConnectedAccountService",
+    "rpc": "VerifyConnectedAccountUser",
+    "request_type": "VerifyConnectedAccountUserRequest",
+    "response_type": "VerifyConnectedAccountUserResponse",
+    "stub_file": "scalekit/v1/connected_accounts/connected_accounts_pb2_grpc.py"
+  },
+  {
+    "service": "AuthService",
+    "rpc": "ListAuthMethods",
+    "request_type": "ListAuthMethodsRequest",
+    "response_type": "ListAuthMethodsResponse",
+    "stub_file": "scalekit/v1/auth/auth_pb2_grpc.py"
+  },
+  {
+    "service": "AuthService",
+    "rpc": "DiscoveryAuthMethod",
+    "request_type": "DiscoveryAuthMethodRequest",
+    "response_type": "DiscoveryAuthMethodResponse",
+    "stub_file": "scalekit/v1/auth/auth_pb2_grpc.py"
+  },
+  {
+    "service": "AuthService",
+    "rpc": "VerifyPasswordLessOtp",
+    "request_type": "VerifyPasswordLessOtpRequest",
+    "response_type": "VerifyPasswordLessOtpResponse",
+    "stub_file": "scalekit/v1/auth/auth_pb2_grpc.py"
+  },
+  {
+    "service": "AuthService",
+    "rpc": "ResendPasswordless",
+    "request_type": "Empty",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/auth/auth_pb2_grpc.py"
+  },
+  {
+    "service": "AuthService",
+    "rpc": "ListUserOrganizations",
+    "request_type": "Empty",
+    "response_type": "ListUserOrganizationsResponse",
+    "stub_file": "scalekit/v1/auth/auth_pb2_grpc.py"
+  },
+  {
+    "service": "AuthService",
+    "rpc": "SignupOrganization",
+    "request_type": "SignupOrganizationRequest",
+    "response_type": "SignupOrganizationResponse",
+    "stub_file": "scalekit/v1/auth/auth_pb2_grpc.py"
+  },
+  {
+    "service": "AuthService",
+    "rpc": "GetAuthState",
+    "request_type": "Empty",
+    "response_type": "GetAuthStateResponse",
+    "stub_file": "scalekit/v1/auth/auth_pb2_grpc.py"
+  },
+  {
+    "service": "AuthService",
+    "rpc": "GetAuthError",
+    "request_type": "GetAuthErrorRequest",
+    "response_type": "GetAuthErrorResponse",
+    "stub_file": "scalekit/v1/auth/auth_pb2_grpc.py"
+  },
+  {
+    "service": "AuthService",
+    "rpc": "Logout",
+    "request_type": "Empty",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/auth/auth_pb2_grpc.py"
+  },
+  {
+    "service": "AuthService",
+    "rpc": "GetAuthCustomizations",
+    "request_type": "GetAuthCustomizationsRequest",
+    "response_type": "GetAuthCustomizationsResponse",
+    "stub_file": "scalekit/v1/auth/auth_pb2_grpc.py"
+  },
+  {
+    "service": "AuthService",
+    "rpc": "GetAuthFeatures",
+    "request_type": "Empty",
+    "response_type": "GetAuthFeaturesResponse",
+    "stub_file": "scalekit/v1/auth/auth_pb2_grpc.py"
+  },
+  {
+    "service": "AuthService",
+    "rpc": "UpdateLoginUserDetails",
+    "request_type": "UpdateLoginUserDetailsRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/auth/auth_pb2_grpc.py"
+  },
+  {
+    "service": "TOTPService",
+    "rpc": "RegisterTOTP",
+    "request_type": "TOTPRegistrationRequest",
+    "response_type": "TOTPRegistrationResponse",
+    "stub_file": "scalekit/v1/auth/totp_pb2_grpc.py"
+  },
+  {
+    "service": "TOTPService",
+    "rpc": "EnableTOTP",
+    "request_type": "EnableRegistrationTOTPRequest",
+    "response_type": "EnableRegistrationTOTPResponse",
+    "stub_file": "scalekit/v1/auth/totp_pb2_grpc.py"
+  },
+  {
+    "service": "TOTPService",
+    "rpc": "VerifyUserCode",
+    "request_type": "VerifyUserCodeRequest",
+    "response_type": "VerifyCodeResponse",
+    "stub_file": "scalekit/v1/auth/totp_pb2_grpc.py"
+  },
+  {
+    "service": "TOTPService",
+    "rpc": "VerifyRegistrationCode",
+    "request_type": "VerifyRegistrationCodeRequest",
+    "response_type": "VerifyCodeResponse",
+    "stub_file": "scalekit/v1/auth/totp_pb2_grpc.py"
+  },
+  {
+    "service": "TOTPService",
+    "rpc": "DisableTOTP",
+    "request_type": "DisableRegistrationTOTPRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/auth/totp_pb2_grpc.py"
+  },
+  {
+    "service": "PasswordlessService",
+    "rpc": "SendPasswordlessEmail",
+    "request_type": "SendPasswordlessRequest",
+    "response_type": "SendPasswordlessResponse",
+    "stub_file": "scalekit/v1/auth/passwordless_pb2_grpc.py"
+  },
+  {
+    "service": "PasswordlessService",
+    "rpc": "VerifyPasswordlessEmail",
+    "request_type": "VerifyPasswordLessRequest",
+    "response_type": "VerifyPasswordLessResponse",
+    "stub_file": "scalekit/v1/auth/passwordless_pb2_grpc.py"
+  },
+  {
+    "service": "PasswordlessService",
+    "rpc": "ResendPasswordlessEmail",
+    "request_type": "ResendPasswordlessRequest",
+    "response_type": "SendPasswordlessResponse",
+    "stub_file": "scalekit/v1/auth/passwordless_pb2_grpc.py"
+  },
+  {
+    "service": "WebAuthnService",
+    "rpc": "BeginRegistration",
+    "request_type": "BeginRegistrationRequest",
+    "response_type": "BeginRegistrationResponse",
+    "stub_file": "scalekit/v1/auth/webauthn_pb2_grpc.py"
+  },
+  {
+    "service": "WebAuthnService",
+    "rpc": "FinishRegistration",
+    "request_type": "FinishRegistrationRequest",
+    "response_type": "FinishRegistrationResponse",
+    "stub_file": "scalekit/v1/auth/webauthn_pb2_grpc.py"
+  },
+  {
+    "service": "WebAuthnService",
+    "rpc": "BeginAuthentication",
+    "request_type": "BeginAuthenticationRequest",
+    "response_type": "BeginAuthenticationResponse",
+    "stub_file": "scalekit/v1/auth/webauthn_pb2_grpc.py"
+  },
+  {
+    "service": "WebAuthnService",
+    "rpc": "FinishAuthentication",
+    "request_type": "FinishAuthenticationRequest",
+    "response_type": "FinishAuthenticationResponse",
+    "stub_file": "scalekit/v1/auth/webauthn_pb2_grpc.py"
+  },
+  {
+    "service": "WebAuthnService",
+    "rpc": "ListCredentials",
+    "request_type": "ListCredentialsRequest",
+    "response_type": "ListCredentialsResponse",
+    "stub_file": "scalekit/v1/auth/webauthn_pb2_grpc.py"
+  },
+  {
+    "service": "WebAuthnService",
+    "rpc": "DeleteCredential",
+    "request_type": "DeleteCredentialRequest",
+    "response_type": "DeleteCredentialResponse",
+    "stub_file": "scalekit/v1/auth/webauthn_pb2_grpc.py"
+  },
+  {
+    "service": "WebAuthnService",
+    "rpc": "UpdateCredential",
+    "request_type": "UpdateCredentialRequest",
+    "response_type": "UpdateCredentialResponse",
+    "stub_file": "scalekit/v1/auth/webauthn_pb2_grpc.py"
+  },
+  {
+    "service": "WebAuthnService",
+    "rpc": "GetRelatedOrigins",
+    "request_type": "GetRelatedOriginsRequest",
+    "response_type": "GetRelatedOriginsResponse",
+    "stub_file": "scalekit/v1/auth/webauthn_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "CreateEnvironment",
+    "request_type": "CreateEnvironmentRequest",
+    "response_type": "CreateEnvironmentResponse",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "UpdateEnvironment",
+    "request_type": "UpdateEnvironmentRequest",
+    "response_type": "UpdateEnvironmentResponse",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "UpdateEnvironmentDomain",
+    "request_type": "UpdateEnvironmentDomainRequest",
+    "response_type": "UpdateEnvironmentResponse",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "GetEnvironment",
+    "request_type": "GetEnvironmentRequest",
+    "response_type": "GetEnvironmentResponse",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "ListEnvironment",
+    "request_type": "ListEnvironmentsRequest",
+    "response_type": "ListEnvironmentsResponse",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "DeleteEnvironment",
+    "request_type": "DeleteEnvironmentRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "GetRequiredDNSRecords",
+    "request_type": "GetDNSRecordsRequest",
+    "response_type": "GetDNSRecordsResponse",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "VerifyDNSRecords",
+    "request_type": "GetDNSRecordsRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "CreateCustomDomain",
+    "request_type": "CreateCustomDomainRequest",
+    "response_type": "CreateCustomDomainResponse",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "CheckCustomDomainStatus",
+    "request_type": "GetEnvironmentRequest",
+    "response_type": "GetEnvironmentResponse",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "GenerateNewSamlCertificate",
+    "request_type": "GenerateSamlCertificateRequest",
+    "response_type": "GenerateSamlCertificateResponse",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "UpdatePortalCustomization",
+    "request_type": "UpdatePortalCustomizationRequest",
+    "response_type": "UpdatePortalCustomizationResponse",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "GetPortalCustomization",
+    "request_type": "GetPortalCustomizationRequest",
+    "response_type": "GetPortalCustomizationResponse",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "CreateAssetUploadURL",
+    "request_type": "CreateAssetUploadUrlRequest",
+    "response_type": "CreateAssetUploadUrlResponse",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "UpdateFeatures",
+    "request_type": "UpdateFeaturesRequest",
+    "response_type": "GetFeaturesResponse",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "EnableFSAFeature",
+    "request_type": "EnableFSAFeatureRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "DisableFSAFeature",
+    "request_type": "Empty",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "EnableFeature",
+    "request_type": "EnableFeatureRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "DisableFeature",
+    "request_type": "DisableFeatureRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "GetFeatures",
+    "request_type": "GetFeaturesRequest",
+    "response_type": "GetFeaturesResponse",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "GetHostScopedPublicFeatureFlags",
+    "request_type": "Empty",
+    "response_type": "GetHostScopedPublicFeatureFlagsResponse",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "CreateEnvironmentSessionSettings",
+    "request_type": "CreateEnvironmentSessionSettingsRequest",
+    "response_type": "CreateEnvironmentSessionSettingsResponse",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "CreateEnvironmentUserManagement",
+    "request_type": "CreateEnvironmentUserManagementRequest",
+    "response_type": "CreateEnvironmentUserManagementResponse",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "GetEnvironmentSessionSettings",
+    "request_type": "GetEnvironmentSessionSettingsRequest",
+    "response_type": "GetEnvironmentSessionSettingsResponse",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "GetEnvironmentUserManagement",
+    "request_type": "GetEnvironmentUserManagementRequest",
+    "response_type": "GetEnvironmentUserManagementResponse",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "UpdateEnvironmentSessionSettings",
+    "request_type": "UpdateEnvironmentSessionSettingsRequest",
+    "response_type": "UpdateEnvironmentSessionSettingsResponse",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "UpdateEnvironmentUserManagement",
+    "request_type": "UpdateEnvironmentUserManagementRequest",
+    "response_type": "UpdateEnvironmentUserManagementResponse",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "CreateAgentActionsConfig",
+    "request_type": "CreateAgentActionsConfigRequest",
+    "response_type": "CreateAgentActionsConfigResponse",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "GetAgentActionsConfig",
+    "request_type": "GetAgentActionsConfigRequest",
+    "response_type": "GetAgentActionsConfigResponse",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "UpdateAgentActionsConfig",
+    "request_type": "UpdateAgentActionsConfigRequest",
+    "response_type": "UpdateAgentActionsConfigResponse",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "GetContext",
+    "request_type": "GetContextRequest",
+    "response_type": "GetContextResponse",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "UpdateContext",
+    "request_type": "UpdateContextRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "GetCurrentSession",
+    "request_type": "GetCurrentSessionRequest",
+    "response_type": "GetCurrentSessionResponse",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "GetScalekitResources",
+    "request_type": "ScalekitResourceRequest",
+    "response_type": "ScalekitResourceResponse",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "EnvironmentService",
+    "rpc": "PortalBootstrap",
+    "request_type": "PortalBootstrapRequest",
+    "response_type": "PortalBootstrapResponse",
+    "stub_file": "scalekit/v1/environments/environments_pb2_grpc.py"
+  },
+  {
+    "service": "SecretService",
+    "rpc": "CreateSecret",
+    "request_type": "CreateSecretRequest",
+    "response_type": "CreateSecretResponse",
+    "stub_file": "scalekit/v1/secrets/secrets_pb2_grpc.py"
+  },
+  {
+    "service": "SecretService",
+    "rpc": "RotateSecret",
+    "request_type": "RotateSecretRequest",
+    "response_type": "RotateSecretResponse",
+    "stub_file": "scalekit/v1/secrets/secrets_pb2_grpc.py"
+  },
+  {
+    "service": "SecretService",
+    "rpc": "GetSecret",
+    "request_type": "GetSecretRequest",
+    "response_type": "GetSecretResponse",
+    "stub_file": "scalekit/v1/secrets/secrets_pb2_grpc.py"
+  },
+  {
+    "service": "SecretService",
+    "rpc": "ListSecrets",
+    "request_type": "ListSecretsRequest",
+    "response_type": "ListSecretsResponse",
+    "stub_file": "scalekit/v1/secrets/secrets_pb2_grpc.py"
+  },
+  {
+    "service": "SecretService",
+    "rpc": "DeleteSecret",
+    "request_type": "DeleteSecretRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/secrets/secrets_pb2_grpc.py"
+  },
+  {
+    "service": "ProviderService",
+    "rpc": "CreateProvider",
+    "request_type": "CreateProviderRequest",
+    "response_type": "CreateProviderResponse",
+    "stub_file": "scalekit/v1/providers/providers_pb2_grpc.py"
+  },
+  {
+    "service": "ProviderService",
+    "rpc": "CreateCustomProvider",
+    "request_type": "CreateCustomProviderRequest",
+    "response_type": "CreateProviderResponse",
+    "stub_file": "scalekit/v1/providers/providers_pb2_grpc.py"
+  },
+  {
+    "service": "ProviderService",
+    "rpc": "UpdateProvider",
+    "request_type": "UpdateProviderRequest",
+    "response_type": "UpdateProviderResponse",
+    "stub_file": "scalekit/v1/providers/providers_pb2_grpc.py"
+  },
+  {
+    "service": "ProviderService",
+    "rpc": "UpdateCustomProvider",
+    "request_type": "UpdateCustomProviderRequest",
+    "response_type": "UpdateProviderResponse",
+    "stub_file": "scalekit/v1/providers/providers_pb2_grpc.py"
+  },
+  {
+    "service": "ProviderService",
+    "rpc": "DeleteProvider",
+    "request_type": "DeleteProviderRequest",
+    "response_type": "DeleteProviderResponse",
+    "stub_file": "scalekit/v1/providers/providers_pb2_grpc.py"
+  },
+  {
+    "service": "ProviderService",
+    "rpc": "DeleteCustomProvider",
+    "request_type": "DeleteProviderRequest",
+    "response_type": "DeleteProviderResponse",
+    "stub_file": "scalekit/v1/providers/providers_pb2_grpc.py"
+  },
+  {
+    "service": "ProviderService",
+    "rpc": "ListProviders",
+    "request_type": "ListProvidersRequest",
+    "response_type": "ListProvidersResponse",
+    "stub_file": "scalekit/v1/providers/providers_pb2_grpc.py"
+  },
+  {
+    "service": "EmailService",
+    "rpc": "GetTemplatePlaceholders",
+    "request_type": "GetPlaceholdersRequest",
+    "response_type": "GetPlaceholdersResponse",
+    "stub_file": "scalekit/v1/emails/emails_pb2_grpc.py"
+  },
+  {
+    "service": "EmailService",
+    "rpc": "GetTemplateUseCases",
+    "request_type": "Empty",
+    "response_type": "GetTemplateUseCasesResponse",
+    "stub_file": "scalekit/v1/emails/emails_pb2_grpc.py"
+  },
+  {
+    "service": "EmailService",
+    "rpc": "CreateEmailTemplate",
+    "request_type": "CreateEmailTemplateRequest",
+    "response_type": "CreateEmailTemplateResponse",
+    "stub_file": "scalekit/v1/emails/emails_pb2_grpc.py"
+  },
+  {
+    "service": "EmailService",
+    "rpc": "UpdateEmailTemplate",
+    "request_type": "PatchEmailTemplateRequest",
+    "response_type": "GetEmailTemplateResponse",
+    "stub_file": "scalekit/v1/emails/emails_pb2_grpc.py"
+  },
+  {
+    "service": "EmailService",
+    "rpc": "GetEmailConfiguration",
+    "request_type": "Empty",
+    "response_type": "GetEmailConfigurationResponse",
+    "stub_file": "scalekit/v1/emails/emails_pb2_grpc.py"
+  },
+  {
+    "service": "EmailService",
+    "rpc": "UpsertEmailConfiguration",
+    "request_type": "UpsertEmailConfigurationRequest",
+    "response_type": "UpsertEmailConfigurationResponse",
+    "stub_file": "scalekit/v1/emails/emails_pb2_grpc.py"
+  },
+  {
+    "service": "EmailService",
+    "rpc": "EnableEmailTemplate",
+    "request_type": "EnableEmailTemplateRequest",
+    "response_type": "EnableEmailTemplateResponse",
+    "stub_file": "scalekit/v1/emails/emails_pb2_grpc.py"
+  },
+  {
+    "service": "EmailService",
+    "rpc": "DisableEmailTemplate",
+    "request_type": "DisableEmailTemplateRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/emails/emails_pb2_grpc.py"
+  },
+  {
+    "service": "EmailService",
+    "rpc": "GetEmailTemplate",
+    "request_type": "GetEmailTemplateRequest",
+    "response_type": "GetEmailTemplateResponse",
+    "stub_file": "scalekit/v1/emails/emails_pb2_grpc.py"
+  },
+  {
+    "service": "EmailService",
+    "rpc": "ListEmailTemplates",
+    "request_type": "ListEmailTemplateRequest",
+    "response_type": "ListEmailTemplateResponse",
+    "stub_file": "scalekit/v1/emails/emails_pb2_grpc.py"
+  },
+  {
+    "service": "EmailService",
+    "rpc": "DeleteEmailTemplate",
+    "request_type": "DeleteEmailTemplateRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/emails/emails_pb2_grpc.py"
+  },
+  {
+    "service": "EmailService",
+    "rpc": "CreateEmailServer",
+    "request_type": "CreateEmailServerRequest",
+    "response_type": "CreateEmailServerResponse",
+    "stub_file": "scalekit/v1/emails/emails_pb2_grpc.py"
+  },
+  {
+    "service": "EmailService",
+    "rpc": "UpdateEmailServerSettings",
+    "request_type": "PatchEmailServerSettingsRequest",
+    "response_type": "GetEmailServerResponse",
+    "stub_file": "scalekit/v1/emails/emails_pb2_grpc.py"
+  },
+  {
+    "service": "EmailService",
+    "rpc": "EnableEmailServer",
+    "request_type": "EnableEmailServerRequest",
+    "response_type": "EnableEmailServerResponse",
+    "stub_file": "scalekit/v1/emails/emails_pb2_grpc.py"
+  },
+  {
+    "service": "EmailService",
+    "rpc": "DisableEmailServer",
+    "request_type": "DisableEmailServerRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/emails/emails_pb2_grpc.py"
+  },
+  {
+    "service": "EmailService",
+    "rpc": "GetEmailServer",
+    "request_type": "GetEmailServerRequest",
+    "response_type": "GetEmailServerResponse",
+    "stub_file": "scalekit/v1/emails/emails_pb2_grpc.py"
+  },
+  {
+    "service": "EmailService",
+    "rpc": "ListEmailServers",
+    "request_type": "Empty",
+    "response_type": "ListEmailServerResponse",
+    "stub_file": "scalekit/v1/emails/emails_pb2_grpc.py"
+  },
+  {
+    "service": "EmailService",
+    "rpc": "DeleteEmailServer",
+    "request_type": "DeleteEmailServerRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/emails/emails_pb2_grpc.py"
+  },
+  {
+    "service": "RolesService",
+    "rpc": "CreateRole",
+    "request_type": "CreateRoleRequest",
+    "response_type": "CreateRoleResponse",
+    "stub_file": "scalekit/v1/roles/roles_pb2_grpc.py"
+  },
+  {
+    "service": "RolesService",
+    "rpc": "UpdateRole",
+    "request_type": "UpdateRoleRequest",
+    "response_type": "UpdateRoleResponse",
+    "stub_file": "scalekit/v1/roles/roles_pb2_grpc.py"
+  },
+  {
+    "service": "RolesService",
+    "rpc": "GetRole",
+    "request_type": "GetRoleRequest",
+    "response_type": "GetRoleResponse",
+    "stub_file": "scalekit/v1/roles/roles_pb2_grpc.py"
+  },
+  {
+    "service": "RolesService",
+    "rpc": "ListRoles",
+    "request_type": "ListRolesRequest",
+    "response_type": "ListRolesResponse",
+    "stub_file": "scalekit/v1/roles/roles_pb2_grpc.py"
+  },
+  {
+    "service": "RolesService",
+    "rpc": "DeleteRole",
+    "request_type": "DeleteRoleRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/roles/roles_pb2_grpc.py"
+  },
+  {
+    "service": "RolesService",
+    "rpc": "CreateOrganizationRole",
+    "request_type": "CreateOrganizationRoleRequest",
+    "response_type": "CreateOrganizationRoleResponse",
+    "stub_file": "scalekit/v1/roles/roles_pb2_grpc.py"
+  },
+  {
+    "service": "RolesService",
+    "rpc": "UpdateOrganizationRole",
+    "request_type": "UpdateOrganizationRoleRequest",
+    "response_type": "UpdateOrganizationRoleResponse",
+    "stub_file": "scalekit/v1/roles/roles_pb2_grpc.py"
+  },
+  {
+    "service": "RolesService",
+    "rpc": "GetOrganizationRole",
+    "request_type": "GetOrganizationRoleRequest",
+    "response_type": "GetOrganizationRoleResponse",
+    "stub_file": "scalekit/v1/roles/roles_pb2_grpc.py"
+  },
+  {
+    "service": "RolesService",
+    "rpc": "ListOrganizationRoles",
+    "request_type": "ListOrganizationRolesRequest",
+    "response_type": "ListOrganizationRolesResponse",
+    "stub_file": "scalekit/v1/roles/roles_pb2_grpc.py"
+  },
+  {
+    "service": "RolesService",
+    "rpc": "DeleteOrganizationRole",
+    "request_type": "DeleteOrganizationRoleRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/roles/roles_pb2_grpc.py"
+  },
+  {
+    "service": "RolesService",
+    "rpc": "GetRoleUsersCount",
+    "request_type": "GetRoleUsersCountRequest",
+    "response_type": "GetRoleUsersCountResponse",
+    "stub_file": "scalekit/v1/roles/roles_pb2_grpc.py"
+  },
+  {
+    "service": "RolesService",
+    "rpc": "GetOrganizationRoleUsersCount",
+    "request_type": "GetOrganizationRoleUsersCountRequest",
+    "response_type": "GetOrganizationRoleUsersCountResponse",
+    "stub_file": "scalekit/v1/roles/roles_pb2_grpc.py"
+  },
+  {
+    "service": "RolesService",
+    "rpc": "UpdateDefaultRoles",
+    "request_type": "UpdateDefaultRolesRequest",
+    "response_type": "UpdateDefaultRolesResponse",
+    "stub_file": "scalekit/v1/roles/roles_pb2_grpc.py"
+  },
+  {
+    "service": "RolesService",
+    "rpc": "UpdateDefaultOrganizationRoles",
+    "request_type": "UpdateDefaultOrganizationRolesRequest",
+    "response_type": "UpdateDefaultOrganizationRolesResponse",
+    "stub_file": "scalekit/v1/roles/roles_pb2_grpc.py"
+  },
+  {
+    "service": "RolesService",
+    "rpc": "ListDependentRoles",
+    "request_type": "ListDependentRolesRequest",
+    "response_type": "ListDependentRolesResponse",
+    "stub_file": "scalekit/v1/roles/roles_pb2_grpc.py"
+  },
+  {
+    "service": "RolesService",
+    "rpc": "DeleteRoleBase",
+    "request_type": "DeleteRoleBaseRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/roles/roles_pb2_grpc.py"
+  },
+  {
+    "service": "RolesService",
+    "rpc": "DeleteOrganizationRoleBase",
+    "request_type": "DeleteOrganizationRoleBaseRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/roles/roles_pb2_grpc.py"
+  },
+  {
+    "service": "RolesService",
+    "rpc": "CreatePermission",
+    "request_type": "CreatePermissionRequest",
+    "response_type": "CreatePermissionResponse",
+    "stub_file": "scalekit/v1/roles/roles_pb2_grpc.py"
+  },
+  {
+    "service": "RolesService",
+    "rpc": "GetPermission",
+    "request_type": "GetPermissionRequest",
+    "response_type": "GetPermissionResponse",
+    "stub_file": "scalekit/v1/roles/roles_pb2_grpc.py"
+  },
+  {
+    "service": "RolesService",
+    "rpc": "UpdatePermission",
+    "request_type": "UpdatePermissionRequest",
+    "response_type": "UpdatePermissionResponse",
+    "stub_file": "scalekit/v1/roles/roles_pb2_grpc.py"
+  },
+  {
+    "service": "RolesService",
+    "rpc": "ListPermissions",
+    "request_type": "ListPermissionsRequest",
+    "response_type": "ListPermissionsResponse",
+    "stub_file": "scalekit/v1/roles/roles_pb2_grpc.py"
+  },
+  {
+    "service": "RolesService",
+    "rpc": "DeletePermission",
+    "request_type": "DeletePermissionRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/roles/roles_pb2_grpc.py"
+  },
+  {
+    "service": "RolesService",
+    "rpc": "ListRolePermissions",
+    "request_type": "ListRolePermissionsRequest",
+    "response_type": "ListRolePermissionsResponse",
+    "stub_file": "scalekit/v1/roles/roles_pb2_grpc.py"
+  },
+  {
+    "service": "RolesService",
+    "rpc": "AddPermissionsToRole",
+    "request_type": "AddPermissionsToRoleRequest",
+    "response_type": "AddPermissionsToRoleResponse",
+    "stub_file": "scalekit/v1/roles/roles_pb2_grpc.py"
+  },
+  {
+    "service": "RolesService",
+    "rpc": "RemovePermissionFromRole",
+    "request_type": "RemovePermissionFromRoleRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/roles/roles_pb2_grpc.py"
+  },
+  {
+    "service": "RolesService",
+    "rpc": "ListEffectiveRolePermissions",
+    "request_type": "ListEffectiveRolePermissionsRequest",
+    "response_type": "ListEffectiveRolePermissionsResponse",
+    "stub_file": "scalekit/v1/roles/roles_pb2_grpc.py"
+  },
+  {
+    "service": "McpService",
+    "rpc": "CreateMcp",
+    "request_type": "CreateMcpRequest",
+    "response_type": "CreateMcpResponse",
+    "stub_file": "scalekit/v1/mcp/mcp_pb2_grpc.py"
+  },
+  {
+    "service": "McpService",
+    "rpc": "GetMcp",
+    "request_type": "GetMcpRequest",
+    "response_type": "GetMcpResponse",
+    "stub_file": "scalekit/v1/mcp/mcp_pb2_grpc.py"
+  },
+  {
+    "service": "McpService",
+    "rpc": "ListMcp",
+    "request_type": "ListMcpRequest",
+    "response_type": "ListMcpResponse",
+    "stub_file": "scalekit/v1/mcp/mcp_pb2_grpc.py"
+  },
+  {
+    "service": "McpService",
+    "rpc": "DeleteMcp",
+    "request_type": "DeleteMcpRequest",
+    "response_type": "DeleteMcpResponse",
+    "stub_file": "scalekit/v1/mcp/mcp_pb2_grpc.py"
+  },
+  {
+    "service": "McpService",
+    "rpc": "CreateMcpConfig",
+    "request_type": "CreateMcpConfigRequest",
+    "response_type": "CreateMcpConfigResponse",
+    "stub_file": "scalekit/v1/mcp/mcp_pb2_grpc.py"
+  },
+  {
+    "service": "McpService",
+    "rpc": "UpdateMcpConfig",
+    "request_type": "UpdateMcpConfigRequest",
+    "response_type": "UpdateMcpConfigResponse",
+    "stub_file": "scalekit/v1/mcp/mcp_pb2_grpc.py"
+  },
+  {
+    "service": "McpService",
+    "rpc": "ListMcpConfigs",
+    "request_type": "ListMcpConfigsRequest",
+    "response_type": "ListMcpConfigsResponse",
+    "stub_file": "scalekit/v1/mcp/mcp_pb2_grpc.py"
+  },
+  {
+    "service": "McpService",
+    "rpc": "GetMcpConfig",
+    "request_type": "GetMcpConfigRequest",
+    "response_type": "GetMcpConfigResponse",
+    "stub_file": "scalekit/v1/mcp/mcp_pb2_grpc.py"
+  },
+  {
+    "service": "McpService",
+    "rpc": "DeleteMcpConfig",
+    "request_type": "DeleteMcpConfigRequest",
+    "response_type": "DeleteMcpConfigResponse",
+    "stub_file": "scalekit/v1/mcp/mcp_pb2_grpc.py"
+  },
+  {
+    "service": "McpService",
+    "rpc": "EnsureMcpInstance",
+    "request_type": "EnsureMcpInstanceRequest",
+    "response_type": "EnsureMcpInstanceResponse",
+    "stub_file": "scalekit/v1/mcp/mcp_pb2_grpc.py"
+  },
+  {
+    "service": "McpService",
+    "rpc": "ListMcpInstances",
+    "request_type": "ListMcpInstancesRequest",
+    "response_type": "ListMcpInstancesResponse",
+    "stub_file": "scalekit/v1/mcp/mcp_pb2_grpc.py"
+  },
+  {
+    "service": "McpService",
+    "rpc": "DeleteMcpInstance",
+    "request_type": "DeleteMcpInstanceRequest",
+    "response_type": "DeleteMcpInstanceResponse",
+    "stub_file": "scalekit/v1/mcp/mcp_pb2_grpc.py"
+  },
+  {
+    "service": "McpService",
+    "rpc": "UpdateMcpInstance",
+    "request_type": "UpdateMcpInstanceRequest",
+    "response_type": "UpdateMcpInstanceResponse",
+    "stub_file": "scalekit/v1/mcp/mcp_pb2_grpc.py"
+  },
+  {
+    "service": "McpService",
+    "rpc": "GetMcpInstance",
+    "request_type": "GetMcpInstanceRequest",
+    "response_type": "GetMcpInstanceResponse",
+    "stub_file": "scalekit/v1/mcp/mcp_pb2_grpc.py"
+  },
+  {
+    "service": "McpService",
+    "rpc": "GetMcpInstanceAuthState",
+    "request_type": "GetMcpInstanceAuthStateRequest",
+    "response_type": "GetMcpInstanceAuthStateResponse",
+    "stub_file": "scalekit/v1/mcp/mcp_pb2_grpc.py"
+  },
+  {
+    "service": "WorkspaceService",
+    "rpc": "CreateWorkspace",
+    "request_type": "CreateWorkspaceRequest",
+    "response_type": "CreateWorkspaceResponse",
+    "stub_file": "scalekit/v1/workspaces/workspaces_pb2_grpc.py"
+  },
+  {
+    "service": "WorkspaceService",
+    "rpc": "GetWorkspace",
+    "request_type": "GetWorkspaceRequest",
+    "response_type": "GetWorkspaceResponse",
+    "stub_file": "scalekit/v1/workspaces/workspaces_pb2_grpc.py"
+  },
+  {
+    "service": "WorkspaceService",
+    "rpc": "GetCurrentWorkspace",
+    "request_type": "GetCurrentWorkspaceRequest",
+    "response_type": "GetWorkspaceResponse",
+    "stub_file": "scalekit/v1/workspaces/workspaces_pb2_grpc.py"
+  },
+  {
+    "service": "WorkspaceService",
+    "rpc": "UpdateWorkspace",
+    "request_type": "UpdateWorkspaceRequest",
+    "response_type": "UpdateWorkspaceResponse",
+    "stub_file": "scalekit/v1/workspaces/workspaces_pb2_grpc.py"
+  },
+  {
+    "service": "WorkspaceService",
+    "rpc": "OnboardWorkspace",
+    "request_type": "OnboardWorkspaceRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/workspaces/workspaces_pb2_grpc.py"
+  },
+  {
+    "service": "WorkspaceService",
+    "rpc": "UpdateCurrentWorkspace",
+    "request_type": "UpdateCurrentWorkspaceRequest",
+    "response_type": "UpdateWorkspaceResponse",
+    "stub_file": "scalekit/v1/workspaces/workspaces_pb2_grpc.py"
+  },
+  {
+    "service": "WorkspaceService",
+    "rpc": "GetWorkspaceSubscriptions",
+    "request_type": "GetWorkspaceSubscriptionsRequest",
+    "response_type": "GetWorkspaceSubscriptionsResponse",
+    "stub_file": "scalekit/v1/workspaces/workspaces_pb2_grpc.py"
+  },
+  {
+    "service": "WorkspaceService",
+    "rpc": "GetWorkspacePricingTable",
+    "request_type": "GetWorkspacePricingTableRequest",
+    "response_type": "GetWorkspacePricingTableResponse",
+    "stub_file": "scalekit/v1/workspaces/workspaces_pb2_grpc.py"
+  },
+  {
+    "service": "WorkspaceService",
+    "rpc": "GetBillingPortal",
+    "request_type": "GetBillingPortalRequest",
+    "response_type": "GetBillingPortalResponse",
+    "stub_file": "scalekit/v1/workspaces/workspaces_pb2_grpc.py"
+  },
+  {
+    "service": "WorkspaceService",
+    "rpc": "GetBillingInfo",
+    "request_type": "GetBillingInfoRequest",
+    "response_type": "GetBillingInfoResponse",
+    "stub_file": "scalekit/v1/workspaces/workspaces_pb2_grpc.py"
+  },
+  {
+    "service": "WorkspaceService",
+    "rpc": "GetProductUsage",
+    "request_type": "GetProductUsageRequest",
+    "response_type": "GetProductUsageResponse",
+    "stub_file": "scalekit/v1/workspaces/workspaces_pb2_grpc.py"
+  },
+  {
+    "service": "WorkspaceService",
+    "rpc": "GetProductCatalog",
+    "request_type": "GetProductCatalogRequest",
+    "response_type": "GetProductCatalogResponse",
+    "stub_file": "scalekit/v1/workspaces/workspaces_pb2_grpc.py"
+  },
+  {
+    "service": "WorkspaceService",
+    "rpc": "AddSubscription",
+    "request_type": "AddSubscriptionRequest",
+    "response_type": "AddSubscriptionResponse",
+    "stub_file": "scalekit/v1/workspaces/workspaces_pb2_grpc.py"
+  },
+  {
+    "service": "WorkspaceService",
+    "rpc": "CreateCheckoutSession",
+    "request_type": "CreateCheckoutSessionRequest",
+    "response_type": "CreateCheckoutSessionResponse",
+    "stub_file": "scalekit/v1/workspaces/workspaces_pb2_grpc.py"
+  },
+  {
+    "service": "WorkspaceService",
+    "rpc": "UpdateWorkspaceContext",
+    "request_type": "UpdateWorkspaceContextRequest",
+    "response_type": "UpdateWorkspaceContextResponse",
+    "stub_file": "scalekit/v1/workspaces/workspaces_pb2_grpc.py"
+  },
+  {
+    "service": "WorkspaceService",
+    "rpc": "ListWorkspaceDomains",
+    "request_type": "ListWorkspaceDomainsRequest",
+    "response_type": "ListWorkspaceDomainsResponse",
+    "stub_file": "scalekit/v1/workspaces/workspaces_pb2_grpc.py"
+  },
+  {
+    "service": "WorkspaceService",
+    "rpc": "CreateWorkspaceDomain",
+    "request_type": "CreateWorkspaceDomainRequest",
+    "response_type": "CreateWorkspaceDomainResponse",
+    "stub_file": "scalekit/v1/workspaces/workspaces_pb2_grpc.py"
+  },
+  {
+    "service": "WorkspaceService",
+    "rpc": "DeleteWorkspaceDomain",
+    "request_type": "DeleteWorkspaceDomainRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/workspaces/workspaces_pb2_grpc.py"
+  },
+  {
+    "service": "WorkspaceService",
+    "rpc": "ValidateWorkspaceDomain",
+    "request_type": "ValidateWorkspaceDomainRequest",
+    "response_type": "BoolValue",
+    "stub_file": "scalekit/v1/workspaces/workspaces_pb2_grpc.py"
+  },
+  {
+    "service": "Dummy",
+    "rpc": "DummyService",
+    "request_type": "Empty",
+    "response_type": "ErrorInfo",
+    "stub_file": "scalekit/v1/errdetails/errdetails_pb2_grpc.py"
+  },
+  {
+    "service": "AuditLogsService",
+    "rpc": "ListAuthRequests",
+    "request_type": "ListAuthLogRequest",
+    "response_type": "ListAuthLogResponse",
+    "stub_file": "scalekit/v1/auditlogs/auditlogs_pb2_grpc.py"
+  },
+  {
+    "service": "ConnectionService",
+    "rpc": "CreateEnvironmentConnection",
+    "request_type": "CreateEnvironmentConnectionRequest",
+    "response_type": "CreateConnectionResponse",
+    "stub_file": "scalekit/v1/connections/connections_pb2_grpc.py"
+  },
+  {
+    "service": "ConnectionService",
+    "rpc": "CreateConnection",
+    "request_type": "CreateConnectionRequest",
+    "response_type": "CreateConnectionResponse",
+    "stub_file": "scalekit/v1/connections/connections_pb2_grpc.py"
+  },
+  {
+    "service": "ConnectionService",
+    "rpc": "AssignDomainsToConnection",
+    "request_type": "AssignDomainsToConnectionRequest",
+    "response_type": "AssignDomainsToConnectionResponse",
+    "stub_file": "scalekit/v1/connections/connections_pb2_grpc.py"
+  },
+  {
+    "service": "ConnectionService",
+    "rpc": "GetEnvironmentConnection",
+    "request_type": "GetEnvironmentConnectionRequest",
+    "response_type": "GetConnectionResponse",
+    "stub_file": "scalekit/v1/connections/connections_pb2_grpc.py"
+  },
+  {
+    "service": "ConnectionService",
+    "rpc": "GetConnection",
+    "request_type": "GetConnectionRequest",
+    "response_type": "GetConnectionResponse",
+    "stub_file": "scalekit/v1/connections/connections_pb2_grpc.py"
+  },
+  {
+    "service": "ConnectionService",
+    "rpc": "ListConnections",
+    "request_type": "ListConnectionsRequest",
+    "response_type": "ListConnectionsResponse",
+    "stub_file": "scalekit/v1/connections/connections_pb2_grpc.py"
+  },
+  {
+    "service": "ConnectionService",
+    "rpc": "ListOrganizationConnections",
+    "request_type": "ListOrganizationConnectionsRequest",
+    "response_type": "ListOrganizationConnectionsResponse",
+    "stub_file": "scalekit/v1/connections/connections_pb2_grpc.py"
+  },
+  {
+    "service": "ConnectionService",
+    "rpc": "SearchOrganizationConnections",
+    "request_type": "SearchOrganizationConnectionsRequest",
+    "response_type": "SearchOrganizationConnectionsResponse",
+    "stub_file": "scalekit/v1/connections/connections_pb2_grpc.py"
+  },
+  {
+    "service": "ConnectionService",
+    "rpc": "UpdateEnvironmentConnection",
+    "request_type": "UpdateEnvironmentConnectionRequest",
+    "response_type": "UpdateConnectionResponse",
+    "stub_file": "scalekit/v1/connections/connections_pb2_grpc.py"
+  },
+  {
+    "service": "ConnectionService",
+    "rpc": "UpdateConnection",
+    "request_type": "UpdateConnectionRequest",
+    "response_type": "UpdateConnectionResponse",
+    "stub_file": "scalekit/v1/connections/connections_pb2_grpc.py"
+  },
+  {
+    "service": "ConnectionService",
+    "rpc": "DeleteEnvironmentConnection",
+    "request_type": "DeleteEnvironmentConnectionRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/connections/connections_pb2_grpc.py"
+  },
+  {
+    "service": "ConnectionService",
+    "rpc": "DeleteConnection",
+    "request_type": "DeleteConnectionRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/connections/connections_pb2_grpc.py"
+  },
+  {
+    "service": "ConnectionService",
+    "rpc": "EnableEnvironmentConnection",
+    "request_type": "ToggleEnvironmentConnectionRequest",
+    "response_type": "ToggleConnectionResponse",
+    "stub_file": "scalekit/v1/connections/connections_pb2_grpc.py"
+  },
+  {
+    "service": "ConnectionService",
+    "rpc": "EnableConnection",
+    "request_type": "ToggleConnectionRequest",
+    "response_type": "ToggleConnectionResponse",
+    "stub_file": "scalekit/v1/connections/connections_pb2_grpc.py"
+  },
+  {
+    "service": "ConnectionService",
+    "rpc": "DisableEnvironmentConnection",
+    "request_type": "ToggleEnvironmentConnectionRequest",
+    "response_type": "ToggleConnectionResponse",
+    "stub_file": "scalekit/v1/connections/connections_pb2_grpc.py"
+  },
+  {
+    "service": "ConnectionService",
+    "rpc": "DisableConnection",
+    "request_type": "ToggleConnectionRequest",
+    "response_type": "ToggleConnectionResponse",
+    "stub_file": "scalekit/v1/connections/connections_pb2_grpc.py"
+  },
+  {
+    "service": "ConnectionService",
+    "rpc": "GetConnectionTestResult",
+    "request_type": "GetConnectionTestResultRequest",
+    "response_type": "GetConnectionTestResultResponse",
+    "stub_file": "scalekit/v1/connections/connections_pb2_grpc.py"
+  },
+  {
+    "service": "ConnectionService",
+    "rpc": "ListAppConnections",
+    "request_type": "ListAppConnectionsRequest",
+    "response_type": "ListAppConnectionsResponse",
+    "stub_file": "scalekit/v1/connections/connections_pb2_grpc.py"
+  },
+  {
+    "service": "ConnectionService",
+    "rpc": "GetConnectionContext",
+    "request_type": "GetConnectionContextRequest",
+    "response_type": "GetConnectionContextResponse",
+    "stub_file": "scalekit/v1/connections/connections_pb2_grpc.py"
+  },
+  {
+    "service": "ConnectionService",
+    "rpc": "UpdateConnectionContext",
+    "request_type": "UpdateConnectionContextRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/connections/connections_pb2_grpc.py"
+  },
+  {
+    "service": "SessionService",
+    "rpc": "GetSession",
+    "request_type": "SessionDetailsRequest",
+    "response_type": "SessionDetails",
+    "stub_file": "scalekit/v1/sessions/sessions_pb2_grpc.py"
+  },
+  {
+    "service": "SessionService",
+    "rpc": "RevokeSession",
+    "request_type": "RevokeSessionRequest",
+    "response_type": "RevokeSessionResponse",
+    "stub_file": "scalekit/v1/sessions/sessions_pb2_grpc.py"
+  },
+  {
+    "service": "SessionService",
+    "rpc": "GetUserSessions",
+    "request_type": "UserSessionDetailsRequest",
+    "response_type": "UserSessionDetails",
+    "stub_file": "scalekit/v1/sessions/sessions_pb2_grpc.py"
+  },
+  {
+    "service": "SessionService",
+    "rpc": "RevokeAllUserSessions",
+    "request_type": "RevokeAllUserSessionsRequest",
+    "response_type": "RevokeAllUserSessionsResponse",
+    "stub_file": "scalekit/v1/sessions/sessions_pb2_grpc.py"
+  },
+  {
+    "service": "UserService",
+    "rpc": "GetUser",
+    "request_type": "GetUserRequest",
+    "response_type": "GetUserResponse",
+    "stub_file": "scalekit/v1/users/users_pb2_grpc.py"
+  },
+  {
+    "service": "UserService",
+    "rpc": "GetCurrentUser",
+    "request_type": "GetCurrentUserRequest",
+    "response_type": "GetCurrentUserResponse",
+    "stub_file": "scalekit/v1/users/users_pb2_grpc.py"
+  },
+  {
+    "service": "UserService",
+    "rpc": "GetSupportHash",
+    "request_type": "Empty",
+    "response_type": "GetSupportHashResponse",
+    "stub_file": "scalekit/v1/users/users_pb2_grpc.py"
+  },
+  {
+    "service": "UserService",
+    "rpc": "ListUsers",
+    "request_type": "ListUsersRequest",
+    "response_type": "ListUsersResponse",
+    "stub_file": "scalekit/v1/users/users_pb2_grpc.py"
+  },
+  {
+    "service": "UserService",
+    "rpc": "SearchUsers",
+    "request_type": "SearchUsersRequest",
+    "response_type": "SearchUsersResponse",
+    "stub_file": "scalekit/v1/users/users_pb2_grpc.py"
+  },
+  {
+    "service": "UserService",
+    "rpc": "SearchOrganizationUsers",
+    "request_type": "SearchOrganizationUsersRequest",
+    "response_type": "SearchOrganizationUsersResponse",
+    "stub_file": "scalekit/v1/users/users_pb2_grpc.py"
+  },
+  {
+    "service": "UserService",
+    "rpc": "UpdateUser",
+    "request_type": "UpdateUserRequest",
+    "response_type": "UpdateUserResponse",
+    "stub_file": "scalekit/v1/users/users_pb2_grpc.py"
+  },
+  {
+    "service": "UserService",
+    "rpc": "DeleteUser",
+    "request_type": "DeleteUserRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/users/users_pb2_grpc.py"
+  },
+  {
+    "service": "UserService",
+    "rpc": "CreateMembership",
+    "request_type": "CreateMembershipRequest",
+    "response_type": "CreateMembershipResponse",
+    "stub_file": "scalekit/v1/users/users_pb2_grpc.py"
+  },
+  {
+    "service": "UserService",
+    "rpc": "DeleteMembership",
+    "request_type": "DeleteMembershipRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/users/users_pb2_grpc.py"
+  },
+  {
+    "service": "UserService",
+    "rpc": "UpdateMembership",
+    "request_type": "UpdateMembershipRequest",
+    "response_type": "UpdateMembershipResponse",
+    "stub_file": "scalekit/v1/users/users_pb2_grpc.py"
+  },
+  {
+    "service": "UserService",
+    "rpc": "CreateUserAndMembership",
+    "request_type": "CreateUserAndMembershipRequest",
+    "response_type": "CreateUserAndMembershipResponse",
+    "stub_file": "scalekit/v1/users/users_pb2_grpc.py"
+  },
+  {
+    "service": "UserService",
+    "rpc": "ListOrganizationUsers",
+    "request_type": "ListOrganizationUsersRequest",
+    "response_type": "ListOrganizationUsersResponse",
+    "stub_file": "scalekit/v1/users/users_pb2_grpc.py"
+  },
+  {
+    "service": "UserService",
+    "rpc": "ResendInvite",
+    "request_type": "ResendInviteRequest",
+    "response_type": "ResendInviteResponse",
+    "stub_file": "scalekit/v1/users/users_pb2_grpc.py"
+  },
+  {
+    "service": "UserService",
+    "rpc": "ListUserRoles",
+    "request_type": "ListUserRolesRequest",
+    "response_type": "ListUserRolesResponse",
+    "stub_file": "scalekit/v1/users/users_pb2_grpc.py"
+  },
+  {
+    "service": "UserService",
+    "rpc": "AssignUserRoles",
+    "request_type": "AssignUserRolesRequest",
+    "response_type": "AssignUserRolesResponse",
+    "stub_file": "scalekit/v1/users/users_pb2_grpc.py"
+  },
+  {
+    "service": "UserService",
+    "rpc": "RemoveUserRole",
+    "request_type": "RemoveUserRoleRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/users/users_pb2_grpc.py"
+  },
+  {
+    "service": "UserService",
+    "rpc": "ListUserPermissions",
+    "request_type": "ListUserPermissionsRequest",
+    "response_type": "ListUserPermissionsResponse",
+    "stub_file": "scalekit/v1/users/users_pb2_grpc.py"
+  },
+  {
+    "service": "KeyManagementService",
+    "rpc": "CreateDEK",
+    "request_type": "CreateDEKRequest",
+    "response_type": "CreateDEKResponse",
+    "stub_file": "scalekit/v1/keys/keys_pb2_grpc.py"
+  },
+  {
+    "service": "KeyManagementService",
+    "rpc": "RotateDEK",
+    "request_type": "RotateDEKRequest",
+    "response_type": "RotateDEKResponse",
+    "stub_file": "scalekit/v1/keys/keys_pb2_grpc.py"
+  },
+  {
+    "service": "KeyManagementService",
+    "rpc": "ListDEKs",
+    "request_type": "ListDEKsRequest",
+    "response_type": "ListDEKsResponse",
+    "stub_file": "scalekit/v1/keys/keys_pb2_grpc.py"
+  },
+  {
+    "service": "KeyManagementService",
+    "rpc": "DeleteDEK",
+    "request_type": "DeleteDEKRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/keys/keys_pb2_grpc.py"
+  },
+  {
+    "service": "KeyManagementService",
+    "rpc": "RotateMasterKey",
+    "request_type": "RotateMasterKeyRequest",
+    "response_type": "RotateMasterKeyResponse",
+    "stub_file": "scalekit/v1/keys/keys_pb2_grpc.py"
+  },
+  {
+    "service": "KeyManagementService",
+    "rpc": "CreateMasterKey",
+    "request_type": "CreateMasterKeyRequest",
+    "response_type": "CreateMasterKeyResponse",
+    "stub_file": "scalekit/v1/keys/keys_pb2_grpc.py"
+  },
+  {
+    "service": "KeyManagementService",
+    "rpc": "SetActiveDEK",
+    "request_type": "SetActiveDEKRequest",
+    "response_type": "SetActiveDEKResponse",
+    "stub_file": "scalekit/v1/keys/keys_pb2_grpc.py"
+  },
+  {
+    "service": "KeyManagementService",
+    "rpc": "SetActiveMasterKey",
+    "request_type": "SetActiveMasterKeyRequest",
+    "response_type": "SetActiveMasterKeyResponse",
+    "stub_file": "scalekit/v1/keys/keys_pb2_grpc.py"
+  },
+  {
+    "service": "KeyManagementService",
+    "rpc": "DestroyDEK",
+    "request_type": "DestroyDEKRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/keys/keys_pb2_grpc.py"
+  },
+  {
+    "service": "KeyManagementService",
+    "rpc": "DestroyMasterKey",
+    "request_type": "DestroyMasterKeyRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/keys/keys_pb2_grpc.py"
+  },
+  {
+    "service": "MembersService",
+    "rpc": "CreateMember",
+    "request_type": "CreateMemberRequest",
+    "response_type": "CreateMemberResponse",
+    "stub_file": "scalekit/v1/members/members_pb2_grpc.py"
+  },
+  {
+    "service": "MembersService",
+    "rpc": "UpdateCurrentMember",
+    "request_type": "UpdateCurrentMemberRequest",
+    "response_type": "UpdateMemberResponse",
+    "stub_file": "scalekit/v1/members/members_pb2_grpc.py"
+  },
+  {
+    "service": "MembersService",
+    "rpc": "UpdateMember",
+    "request_type": "UpdateMemberRequest",
+    "response_type": "UpdateMemberResponse",
+    "stub_file": "scalekit/v1/members/members_pb2_grpc.py"
+  },
+  {
+    "service": "MembersService",
+    "rpc": "GetCurrentMember",
+    "request_type": "GetCurrentMemberRequest",
+    "response_type": "GetMemberResponse",
+    "stub_file": "scalekit/v1/members/members_pb2_grpc.py"
+  },
+  {
+    "service": "MembersService",
+    "rpc": "GetMember",
+    "request_type": "GetMemberRequest",
+    "response_type": "GetMemberResponse",
+    "stub_file": "scalekit/v1/members/members_pb2_grpc.py"
+  },
+  {
+    "service": "MembersService",
+    "rpc": "ListMembers",
+    "request_type": "ListMemberRequest",
+    "response_type": "ListMemberResponse",
+    "stub_file": "scalekit/v1/members/members_pb2_grpc.py"
+  },
+  {
+    "service": "MembersService",
+    "rpc": "DeleteMember",
+    "request_type": "DeleteMemberRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/members/members_pb2_grpc.py"
+  },
+  {
+    "service": "DirectoryService",
+    "rpc": "CreateDirectory",
+    "request_type": "CreateDirectoryRequest",
+    "response_type": "CreateDirectoryResponse",
+    "stub_file": "scalekit/v1/directories/directories_pb2_grpc.py"
+  },
+  {
+    "service": "DirectoryService",
+    "rpc": "DeleteDirectory",
+    "request_type": "DeleteDirectoryRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/directories/directories_pb2_grpc.py"
+  },
+  {
+    "service": "DirectoryService",
+    "rpc": "UpdateDirectory",
+    "request_type": "UpdateDirectoryRequest",
+    "response_type": "UpdateDirectoryResponse",
+    "stub_file": "scalekit/v1/directories/directories_pb2_grpc.py"
+  },
+  {
+    "service": "DirectoryService",
+    "rpc": "AssignGroupsForDirectory",
+    "request_type": "AssignGroupsForDirectoryRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/directories/directories_pb2_grpc.py"
+  },
+  {
+    "service": "DirectoryService",
+    "rpc": "AssignRoles",
+    "request_type": "AssignRolesRequest",
+    "response_type": "AssignRolesResponse",
+    "stub_file": "scalekit/v1/directories/directories_pb2_grpc.py"
+  },
+  {
+    "service": "DirectoryService",
+    "rpc": "UpdateAttributes",
+    "request_type": "UpdateAttributesRequest",
+    "response_type": "UpdateAttributesResponse",
+    "stub_file": "scalekit/v1/directories/directories_pb2_grpc.py"
+  },
+  {
+    "service": "DirectoryService",
+    "rpc": "GetDirectory",
+    "request_type": "GetDirectoryRequest",
+    "response_type": "GetDirectoryResponse",
+    "stub_file": "scalekit/v1/directories/directories_pb2_grpc.py"
+  },
+  {
+    "service": "DirectoryService",
+    "rpc": "ListDirectories",
+    "request_type": "ListDirectoriesRequest",
+    "response_type": "ListDirectoriesResponse",
+    "stub_file": "scalekit/v1/directories/directories_pb2_grpc.py"
+  },
+  {
+    "service": "DirectoryService",
+    "rpc": "EnableDirectory",
+    "request_type": "ToggleDirectoryRequest",
+    "response_type": "ToggleDirectoryResponse",
+    "stub_file": "scalekit/v1/directories/directories_pb2_grpc.py"
+  },
+  {
+    "service": "DirectoryService",
+    "rpc": "DisableDirectory",
+    "request_type": "ToggleDirectoryRequest",
+    "response_type": "ToggleDirectoryResponse",
+    "stub_file": "scalekit/v1/directories/directories_pb2_grpc.py"
+  },
+  {
+    "service": "DirectoryService",
+    "rpc": "ListDirectoryUsers",
+    "request_type": "ListDirectoryUsersRequest",
+    "response_type": "ListDirectoryUsersResponse",
+    "stub_file": "scalekit/v1/directories/directories_pb2_grpc.py"
+  },
+  {
+    "service": "DirectoryService",
+    "rpc": "ListDirectoryGroups",
+    "request_type": "ListDirectoryGroupsRequest",
+    "response_type": "ListDirectoryGroupsResponse",
+    "stub_file": "scalekit/v1/directories/directories_pb2_grpc.py"
+  },
+  {
+    "service": "DirectoryService",
+    "rpc": "ListDirectoryGroupsSummary",
+    "request_type": "ListDirectoryGroupsSummaryRequest",
+    "response_type": "ListDirectoryGroupsResponse",
+    "stub_file": "scalekit/v1/directories/directories_pb2_grpc.py"
+  },
+  {
+    "service": "DirectoryService",
+    "rpc": "CreateDirectorySecret",
+    "request_type": "CreateDirectorySecretRequest",
+    "response_type": "CreateDirectorySecretResponse",
+    "stub_file": "scalekit/v1/directories/directories_pb2_grpc.py"
+  },
+  {
+    "service": "DirectoryService",
+    "rpc": "RegenerateDirectorySecret",
+    "request_type": "RegenerateDirectorySecretRequest",
+    "response_type": "RegenerateDirectorySecretResponse",
+    "stub_file": "scalekit/v1/directories/directories_pb2_grpc.py"
+  },
+  {
+    "service": "DirectoryService",
+    "rpc": "TriggerDirectorySync",
+    "request_type": "TriggerDirectorySyncRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/directories/directories_pb2_grpc.py"
+  },
+  {
+    "service": "DirectoryService",
+    "rpc": "GetDirectoryContext",
+    "request_type": "GetDirectoryContextRequest",
+    "response_type": "GetDirectoryContextResponse",
+    "stub_file": "scalekit/v1/directories/directories_pb2_grpc.py"
+  },
+  {
+    "service": "DirectoryService",
+    "rpc": "UpdateDirectoryContext",
+    "request_type": "UpdateDirectoryContextRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/directories/directories_pb2_grpc.py"
+  },
+  {
+    "service": "EventsService",
+    "rpc": "ListEvents",
+    "request_type": "ListEventsRequest",
+    "response_type": "ListEventsResponse",
+    "stub_file": "scalekit/v1/events/events_pb2_grpc.py"
+  },
+  {
+    "service": "EventsService",
+    "rpc": "SendCustomEvent",
+    "request_type": "SendCustomEventRequest",
+    "response_type": "SendCustomEventResponse",
+    "stub_file": "scalekit/v1/events/events_pb2_grpc.py"
+  },
+  {
+    "service": "WebhookService",
+    "rpc": "GetPortalURL",
+    "request_type": "GetPortalURLRequest",
+    "response_type": "GetPortalURLResponse",
+    "stub_file": "scalekit/v1/webhooks/webhooks_pb2_grpc.py"
+  },
+  {
+    "service": "WebhookService",
+    "rpc": "WebhookWrapper",
+    "request_type": "WebhookWrapperRequest",
+    "response_type": "Struct",
+    "stub_file": "scalekit/v1/webhooks/webhooks_pb2_grpc.py"
+  },
+  {
+    "service": "WebhookService",
+    "rpc": "SendTestEvent",
+    "request_type": "SendTestEventRequest",
+    "response_type": "SendTestEventResponse",
+    "stub_file": "scalekit/v1/webhooks/webhooks_pb2_grpc.py"
+  },
+  {
+    "service": "WebhookService",
+    "rpc": "SendWebhookEvent",
+    "request_type": "WebhookEvent",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/webhooks/webhooks_pb2_grpc.py"
+  },
+  {
+    "service": "ApiTokenService",
+    "rpc": "CreateToken",
+    "request_type": "CreateTokenRequest",
+    "response_type": "CreateTokenResponse",
+    "stub_file": "scalekit/v1/tokens/tokens_pb2_grpc.py"
+  },
+  {
+    "service": "ApiTokenService",
+    "rpc": "ValidateToken",
+    "request_type": "ValidateTokenRequest",
+    "response_type": "ValidateTokenResponse",
+    "stub_file": "scalekit/v1/tokens/tokens_pb2_grpc.py"
+  },
+  {
+    "service": "ApiTokenService",
+    "rpc": "InvalidateToken",
+    "request_type": "InvalidateTokenRequest",
+    "response_type": "Empty",
+    "stub_file": "scalekit/v1/tokens/tokens_pb2_grpc.py"
+  },
+  {
+    "service": "ApiTokenService",
+    "rpc": "ListTokens",
+    "request_type": "ListTokensRequest",
+    "response_type": "ListTokensResponse",
+    "stub_file": "scalekit/v1/tokens/tokens_pb2_grpc.py"
+  },
+  {
+    "service": "ApiTokenService",
+    "rpc": "UpdateToken",
+    "request_type": "UpdateTokenRequest",
+    "response_type": "UpdateTokenResponse",
+    "stub_file": "scalekit/v1/tokens/tokens_pb2_grpc.py"
+  },
+  {
+    "service": "ApiTokenService",
+    "rpc": "FetchToken",
+    "request_type": "FetchTokenRequest",
+    "response_type": "FetchTokenResponse",
+    "stub_file": "scalekit/v1/tokens/tokens_pb2_grpc.py"
+  }
+]
