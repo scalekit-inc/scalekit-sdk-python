@@ -22,6 +22,8 @@ from scalekit.v1.users.users_pb2 import (
     ListUsersResponse,
     ResendInviteRequest,
     ResendInviteResponse,
+    SearchUsersRequest,
+    SearchUsersResponse,
     UpdateMembership,
     UpdateMembershipRequest,
     UpdateMembershipResponse,
@@ -126,6 +128,34 @@ class UserClient:
         return self.core_client.grpc_exec(
             self.user_service.ListUsers.with_call,
             ListUsersRequest(
+                page_size=page_size,
+                page_token=page_token
+            ),
+        )
+
+    def search_users(
+        self,
+        query: str,
+        page_size: Optional[int] = None,
+        page_token: Optional[str] = None
+    ) -> SearchUsersResponse:
+        """
+        Method to search users in environment using a query string
+
+        :param query           : Search query string to match users
+        :type                  : ``` str ```
+        :param page_size       : Page size for pagination
+        :type                  : ``` int ```
+        :param page_token      : Page token for pagination
+        :type                  : ``` str ```
+
+        :returns:
+            Search Users Response
+        """
+        return self.core_client.grpc_exec(
+            self.user_service.SearchUsers.with_call,
+            SearchUsersRequest(
+                query=query,
                 page_size=page_size,
                 page_token=page_token
             ),
