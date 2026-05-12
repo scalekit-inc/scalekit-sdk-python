@@ -47,6 +47,7 @@ class TestConnect(BaseTest):
         if ca_response.connected_account.status != "ACTIVE":
             response = self.scalekit_client.connect.get_authorization_link(identifier = self.test_identifier, connection_name="GMAIL")
             print(f"Authorization link: {response.link}")
+            input("Press Enter to continue...")
 
     def test_execute_tool(self):
         """Method to test execute_tool with SLACK.SEND_MESSAGE"""
