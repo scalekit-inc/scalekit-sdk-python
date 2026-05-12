@@ -26,6 +26,15 @@ from .models.tool_input_output import ToolInput, ToolOutput
 from .models.tool_mapping import ToolMapping
 from .models.mcp_config import McpConfig, McpConfigConnectionToolMapping
 from .models.mcp_instance import McpInstance, McpInstanceConnectionAuthState
+from .models.custom_provider import AuthPattern, AuthField, OAuthConfig, Provider
+from .models.requests.create_custom_provider_request import CreateCustomProviderRequest
+from .models.requests.update_custom_provider_request import UpdateCustomProviderRequest
+from .models.requests.list_providers_request import ListProvidersRequest
+from .models.requests.delete_custom_provider_request import DeleteCustomProviderRequest
+from .models.responses.create_custom_provider_response import CreateCustomProviderResponse
+from .models.responses.update_custom_provider_response import UpdateCustomProviderResponse
+from .models.responses.list_providers_response import ListProvidersResponse
+from .models.responses.delete_custom_provider_response import DeleteCustomProviderResponse
 
 
 __all__ = [
@@ -60,5 +69,17 @@ __all__ = [
     'McpConfigConnectionToolMapping',
     'McpInstance',
     'McpInstanceConnectionAuthState',
+    'AuthPattern',
+    'AuthField',
+    'OAuthConfig',
+    'Provider',
+    'CreateCustomProviderRequest',
+    'UpdateCustomProviderRequest',
+    'ListProvidersRequest',
+    'DeleteCustomProviderRequest',
+    'CreateCustomProviderResponse',
+    'UpdateCustomProviderResponse',
+    'ListProvidersResponse',
+    'DeleteCustomProviderResponse',
     'VerifyConnectedAccountUserResponse',
 ]
