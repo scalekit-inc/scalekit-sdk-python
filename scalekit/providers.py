@@ -198,15 +198,14 @@ class ProvidersClient:
                   response[1].code().name == 'OK' on success.
         :rtype: tuple
         """
-        filter_obj = None
+        request = ListProvidersRequest(
+            identifier=identifier or "",
+            page_size=page_size or 0,
+            page_token=page_token or "",
+        )
         if provider_type is not None:
-            filter_obj = ListProvidersRequest.Filter(provider_type=provider_type)
+            request.filter.CopyFrom(ListProvidersRequest.Filter(provider_type=provider_type))
         return self.core_client.grpc_exec(
             self._stub.ListProviders.with_call,
-            ListProvidersRequest(
-                identifier=identifier or "",
-                page_size=page_size or 0,
-                page_token=page_token or "",
-                filter=filter_obj,
-            ),
+            request,
         )

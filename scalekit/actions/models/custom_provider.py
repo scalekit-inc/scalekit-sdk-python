@@ -1,7 +1,7 @@
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 from google.protobuf.json_format import MessageToDict
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, root_validator
 
 
 class AuthField(BaseModel):
@@ -32,7 +32,7 @@ class AuthField(BaseModel):
             "Example: 'API Key', 'Bearer Token'. Defaults to empty string."
         ),
     )
-    input_type: str = Field(
+    input_type: Literal["text", "password"] = Field(
         "text",
         description=(
             "Optional. Controls how the input is rendered in the UI. "
@@ -151,7 +151,7 @@ class AuthPattern(BaseModel):
                     key input.
     """
 
-    type: str = Field(
+    type: Literal["OAUTH", "BEARER", "API_KEY"] = Field(
         ...,
         description=(
             "Required. Authentication mechanism for this pattern. "
@@ -203,6 +203,23 @@ class AuthPattern(BaseModel):
             "Defaults to None."
         ),
     )
+
+    @root_validator
+    def validate_auth_invariants(cls, values):
+        auth_type = values.get("type")
+        if auth_type is None:
+            return values  # type field already failed validation
+        oauth_config = values.get("oauth_config")
+        fields = values.get("fields", [])
+        if auth_type == "OAUTH":
+            if oauth_config is None:
+                raise ValueError("oauth_config is required when type='OAUTH'")
+            if fields:
+                raise ValueError("fields must be empty when type='OAUTH'")
+        else:
+            if oauth_config is not None:
+                raise ValueError(f"oauth_config must be None when type='{auth_type}'")
+        return values
 
     def to_dict(self) -> dict:
         """Serialize to a wire-format dict for inclusion in the auth_patterns ListValue.

@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 
 
 class ListProvidersRequest(BaseModel):
@@ -38,6 +38,18 @@ class ListProvidersRequest(BaseModel):
             "Pass None (default) to return all providers matching the other filters."
         ),
     )
+
+    @validator("provider_type")
+    def validate_provider_type(cls, v):
+        if v is not None and v not in (0, 1, 2):
+            raise ValueError("provider_type must be 0 (DEFAULT), 1 (CUSTOM), or 2 (ALL)")
+        return v
+
+    @validator("page_size")
+    def validate_page_size(cls, v):
+        if v is not None and v < 1:
+            raise ValueError("page_size must be at least 1")
+        return v
 
     class Config:
         validate_assignment = True

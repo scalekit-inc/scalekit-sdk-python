@@ -1,6 +1,7 @@
 from faker import Faker
 from basetest import BaseTest
 
+from scalekit.common.exceptions import ScalekitNotFoundException
 from scalekit.actions.types import (
     AuthPattern,
     AuthField,
@@ -26,7 +27,7 @@ class TestProviders(BaseTest):
                 self.scalekit_client.actions.providers.delete_custom_provider(
                     DeleteCustomProviderRequest(identifier=self.created_identifier)
                 )
-            except Exception:
+            except ScalekitNotFoundException:
                 pass
             self.created_identifier = None
 

@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 
 from scalekit.actions.models.custom_provider import AuthPattern
 
@@ -14,6 +14,7 @@ class UpdateCustomProviderRequest(BaseModel):
 
     identifier: str = Field(
         ...,
+        min_length=1,
         description=(
             "Required. Identifier of the provider to update. Obtained from "
             "Provider.identifier in a create or list response."
@@ -51,6 +52,18 @@ class UpdateCustomProviderRequest(BaseModel):
             "future multi-pattern support. Pass None (default) to leave auth_patterns unchanged."
         ),
     )
+
+    @validator("proxy_url")
+    def validate_proxy_url_https(cls, v):
+        if not v.startswith("https://"):
+            raise ValueError("proxy_url must be a valid HTTPS URL starting with 'https://'")
+        return v
+
+    @validator("auth_patterns")
+    def validate_single_auth_pattern(cls, v):
+        if v is not None and len(v) != 1:
+            raise ValueError("auth_patterns must contain exactly one AuthPattern when provided")
+        return v
 
     class Config:
         validate_assignment = True

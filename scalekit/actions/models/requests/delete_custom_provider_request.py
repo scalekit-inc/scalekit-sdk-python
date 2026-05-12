@@ -11,6 +11,7 @@ class DeleteCustomProviderRequest(BaseModel):
 
     identifier: str = Field(
         ...,
+        min_length=1,
         description=(
             "Required. Identifier of the custom provider to delete. Obtained from "
             "Provider.identifier in a create or list response."

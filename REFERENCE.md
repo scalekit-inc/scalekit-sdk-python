@@ -6080,7 +6080,7 @@ print(f'Magic Link: {response[0].magic_link}')
 <dl>
 <dd>
 
-#### 📝 Description
+**📝 Description**
 
 <dl>
 <dd>
@@ -6094,7 +6094,7 @@ Creates a new custom provider (MCP connector) in the Scalekit catalog. Once crea
 </dd>
 </dl>
 
-#### 🔌 Usage
+**🔌 Usage**
 
 <dl>
 <dd>
@@ -6163,7 +6163,7 @@ response = scalekit_client.actions.providers.create_custom_provider(
 </dd>
 </dl>
 
-#### ⚙️ Parameters
+**⚙️ Parameters**
 
 <dl>
 <dd>
@@ -6189,7 +6189,7 @@ response = scalekit_client.actions.providers.create_custom_provider(
 </dd>
 </dl>
 
-#### 📦 Response
+**📦 Response**
 
 `CreateCustomProviderResponse` with a `provider` attribute (`Provider`) containing `identifier`, `display_name`, `description`, `proxy_url`, `proxy_enabled`, `is_custom`, `is_custom_mcp`, and `auth_patterns`.
 
@@ -6201,7 +6201,7 @@ response = scalekit_client.actions.providers.create_custom_provider(
 <dl>
 <dd>
 
-#### 📝 Description
+**📝 Description**
 
 <dl>
 <dd>
@@ -6215,7 +6215,7 @@ Updates an existing custom provider. `display_name` and `proxy_url` are required
 </dd>
 </dl>
 
-#### 🔌 Usage
+**🔌 Usage**
 
 <dl>
 <dd>
@@ -6263,7 +6263,7 @@ print(f"Updated: {updated.description}")
 </dd>
 </dl>
 
-#### ⚙️ Parameters
+**⚙️ Parameters**
 
 <dl>
 <dd>
@@ -6283,7 +6283,7 @@ print(f"Updated: {updated.description}")
 </dd>
 </dl>
 
-#### 📦 Response
+**📦 Response**
 
 `UpdateCustomProviderResponse` with a `provider` attribute (`Provider`) containing the updated provider details.
 
@@ -6295,7 +6295,7 @@ print(f"Updated: {updated.description}")
 <dl>
 <dd>
 
-#### 📝 Description
+**📝 Description**
 
 <dl>
 <dd>
@@ -6309,7 +6309,7 @@ Lists providers in the Scalekit catalog, optionally filtered by type.
 </dd>
 </dl>
 
-#### 🔌 Usage
+**🔌 Usage**
 
 <dl>
 <dd>
@@ -6342,7 +6342,7 @@ response = scalekit_client.actions.providers.list_providers(
 </dd>
 </dl>
 
-#### ⚙️ Parameters
+**⚙️ Parameters**
 
 <dl>
 <dd>
@@ -6361,7 +6361,7 @@ response = scalekit_client.actions.providers.list_providers(
 </dd>
 </dl>
 
-#### 📦 Response
+**📦 Response**
 
 `ListProvidersResponse` with a `providers` attribute (list of `Provider`) and `next_page_token` for pagination.
 
@@ -6373,7 +6373,7 @@ response = scalekit_client.actions.providers.list_providers(
 <dl>
 <dd>
 
-#### 📝 Description
+**📝 Description**
 
 <dl>
 <dd>
@@ -6387,7 +6387,7 @@ Permanently deletes a custom provider. The provider is removed from the Scalekit
 </dd>
 </dl>
 
-#### 🔌 Usage
+**🔌 Usage**
 
 <dl>
 <dd>
@@ -6407,7 +6407,7 @@ scalekit_client.actions.providers.delete_custom_provider(
 </dd>
 </dl>
 
-#### ⚙️ Parameters
+**⚙️ Parameters**
 
 <dl>
 <dd>
@@ -6423,7 +6423,7 @@ scalekit_client.actions.providers.delete_custom_provider(
 </dd>
 </dl>
 
-#### 📦 Response
+**📦 Response**
 
 `DeleteCustomProviderResponse` (empty — success is indicated by no exception being raised).
 
