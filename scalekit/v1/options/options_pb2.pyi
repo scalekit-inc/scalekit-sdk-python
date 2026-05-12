@@ -32,6 +32,13 @@ class AuthenticationType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     WORKSPACE_SESSION_CLIENT: _ClassVar[AuthenticationType]
     CUSTOMER_PORTAL_SESSION_CLIENT: _ClassVar[AuthenticationType]
     SESSION_USER: _ClassVar[AuthenticationType]
+    ACTIONS_PORTAL: _ClassVar[AuthenticationType]
+    WORKSPACE_SESSION_CUSTOMER_PORTAL_ACTIONS_PORTAL: _ClassVar[AuthenticationType]
+    WORKSPACE_SESSION_CUSTOMER_PORTAL_ACTIONS_PORTAL_CLIENT: _ClassVar[AuthenticationType]
+    WORKSPACE_ACTIONS_PORTAL: _ClassVar[AuthenticationType]
+    WORKSPACE_ACTIONS_PORTAL_CLIENT: _ClassVar[AuthenticationType]
+    WORKSPACE_ACTIONS_PORTAL_CUSTOMER_PORTAL_CLIENT: _ClassVar[AuthenticationType]
+    WORKSPACE_CUSTOMER_PORTAL_ACTIONS_PORTAL: _ClassVar[AuthenticationType]
 DENY: Policy
 PARTIAL: Policy
 ALLOW: Policy
@@ -52,6 +59,13 @@ SESSION_CLIENT: AuthenticationType
 WORKSPACE_SESSION_CLIENT: AuthenticationType
 CUSTOMER_PORTAL_SESSION_CLIENT: AuthenticationType
 SESSION_USER: AuthenticationType
+ACTIONS_PORTAL: AuthenticationType
+WORKSPACE_SESSION_CUSTOMER_PORTAL_ACTIONS_PORTAL: AuthenticationType
+WORKSPACE_SESSION_CUSTOMER_PORTAL_ACTIONS_PORTAL_CLIENT: AuthenticationType
+WORKSPACE_ACTIONS_PORTAL: AuthenticationType
+WORKSPACE_ACTIONS_PORTAL_CLIENT: AuthenticationType
+WORKSPACE_ACTIONS_PORTAL_CUSTOMER_PORTAL_CLIENT: AuthenticationType
+WORKSPACE_CUSTOMER_PORTAL_ACTIONS_PORTAL: AuthenticationType
 AUTH_OPTION_FIELD_NUMBER: _ClassVar[int]
 auth_option: _descriptor.FieldDescriptor
 

@@ -171,3 +171,6 @@ proto
 # Claude Code documentation
 CLAUDE.md
 .claude/*
+
+# macOS
+.DS_Store
