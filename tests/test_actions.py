@@ -75,7 +75,7 @@ class TestConnect(BaseTest):
         tool_input = {
             "max_results": 1,
         }
-        
+    
         # Test with invalid tool name - should raise an exception
         with self.assertRaises(Exception) as context:
             self.scalekit_client.connect.execute_tool(
@@ -1343,7 +1343,7 @@ class TestConnect(BaseTest):
             response = self.scalekit_client.actions.request(
                 connection_name=self.test_connection_name,
                 identifier=self.test_identifier,
-                path="/v1/users/me/profile",
+                path="/gmail/v1/users/me/profile",
                 method="GET"
             )
 
