@@ -1,7 +1,24 @@
 from typing import Optional
 
 from scalekit.core import CoreClient
-from scalekit.v1.connected_accounts.connected_accounts_pb2 import *
+from scalekit.v1.connected_accounts.connected_accounts_pb2 import (
+    CreateConnectedAccount,
+    CreateConnectedAccountRequest,
+    CreateConnectedAccountResponse,
+    DeleteConnectedAccountRequest,
+    DeleteConnectedAccountResponse,
+    GetConnectedAccountByIdentifierRequest,
+    GetConnectedAccountByIdentifierResponse,
+    GetMagicLinkForConnectedAccountRequest,
+    GetMagicLinkForConnectedAccountResponse,
+    ListConnectedAccountsRequest,
+    ListConnectedAccountsResponse,
+    UpdateConnectedAccount,
+    UpdateConnectedAccountRequest,
+    UpdateConnectedAccountResponse,
+    VerifyConnectedAccountUserRequest,
+    VerifyConnectedAccountUserResponse,
+)
 from scalekit.v1.connected_accounts.connected_accounts_pb2_grpc import ConnectedAccountServiceStub
 
 
@@ -184,7 +201,9 @@ class ConnectedAccountsClient:
         identifier: str,
         organization_id: Optional[str] = None,
         user_id: Optional[str] = None,
-        connected_account_id: Optional[str] = None
+        connected_account_id: Optional[str] = None,
+        state: Optional[str] = None,
+        user_verify_url: Optional[str] = None
     ) -> GetMagicLinkForConnectedAccountResponse:
         """
         Method to get magic link for a connected account
@@ -199,6 +218,10 @@ class ConnectedAccountsClient:
         :type                   : ``` str ```
         :param connected_account_id : ID of the connected account
         :type                   : ``` str ```
+        :param state            : Opaque state value passed through to the user verify redirect URL query params
+        :type                   : ``` str ```
+        :param user_verify_url  : B2B app's user verify redirect URL
+        :type                   : ``` str ```
 
         :returns:
             Get Magic Link For Connected Account Response
@@ -210,7 +233,9 @@ class ConnectedAccountsClient:
                 user_id=user_id,
                 connector=connector,
                 identifier=identifier,
-                id=connected_account_id
+                id=connected_account_id,
+                state=state,
+                user_verify_url=user_verify_url
             ),
         )
 
@@ -247,5 +272,66 @@ class ConnectedAccountsClient:
                 connector=connector,
                 identifier=identifier,
                 id=connected_account_id
+            ),
+        )
+
+    def get_connected_account_details_by_identifier(
+        self,
+        connector: str,
+        identifier: str,
+        organization_id: Optional[str] = None,
+        user_id: Optional[str] = None,
+        connected_account_id: Optional[str] = None
+    ) -> GetConnectedAccountByIdentifierResponse:
+        """
+        Method to get connected account details (without auth credentials) by identifier
+
+        :param connector        : Connector identifier
+        :type                   : ``` str ```
+        :param identifier       : Identifier for the connector
+        :type                   : ``` str ```
+        :param organization_id  : Organization ID
+        :type                   : ``` str ```
+        :param user_id          : User ID
+        :type                   : ``` str ```
+        :param connected_account_id : ID of the connected account
+        :type                   : ``` str ```
+
+        :returns:
+            Get Connected Account By Identifier Response (without auth credentials)
+        """
+        return self.core_client.grpc_exec(
+            self.connected_accounts_service.GetConnectedAccountDetails.with_call,
+            GetConnectedAccountByIdentifierRequest(
+                organization_id=organization_id,
+                user_id=user_id,
+                connector=connector,
+                identifier=identifier,
+                id=connected_account_id
+            ),
+        )
+
+    def verify_connected_account_user(
+        self,
+        auth_request_id: str,
+        identifier: str
+    ) -> VerifyConnectedAccountUserResponse:
+        """
+        Method to verify a connected account user after OAuth callback
+
+        :param auth_request_id  : Auth request ID as base64url-encoded opaque token from the
+                                  user verify redirect URL query params
+        :type                   : ``` str ```
+        :param identifier       : Current logged in user's connected account identifier
+        :type                   : ``` str ```
+
+        :returns:
+            Verify Connected Account User Response
+        """
+        return self.core_client.grpc_exec(
+            self.connected_accounts_service.VerifyConnectedAccountUser.with_call,
+            VerifyConnectedAccountUserRequest(
+                auth_request_id=auth_request_id,
+                identifier=identifier
             ),
         )

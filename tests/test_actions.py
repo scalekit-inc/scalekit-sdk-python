@@ -8,6 +8,7 @@ from scalekit.actions.types import (
     ListConnectedAccountsResponse,
     DeleteConnectedAccountResponse,
     GetConnectedAccountAuthResponse,
+    GetConnectedAccountDetailsResponse,
     CreateConnectedAccountResponse,
     UpdateConnectedAccountResponse,
     CreateMcpConfigResponse,
@@ -21,6 +22,7 @@ from scalekit.actions.types import (
     ListMcpInstancesResponse,
     DeleteMcpInstanceResponse,
     GetMcpInstanceAuthStateResponse,
+    VerifyConnectedAccountUserResponse,
 )
 from scalekit.actions.models.responses.get_connected_account_auth_response import ConnectedAccount
 from scalekit.actions.modifier import Modifier
@@ -321,6 +323,23 @@ class TestConnect(BaseTest):
         except Exception as e:
             raise e
 
+    def test_execute_tool_with_connection_name(self):
+        """Method to test execute_tool with connection_name parameter"""
+        try:
+            result = self.scalekit_client.actions.execute_tool(
+                tool_input={"url": "https://docs.apify.com/platform/storage/usage"},
+                tool_name="c-myapifymcp_fetch-apify-docs",
+                identifier="akshay.parihar",
+                connection_name="myapifymcp",
+            )
+            self.assertIsNotNone(result)
+            self.assertIsInstance(result, ExecuteToolResponse)
+            self.assertTrue(hasattr(result, 'data'))
+            self.assertTrue(hasattr(result, 'execution_id'))
+            self.assertIsNotNone(result.data)
+        except Exception as e:
+            raise e
+
     def test_get_authorization_link_with_connected_account_id(self):
         """Method to test get_authorization_link with connected_account_id parameter"""
         try:
@@ -340,6 +359,43 @@ class TestConnect(BaseTest):
             self.assertTrue(hasattr(result, 'expiry'))
         except Exception as e:
             raise e
+
+    def test_get_authorization_link_with_state(self):
+        """Method to test get_authorization_link accepts state parameter"""
+        result = self.scalekit_client.connect.get_authorization_link(
+            connection_name=self.test_connection_name,
+            identifier=self.test_identifier,
+            state="custom_state_value"
+        )
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, MagicLinkResponse)
+        self.assertTrue(hasattr(result, 'link'))
+        self.assertTrue(hasattr(result, 'expiry'))
+
+    def test_get_authorization_link_with_user_verify_url(self):
+        """Method to test get_authorization_link accepts user_verify_url parameter"""
+        result = self.scalekit_client.connect.get_authorization_link(
+            connection_name=self.test_connection_name,
+            identifier=self.test_identifier,
+            user_verify_url="https://example.com/verify"
+        )
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, MagicLinkResponse)
+        self.assertTrue(hasattr(result, 'link'))
+        self.assertTrue(hasattr(result, 'expiry'))
+
+    def test_get_authorization_link_with_state_and_user_verify_url(self):
+        """Method to test get_authorization_link accepts both state and user_verify_url"""
+        result = self.scalekit_client.connect.get_authorization_link(
+            connection_name=self.test_connection_name,
+            identifier=self.test_identifier,
+            state="custom_state",
+            user_verify_url="https://example.com/verify"
+        )
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, MagicLinkResponse)
+        self.assertTrue(hasattr(result, 'link'))
+        self.assertTrue(hasattr(result, 'expiry'))
 
     def test_delete_connected_account_with_connected_account_id(self):
         """Method to test delete_connected_account with connected_account_id parameter"""
@@ -1520,3 +1576,154 @@ class TestActionsMcpInstance(BaseTest):
                     instance_id=instance_id
                 )
                 self.assertIsInstance(delete_response, DeleteMcpInstanceResponse)
+
+
+class TestConnectUserVerify(BaseTest):
+    """Tests for verify_connected_account_user via the actions client."""
+
+    def setUp(self):
+        self.actions_client = self.scalekit_client.actions
+        self.test_identifier = "default"
+
+    def test_verify_connected_account_user_method_exists(self):
+        """Method to test verify_connected_account_user method exists"""
+        self.assertTrue(hasattr(self.actions_client, 'verify_connected_account_user'))
+        self.assertTrue(callable(self.actions_client.verify_connected_account_user))
+
+    def test_verify_connected_account_user_missing_auth_request_id(self):
+        """Should raise ValueError when auth_request_id is empty"""
+        with self.assertRaises(ValueError) as context:
+            self.actions_client.verify_connected_account_user(
+                auth_request_id="",
+                identifier=self.test_identifier
+            )
+        self.assertIn("auth_request_id is required", str(context.exception))
+
+    def test_verify_connected_account_user_missing_identifier(self):
+        """Should raise ValueError when identifier is empty"""
+        with self.assertRaises(ValueError) as context:
+            self.actions_client.verify_connected_account_user(
+                auth_request_id="test_auth_request_id",
+                identifier=""
+            )
+        self.assertIn("identifier is required", str(context.exception))
+
+    def test_verify_connected_account_user_response_model(self):
+        """Test VerifyConnectedAccountUserResponse model structure"""
+        response = VerifyConnectedAccountUserResponse(
+            post_user_verify_redirect_url="https://example.com/callback"
+        )
+        self.assertEqual(response.post_user_verify_redirect_url, "https://example.com/callback")
+        self.assertIsInstance(response.to_dict(), dict)
+        self.assertIn("post_user_verify_redirect_url", response.to_dict())
+
+    def test_verify_connected_account_user_response_model_none_url(self):
+        """Test VerifyConnectedAccountUserResponse with no redirect URL"""
+        response = VerifyConnectedAccountUserResponse()
+        self.assertIsNone(response.post_user_verify_redirect_url)
+
+    def test_verify_connected_account_user_response_from_proto_empty_string(self):
+        """Test from_proto coerces empty string to None"""
+        class MockProto:
+            post_user_verify_redirect_url = ""
+
+        response = VerifyConnectedAccountUserResponse.from_proto(MockProto())
+        self.assertIsNone(response.post_user_verify_redirect_url)
+
+    def test_verify_connected_account_user_response_from_proto_with_url(self):
+        """Test from_proto preserves a valid URL"""
+        class MockProto:
+            post_user_verify_redirect_url = "https://example.com/redirect"
+
+        response = VerifyConnectedAccountUserResponse.from_proto(MockProto())
+        self.assertEqual(response.post_user_verify_redirect_url, "https://example.com/redirect")
+
+    def test_verify_connected_account_user_response_to_dict(self):
+        """Test to_dict returns correct dictionary"""
+        response = VerifyConnectedAccountUserResponse(
+            post_user_verify_redirect_url="https://example.com/callback"
+        )
+        result = response.to_dict()
+        self.assertEqual(result, {"post_user_verify_redirect_url": "https://example.com/callback"})
+
+    def test_verify_connected_account_user_none_auth_request_id(self):
+        """Should raise ValueError when auth_request_id is None"""
+        with self.assertRaises(ValueError):
+            self.actions_client.verify_connected_account_user(
+                auth_request_id=None,
+                identifier=self.test_identifier
+            )
+
+    def test_verify_connected_account_user_none_identifier(self):
+        """Should raise ValueError when identifier is None"""
+        with self.assertRaises(ValueError):
+            self.actions_client.verify_connected_account_user(
+                auth_request_id="test_auth_request_id",
+                identifier=None
+            )
+
+    def test_verify_connected_account_user_invalid_auth_request_id(self):
+        """Should raise ScalekitServerException for invalid auth_request_id"""
+        from scalekit.common.exceptions import ScalekitServerException
+        with self.assertRaises(ScalekitServerException):
+            self.actions_client.verify_connected_account_user(
+                auth_request_id="invalid_auth_request_id",
+                identifier="default"
+            )
+
+
+class TestActionsRawBody(BaseTest):
+    """Tests for the raw_body parameter on ActionClient.request() — used for non-JSON payloads such as XML/SOAP."""
+
+    def setUp(self):
+        self.actions_client = self.scalekit_client.actions
+
+    def test_request_salesforce_soap_xml_body(self):
+        """POST a SOAP/XML body to the Salesforce Metadata API via the proxy."""
+        import requests
+
+        soap_body = """<?xml version="1.0" encoding="utf-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:met="http://soap.sforce.com/2006/04/metadata">
+  <soapenv:Header>
+    <met:client>my-client-id</met:client>
+  </soapenv:Header>
+  <soapenv:Body>
+    <met:describeMetadata>
+      <met:asOfVersion>66.0</met:asOfVersion>
+    </met:describeMetadata>
+  </soapenv:Body>
+</soapenv:Envelope>"""
+
+        response = self.actions_client.request(
+            connection_name="salesforce-1hpnGzcD",
+            identifier="john.doe",
+            path="/services/Soap/m/66.0",
+            method="POST",
+            raw_body=soap_body,
+            headers={
+                "Content-Type": "text/xml; charset=UTF-8",
+                "SOAPAction": "describeMetadata",
+            },
+        )
+
+        self.assertIsNotNone(response)
+        self.assertIsInstance(response, requests.Response)
+
+    def test_get_connected_account_details(self):
+        """Fetch Salesforce connected account details (no auth credentials) via get_connected_account_details."""
+        result = self.actions_client.get_connected_account_details(
+            connection_name="salesforce-1hpnGzcD",
+            identifier="john.doe",
+        )
+
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, GetConnectedAccountDetailsResponse)
+        self.assertIsNotNone(result.connected_account)
+
+        account = result.connected_account
+        self.assertEqual(account.identifier, "john.doe")
+        self.assertTrue(hasattr(account, 'id'))
+        self.assertTrue(hasattr(account, 'status'))
+        self.assertTrue(hasattr(account, 'connector'))
+

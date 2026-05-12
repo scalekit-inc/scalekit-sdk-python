@@ -1,9 +1,9 @@
 from typing import Optional, Any, List, Dict, Union
 import requests
-from scalekit.actions.types import ToolRequest,ExecuteToolResponse,MagicLinkResponse,ListConnectedAccountsResponse,DeleteConnectedAccountResponse,GetConnectedAccountAuthResponse,ToolInput, \
+from scalekit.actions.types import ToolRequest,ExecuteToolResponse,MagicLinkResponse,ListConnectedAccountsResponse,DeleteConnectedAccountResponse,GetConnectedAccountAuthResponse,GetConnectedAccountDetailsResponse,ToolInput, \
     UpdateConnectedAccountResponse,CreateMcpConfigResponse,ListMcpConfigsResponse,UpdateMcpConfigResponse,DeleteMcpConfigResponse, \
     EnsureMcpInstanceResponse,UpdateMcpInstanceResponse,GetMcpInstanceResponse,ListMcpInstancesResponse,DeleteMcpInstanceResponse,GetMcpInstanceAuthStateResponse, \
-    McpConfig,McpConfigConnectionToolMapping
+    McpConfig,McpConfigConnectionToolMapping,VerifyConnectedAccountUserResponse
 from scalekit.actions.models.responses.create_connected_account_response import CreateConnectedAccountResponse
 from scalekit.actions.models.requests.create_connected_account_request import CreateConnectedAccountRequest
 from scalekit.actions.models.requests.update_connected_account_request import UpdateConnectedAccountRequest
@@ -94,35 +94,46 @@ class ActionClient:
         identifier: Optional[str] = None,
         tool_request: Optional[ToolRequest] = None,
         connected_account_id: Optional[str] = None,
+        connection_name: Optional[str] = None,
         **kwargs
     ) -> ExecuteToolResponse:
         """
         Execute a tool with the given parameters.
-        
+
         Args:
             tool_input: Input data for the tool execution (required)
             tool_name: Name of the tool to execute (required)
-            identifier: Unique identifier for this execution (required)
-            tool_request: Optional ToolRequest configuration object
-            connected_account_id: Optional connected account ID string
             **kwargs: Additional optional parameters
-            
+
+        Account resolution (one of the following combinations is required):
+            connected_account_id: ID of the connected account to use. Provide this
+                OR the (identifier + connection_name) pair — not both.
+            identifier + connection_name: Resolve the connected account by user
+                identifier (e.g. a user ID or email) together with the connection
+                name (e.g. 'slack-b1fqL2Dr', 'notion-arffP5Ff').
+
         Returns:
             ExecuteToolResponse containing execution results
+
+        Raises:
+            ValueError: If tool_name is not provided, or if neither
+                connected_account_id nor the (identifier, connection_name) pair
+                is supplied.
         """
         # Validate required parameters
         if not tool_name:
             raise ValueError("tool_name is required")
-        
+
         # Apply pre-modifications to the input parameters
         modified_tool_input = apply_pre_modifiers(tool_name, tool_input, self._modifiers)
-        
+
         # Call the existing tools.execute_tool which returns (response, metadata) tuple
         result_tuple = self.tools.execute_tool(
             tool_name=tool_name,
             identifier=identifier,
             params=modified_tool_input,
-            connected_account_id=connected_account_id
+            connected_account_id=connected_account_id,
+            connection_name=connection_name
         )
         
         # Extract the response[0] (the actual ExecuteToolResponse proto object)
@@ -143,18 +154,24 @@ class ActionClient:
             identifier: Optional[str] = None,
             connection_name: Optional[str] = None,
             connected_account_id: Optional[str] = None,
+            state: Optional[str] = None,
+            user_verify_url: Optional[str] = None,
             **kwargs
     ) -> MagicLinkResponse:
         """
         Get authorization magic link for a connected account
-        
+
         :param connection_name: Connector identifier
         :type: str
         :param identifier: Connected account identifier
         :type: str
         :param connected_account_id: Connected account ID (optional)
         :type: str
-        
+        :param state: Opaque state value passed through to the user verify redirect URL query params (optional)
+        :type: str
+        :param user_verify_url: B2B app's user verify redirect URL (optional)
+        :type: str
+
         :returns:
             MagicLinkResponse containing magic link and expiry
         """
@@ -162,14 +179,47 @@ class ActionClient:
         result_tuple = self.connected_accounts.get_magic_link_for_connected_account(
             connector=connection_name,
             identifier=identifier,
-            connected_account_id=connected_account_id
+            connected_account_id=connected_account_id,
+            state=state,
+            user_verify_url=user_verify_url
         )
-        
+
         # Extract the response[0] (the actual GetMagicLinkForConnectedAccountResponse proto object)
         proto_response = result_tuple[0]
-        
+
         # Convert proto to our MagicLinkResponse class
         return MagicLinkResponse.from_proto(proto_response)
+
+    def verify_connected_account_user(
+        self,
+        auth_request_id: str,
+        identifier: str,
+    ) -> VerifyConnectedAccountUserResponse:
+        """
+        Verify a connected account user after OAuth callback
+
+        :param auth_request_id: Auth request ID as base64url-encoded opaque token from the
+                                user verify redirect URL query params
+        :type: str
+        :param identifier: Current logged in user's connected account identifier
+        :type: str
+
+        :returns:
+            VerifyConnectedAccountUserResponse containing the post-verification redirect URL
+        """
+        if not auth_request_id:
+            raise ValueError("auth_request_id is required")
+        if not identifier:
+            raise ValueError("identifier is required")
+
+        result_tuple = self.connected_accounts.verify_connected_account_user(
+            auth_request_id=auth_request_id,
+            identifier=identifier
+        )
+
+        proto_response = result_tuple[0]
+
+        return VerifyConnectedAccountUserResponse.from_proto(proto_response)
     
     def list_connected_accounts(
         self, 
@@ -273,7 +323,51 @@ class ActionClient:
         
         # Convert proto to our GetConnectedAccountAuthResponse class
         return GetConnectedAccountAuthResponse.from_proto(proto_response)
-    
+
+    def get_connected_account_details(
+        self,
+        connection_name: Optional[str] = None,
+        identifier: Optional[str] = None,
+        connected_account_id: Optional[str] = None,
+        **kwargs
+    ) -> GetConnectedAccountDetailsResponse:
+        """
+        Get connected account details by identifier, without auth credentials.
+
+        Use this instead of :meth:`get_connected_account` when you only need
+        account metadata (status, connector, api_config, etc.) and do not
+        require the access/refresh tokens.
+
+        You must provide **one** of the following to identify the connected account:
+
+        - ``connection_name`` **and** ``identifier`` — use when you know the
+          connector name and the end-user's identifier (e.g. email address).
+        - ``connected_account_id`` — use when you already hold the Scalekit
+          connected account ID.
+
+        :param connection_name: Connector identifier, e.g. ``"salesforce-1hpnGzcD"``.
+            Required when ``connected_account_id`` is not provided.
+        :type connection_name: str
+        :param identifier: End-user identifier tied to the connected account,
+            e.g. ``"john.doe"``. Required when ``connected_account_id`` is not provided.
+        :type identifier: str
+        :param connected_account_id: Scalekit connected account ID. When supplied,
+            ``connection_name`` and ``identifier`` are ignored.
+        :type connected_account_id: str
+
+        :returns:
+            GetConnectedAccountDetailsResponse containing account metadata
+            without auth credentials
+        :rtype: GetConnectedAccountDetailsResponse
+        """
+        result_tuple = self.connected_accounts.get_connected_account_details_by_identifier(
+            connector=connection_name,
+            identifier=identifier,
+            connected_account_id=connected_account_id
+        )
+        proto_response = result_tuple[0]
+        return GetConnectedAccountDetailsResponse.from_proto(proto_response)
+
     def add_modifier(self, modifier: Modifier) -> None:
         """Add a modifier to the private list"""
         self._modifiers.append(modifier)
@@ -333,6 +427,7 @@ class ActionClient:
         query_params: Optional[Dict[str, Any]] = None,
         body: Optional[Any] = None,
         form_data: Optional[Dict[str, Any]] = None,
+        raw_body: Optional[Union[bytes, str]] = None,
         headers: Optional[Dict[str, str]] = None,
         **kwargs,
     ) -> requests.Response:
@@ -353,6 +448,14 @@ class ActionClient:
         :type body: Optional[Any]
         :param form_data: Request body sent as URL-encoded form data
         :type form_data: Optional[Dict[str, Any]]
+        :param raw_body: Raw request body sent as-is, without any serialization.
+            Use this **only** when the request payload is not JSON — for example,
+            when the downstream API expects an XML body, a plain-text payload, or
+            any other non-JSON content type. For JSON payloads use ``body`` instead.
+            When ``raw_body`` is provided it takes priority over both ``body`` and
+            ``form_data``. You must also pass a matching ``Content-Type`` header via
+            ``headers`` (e.g. ``"Content-Type": "application/xml"``).
+        :type raw_body: Optional[Union[bytes, str]]
         :param headers: Additional HTTP headers to merge into the request
         :type headers: Optional[Dict[str, str]]
 
@@ -389,8 +492,8 @@ class ActionClient:
             method=method.upper(),
             url=url,
             params=params,
-            json=body,
-            data=form_data,
+            json=body if raw_body is None else None,
+            data=raw_body or form_data,
             headers=req_headers,
             timeout=timeout,
             **kwargs,
@@ -404,8 +507,8 @@ class ActionClient:
                 method=method.upper(),
                 url=url,
                 params=params,
-                json=body,
-                data=form_data,
+                json=body if raw_body is None else None,
+                data=raw_body if raw_body is not None else form_data,
                 headers=req_headers,
                 timeout=timeout,
                 **kwargs,
