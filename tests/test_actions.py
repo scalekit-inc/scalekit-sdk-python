@@ -781,6 +781,83 @@ class TestConnect(BaseTest):
         self.assertIsNotNone(empty_proto)
         self.assertFalse(empty_proto.HasField("authorization_details"))
 
+    def test_google_dwd_create_request_to_proto(self):
+        """CreateConnectedAccountRequest with google_dwd builds correct proto"""
+        from scalekit.actions.models.requests.create_connected_account_request import CreateConnectedAccountRequest
+
+        req = CreateConnectedAccountRequest(
+            connection_name="GDWD",
+            identifier="admin@example.com",
+            authorization_details={"google_dwd": {"subject": "admin@example.com"}}
+        )
+        proto = req.to_proto()
+        self.assertTrue(proto.authorization_details.HasField("google_dwd"))
+        self.assertEqual(proto.authorization_details.google_dwd.subject, "admin@example.com")
+        # access_token must NOT be sent in requests
+        self.assertEqual(proto.authorization_details.google_dwd.access_token, "")
+
+    def test_google_dwd_update_request_to_proto(self):
+        """UpdateConnectedAccountRequest with google_dwd builds correct proto"""
+        from scalekit.actions.models.requests.update_connected_account_request import UpdateConnectedAccountRequest
+
+        req = UpdateConnectedAccountRequest(
+            connection_name="GDWD",
+            identifier="admin@example.com",
+            authorization_details={"google_dwd": {"subject": "admin@example.com"}}
+        )
+        proto = req.to_proto()
+        self.assertTrue(proto.authorization_details.HasField("google_dwd"))
+        self.assertEqual(proto.authorization_details.google_dwd.subject, "admin@example.com")
+
+    def test_google_dwd_response_from_proto(self):
+        """ConnectedAccount.from_proto correctly decodes google_dwd oneof"""
+        from scalekit.actions.models.responses.get_connected_account_auth_response import ConnectedAccount
+        from scalekit.v1.connected_accounts.connected_accounts_pb2 import ConnectedAccount as ProtoCA
+        from google.protobuf.timestamp_pb2 import Timestamp
+
+        proto_ca = ProtoCA()
+        proto_ca.authorization_details.google_dwd.subject = "admin@example.com"
+        proto_ca.authorization_details.google_dwd.access_token = "ya29.token"
+        proto_ca.authorization_details.google_dwd.scopes.extend(["openid", "email"])
+        ts = Timestamp()
+        ts.FromSeconds(2000000000)
+        proto_ca.authorization_details.google_dwd.token_expires_at.CopyFrom(ts)
+
+        ca = ConnectedAccount.from_proto(proto_ca)
+        self.assertIsNotNone(ca.authorization_details)
+        self.assertIn("google_dwd", ca.authorization_details)
+        dwd = ca.authorization_details["google_dwd"]
+        self.assertEqual(dwd["subject"], "admin@example.com")
+        self.assertEqual(dwd["access_token"], "ya29.token")
+        self.assertEqual(dwd["scopes"], ["openid", "email"])
+        self.assertIsNotNone(dwd["token_expires_at"])
+
+    def test_google_dwd_response_no_token_expires_at(self):
+        """google_dwd with no token_expires_at gives None in response"""
+        from scalekit.actions.models.responses.get_connected_account_auth_response import ConnectedAccount
+        from scalekit.v1.connected_accounts.connected_accounts_pb2 import ConnectedAccount as ProtoCA
+
+        proto_ca = ProtoCA()
+        proto_ca.authorization_details.google_dwd.subject = "admin@example.com"
+        proto_ca.authorization_details.google_dwd.access_token = "ya29.token"
+
+        ca = ConnectedAccount.from_proto(proto_ca)
+        dwd = ca.authorization_details["google_dwd"]
+        self.assertIsNone(dwd["token_expires_at"])
+
+    def test_google_dwd_not_set_in_oauth_request(self):
+        """google_dwd is not set when oauth_token auth is used"""
+        from scalekit.actions.models.requests.create_connected_account_request import CreateConnectedAccountRequest
+
+        req = CreateConnectedAccountRequest(
+            connection_name="GMAIL",
+            identifier="user@example.com",
+            authorization_details={"oauth_token": {"access_token": "tok", "refresh_token": "ref", "scopes": []}}
+        )
+        proto = req.to_proto()
+        self.assertTrue(proto.authorization_details.HasField("oauth_token"))
+        self.assertFalse(proto.authorization_details.HasField("google_dwd"))
+
     @unittest.skip
     def test_google_adk_get_tools(self):
 
