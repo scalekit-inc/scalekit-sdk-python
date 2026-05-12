@@ -3,6 +3,7 @@ from google.api import annotations_pb2 as _annotations_pb2
 from google.api import field_behavior_pb2 as _field_behavior_pb2
 from google.api import visibility_pb2 as _visibility_pb2
 from google.protobuf import empty_pb2 as _empty_pb2
+from google.protobuf import struct_pb2 as _struct_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
 from google.protobuf import wrappers_pb2 as _wrappers_pb2
 from protoc_gen_openapiv2.options import annotations_pb2 as _annotations_pb2_1
@@ -14,6 +15,13 @@ from google.protobuf import message as _message
 from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Mapping, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
+
+class VerificationMethod(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    VERIFICATION_METHOD_UNSPECIFIED: _ClassVar[VerificationMethod]
+    ADMIN: _ClassVar[VerificationMethod]
+    DNS: _ClassVar[VerificationMethod]
+    NOT_APPLICABLE: _ClassVar[VerificationMethod]
 
 class VerificationStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
@@ -28,6 +36,10 @@ class DomainType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     DOMAIN_TYPE_UNSPECIFIED: _ClassVar[DomainType]
     ALLOWED_EMAIL_DOMAIN: _ClassVar[DomainType]
     ORGANIZATION_DOMAIN: _ClassVar[DomainType]
+VERIFICATION_METHOD_UNSPECIFIED: VerificationMethod
+ADMIN: VerificationMethod
+DNS: VerificationMethod
+NOT_APPLICABLE: VerificationMethod
 VERIFICATION_STATUS_UNSPECIFIED: VerificationStatus
 PENDING: VerificationStatus
 VERIFIED: VerificationStatus
@@ -143,6 +155,12 @@ class VerifyDomainRequest(_message.Message):
     id: str
     def __init__(self, organization_id: _Optional[str] = ..., external_id: _Optional[str] = ..., id: _Optional[str] = ...) -> None: ...
 
+class VerifyDomainResponse(_message.Message):
+    __slots__ = ("verified",)
+    VERIFIED_FIELD_NUMBER: _ClassVar[int]
+    verified: bool
+    def __init__(self, verified: bool = ...) -> None: ...
+
 class ListDomainResponse(_message.Message):
     __slots__ = ("page_size", "page_number", "domains")
     PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
@@ -168,7 +186,7 @@ class ListAuthorizedDomainResponse(_message.Message):
     def __init__(self, domains: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class Domain(_message.Message):
-    __slots__ = ("id", "domain", "environment_id", "organization_id", "txt_record_key", "txt_record_secret", "verification_status", "create_time", "update_time", "domain_type")
+    __slots__ = ("id", "domain", "environment_id", "organization_id", "txt_record_key", "txt_record_secret", "verification_status", "create_time", "update_time", "domain_type", "verification_method")
     ID_FIELD_NUMBER: _ClassVar[int]
     DOMAIN_FIELD_NUMBER: _ClassVar[int]
     ENVIRONMENT_ID_FIELD_NUMBER: _ClassVar[int]
@@ -179,6 +197,7 @@ class Domain(_message.Message):
     CREATE_TIME_FIELD_NUMBER: _ClassVar[int]
     UPDATE_TIME_FIELD_NUMBER: _ClassVar[int]
     DOMAIN_TYPE_FIELD_NUMBER: _ClassVar[int]
+    VERIFICATION_METHOD_FIELD_NUMBER: _ClassVar[int]
     id: str
     domain: str
     environment_id: str
@@ -189,4 +208,5 @@ class Domain(_message.Message):
     create_time: _timestamp_pb2.Timestamp
     update_time: _timestamp_pb2.Timestamp
     domain_type: DomainType
-    def __init__(self, id: _Optional[str] = ..., domain: _Optional[str] = ..., environment_id: _Optional[str] = ..., organization_id: _Optional[str] = ..., txt_record_key: _Optional[str] = ..., txt_record_secret: _Optional[str] = ..., verification_status: _Optional[_Union[VerificationStatus, str]] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., domain_type: _Optional[_Union[DomainType, str]] = ...) -> None: ...
+    verification_method: VerificationMethod
+    def __init__(self, id: _Optional[str] = ..., domain: _Optional[str] = ..., environment_id: _Optional[str] = ..., organization_id: _Optional[str] = ..., txt_record_key: _Optional[str] = ..., txt_record_secret: _Optional[str] = ..., verification_status: _Optional[_Union[VerificationStatus, str]] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., domain_type: _Optional[_Union[DomainType, str]] = ..., verification_method: _Optional[_Union[VerificationMethod, str]] = ...) -> None: ...
