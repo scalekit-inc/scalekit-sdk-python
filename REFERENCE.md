@@ -1402,6 +1402,327 @@ scalekit_client.connection.delete_connection('org_123456', 'conn_123456')
 </dl>
 </details>
 
+<details><summary><code>client.connection.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connection.py">list_app_connections</a>(page_size?, page_token?, provider?) -> ListAppConnectionsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists all environment-level app connections. These are connections configured at the environment level (not tied to a specific organization), such as OAuth integrations (e.g., HubSpot) or Google Domain-Wide Delegation connections.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+# List all app connections
+response = scalekit_client.connection.list_app_connections()
+
+for conn in response[0].connections:
+    print(f"Connection: {conn.id}, Provider: {conn.provider_key}")
+
+# Filter by provider
+response = scalekit_client.connection.list_app_connections(provider='HUBSPOT', page_size=10)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**page_size:** `Optional[int]` - Maximum number of connections to return (max 30)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_token:** `Optional[str]` - Pagination token from a previous response
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**provider:** `Optional[str]` - Filter by provider key (e.g., `'HUBSPOT'`, `'GOOGLEDWD'`)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.connection.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connection.py">get_environment_connection</a>(connection_id) -> GetConnectionResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Retrieves an environment-level connection by its ID.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.connection.get_environment_connection('conn_123456')
+conn = response[0].connection
+print(f"Provider: {conn.provider_key}, Type: {conn.type}")
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**connection_id:** `str` - The ID of the environment-level connection to retrieve
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.connection.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connection.py">create_environment_connection</a>(connection, flags?) -> CreateConnectionResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Creates a new environment-level connection. Supports OAuth connections (e.g., HubSpot) and Google Domain-Wide Delegation (GOOGLE_DWD) connections. Pass `Flags(is_app=True)` to mark the connection as an app-level integration.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from scalekit.v1.connections.connections_pb2 import (
+    CreateConnection, ConnectionType, Flags
+)
+
+# Create an OAuth app connection (e.g., HubSpot)
+response = scalekit_client.connection.create_environment_connection(
+    connection=CreateConnection(
+        provider_key='HUBSPOT',
+        type=ConnectionType.OAUTH
+    ),
+    flags=Flags(is_app=True)
+)
+conn = response[0].connection
+print(f"Created: {conn.id}, Key: {conn.key_id}")
+
+# Create a Google Domain-Wide Delegation connection
+response = scalekit_client.connection.create_environment_connection(
+    connection=CreateConnection(
+        provider_key='GOOGLEDWD',
+        type=ConnectionType.GOOGLE_DWD,
+        key_id='my-gdwd-connection'
+    ),
+    flags=Flags(is_app=True)
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**connection:** `CreateConnection` - Connection configuration object
+- `provider_key: str` - Provider identifier (e.g., `'HUBSPOT'`, `'GOOGLEDWD'`)
+- `type: ConnectionType` - Connection type (`ConnectionType.OAUTH` or `ConnectionType.GOOGLE_DWD`)
+- `key_id: Optional[str]` - Unique key identifier for the connection (required for GOOGLE_DWD)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**flags:** `Optional[Flags]` - Connection flags
+- `is_app: bool` - Set to `True` to create an environment-level app connection
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.connection.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connection.py">update_environment_connection</a>(connection_id, connection) -> UpdateConnectionResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Updates an environment-level connection. This is a PATCH operation — only fields provided in the `UpdateConnection` object are changed; unspecified fields remain unchanged. Always include the `type` field to avoid server-side errors.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from scalekit.v1.connections.connections_pb2 import (
+    UpdateConnection, ConnectionType, OAuthConnectionConfig, GoogleDWDConfig
+)
+
+# Update OAuth connection credentials
+response = scalekit_client.connection.update_environment_connection(
+    connection_id='conn_123456',
+    connection=UpdateConnection(
+        provider_key='HUBSPOT',
+        key_id='hubspot-key',
+        type=ConnectionType.OAUTH,
+        oauth_config=OAuthConnectionConfig(
+            client_id={'value': 'my-client-id'},
+            client_secret={'value': 'my-client-secret'}
+        )
+    )
+)
+
+# Update Google DWD connection
+response = scalekit_client.connection.update_environment_connection(
+    connection_id='conn_123456',
+    connection=UpdateConnection(
+        provider_key='GOOGLEDWD',
+        key_id='my-gdwd-connection',
+        type=ConnectionType.GOOGLE_DWD,
+        google_dwd_config=GoogleDWDConfig(
+            service_account_json={'value': '{"type":"service_account",...}'},
+            scopes=['https://www.googleapis.com/auth/admin.directory.user.readonly'],
+            token_uri={'value': 'https://oauth2.googleapis.com/token'}
+        )
+    )
+)
+conn = response[0].connection
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**connection_id:** `str` - The ID of the environment-level connection to update
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**connection:** `UpdateConnection` - Fields to update on the connection
+- `provider_key: str` - Provider identifier (e.g., `'HUBSPOT'`, `'GOOGLEDWD'`)
+- `key_id: str` - Key identifier of the connection
+- `type: ConnectionType` - Connection type — must always be provided (`ConnectionType.OAUTH` or `ConnectionType.GOOGLE_DWD`)
+- `oauth_config: Optional[OAuthConnectionConfig]` - OAuth credentials to update (`client_id`, `client_secret`)
+- `google_dwd_config: Optional[GoogleDWDConfig]` - Google DWD config to update (`service_account_json`, `scopes`, `token_uri`)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Domain
 
 <details><summary><code>client.domain.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/domain.py">create_domain</a>(organization_id, domain_name, domain_type?) -> CreateDomainResponse</code></summary>
