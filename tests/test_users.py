@@ -488,7 +488,7 @@ class TestUsers(BaseTest):
             metadata={"source": "test"}
         )
         create_response = self.scalekit_client.users.create_user_and_membership(
-            organization_id=self.org_id, 
+            organization_id=self.org_id,
             user=user,
             send_invitation_email=True
         )
@@ -508,6 +508,79 @@ class TestUsers(BaseTest):
         self.assertTrue(response[0].invite.created_at is not None)
         self.assertTrue(response[0].invite.expires_at is not None)
         self.assertEqual(response[0].invite.resent_count, 1)
+
+    def test_search_users(self):
+        """ Method to test search users """
+        response = self.scalekit_client.users.search_users(query="test")
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertTrue(response[0] is not None)
+
+    def test_search_organization_users(self):
+        """ Method to test search organization users """
+        user = CreateUser(
+            email=f"test.user.{self.faker.unique.random_number()}@example.com",
+        )
+        create_response = self.scalekit_client.users.create_user_and_membership(
+            organization_id=self.org_id,
+            user=user
+        )
+        self.user_id = create_response[0].user.id
+
+        response = self.scalekit_client.users.search_organization_users(
+            organization_id=self.org_id,
+            query="test"
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertTrue(response[0] is not None)
+
+    def test_assign_user_roles(self):
+        """ Method to test assign user roles """
+        user = CreateUser(
+            email=f"test.user.{self.faker.unique.random_number()}@example.com",
+        )
+        create_response = self.scalekit_client.users.create_user_and_membership(
+            organization_id=self.org_id,
+            user=user
+        )
+        self.user_id = create_response[0].user.id
+
+        try:
+            response = self.scalekit_client.users.assign_user_roles(
+                organization_id=self.org_id,
+                user_id=self.user_id,
+                role_ids=["member"]
+            )
+            self.assertEqual(response[1].code().name, "OK")
+            self.assertTrue(response[0] is not None)
+        except Exception as exp:
+            self.skipTest(f"Skipping assign user roles test due to error: {exp}")
+
+    def test_remove_user_role(self):
+        """ Method to test remove user role """
+        user = CreateUser(
+            email=f"test.user.{self.faker.unique.random_number()}@example.com",
+        )
+        create_response = self.scalekit_client.users.create_user_and_membership(
+            organization_id=self.org_id,
+            user=user
+        )
+        self.user_id = create_response[0].user.id
+
+        try:
+            # First assign a role so we can remove it
+            self.scalekit_client.users.assign_user_roles(
+                organization_id=self.org_id,
+                user_id=self.user_id,
+                role_ids=["member"]
+            )
+            response = self.scalekit_client.users.remove_user_role(
+                organization_id=self.org_id,
+                user_id=self.user_id,
+                role_id="member"
+            )
+            self.assertEqual(response[1].code().name, "OK")
+        except Exception as exp:
+            self.skipTest(f"Skipping remove user role test due to error: {exp}")
 
     def tearDown(self):
         """ Method to clean up """

@@ -2,6 +2,7 @@ from typing import Optional, List, Dict
 
 from google.protobuf import wrappers_pb2
 from scalekit.core import CoreClient
+from scalekit.v1.commons.commons_pb2 import TimeUnit
 from scalekit.v1.organizations.organizations_pb2 import (
     ListOrganizationsRequest,
     ListOrganizationsResponse,
@@ -20,6 +21,17 @@ from scalekit.v1.organizations.organizations_pb2 import (
     UpdateOrganizationSettingsRequest,
     OrganizationUserManagementSettings,
     UpsertUserManagementSettingsRequest,
+    UpdateOrganizationSessionPolicyRequest,
+    UpdateOrganizationSessionPolicyResponse,
+    SessionPolicyType,
+    GetOrganizationSessionPolicyRequest,
+    GetOrganizationSessionPolicyResponse,
+    GetApplicationSessionPolicyRequest,
+    GetApplicationSessionPolicyResponse,
+    SearchOrganizationsRequest,
+    SearchOrganizationsResponse,
+    GetOrganizationUserManagementSettingsRequest,
+    GetOrganizationUserManagementSettingsResponse,
 )
 from scalekit.v1.organizations.organizations_pb2_grpc import OrganizationServiceStub
 
@@ -219,3 +231,115 @@ class OrganizationClient:
             )
         )
         return response[0].settings
+
+    def update_organization_session_policy(
+        self,
+        organization_id: str,
+        policy_source,
+        absolute_session_timeout: Optional[int] = None,
+        absolute_session_timeout_unit=None,
+        idle_session_timeout_enabled: Optional[bool] = None,
+        idle_session_timeout: Optional[int] = None,
+        idle_session_timeout_unit=None,
+    ) -> UpdateOrganizationSessionPolicyResponse:
+        """
+        Method to update the session policy for an organization
+
+        :param organization_id                : Organization id
+        :type                                 : ``` str ```
+        :param policy_source                  : Session policy type (APPLICATION or CUSTOM)
+        :type                                 : ``` SessionPolicyType ```
+        :param absolute_session_timeout       : Absolute session timeout value (optional)
+        :type                                 : ``` int | None ```
+        :param absolute_session_timeout_unit  : Unit for absolute session timeout (optional)
+        :type                                 : ``` TimeUnit | None ```
+        :param idle_session_timeout_enabled   : Whether idle session timeout is enabled (optional)
+        :type                                 : ``` bool | None ```
+        :param idle_session_timeout           : Idle session timeout value (optional)
+        :type                                 : ``` int | None ```
+        :param idle_session_timeout_unit      : Unit for idle session timeout (optional)
+        :type                                 : ``` TimeUnit | None ```
+        :returns:
+            Update Organization Session Policy Response
+        """
+        request = UpdateOrganizationSessionPolicyRequest(
+            organization_id=organization_id,
+            policy_source=policy_source,
+            **({} if absolute_session_timeout is None else {"absolute_session_timeout": wrappers_pb2.Int32Value(value=absolute_session_timeout)}),
+            **({} if absolute_session_timeout_unit is None else {"absolute_session_timeout_unit": absolute_session_timeout_unit}),
+            **({} if idle_session_timeout_enabled is None else {"idle_session_timeout_enabled": wrappers_pb2.BoolValue(value=idle_session_timeout_enabled)}),
+            **({} if idle_session_timeout is None else {"idle_session_timeout": wrappers_pb2.Int32Value(value=idle_session_timeout)}),
+            **({} if idle_session_timeout_unit is None else {"idle_session_timeout_unit": idle_session_timeout_unit}),
+        )
+        return self.core_client.grpc_exec(
+            self.organization_service.UpdateOrganizationSessionPolicy.with_call,
+            request,
+        )
+
+    def get_organization_session_policy(self, organization_id: str) -> GetOrganizationSessionPolicyResponse:
+        """
+        Method to get the session policy for an organization
+
+        :param organization_id  : Organization id
+        :type                   : ``` str ```
+        :returns:
+            Get Organization Session Policy Response
+        """
+        return self.core_client.grpc_exec(
+            self.organization_service.GetOrganizationSessionPolicy.with_call,
+            GetOrganizationSessionPolicyRequest(organization_id=organization_id),
+        )
+
+    def get_application_session_policy(self, organization_id: str) -> GetApplicationSessionPolicyResponse:
+        """
+        Method to get the application-level default session policy in the context of an organization
+
+        :param organization_id  : Organization id
+        :type                   : ``` str ```
+        :returns:
+            Get Application Session Policy Response
+        """
+        return self.core_client.grpc_exec(
+            self.organization_service.GetApplicationSessionPolicy.with_call,
+            GetApplicationSessionPolicyRequest(organization_id=organization_id),
+        )
+
+    def search_organizations(
+        self,
+        query: str,
+        page_size: int = 20,
+        page_token: Optional[str] = None,
+    ) -> SearchOrganizationsResponse:
+        """
+        Method to search organizations by query
+
+        :param query       : Search query string
+        :type              : ``` str ```
+        :param page_size   : Page size for pagination
+        :type              : ``` int ```
+        :param page_token  : Page token for pagination
+        :type              : ``` str | None ```
+        :returns:
+            Search Organizations Response
+        """
+        request = SearchOrganizationsRequest(query=query, page_size=page_size)
+        if page_token is not None:
+            request.page_token = page_token
+        return self.core_client.grpc_exec(
+            self.organization_service.SearchOrganization.with_call,
+            request,
+        )
+
+    def get_organization_user_management_setting(self, organization_id: str) -> GetOrganizationUserManagementSettingsResponse:
+        """
+        Method to get the user management settings for an organization
+
+        :param organization_id  : Organization id
+        :type                   : ``` str ```
+        :returns:
+            Get Organization User Management Settings Response
+        """
+        return self.core_client.grpc_exec(
+            self.organization_service.GetOrganizationUserManagementSetting.with_call,
+            GetOrganizationUserManagementSettingsRequest(organization_id=organization_id),
+        )
