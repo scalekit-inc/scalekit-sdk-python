@@ -139,3 +139,13 @@ lint: create-venv
 test: create-venv
 	@echo "Running tests..."
 	$(VENV_PYTHON) -m unittest discover -s tests -p "test_*.py" -v
+
+test-file: create-venv
+	@if [ -z "$(FILE)" ]; then echo "Usage: make test-file FILE=test_actions.py" && exit 1; fi
+	@echo "Running $(FILE)..."
+	$(VENV_PYTHON) -m unittest discover -s tests -p "$(FILE)" -v
+
+test-case: create-venv
+	@if [ -z "$(CASE)" ]; then echo "Usage: make test-case CASE=test_connection.TestConnection.test_create_environment_connection" && exit 1; fi
+	@echo "Running $(CASE)..."
+	cd tests && $(abspath $(VENV_PYTHON)) -m unittest $(CASE) -v

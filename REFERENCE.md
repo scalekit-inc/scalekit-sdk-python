@@ -1402,6 +1402,327 @@ scalekit_client.connection.delete_connection('org_123456', 'conn_123456')
 </dl>
 </details>
 
+<details><summary><code>client.connection.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connection.py">list_app_connections</a>(page_size?, page_token?, provider?) -> ListAppConnectionsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists all environment-level app connections. These are connections configured at the environment level (not tied to a specific organization), such as OAuth integrations (e.g., HubSpot) or Google Domain-Wide Delegation connections.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+# List all app connections
+response = scalekit_client.connection.list_app_connections()
+
+for conn in response[0].connections:
+    print(f"Connection: {conn.id}, Provider: {conn.provider_key}")
+
+# Filter by provider
+response = scalekit_client.connection.list_app_connections(provider='HUBSPOT', page_size=10)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**page_size:** `Optional[int]` - Maximum number of connections to return (max 30)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_token:** `Optional[str]` - Pagination token from a previous response
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**provider:** `Optional[str]` - Filter by provider key (e.g., `'HUBSPOT'`, `'GOOGLEDWD'`)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.connection.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connection.py">get_environment_connection</a>(connection_id) -> GetConnectionResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Retrieves an environment-level connection by its ID.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.connection.get_environment_connection('conn_123456')
+conn = response[0].connection
+print(f"Provider: {conn.provider_key}, Type: {conn.type}")
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**connection_id:** `str` - The ID of the environment-level connection to retrieve
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.connection.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connection.py">create_environment_connection</a>(connection, flags?) -> CreateConnectionResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Creates a new environment-level connection. Supports OAuth connections (e.g., HubSpot) and Google Domain-Wide Delegation (GOOGLE_DWD) connections. Pass `Flags(is_app=True)` to mark the connection as an app-level integration.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from scalekit.v1.connections.connections_pb2 import (
+    CreateConnection, ConnectionType, Flags
+)
+
+# Create an OAuth app connection (e.g., HubSpot)
+response = scalekit_client.connection.create_environment_connection(
+    connection=CreateConnection(
+        provider_key='HUBSPOT',
+        type=ConnectionType.OAUTH
+    ),
+    flags=Flags(is_app=True)
+)
+conn = response[0].connection
+print(f"Created: {conn.id}, Key: {conn.key_id}")
+
+# Create a Google Domain-Wide Delegation connection
+response = scalekit_client.connection.create_environment_connection(
+    connection=CreateConnection(
+        provider_key='GOOGLEDWD',
+        type=ConnectionType.GOOGLE_DWD,
+        key_id='my-gdwd-connection'
+    ),
+    flags=Flags(is_app=True)
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**connection:** `CreateConnection` - Connection configuration object
+- `provider_key: str` - Provider identifier (e.g., `'HUBSPOT'`, `'GOOGLEDWD'`)
+- `type: ConnectionType` - Connection type (`ConnectionType.OAUTH` or `ConnectionType.GOOGLE_DWD`)
+- `key_id: Optional[str]` - Unique key identifier for the connection (required for GOOGLE_DWD)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**flags:** `Optional[Flags]` - Connection flags
+- `is_app: bool` - Set to `True` to create an environment-level app connection
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.connection.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connection.py">update_environment_connection</a>(connection_id, connection) -> UpdateConnectionResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Updates an environment-level connection. This is a PATCH operation — only fields provided in the `UpdateConnection` object are changed; unspecified fields remain unchanged. Always include the `type` field to avoid server-side errors.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from scalekit.v1.connections.connections_pb2 import (
+    UpdateConnection, ConnectionType, OAuthConnectionConfig, GoogleDWDConfig
+)
+
+# Update OAuth connection credentials
+response = scalekit_client.connection.update_environment_connection(
+    connection_id='conn_123456',
+    connection=UpdateConnection(
+        provider_key='HUBSPOT',
+        key_id='hubspot-key',
+        type=ConnectionType.OAUTH,
+        oauth_config=OAuthConnectionConfig(
+            client_id={'value': 'my-client-id'},
+            client_secret={'value': 'my-client-secret'}
+        )
+    )
+)
+
+# Update Google DWD connection
+response = scalekit_client.connection.update_environment_connection(
+    connection_id='conn_123456',
+    connection=UpdateConnection(
+        provider_key='GOOGLEDWD',
+        key_id='my-gdwd-connection',
+        type=ConnectionType.GOOGLE_DWD,
+        google_dwd_config=GoogleDWDConfig(
+            service_account_json={'value': '{"type":"service_account",...}'},
+            scopes=['https://www.googleapis.com/auth/admin.directory.user.readonly'],
+            token_uri={'value': 'https://oauth2.googleapis.com/token'}
+        )
+    )
+)
+conn = response[0].connection
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**connection_id:** `str` - The ID of the environment-level connection to update
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**connection:** `UpdateConnection` - Fields to update on the connection
+- `provider_key: str` - Provider identifier (e.g., `'HUBSPOT'`, `'GOOGLEDWD'`)
+- `key_id: str` - Key identifier of the connection
+- `type: ConnectionType` - Connection type — must always be provided (`ConnectionType.OAUTH` or `ConnectionType.GOOGLE_DWD`)
+- `oauth_config: Optional[OAuthConnectionConfig]` - OAuth credentials to update (`client_id`, `client_secret`)
+- `google_dwd_config: Optional[GoogleDWDConfig]` - Google DWD config to update (`service_account_json`, `scopes`, `token_uri`)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Domain
 
 <details><summary><code>client.domain.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/domain.py">create_domain</a>(organization_id, domain_name, domain_type?) -> CreateDomainResponse</code></summary>
@@ -6069,6 +6390,363 @@ print(f'Magic Link: {response[0].magic_link}')
 </dd>
 </dl>
 
+
+</dd>
+</dl>
+</details>
+
+## Custom Providers
+
+<details><summary><code>client.actions.providers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">create_custom_provider</a>(request) -> CreateCustomProviderResponse</code></summary>
+<dl>
+<dd>
+
+**📝 Description**
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Creates a new custom provider (MCP connector) in the Scalekit catalog. Once created, the provider can be selected by organizations when setting up connections.
+</dd>
+</dl>
+</dd>
+</dl>
+
+**🔌 Usage**
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from scalekit.actions.types import (
+    AuthPattern,
+    AuthField,
+    OAuthConfig,
+    CreateCustomProviderRequest,
+)
+
+# OAuth MCP provider
+response = scalekit_client.actions.providers.create_custom_provider(
+    CreateCustomProviderRequest(
+        display_name="Acme MCP",
+        description="Acme integration via MCP",
+        proxy_url="https://mcp.acme.com/mcp",
+        proxy_enabled=True,
+        auth_patterns=[
+            AuthPattern(
+                type="OAUTH",
+                display_name="OAuth 2.1",
+                description="Authenticate via browser OAuth.",
+                is_mcp=True,
+                oauth_config=OAuthConfig(),  # pkce_enabled=True by default
+            )
+        ],
+    )
+)
+provider = response.provider
+print(f"Created provider: {provider.identifier}")
+
+# Bearer token MCP provider
+response = scalekit_client.actions.providers.create_custom_provider(
+    CreateCustomProviderRequest(
+        display_name="Apify MCP",
+        description="Apify platform via MCP",
+        proxy_url="https://mcp.apify.com/mcp",
+        proxy_enabled=True,
+        auth_patterns=[
+            AuthPattern(
+                type="BEARER",
+                display_name="Apify Token",
+                description="Authenticate with your Apify API Token.",
+                is_mcp=True,
+                fields=[
+                    AuthField(
+                        field_name="token",
+                        label="Apify Token",
+                        input_type="password",
+                        hint="Your Apify API Token",
+                        required=True,
+                    )
+                ],
+            )
+        ],
+    )
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+**⚙️ Parameters**
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `CreateCustomProviderRequest` - Request object for creating a custom provider
+- `display_name: str` - Human-readable name. Accepted characters: a-z, A-Z, 0-9, and spaces. Suffix with 'MCP' for MCP server providers (e.g., "Acme MCP").
+- `proxy_url: str` - Base HTTPS URL of the provider's server (e.g., `https://mcp.acme.com/mcp`).
+- `proxy_enabled: bool` - Whether to enable Scalekit request proxying. Defaults to `True`.
+- `description: str` - Short description of the provider. Defaults to empty string.
+- `auth_patterns: List[AuthPattern]` - Authentication options for users. Currently only a single element is supported — the list type is intentional for future multi-pattern support.
+  - `type: str` - Auth mechanism: `"OAUTH"`, `"BEARER"`, or `"API_KEY"`.
+  - `display_name: str` - Display name for this auth option.
+  - `description: str` - Short description of this auth option.
+  - `is_mcp: bool` - Set `True` for MCP server providers.
+  - `oauth_config: Optional[OAuthConfig]` - Required when `type="OAUTH"`. `OAuthConfig(pkce_enabled=True)` by default.
+  - `fields: List[AuthField]` - Credential input fields for `BEARER` and `API_KEY` types.
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+**📦 Response**
+
+`CreateCustomProviderResponse` with a `provider` attribute (`Provider`) containing `identifier`, `display_name`, `description`, `proxy_url`, `proxy_enabled`, `is_custom`, `is_custom_mcp`, and `auth_patterns`.
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.providers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">update_custom_provider</a>(request) -> UpdateCustomProviderResponse</code></summary>
+<dl>
+<dd>
+
+**📝 Description**
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Updates an existing custom provider. `display_name` and `proxy_url` are required by the server on every update. Optional fields omitted from the request keep their existing server values — except `auth_patterns`, which fully replaces the existing list when provided.
+</dd>
+</dl>
+</dd>
+</dl>
+
+**🔌 Usage**
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from scalekit.actions.types import (
+    AuthPattern,
+    AuthField,
+    UpdateCustomProviderRequest,
+)
+
+response = scalekit_client.actions.providers.update_custom_provider(
+    UpdateCustomProviderRequest(
+        identifier="prv_abc123",
+        display_name="Acme MCP",               # required on every update
+        proxy_url="https://mcp.acme.com/mcp",  # required on every update
+        description="Updated description",
+        auth_patterns=[
+            AuthPattern(
+                type="BEARER",
+                display_name="Apify Token",
+                description="Authenticate with your Apify API Token.",
+                is_mcp=True,
+                fields=[
+                    AuthField(
+                        field_name="token",
+                        label="Apify Token",
+                        input_type="password",
+                        hint="Updated token hint",
+                        required=True,
+                    )
+                ],
+            )
+        ],
+    )
+)
+updated = response.provider
+print(f"Updated: {updated.description}")
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+**⚙️ Parameters**
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `UpdateCustomProviderRequest` - Request object for updating a custom provider
+- `identifier: str` - Identifier of the provider to update. Obtained from `Provider.identifier`.
+- `display_name: str` - Required on every update. Accepted characters: a-z, A-Z, 0-9, and spaces.
+- `proxy_url: str` - Required on every update. Must be a valid HTTPS URL.
+- `description: Optional[str]` - New description. Pass `None` to leave unchanged.
+- `auth_patterns: Optional[List[AuthPattern]]` - Replacement auth patterns. When provided, fully replaces the existing list — not merged. Pass `None` to leave unchanged.
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+**📦 Response**
+
+`UpdateCustomProviderResponse` with a `provider` attribute (`Provider`) containing the updated provider details.
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.providers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">list_providers</a>(request) -> ListProvidersResponse</code></summary>
+<dl>
+<dd>
+
+**📝 Description**
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists providers in the Scalekit catalog, optionally filtered by type.
+</dd>
+</dl>
+</dd>
+</dl>
+
+**🔌 Usage**
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from scalekit.actions.types import ListProvidersRequest
+from scalekit.v1.providers.providers_pb2 import ProviderType
+
+# List only custom providers
+response = scalekit_client.actions.providers.list_providers(
+    ListProvidersRequest(
+        provider_type=ProviderType.CUSTOM,
+        page_size=50,
+    )
+)
+
+for provider in response.providers:
+    print(f"{provider.identifier}: {provider.display_name}")
+
+# List all providers (custom + built-in)
+response = scalekit_client.actions.providers.list_providers(
+    ListProvidersRequest(provider_type=ProviderType.ALL, page_size=100)
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+**⚙️ Parameters**
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `ListProvidersRequest` - Request object for listing providers
+- `provider_type: Optional[int]` - `ProviderType.CUSTOM` (custom only), `ProviderType.DEFAULT` (built-in only), or `ProviderType.ALL`. Defaults to all.
+- `page_size: Optional[int]` - Maximum number of providers to return.
+- `page_token: Optional[str]` - Pagination cursor from a previous response's `next_page_token`.
+- `identifier: Optional[str]` - Filter to a specific provider by identifier.
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+**📦 Response**
+
+`ListProvidersResponse` with a `providers` attribute (list of `Provider`) and `next_page_token` for pagination.
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.providers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">delete_custom_provider</a>(request) -> DeleteCustomProviderResponse</code></summary>
+<dl>
+<dd>
+
+**📝 Description**
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Permanently deletes a custom provider. The provider is removed from the Scalekit catalog and can no longer be used for new connections.
+</dd>
+</dl>
+</dd>
+</dl>
+
+**🔌 Usage**
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from scalekit.actions.types import DeleteCustomProviderRequest
+
+scalekit_client.actions.providers.delete_custom_provider(
+    DeleteCustomProviderRequest(identifier="prv_abc123")
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+**⚙️ Parameters**
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `DeleteCustomProviderRequest` - Request object for deleting a custom provider
+- `identifier: str` - Identifier of the custom provider to delete. Obtained from `Provider.identifier`.
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+**📦 Response**
+
+`DeleteCustomProviderResponse` (empty — success is indicated by no exception being raised).
 
 </dd>
 </dl>

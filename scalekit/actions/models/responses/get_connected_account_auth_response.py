@@ -45,20 +45,29 @@ class ConnectedAccount(BaseModel):
 
         # Convert authorization details
         authorization_details = None
-        if proto_account.authorization_details:
+        if proto_account.HasField("authorization_details"):
             authorization_details = {}
-            if proto_account.authorization_type == ConnectorType.OAUTH :
+            which = proto_account.authorization_details.WhichOneof("details")
+            if which == "oauth_token":
                 oauth_token = proto_account.authorization_details.oauth_token
                 authorization_details["oauth_token"] = {
                     "access_token": oauth_token.access_token,
                     "refresh_token": oauth_token.refresh_token,
                     "scopes": list(oauth_token.scopes)
                 }
-            else:
+            elif which == "static_auth":
                 static_auth = proto_account.authorization_details.static_auth
-                # Convert protobuf Struct to dict
                 from google.protobuf.json_format import MessageToDict
                 authorization_details["static_auth"] = MessageToDict(static_auth.details)
+            elif which == "google_dwd":
+                dwd = proto_account.authorization_details.google_dwd
+                dwd_dict = {
+                    "subject": dwd.subject,
+                    "access_token": dwd.access_token,
+                    "scopes": list(dwd.scopes),
+                    "token_expires_at": dwd.token_expires_at.ToDatetime() if dwd.HasField("token_expires_at") else None,
+                }
+                authorization_details["google_dwd"] = dwd_dict
 
         # Convert api_config protobuf Struct to dict
         api_config_dict = None

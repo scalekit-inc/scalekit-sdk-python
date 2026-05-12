@@ -19,4 +19,4 @@ class BaseTest(unittest.TestCase):
 
     def tearDown(self):
         if os.environ.get('GITHUB_ACTIONS') == 'true':
-            time.sleep(0.5)
+            time.sleep(1)

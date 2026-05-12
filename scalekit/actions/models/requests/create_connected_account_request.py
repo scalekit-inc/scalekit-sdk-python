@@ -4,7 +4,8 @@ from scalekit.v1.connected_accounts.connected_accounts_pb2 import (
     CreateConnectedAccount,
     AuthorizationDetails,
     OauthToken,
-    StaticAuth
+    StaticAuth,
+    GoogleDWDAuth
 )
 from google.protobuf import struct_pb2
 
@@ -44,6 +45,16 @@ class CreateConnectedAccountRequest(BaseModel):
             struct_details.update(static_data)
             static_auth = StaticAuth(details=struct_details)
             auth_details = AuthorizationDetails(static_auth=static_auth)
+
+        elif self.authorization_details and "google_dwd" in self.authorization_details:
+            dwd_data = self.authorization_details["google_dwd"]
+            if not isinstance(dwd_data, dict):
+                raise ValueError("authorization_details.google_dwd must be an object")
+            subject = dwd_data.get("subject")
+            if not subject:
+                raise ValueError("authorization_details.google_dwd.subject is required")
+            google_dwd = GoogleDWDAuth(subject=subject)
+            auth_details = AuthorizationDetails(google_dwd=google_dwd)
         
         # Handle api_config if provided
         api_config_struct = None
