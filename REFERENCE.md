@@ -6394,3 +6394,360 @@ print(f'Magic Link: {response[0].magic_link}')
 </dd>
 </dl>
 </details>
+
+## Custom Providers
+
+<details><summary><code>client.actions.providers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">create_custom_provider</a>(request) -> CreateCustomProviderResponse</code></summary>
+<dl>
+<dd>
+
+**📝 Description**
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Creates a new custom provider (MCP connector) in the Scalekit catalog. Once created, the provider can be selected by organizations when setting up connections.
+</dd>
+</dl>
+</dd>
+</dl>
+
+**🔌 Usage**
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from scalekit.actions.types import (
+    AuthPattern,
+    AuthField,
+    OAuthConfig,
+    CreateCustomProviderRequest,
+)
+
+# OAuth MCP provider
+response = scalekit_client.actions.providers.create_custom_provider(
+    CreateCustomProviderRequest(
+        display_name="Acme MCP",
+        description="Acme integration via MCP",
+        proxy_url="https://mcp.acme.com/mcp",
+        proxy_enabled=True,
+        auth_patterns=[
+            AuthPattern(
+                type="OAUTH",
+                display_name="OAuth 2.1",
+                description="Authenticate via browser OAuth.",
+                is_mcp=True,
+                oauth_config=OAuthConfig(),  # pkce_enabled=True by default
+            )
+        ],
+    )
+)
+provider = response.provider
+print(f"Created provider: {provider.identifier}")
+
+# Bearer token MCP provider
+response = scalekit_client.actions.providers.create_custom_provider(
+    CreateCustomProviderRequest(
+        display_name="Apify MCP",
+        description="Apify platform via MCP",
+        proxy_url="https://mcp.apify.com/mcp",
+        proxy_enabled=True,
+        auth_patterns=[
+            AuthPattern(
+                type="BEARER",
+                display_name="Apify Token",
+                description="Authenticate with your Apify API Token.",
+                is_mcp=True,
+                fields=[
+                    AuthField(
+                        field_name="token",
+                        label="Apify Token",
+                        input_type="password",
+                        hint="Your Apify API Token",
+                        required=True,
+                    )
+                ],
+            )
+        ],
+    )
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+**⚙️ Parameters**
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `CreateCustomProviderRequest` - Request object for creating a custom provider
+- `display_name: str` - Human-readable name. Accepted characters: a-z, A-Z, 0-9, and spaces. Suffix with 'MCP' for MCP server providers (e.g., "Acme MCP").
+- `proxy_url: str` - Base HTTPS URL of the provider's server (e.g., `https://mcp.acme.com/mcp`).
+- `proxy_enabled: bool` - Whether to enable Scalekit request proxying. Defaults to `True`.
+- `description: str` - Short description of the provider. Defaults to empty string.
+- `auth_patterns: List[AuthPattern]` - Authentication options for users. Currently only a single element is supported — the list type is intentional for future multi-pattern support.
+  - `type: str` - Auth mechanism: `"OAUTH"`, `"BEARER"`, or `"API_KEY"`.
+  - `display_name: str` - Display name for this auth option.
+  - `description: str` - Short description of this auth option.
+  - `is_mcp: bool` - Set `True` for MCP server providers.
+  - `oauth_config: Optional[OAuthConfig]` - Required when `type="OAUTH"`. `OAuthConfig(pkce_enabled=True)` by default.
+  - `fields: List[AuthField]` - Credential input fields for `BEARER` and `API_KEY` types.
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+**📦 Response**
+
+`CreateCustomProviderResponse` with a `provider` attribute (`Provider`) containing `identifier`, `display_name`, `description`, `proxy_url`, `proxy_enabled`, `is_custom`, `is_custom_mcp`, and `auth_patterns`.
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.providers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">update_custom_provider</a>(request) -> UpdateCustomProviderResponse</code></summary>
+<dl>
+<dd>
+
+**📝 Description**
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Updates an existing custom provider. `display_name` and `proxy_url` are required by the server on every update. Optional fields omitted from the request keep their existing server values — except `auth_patterns`, which fully replaces the existing list when provided.
+</dd>
+</dl>
+</dd>
+</dl>
+
+**🔌 Usage**
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from scalekit.actions.types import (
+    AuthPattern,
+    AuthField,
+    UpdateCustomProviderRequest,
+)
+
+response = scalekit_client.actions.providers.update_custom_provider(
+    UpdateCustomProviderRequest(
+        identifier="prv_abc123",
+        display_name="Acme MCP",               # required on every update
+        proxy_url="https://mcp.acme.com/mcp",  # required on every update
+        description="Updated description",
+        auth_patterns=[
+            AuthPattern(
+                type="BEARER",
+                display_name="Apify Token",
+                description="Authenticate with your Apify API Token.",
+                is_mcp=True,
+                fields=[
+                    AuthField(
+                        field_name="token",
+                        label="Apify Token",
+                        input_type="password",
+                        hint="Updated token hint",
+                        required=True,
+                    )
+                ],
+            )
+        ],
+    )
+)
+updated = response.provider
+print(f"Updated: {updated.description}")
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+**⚙️ Parameters**
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `UpdateCustomProviderRequest` - Request object for updating a custom provider
+- `identifier: str` - Identifier of the provider to update. Obtained from `Provider.identifier`.
+- `display_name: str` - Required on every update. Accepted characters: a-z, A-Z, 0-9, and spaces.
+- `proxy_url: str` - Required on every update. Must be a valid HTTPS URL.
+- `description: Optional[str]` - New description. Pass `None` to leave unchanged.
+- `auth_patterns: Optional[List[AuthPattern]]` - Replacement auth patterns. When provided, fully replaces the existing list — not merged. Pass `None` to leave unchanged.
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+**📦 Response**
+
+`UpdateCustomProviderResponse` with a `provider` attribute (`Provider`) containing the updated provider details.
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.providers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">list_providers</a>(request) -> ListProvidersResponse</code></summary>
+<dl>
+<dd>
+
+**📝 Description**
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists providers in the Scalekit catalog, optionally filtered by type.
+</dd>
+</dl>
+</dd>
+</dl>
+
+**🔌 Usage**
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from scalekit.actions.types import ListProvidersRequest
+from scalekit.v1.providers.providers_pb2 import ProviderType
+
+# List only custom providers
+response = scalekit_client.actions.providers.list_providers(
+    ListProvidersRequest(
+        provider_type=ProviderType.CUSTOM,
+        page_size=50,
+    )
+)
+
+for provider in response.providers:
+    print(f"{provider.identifier}: {provider.display_name}")
+
+# List all providers (custom + built-in)
+response = scalekit_client.actions.providers.list_providers(
+    ListProvidersRequest(provider_type=ProviderType.ALL, page_size=100)
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+**⚙️ Parameters**
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `ListProvidersRequest` - Request object for listing providers
+- `provider_type: Optional[int]` - `ProviderType.CUSTOM` (custom only), `ProviderType.DEFAULT` (built-in only), or `ProviderType.ALL`. Defaults to all.
+- `page_size: Optional[int]` - Maximum number of providers to return.
+- `page_token: Optional[str]` - Pagination cursor from a previous response's `next_page_token`.
+- `identifier: Optional[str]` - Filter to a specific provider by identifier.
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+**📦 Response**
+
+`ListProvidersResponse` with a `providers` attribute (list of `Provider`) and `next_page_token` for pagination.
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.providers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">delete_custom_provider</a>(request) -> DeleteCustomProviderResponse</code></summary>
+<dl>
+<dd>
+
+**📝 Description**
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Permanently deletes a custom provider. The provider is removed from the Scalekit catalog and can no longer be used for new connections.
+</dd>
+</dl>
+</dd>
+</dl>
+
+**🔌 Usage**
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from scalekit.actions.types import DeleteCustomProviderRequest
+
+scalekit_client.actions.providers.delete_custom_provider(
+    DeleteCustomProviderRequest(identifier="prv_abc123")
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+**⚙️ Parameters**
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `DeleteCustomProviderRequest` - Request object for deleting a custom provider
+- `identifier: str` - Identifier of the custom provider to delete. Obtained from `Provider.identifier`.
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+**📦 Response**
+
+`DeleteCustomProviderResponse` (empty — success is indicated by no exception being raised).
+
+</dd>
+</dl>
+</details>
