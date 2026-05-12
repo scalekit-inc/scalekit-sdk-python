@@ -1,4 +1,5 @@
 import os
+import time
 import unittest
 from scalekit import ScalekitClient
 
@@ -15,3 +16,7 @@ class BaseTest(unittest.TestCase):
             os.environ['SCALEKIT_ENV_URL'],
             os.environ['SCALEKIT_CLIENT_ID'],
             os.environ['SCALEKIT_CLIENT_SECRET'])
+
+    def tearDown(self):
+        if os.environ.get('GITHUB_ACTIONS') == 'true':
+            time.sleep(0.5)
