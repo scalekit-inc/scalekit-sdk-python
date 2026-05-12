@@ -170,7 +170,7 @@ proto
 
 # Claude Code documentation
 CLAUDE.md
-.claude/settings.json
+.claude/*
 
 # macOS
 .DS_Store
