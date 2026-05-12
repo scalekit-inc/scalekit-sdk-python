@@ -92,6 +92,96 @@ class TestConnection(BaseTest):
         except ScalekitNotFoundException:
             self.conn_id = None
 
+    def test_create_environment_connection_with_flags(self):
+        """ Method to test create environment connection with flags """
+        connection = CreateConnection(provider_key="HUBSPOT", type=ConnectionType.OAUTH)
+        flags = Flags(is_app=True)
+        response = self.scalekit_client.connection.create_environment_connection(connection=connection, flags=flags)
+        self.assertEqual(response[1].code().name, "OK")
+        conn = response[0].connection
+        self.assertIsNotNone(conn)
+        self.assertEqual(conn.type, ConnectionType.OAUTH)
+        self.assertEqual(conn.provider_key, "HUBSPOT")
+        self.assertTrue(conn.key_id.startswith("hubspot-"))
+        self.assertTrue(conn.enabled)
+        self.assertIsNotNone(conn.oauth_config)
+        self.assertIn("hubspot.com", conn.oauth_config.authorize_uri.value)
+
+    def test_list_app_connections(self):
+        """ Method to test list_app_connections returns all env connections """
+        response = self.scalekit_client.connection.list_app_connections()
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertIsNotNone(response[0].connections)
+        self.assertIsInstance(response[0].total_size, int)
+
+    def test_list_app_connections_with_provider_filter(self):
+        """ Method to test list_app_connections filtered by provider """
+        # First create a HubSpot connection so we know at least one exists
+        self.scalekit_client.connection.create_environment_connection(
+            connection=CreateConnection(provider_key="HUBSPOT", type=ConnectionType.OAUTH),
+            flags=Flags(is_app=True)
+        )
+        response = self.scalekit_client.connection.list_app_connections(provider="HUBSPOT")
+        self.assertEqual(response[1].code().name, "OK")
+        connections = response[0].connections
+        self.assertGreater(len(connections), 0)
+        for conn in connections:
+            self.assertEqual(conn.provider_key, "HUBSPOT")
+
+    def test_list_app_connections_with_page_size(self):
+        """ Method to test list_app_connections respects page_size """
+        response = self.scalekit_client.connection.list_app_connections(page_size=2)
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertLessEqual(len(response[0].connections), 2)
+
+    def test_get_custom_connection(self):
+        """ Method to test get_environment_connection - create then get """
+        create_response = self.scalekit_client.connection.create_environment_connection(
+            connection=CreateConnection(provider_key="HUBSPOT", type=ConnectionType.OAUTH),
+            flags=Flags(is_app=True)
+        )
+        conn_id = create_response[0].connection.id
+
+        response = self.scalekit_client.connection.get_environment_connection(connection_id=conn_id)
+        self.assertEqual(response[1].code().name, "OK")
+        conn = response[0].connection
+        self.assertEqual(conn.id, conn_id)
+        self.assertEqual(conn.provider_key, "HUBSPOT")
+        self.assertEqual(conn.type, ConnectionType.OAUTH)
+
+    def test_update_environment_connection(self):
+        """ Method to test update environment connection - update client_id and client_secret """
+        # Create a HubSpot OAuth environment connection
+        create_response = self.scalekit_client.connection.create_environment_connection(
+            connection=CreateConnection(provider_key="HUBSPOT", type=ConnectionType.OAUTH),
+            flags=Flags(is_app=True)
+        )
+        conn_id = create_response[0].connection.id
+        key_id = create_response[0].connection.key_id
+        existing_oauth = create_response[0].connection.oauth_config
+
+        update = UpdateConnection(
+            provider_key="HUBSPOT",
+            key_id=key_id,
+            type=ConnectionType.OAUTH,
+            oauth_config=OAuthConnectionConfig(
+                client_id={"value": "test-client-id"},
+                client_secret={"value": "test-client-secret"}
+            )
+        )
+        response = self.scalekit_client.connection.update_environment_connection(
+            connection_id=conn_id, connection=update
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        conn = response[0].connection
+        self.assertIsNotNone(conn.oauth_config)
+        # Verify updated fields
+        self.assertEqual(conn.oauth_config.client_id.value, "test-client-id")
+        # Verify untouched fields are preserved (PATCH, not PUT)
+        self.assertEqual(conn.oauth_config.authorize_uri.value, existing_oauth.authorize_uri.value)
+        self.assertEqual(conn.oauth_config.token_uri.value, existing_oauth.token_uri.value)
+        self.assertEqual(conn.oauth_config.user_info_uri.value, existing_oauth.user_info_uri.value)
+
     def tearDown(self):
         """ """
         if self.conn_id:

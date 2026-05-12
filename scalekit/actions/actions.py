@@ -7,6 +7,7 @@ from scalekit.actions.types import ToolRequest,ExecuteToolResponse,MagicLinkResp
 from scalekit.actions.models.responses.create_connected_account_response import CreateConnectedAccountResponse
 from scalekit.actions.models.requests.create_connected_account_request import CreateConnectedAccountRequest
 from scalekit.actions.models.requests.update_connected_account_request import UpdateConnectedAccountRequest
+from scalekit.actions.models.requests.create_connection_request import CreateConnectionRequest
 from scalekit.actions.modifier import (
     Modifier, ModifierType, ToolNames,
     apply_pre_modifiers, apply_post_modifiers
@@ -19,7 +20,7 @@ from scalekit.common.exceptions import ScalekitNotFoundException
 class ActionClient:
     """Class definition for Connect Client"""
 
-    def __init__(self,tools_client, connected_accounts_client, mcp_client=None):
+    def __init__(self, tools_client, connected_accounts_client, mcp_client=None, connection_client=None):
         """
         Initialize ActionClient with tools, connected accounts, and MCP dependencies
         
@@ -37,6 +38,7 @@ class ActionClient:
         self.tools = tools_client
         self.connected_accounts = connected_accounts_client
         self._mcp_client = mcp_client
+        self._connection_client = connection_client
         self._mcp_actions = None
         self._modifiers: List[Modifier] = []
         self._google = None
@@ -851,6 +853,112 @@ class ActionClient:
 
         # Convert proto to our UpdateConnectedAccountResponse class
         return UpdateConnectedAccountResponse.from_proto(proto_response)
+
+    def list_connections(
+        self,
+        page_size: Optional[int] = None,
+        page_token: Optional[str] = None,
+        provider: Optional[str] = None,
+        **kwargs,
+    ):
+        """
+        List environment-level app connections.
+
+        :param page_size: Maximum number of connections to return (max 30)
+        :type page_size: Optional[int]
+        :param page_token: Token for pagination
+        :type page_token: Optional[str]
+        :param provider: Filter by provider (e.g. 'HUBSPOT')
+        :type provider: Optional[str]
+
+        :returns:
+            ListAppConnectionsResponse proto
+        """
+        result_tuple = self._connection_client.list_app_connections(
+            page_size=page_size,
+            page_token=page_token,
+            provider=provider,
+        )
+        return result_tuple[0]
+
+    def get_connection(
+        self,
+        connection_id: str,
+        **kwargs,
+    ):
+        """
+        Get an environment-level connection by its ID.
+
+        :param connection_id: Connection ID to retrieve (required)
+        :type connection_id: str
+
+        :returns:
+            GetConnectionResponse proto
+        """
+        if not connection_id:
+            raise ValueError("connection_id is required")
+        result_tuple = self._connection_client.get_environment_connection(
+            connection_id=connection_id,
+        )
+        return result_tuple[0]
+
+    def create_connection(
+        self,
+        provider_key: str,
+        connection_type: str,
+        **kwargs,
+    ):
+        """
+        Create a new environment-level connection.
+
+        :param provider_key: Provider key identifier (required, e.g. 'HUBSPOT')
+        :type provider_key: str
+        :param connection_type: Connection type (required, e.g. 'OAUTH')
+        :type connection_type: str
+
+        :returns:
+            CreateConnectionResponse proto
+        """
+        if not provider_key:
+            raise ValueError("provider_key is required")
+        if not connection_type:
+            raise ValueError("connection_type is required")
+        request = CreateConnectionRequest(
+            provider_key=provider_key,
+            connection_type=connection_type,
+        )
+        result_tuple = self._connection_client.create_environment_connection(
+            connection=request.to_proto(),
+            flags=request.to_flags_proto(),
+        )
+        return result_tuple[0]
+
+    def update_connection(
+        self,
+        connection_id: str,
+        connection,
+        **kwargs,
+    ):
+        """
+        Update an environment-level connection.
+
+        :param connection_id: Connection ID to update (required)
+        :type connection_id: str
+        :param connection: UpdateConnection proto object with fields to update (required)
+        :type connection: UpdateConnection
+
+        :returns:
+            UpdateConnectionResponse proto
+        """
+        if not connection_id:
+            raise ValueError("connection_id is required")
+        if connection is None:
+            raise ValueError("connection is required")
+        result_tuple = self._connection_client.update_environment_connection(
+            connection_id=connection_id,
+            connection=connection,
+        )
+        return result_tuple[0]
 
 
 class ActionMcp:
