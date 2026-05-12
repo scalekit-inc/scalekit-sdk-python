@@ -49,6 +49,8 @@ class UpdateConnectedAccountRequest(BaseModel):
 
         elif self.authorization_details and "google_dwd" in self.authorization_details:
             dwd_data = self.authorization_details["google_dwd"]
+            if not isinstance(dwd_data, dict):
+                raise ValueError("authorization_details.google_dwd must be an object")
             subject = dwd_data.get("subject")
             if not subject:
                 raise ValueError("authorization_details.google_dwd.subject is required")

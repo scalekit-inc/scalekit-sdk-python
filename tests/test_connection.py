@@ -182,6 +182,54 @@ class TestConnection(BaseTest):
         self.assertEqual(conn.oauth_config.token_uri.value, existing_oauth.token_uri.value)
         self.assertEqual(conn.oauth_config.user_info_uri.value, existing_oauth.user_info_uri.value)
 
+    def test_google_dwd_create_update_get(self):
+        """ Test create, update, and get for a GOOGLE_DWD environment connection """
+        key_id = f"test-gdwd-{Faker().lexify('??????')}"
+        # Step 1: Create
+        create_response = self.scalekit_client.connection.create_environment_connection(
+            connection=CreateConnection(
+                provider_key="GOOGLEDWD",
+                type=ConnectionType.GOOGLE_DWD,
+                key_id=key_id
+            ),
+            flags=Flags(is_app=True)
+        )
+        self.assertEqual(create_response[1].code().name, "OK")
+        conn = create_response[0].connection
+        conn_id = conn.id
+        self.assertEqual(conn.type, ConnectionType.GOOGLE_DWD)
+        self.assertEqual(conn.provider_key, "GOOGLEDWD")
+        self.assertEqual(conn.key_id, key_id)
+
+        # Step 2: Update - set service_account_json, scopes, token_uri
+        fake_sa_json = '{"type":"service_account","project_id":"my-project","client_email":"sa@my-project.iam.gserviceaccount.com","private_key":"-----BEGIN RSA PRIVATE KEY-----\\nMIIEowIBAAKCAQEA0Z3VS5JJcds3xHn/ygWep4PAtLSDbTHCXHCTvxlHnl0UIFft\\n-----END RSA PRIVATE KEY-----\\n"}'
+        update = UpdateConnection(
+            provider_key="GOOGLEDWD",
+            key_id=key_id,
+            type=ConnectionType.GOOGLE_DWD,
+            google_dwd_config=GoogleDWDConfig(
+                service_account_json={"value": fake_sa_json},
+                scopes=["https://www.googleapis.com/auth/admin.directory.user.readonly"],
+                token_uri={"value": "https://oauth2.googleapis.com/token"}
+            )
+        )
+        update_response = self.scalekit_client.connection.update_environment_connection(
+            connection_id=conn_id, connection=update
+        )
+        self.assertEqual(update_response[1].code().name, "OK")
+        updated_conn = update_response[0].connection
+        self.assertIn("https://www.googleapis.com/auth/admin.directory.user.readonly", updated_conn.google_dwd_config.scopes)
+        self.assertEqual(updated_conn.google_dwd_config.token_uri.value, "https://oauth2.googleapis.com/token")
+
+        # Step 3: Get and verify
+        get_response = self.scalekit_client.connection.get_environment_connection(connection_id=conn_id)
+        self.assertEqual(get_response[1].code().name, "OK")
+        fetched = get_response[0].connection
+        self.assertEqual(fetched.id, conn_id)
+        self.assertEqual(fetched.type, ConnectionType.GOOGLE_DWD)
+        self.assertEqual(fetched.key_id, key_id)
+        self.assertIn("https://www.googleapis.com/auth/admin.directory.user.readonly", fetched.google_dwd_config.scopes)
+
     def tearDown(self):
         """ """
         if self.conn_id:
