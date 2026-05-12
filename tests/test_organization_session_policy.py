@@ -76,6 +76,11 @@ class TestOrganizationSessionPolicy(BaseTest):
         self.assertIsNotNone(reverted)
         self.assertEqual(reverted.policy_source, SessionPolicyType.APPLICATION)
 
+        fetched = self.scalekit_client.organization.get_organization_session_policy(
+            organization_id=org_id
+        )
+        self.assertEqual(fetched.policy_source, SessionPolicyType.APPLICATION)
+
     def test_set_idle_timeout_disabled(self):
         """Setting idle_session_timeout_enabled=False should persist as false."""
         org_id = self._create_org()

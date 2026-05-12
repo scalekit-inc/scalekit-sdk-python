@@ -114,18 +114,22 @@ generate-local: tools-check
 	@echo "Using local proto sources from $(LOCAL_PROTO_REPO)..."
 	@set -euo pipefail; \
 	prepared=0; \
-	rollback_if_needed() { \
+	rollback_and_cleanup() { \
 		if [ "$$prepared" -eq 1 ] && [ -d "$(TEMP_DIR)" ]; then \
 			echo "Generation failed; restoring $(SCALEKIT_DIR) from $(TEMP_DIR)..."; \
 			rsync -a "$(TEMP_DIR)/" "$(SCALEKIT_DIR)/"; \
 		fi; \
+		rm -rf "$(TEMP_DIR)" "$(GOOGLE_DIR)" "$(PROTO_DIR)" "$(PROTOC_DIR)"; \
+		rm -f .dirpath buf.yaml buf.lock; \
+		if [ -f buf.work.yaml.bak ]; then mv buf.work.yaml.bak buf.work.yaml; fi; \
 	}; \
-	trap 'rollback_if_needed' EXIT; \
+	trap 'rollback_and_cleanup' EXIT; \
 	$(MAKE) prepare; prepared=1; \
 	buf generate $(LOCAL_PROTO_REPO) --include-imports; \
 	$(MAKE) restore; prepared=0; \
 	$(MAKE) generate_init_files; \
-	$(MAKE) cleanup
+	$(MAKE) cleanup; \
+	trap - EXIT
 	@echo "Code generation complete."
 
 lint: create-venv
