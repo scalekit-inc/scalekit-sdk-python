@@ -1221,8 +1221,8 @@ class ActionProviders:
         result_tuple = self._providers_client.update_custom_provider(
             identifier=request.identifier,
             display_name=request.display_name,
-            description=request.description,
             proxy_url=request.proxy_url,
+            description=request.description,
             auth_patterns=request.auth_patterns,
         )
         return UpdateCustomProviderResponse.from_proto(result_tuple[0])

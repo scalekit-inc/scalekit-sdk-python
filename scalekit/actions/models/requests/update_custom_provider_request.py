@@ -8,9 +8,8 @@ from scalekit.actions.models.custom_provider import AuthPattern
 class UpdateCustomProviderRequest(BaseModel):
     """Request model for updating an existing custom provider.
 
-    Only fields explicitly set to a non-None value are applied. Fields left as
-    None are ignored — the server keeps their existing values. To clear a field,
-    pass an empty string or empty list as appropriate.
+    display_name and proxy_url are required by the server on every update.
+    Optional fields left as None are ignored — the server keeps their existing values.
     """
 
     identifier: str = Field(
@@ -20,12 +19,12 @@ class UpdateCustomProviderRequest(BaseModel):
             "Provider.identifier in a create or list response."
         ),
     )
-    display_name: Optional[str] = Field(
-        None,
+    display_name: str = Field(
+        ...,
         description=(
-            "Optional. New display name for the provider. Accepted characters: "
+            "Required. Display name for the provider. Accepted characters: "
             "a-z, A-Z, 0-9, and spaces. Good practice: suffix with 'MCP' for MCP "
-            "server providers. Pass None (default) to leave the existing value unchanged."
+            "server providers."
         ),
     )
     description: Optional[str] = Field(
@@ -35,11 +34,11 @@ class UpdateCustomProviderRequest(BaseModel):
             "leave the existing value unchanged."
         ),
     )
-    proxy_url: Optional[str] = Field(
-        None,
+    proxy_url: str = Field(
+        ...,
         description=(
-            "Optional. New proxy URL. Must be a valid HTTPS URL if provided. "
-            "Pass None (default) to leave the existing value unchanged."
+            "Required. Proxy URL for the provider. Must be a valid HTTPS URL "
+            "starting with 'https://'."
         ),
     )
     auth_patterns: Optional[List[AuthPattern]] = Field(

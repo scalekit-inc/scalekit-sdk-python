@@ -91,29 +91,30 @@ class ProvidersClient:
     def update_custom_provider(
         self,
         identifier: str,
-        display_name: Optional[str] = None,
+        display_name: str,
+        proxy_url: str,
         description: Optional[str] = None,
-        proxy_url: Optional[str] = None,
         auth_patterns: Optional[List[AuthPattern]] = None,
         icon_src: Optional[str] = None,
         metadata: Optional[Dict[str, str]] = None,
     ):
         """Update an existing custom provider.
 
-        Only fields explicitly passed with a non-None value are applied to the
-        provider. Fields left as None are not included in the update request and
-        the server keeps their existing values.
+        display_name and proxy_url are required by the server on every update.
+        Optional fields left as None are not sent and the server keeps their
+        existing values.
 
         :param identifier: Identifier of the custom provider to update. Required.
         :type identifier: str
-        :param display_name: New display name. Accepted characters: a-z, A-Z, 0-9,
-                             and spaces. Good practice: suffix with 'MCP' for MCP
-                             server providers. Pass None to leave unchanged.
-        :type display_name: Optional[str]
+        :param display_name: Display name for the provider. Accepted characters:
+                             a-z, A-Z, 0-9, and spaces. Good practice: suffix with
+                             'MCP' for MCP server providers. Required.
+        :type display_name: str
+        :param proxy_url: Proxy URL for the provider. Must be a valid HTTPS URL
+                          starting with 'https://'. Required.
+        :type proxy_url: str
         :param description: New description. Pass None to leave unchanged.
         :type description: Optional[str]
-        :param proxy_url: New proxy URL. Pass None to leave unchanged.
-        :type proxy_url: Optional[str]
         :param auth_patterns: Replacement auth patterns. Fully replaces the existing
                                list when provided — it is not merged. Currently only a
                                single AuthPattern is supported — pass a list with exactly
@@ -134,13 +135,12 @@ class ProvidersClient:
                   response[1].code().name == 'OK' on success.
         :rtype: tuple
         """
-        provider = UpdateCustomProvider()
-        if display_name is not None:
-            provider.display_name = display_name
+        provider = UpdateCustomProvider(
+            display_name=display_name,
+            proxy_url=proxy_url,
+        )
         if description is not None:
             provider.description = description
-        if proxy_url is not None:
-            provider.proxy_url = proxy_url
         if auth_patterns is not None:
             provider.auth_patterns.CopyFrom(_patterns_to_list_value(auth_patterns))
         if icon_src is not None:
