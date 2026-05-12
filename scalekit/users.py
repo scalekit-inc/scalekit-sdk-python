@@ -2,6 +2,9 @@ from typing import Optional
 
 from scalekit.core import CoreClient
 from scalekit.v1.users.users_pb2 import (
+    AssignRoleRequest,
+    AssignUserRolesRequest,
+    AssignUserRolesResponse,
     CreateMembership,
     CreateMembershipRequest,
     CreateMembershipResponse,
@@ -20,8 +23,13 @@ from scalekit.v1.users.users_pb2 import (
     ListUserRolesResponse,
     ListUsersRequest,
     ListUsersResponse,
+    RemoveUserRoleRequest,
     ResendInviteRequest,
     ResendInviteResponse,
+    SearchOrganizationUsersRequest,
+    SearchOrganizationUsersResponse,
+    SearchUsersRequest,
+    SearchUsersResponse,
     UpdateMembership,
     UpdateMembershipRequest,
     UpdateMembershipResponse,
@@ -463,4 +471,120 @@ class UserClient:
             ),
         )
 
+    def search_users(
+        self,
+        query: str,
+        page_size: int = 20,
+        page_token: Optional[str] = None,
+    ) -> SearchUsersResponse:
+        """
+        Method to search users by query
 
+        :param query       : Search query string
+        :type              : ``` str ```
+        :param page_size   : Page size for pagination
+        :type              : ``` int ```
+        :param page_token  : Page token for pagination
+        :type              : ``` str | None ```
+
+        :returns:
+            Search Users Response
+        """
+        request = SearchUsersRequest(query=query, page_size=page_size)
+        if page_token is not None:
+            request.page_token = page_token
+        return self.core_client.grpc_exec(
+            self.user_service.SearchUsers.with_call,
+            request,
+        )
+
+    def search_organization_users(
+        self,
+        organization_id: str,
+        query: str,
+        page_size: int = 20,
+        page_token: Optional[str] = None,
+    ) -> SearchOrganizationUsersResponse:
+        """
+        Method to search users within an organization by query
+
+        :param organization_id  : Organization id to search users in
+        :type                   : ``` str ```
+        :param query            : Search query string
+        :type                   : ``` str ```
+        :param page_size        : Page size for pagination
+        :type                   : ``` int ```
+        :param page_token       : Page token for pagination
+        :type                   : ``` str | None ```
+
+        :returns:
+            Search Organization Users Response
+        """
+        request = SearchOrganizationUsersRequest(
+            organization_id=organization_id,
+            query=query,
+            page_size=page_size,
+        )
+        if page_token is not None:
+            request.page_token = page_token
+        return self.core_client.grpc_exec(
+            self.user_service.SearchOrganizationUsers.with_call,
+            request,
+        )
+
+    def assign_user_roles(
+        self,
+        organization_id: str,
+        user_id: str,
+        role_ids: list,
+    ) -> AssignUserRolesResponse:
+        """
+        Method to assign roles to a user in an organization
+
+        :param organization_id  : Organization id
+        :type                   : ``` str ```
+        :param user_id          : User id to assign roles to
+        :type                   : ``` str ```
+        :param role_ids         : List of role IDs to assign
+        :type                   : ``` list ```
+
+        :returns:
+            Assign User Roles Response
+        """
+        roles = [AssignRoleRequest(id=role_id) for role_id in role_ids]
+        return self.core_client.grpc_exec(
+            self.user_service.AssignUserRoles.with_call,
+            AssignUserRolesRequest(
+                organization_id=organization_id,
+                user_id=user_id,
+                roles=roles,
+            ),
+        )
+
+    def remove_user_role(
+        self,
+        organization_id: str,
+        user_id: str,
+        role_id: str,
+    ):
+        """
+        Method to remove a role from a user in an organization
+
+        :param organization_id  : Organization id
+        :type                   : ``` str ```
+        :param user_id          : User id to remove role from
+        :type                   : ``` str ```
+        :param role_id          : Role name/id to remove
+        :type                   : ``` str ```
+
+        :returns:
+            None
+        """
+        return self.core_client.grpc_exec(
+            self.user_service.RemoveUserRole.with_call,
+            RemoveUserRoleRequest(
+                organization_id=organization_id,
+                user_id=user_id,
+                role_name=role_id,
+            ),
+        )

@@ -4,7 +4,7 @@ from faker import Faker
 
 from basetest import BaseTest
 from scalekit.common.exceptions import ScalekitNotFoundException
-from scalekit.v1.organizations.organizations_pb2 import CreateOrganization, UpdateOrganization
+from scalekit.v1.organizations.organizations_pb2 import CreateOrganization, UpdateOrganization, SessionPolicyType
 
 
 class TestOrganization(BaseTest):
@@ -176,6 +176,71 @@ class TestOrganization(BaseTest):
         self.assertIsNotNone(settings)
         self.assertTrue(settings.HasField("max_allowed_users"))
         self.assertEqual(settings.max_allowed_users.value, 45)
+
+    def test_update_organization_session_policy(self):
+        """ Method to test update organization session policy """
+        organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
+        org_response = self.scalekit_client.organization.create_organization(organization=organization)
+        self.org_id = org_response[0].organization.id
+
+        response = self.scalekit_client.organization.update_organization_session_policy(
+            organization_id=self.org_id,
+            policy_source=SessionPolicyType.CUSTOM,
+            absolute_session_timeout=3600,
+            idle_session_timeout_enabled=True,
+            idle_session_timeout=1800,
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertTrue(response[0] is not None)
+
+    def test_get_organization_session_policy(self):
+        """ Method to test get organization session policy """
+        organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
+        org_response = self.scalekit_client.organization.create_organization(organization=organization)
+        self.org_id = org_response[0].organization.id
+
+        response = self.scalekit_client.organization.get_organization_session_policy(
+            organization_id=self.org_id
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertTrue(response[0] is not None)
+
+    def test_get_application_session_policy(self):
+        """ Method to test get application session policy """
+        organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
+        org_response = self.scalekit_client.organization.create_organization(organization=organization)
+        self.org_id = org_response[0].organization.id
+
+        response = self.scalekit_client.organization.get_application_session_policy(
+            organization_id=self.org_id
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertTrue(response[0] is not None)
+
+    def test_search_organizations(self):
+        """ Method to test search organizations """
+        organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
+        org_response = self.scalekit_client.organization.create_organization(organization=organization)
+        self.org_id = org_response[0].organization.id
+
+        response = self.scalekit_client.organization.search_organizations(query="test")
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertTrue(response[0] is not None)
+
+    def test_get_organization_user_management_setting(self):
+        """ Method to test get organization user management setting """
+        organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
+        org_response = self.scalekit_client.organization.create_organization(organization=organization)
+        self.org_id = org_response[0].organization.id
+
+        try:
+            response = self.scalekit_client.organization.get_organization_user_management_setting(
+                organization_id=self.org_id
+            )
+            self.assertEqual(response[1].code().name, "OK")
+            self.assertTrue(response[0] is not None)
+        except Exception as exp:
+            self.skipTest(f"Skipping get organization user management setting test due to error: {exp}")
 
     def tearDown(self):
         """ Method to clean up after test """

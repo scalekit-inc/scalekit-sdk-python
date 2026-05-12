@@ -569,18 +569,20 @@ class GetCurrentSessionRequest(_message.Message):
     def __init__(self, id: _Optional[str] = ...) -> None: ...
 
 class GetCurrentSessionResponse(_message.Message):
-    __slots__ = ("session_expiry", "access_token_expiry", "organization_id", "subject", "email")
+    __slots__ = ("session_expiry", "access_token_expiry", "organization_id", "subject", "email", "connected_account_id")
     SESSION_EXPIRY_FIELD_NUMBER: _ClassVar[int]
     ACCESS_TOKEN_EXPIRY_FIELD_NUMBER: _ClassVar[int]
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     SUBJECT_FIELD_NUMBER: _ClassVar[int]
     EMAIL_FIELD_NUMBER: _ClassVar[int]
+    CONNECTED_ACCOUNT_ID_FIELD_NUMBER: _ClassVar[int]
     session_expiry: _timestamp_pb2.Timestamp
     access_token_expiry: _timestamp_pb2.Timestamp
     organization_id: str
     subject: str
     email: str
-    def __init__(self, session_expiry: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., access_token_expiry: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., organization_id: _Optional[str] = ..., subject: _Optional[str] = ..., email: _Optional[str] = ...) -> None: ...
+    connected_account_id: str
+    def __init__(self, session_expiry: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., access_token_expiry: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., organization_id: _Optional[str] = ..., subject: _Optional[str] = ..., email: _Optional[str] = ..., connected_account_id: _Optional[str] = ...) -> None: ...
 
 class ResourceMetadata(_message.Message):
     __slots__ = ("type", "identifiers")
@@ -642,10 +644,12 @@ class PortalBootstrapResponse(_message.Message):
     def __init__(self, session: _Optional[_Union[GetCurrentSessionResponse, _Mapping]] = ..., portal_customizations: _Optional[_Union[PortalCustomizationBootstrap, _Mapping]] = ..., organization: _Optional[_Union[_organizations_pb2.Organization, _Mapping]] = ..., connections: _Optional[_Iterable[_Union[_connections_pb2.ListConnection, _Mapping]]] = ...) -> None: ...
 
 class AgentActionsConfig(_message.Message):
-    __slots__ = ("user_verify_mode",)
+    __slots__ = ("user_verify_mode", "detailed_error_logging")
     USER_VERIFY_MODE_FIELD_NUMBER: _ClassVar[int]
+    DETAILED_ERROR_LOGGING_FIELD_NUMBER: _ClassVar[int]
     user_verify_mode: ConnectedAccountUserVerifyMode
-    def __init__(self, user_verify_mode: _Optional[_Union[ConnectedAccountUserVerifyMode, str]] = ...) -> None: ...
+    detailed_error_logging: bool
+    def __init__(self, user_verify_mode: _Optional[_Union[ConnectedAccountUserVerifyMode, str]] = ..., detailed_error_logging: bool = ...) -> None: ...
 
 class CreateAgentActionsConfigRequest(_message.Message):
     __slots__ = ("id", "agent_actions_config")
