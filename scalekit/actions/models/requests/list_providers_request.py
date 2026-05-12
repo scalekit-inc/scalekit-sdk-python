@@ -33,6 +33,7 @@ class ListProvidersRequest(BaseModel):
     )
     identifier: Optional[str] = Field(
         None,
+        min_length=1,
         description=(
             "Optional. Filter to a specific provider by its identifier. "
             "Pass None (default) to return all providers matching the other filters."

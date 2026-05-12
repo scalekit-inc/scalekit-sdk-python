@@ -1,4 +1,5 @@
 from typing import List
+from urllib.parse import urlparse
 
 from pydantic import BaseModel, Field, validator
 
@@ -58,8 +59,9 @@ class CreateCustomProviderRequest(BaseModel):
 
     @validator("proxy_url")
     def validate_proxy_url_https(cls, v):
-        if not v.startswith("https://"):
-            raise ValueError("proxy_url must be a valid HTTPS URL starting with 'https://'")
+        parsed = urlparse(v)
+        if parsed.scheme != "https" or not parsed.netloc:
+            raise ValueError("proxy_url must be a valid HTTPS URL (e.g. 'https://server.example.com/mcp')")
         return v
 
     @validator("auth_patterns")
