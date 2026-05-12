@@ -97,6 +97,7 @@ class ConnectionType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     WEBAUTHN: _ClassVar[ConnectionType]
     OAUTH_M2M: _ClassVar[ConnectionType]
     TRELLO_OAUTH1: _ClassVar[ConnectionType]
+    GOOGLE_DWD: _ClassVar[ConnectionType]
 
 class ConnectionStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
@@ -172,6 +173,7 @@ API_KEY: ConnectionType
 WEBAUTHN: ConnectionType
 OAUTH_M2M: ConnectionType
 TRELLO_OAUTH1: ConnectionType
+GOOGLE_DWD: ConnectionType
 CONNECTION_STATUS_UNSPECIFIED: ConnectionStatus
 DRAFT: ConnectionStatus
 IN_PROGRESS: ConnectionStatus
@@ -259,7 +261,7 @@ class CreateConnection(_message.Message):
     def __init__(self, provider: _Optional[_Union[ConnectionProvider, str]] = ..., type: _Optional[_Union[ConnectionType, str]] = ..., provider_key: _Optional[str] = ..., key_id: _Optional[str] = ...) -> None: ...
 
 class Connection(_message.Message):
-    __slots__ = ("id", "provider", "type", "status", "enabled", "debug_enabled", "organization_id", "ui_button_title", "configuration_type", "test_connection_uri", "attribute_mapping", "create_time", "update_time", "oidc_config", "saml_config", "oauth_config", "passwordless_config", "static_config", "webauthn_config", "key_id", "provider_key", "domains")
+    __slots__ = ("id", "provider", "type", "status", "enabled", "debug_enabled", "organization_id", "ui_button_title", "configuration_type", "test_connection_uri", "attribute_mapping", "create_time", "update_time", "oidc_config", "saml_config", "oauth_config", "passwordless_config", "static_config", "webauthn_config", "google_dwd_config", "key_id", "provider_key", "domains")
     class AttributeMappingEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -286,6 +288,7 @@ class Connection(_message.Message):
     PASSWORDLESS_CONFIG_FIELD_NUMBER: _ClassVar[int]
     STATIC_CONFIG_FIELD_NUMBER: _ClassVar[int]
     WEBAUTHN_CONFIG_FIELD_NUMBER: _ClassVar[int]
+    GOOGLE_DWD_CONFIG_FIELD_NUMBER: _ClassVar[int]
     KEY_ID_FIELD_NUMBER: _ClassVar[int]
     PROVIDER_KEY_FIELD_NUMBER: _ClassVar[int]
     DOMAINS_FIELD_NUMBER: _ClassVar[int]
@@ -308,10 +311,11 @@ class Connection(_message.Message):
     passwordless_config: PasswordLessConfig
     static_config: StaticAuthConfig
     webauthn_config: WebAuthConfiguration
+    google_dwd_config: GoogleDWDConfig
     key_id: str
     provider_key: str
     domains: _containers.RepeatedCompositeFieldContainer[_domains_pb2.Domain]
-    def __init__(self, id: _Optional[str] = ..., provider: _Optional[_Union[ConnectionProvider, str]] = ..., type: _Optional[_Union[ConnectionType, str]] = ..., status: _Optional[_Union[ConnectionStatus, str]] = ..., enabled: bool = ..., debug_enabled: bool = ..., organization_id: _Optional[str] = ..., ui_button_title: _Optional[str] = ..., configuration_type: _Optional[_Union[ConfigurationType, str]] = ..., test_connection_uri: _Optional[str] = ..., attribute_mapping: _Optional[_Mapping[str, str]] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., oidc_config: _Optional[_Union[OIDCConnectionConfig, _Mapping]] = ..., saml_config: _Optional[_Union[SAMLConnectionConfigResponse, _Mapping]] = ..., oauth_config: _Optional[_Union[OAuthConnectionConfig, _Mapping]] = ..., passwordless_config: _Optional[_Union[PasswordLessConfig, _Mapping]] = ..., static_config: _Optional[_Union[StaticAuthConfig, _Mapping]] = ..., webauthn_config: _Optional[_Union[WebAuthConfiguration, _Mapping]] = ..., key_id: _Optional[str] = ..., provider_key: _Optional[str] = ..., domains: _Optional[_Iterable[_Union[_domains_pb2.Domain, _Mapping]]] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., provider: _Optional[_Union[ConnectionProvider, str]] = ..., type: _Optional[_Union[ConnectionType, str]] = ..., status: _Optional[_Union[ConnectionStatus, str]] = ..., enabled: bool = ..., debug_enabled: bool = ..., organization_id: _Optional[str] = ..., ui_button_title: _Optional[str] = ..., configuration_type: _Optional[_Union[ConfigurationType, str]] = ..., test_connection_uri: _Optional[str] = ..., attribute_mapping: _Optional[_Mapping[str, str]] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., oidc_config: _Optional[_Union[OIDCConnectionConfig, _Mapping]] = ..., saml_config: _Optional[_Union[SAMLConnectionConfigResponse, _Mapping]] = ..., oauth_config: _Optional[_Union[OAuthConnectionConfig, _Mapping]] = ..., passwordless_config: _Optional[_Union[PasswordLessConfig, _Mapping]] = ..., static_config: _Optional[_Union[StaticAuthConfig, _Mapping]] = ..., webauthn_config: _Optional[_Union[WebAuthConfiguration, _Mapping]] = ..., google_dwd_config: _Optional[_Union[GoogleDWDConfig, _Mapping]] = ..., key_id: _Optional[str] = ..., provider_key: _Optional[str] = ..., domains: _Optional[_Iterable[_Union[_domains_pb2.Domain, _Mapping]]] = ...) -> None: ...
 
 class CreateConnectionResponse(_message.Message):
     __slots__ = ("connection",)
@@ -338,7 +342,7 @@ class UpdateConnectionRequest(_message.Message):
     def __init__(self, organization_id: _Optional[str] = ..., id: _Optional[str] = ..., connection: _Optional[_Union[UpdateConnection, _Mapping]] = ...) -> None: ...
 
 class UpdateConnection(_message.Message):
-    __slots__ = ("provider", "type", "debug_enabled", "ui_button_title", "configuration_type", "attribute_mapping", "oidc_config", "saml_config", "oauth_config", "passwordless_config", "static_config", "webauthn_config", "key_id", "provider_key")
+    __slots__ = ("provider", "type", "debug_enabled", "ui_button_title", "configuration_type", "attribute_mapping", "oidc_config", "saml_config", "oauth_config", "passwordless_config", "static_config", "webauthn_config", "google_dwd_config", "key_id", "provider_key")
     class AttributeMappingEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -358,6 +362,7 @@ class UpdateConnection(_message.Message):
     PASSWORDLESS_CONFIG_FIELD_NUMBER: _ClassVar[int]
     STATIC_CONFIG_FIELD_NUMBER: _ClassVar[int]
     WEBAUTHN_CONFIG_FIELD_NUMBER: _ClassVar[int]
+    GOOGLE_DWD_CONFIG_FIELD_NUMBER: _ClassVar[int]
     KEY_ID_FIELD_NUMBER: _ClassVar[int]
     PROVIDER_KEY_FIELD_NUMBER: _ClassVar[int]
     provider: ConnectionProvider
@@ -372,9 +377,10 @@ class UpdateConnection(_message.Message):
     passwordless_config: PasswordLessConfig
     static_config: StaticAuthConfig
     webauthn_config: WebAuthConfiguration
+    google_dwd_config: GoogleDWDConfig
     key_id: str
     provider_key: str
-    def __init__(self, provider: _Optional[_Union[ConnectionProvider, str]] = ..., type: _Optional[_Union[ConnectionType, str]] = ..., debug_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., ui_button_title: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., configuration_type: _Optional[_Union[ConfigurationType, str]] = ..., attribute_mapping: _Optional[_Mapping[str, str]] = ..., oidc_config: _Optional[_Union[OIDCConnectionConfig, _Mapping]] = ..., saml_config: _Optional[_Union[SAMLConnectionConfigRequest, _Mapping]] = ..., oauth_config: _Optional[_Union[OAuthConnectionConfig, _Mapping]] = ..., passwordless_config: _Optional[_Union[PasswordLessConfig, _Mapping]] = ..., static_config: _Optional[_Union[StaticAuthConfig, _Mapping]] = ..., webauthn_config: _Optional[_Union[WebAuthConfiguration, _Mapping]] = ..., key_id: _Optional[str] = ..., provider_key: _Optional[str] = ...) -> None: ...
+    def __init__(self, provider: _Optional[_Union[ConnectionProvider, str]] = ..., type: _Optional[_Union[ConnectionType, str]] = ..., debug_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., ui_button_title: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., configuration_type: _Optional[_Union[ConfigurationType, str]] = ..., attribute_mapping: _Optional[_Mapping[str, str]] = ..., oidc_config: _Optional[_Union[OIDCConnectionConfig, _Mapping]] = ..., saml_config: _Optional[_Union[SAMLConnectionConfigRequest, _Mapping]] = ..., oauth_config: _Optional[_Union[OAuthConnectionConfig, _Mapping]] = ..., passwordless_config: _Optional[_Union[PasswordLessConfig, _Mapping]] = ..., static_config: _Optional[_Union[StaticAuthConfig, _Mapping]] = ..., webauthn_config: _Optional[_Union[WebAuthConfiguration, _Mapping]] = ..., google_dwd_config: _Optional[_Union[GoogleDWDConfig, _Mapping]] = ..., key_id: _Optional[str] = ..., provider_key: _Optional[str] = ...) -> None: ...
 
 class UpdateConnectionResponse(_message.Message):
     __slots__ = ("connection",)
@@ -617,6 +623,16 @@ class OptionalScopes(_message.Message):
     scopes: _containers.RepeatedScalarFieldContainer[str]
     field_name: str
     def __init__(self, scopes: _Optional[_Iterable[str]] = ..., field_name: _Optional[str] = ...) -> None: ...
+
+class GoogleDWDConfig(_message.Message):
+    __slots__ = ("service_account_json", "scopes", "token_uri")
+    SERVICE_ACCOUNT_JSON_FIELD_NUMBER: _ClassVar[int]
+    SCOPES_FIELD_NUMBER: _ClassVar[int]
+    TOKEN_URI_FIELD_NUMBER: _ClassVar[int]
+    service_account_json: _wrappers_pb2.StringValue
+    scopes: _containers.RepeatedScalarFieldContainer[str]
+    token_uri: _wrappers_pb2.StringValue
+    def __init__(self, service_account_json: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., scopes: _Optional[_Iterable[str]] = ..., token_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ...) -> None: ...
 
 class PasswordLessConfig(_message.Message):
     __slots__ = ("type", "frequency", "validity", "enforce_same_browser_origin", "code_challenge_length", "code_challenge_type", "regenerate_passwordless_credentials_on_resend")

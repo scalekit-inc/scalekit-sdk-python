@@ -171,3 +171,7 @@ proto
 # Claude Code documentation
 CLAUDE.md
 proto/
+.claude/settings.json
+
+# macOS
+.DS_Store
