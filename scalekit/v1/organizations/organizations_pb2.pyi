@@ -326,20 +326,16 @@ class GetApplicationSessionPolicyRequest(_message.Message):
     def __init__(self, organization_id: _Optional[str] = ...) -> None: ...
 
 class ApplicationSessionPolicySettings(_message.Message):
-    __slots__ = ("absolute_session_timeout", "idle_session_timeout_enabled", "idle_session_timeout", "access_token_expiry", "absolute_session_timeout_unit", "idle_session_timeout_unit")
+    __slots__ = ("absolute_session_timeout", "idle_session_timeout_enabled", "idle_session_timeout", "access_token_expiry")
     ABSOLUTE_SESSION_TIMEOUT_FIELD_NUMBER: _ClassVar[int]
     IDLE_SESSION_TIMEOUT_ENABLED_FIELD_NUMBER: _ClassVar[int]
     IDLE_SESSION_TIMEOUT_FIELD_NUMBER: _ClassVar[int]
     ACCESS_TOKEN_EXPIRY_FIELD_NUMBER: _ClassVar[int]
-    ABSOLUTE_SESSION_TIMEOUT_UNIT_FIELD_NUMBER: _ClassVar[int]
-    IDLE_SESSION_TIMEOUT_UNIT_FIELD_NUMBER: _ClassVar[int]
     absolute_session_timeout: int
     idle_session_timeout_enabled: bool
     idle_session_timeout: int
     access_token_expiry: int
-    absolute_session_timeout_unit: _commons_pb2.TimeUnit
-    idle_session_timeout_unit: _commons_pb2.TimeUnit
-    def __init__(self, absolute_session_timeout: _Optional[int] = ..., idle_session_timeout_enabled: bool = ..., idle_session_timeout: _Optional[int] = ..., access_token_expiry: _Optional[int] = ..., absolute_session_timeout_unit: _Optional[_Union[_commons_pb2.TimeUnit, str]] = ..., idle_session_timeout_unit: _Optional[_Union[_commons_pb2.TimeUnit, str]] = ...) -> None: ...
+    def __init__(self, absolute_session_timeout: _Optional[int] = ..., idle_session_timeout_enabled: bool = ..., idle_session_timeout: _Optional[int] = ..., access_token_expiry: _Optional[int] = ...) -> None: ...
 
 class GetApplicationSessionPolicyResponse(_message.Message):
     __slots__ = ("application_policy",)

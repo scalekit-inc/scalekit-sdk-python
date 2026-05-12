@@ -25,14 +25,7 @@ CUSTOM: ProviderType
 ALL: ProviderType
 
 class Provider(_message.Message):
-    __slots__ = ("id", "identifier", "display_name", "description", "categories", "auth_patterns", "icon_src", "display_priority", "coming_soon", "proxy_url", "proxy_enabled", "is_custom", "is_custom_mcp", "metadata")
-    class MetadataEntry(_message.Message):
-        __slots__ = ("key", "value")
-        KEY_FIELD_NUMBER: _ClassVar[int]
-        VALUE_FIELD_NUMBER: _ClassVar[int]
-        key: str
-        value: str
-        def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
+    __slots__ = ("id", "identifier", "display_name", "description", "categories", "auth_patterns", "icon_src", "display_priority", "coming_soon", "proxy_url", "proxy_enabled", "is_custom", "is_custom_mcp")
     ID_FIELD_NUMBER: _ClassVar[int]
     IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
@@ -46,7 +39,6 @@ class Provider(_message.Message):
     PROXY_ENABLED_FIELD_NUMBER: _ClassVar[int]
     IS_CUSTOM_FIELD_NUMBER: _ClassVar[int]
     IS_CUSTOM_MCP_FIELD_NUMBER: _ClassVar[int]
-    METADATA_FIELD_NUMBER: _ClassVar[int]
     id: str
     identifier: str
     display_name: str
@@ -60,8 +52,7 @@ class Provider(_message.Message):
     proxy_enabled: bool
     is_custom: bool
     is_custom_mcp: bool
-    metadata: _containers.ScalarMap[str, str]
-    def __init__(self, id: _Optional[str] = ..., identifier: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., categories: _Optional[_Iterable[str]] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., icon_src: _Optional[str] = ..., display_priority: _Optional[int] = ..., coming_soon: bool = ..., proxy_url: _Optional[str] = ..., proxy_enabled: bool = ..., is_custom: bool = ..., is_custom_mcp: bool = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., identifier: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., categories: _Optional[_Iterable[str]] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., icon_src: _Optional[str] = ..., display_priority: _Optional[int] = ..., coming_soon: bool = ..., proxy_url: _Optional[str] = ..., proxy_enabled: bool = ..., is_custom: bool = ..., is_custom_mcp: bool = ...) -> None: ...
 
 class CreateProvider(_message.Message):
     __slots__ = ("identifier", "display_name", "description", "categories", "auth_patterns", "icon_src", "display_priority", "coming_soon", "proxy_url", "proxy_enabled")
@@ -94,29 +85,20 @@ class CreateProviderRequest(_message.Message):
     def __init__(self, provider: _Optional[_Union[CreateProvider, _Mapping]] = ...) -> None: ...
 
 class CreateCustomProvider(_message.Message):
-    __slots__ = ("display_name", "description", "auth_patterns", "proxy_url", "proxy_enabled", "icon_src", "metadata")
-    class MetadataEntry(_message.Message):
-        __slots__ = ("key", "value")
-        KEY_FIELD_NUMBER: _ClassVar[int]
-        VALUE_FIELD_NUMBER: _ClassVar[int]
-        key: str
-        value: str
-        def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
+    __slots__ = ("display_name", "description", "auth_patterns", "proxy_url", "proxy_enabled", "icon_src")
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     AUTH_PATTERNS_FIELD_NUMBER: _ClassVar[int]
     PROXY_URL_FIELD_NUMBER: _ClassVar[int]
     PROXY_ENABLED_FIELD_NUMBER: _ClassVar[int]
     ICON_SRC_FIELD_NUMBER: _ClassVar[int]
-    METADATA_FIELD_NUMBER: _ClassVar[int]
     display_name: str
     description: str
     auth_patterns: _struct_pb2.ListValue
     proxy_url: str
     proxy_enabled: bool
     icon_src: str
-    metadata: _containers.ScalarMap[str, str]
-    def __init__(self, display_name: _Optional[str] = ..., description: _Optional[str] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., proxy_url: _Optional[str] = ..., proxy_enabled: bool = ..., icon_src: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    def __init__(self, display_name: _Optional[str] = ..., description: _Optional[str] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., proxy_url: _Optional[str] = ..., proxy_enabled: bool = ..., icon_src: _Optional[str] = ...) -> None: ...
 
 class CreateCustomProviderRequest(_message.Message):
     __slots__ = ("provider",)
@@ -161,29 +143,20 @@ class UpdateProviderRequest(_message.Message):
     def __init__(self, identifier: _Optional[str] = ..., provider: _Optional[_Union[UpdateProvider, _Mapping]] = ...) -> None: ...
 
 class UpdateCustomProvider(_message.Message):
-    __slots__ = ("display_name", "description", "auth_patterns", "proxy_url", "proxy_enabled", "icon_src", "metadata")
-    class MetadataEntry(_message.Message):
-        __slots__ = ("key", "value")
-        KEY_FIELD_NUMBER: _ClassVar[int]
-        VALUE_FIELD_NUMBER: _ClassVar[int]
-        key: str
-        value: str
-        def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
+    __slots__ = ("display_name", "description", "auth_patterns", "proxy_url", "proxy_enabled", "icon_src")
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     AUTH_PATTERNS_FIELD_NUMBER: _ClassVar[int]
     PROXY_URL_FIELD_NUMBER: _ClassVar[int]
     PROXY_ENABLED_FIELD_NUMBER: _ClassVar[int]
     ICON_SRC_FIELD_NUMBER: _ClassVar[int]
-    METADATA_FIELD_NUMBER: _ClassVar[int]
     display_name: str
     description: str
     auth_patterns: _struct_pb2.ListValue
     proxy_url: str
     proxy_enabled: bool
     icon_src: str
-    metadata: _containers.ScalarMap[str, str]
-    def __init__(self, display_name: _Optional[str] = ..., description: _Optional[str] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., proxy_url: _Optional[str] = ..., proxy_enabled: bool = ..., icon_src: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    def __init__(self, display_name: _Optional[str] = ..., description: _Optional[str] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., proxy_url: _Optional[str] = ..., proxy_enabled: bool = ..., icon_src: _Optional[str] = ...) -> None: ...
 
 class UpdateCustomProviderRequest(_message.Message):
     __slots__ = ("identifier", "provider")
