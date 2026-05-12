@@ -204,7 +204,7 @@ class AuthPattern(BaseModel):
         ),
     )
 
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def validate_auth_invariants(cls, values):
         auth_type = values.get("type")
         if auth_type is None:
