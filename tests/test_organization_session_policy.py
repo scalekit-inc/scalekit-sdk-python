@@ -26,7 +26,7 @@ class TestOrganizationSessionPolicy(BaseTest):
 
         policy = self.scalekit_client.organization.get_organization_session_policy(
             organization_id=org_id
-        )
+        )[0].policy
 
         self.assertIsNotNone(policy)
         self.assertEqual(policy.policy_source, SessionPolicyType.APPLICATION)
@@ -43,14 +43,14 @@ class TestOrganizationSessionPolicy(BaseTest):
             idle_session_timeout_enabled=True,
             idle_session_timeout=60,
             idle_session_timeout_unit=TimeUnit.MINUTES,
-        )
+        )[0].policy
 
         self.assertIsNotNone(policy)
         self.assertEqual(policy.policy_source, SessionPolicyType.CUSTOM)
 
         fetched = self.scalekit_client.organization.get_organization_session_policy(
             organization_id=org_id
-        )
+        )[0].policy
         self.assertEqual(fetched.policy_source, SessionPolicyType.CUSTOM)
         self.assertTrue(fetched.HasField("absolute_session_timeout"))
         self.assertEqual(fetched.absolute_session_timeout.value, 360)
@@ -71,14 +71,14 @@ class TestOrganizationSessionPolicy(BaseTest):
         reverted = self.scalekit_client.organization.update_organization_session_policy(
             organization_id=org_id,
             policy_source=SessionPolicyType.APPLICATION,
-        )
+        )[0].policy
 
         self.assertIsNotNone(reverted)
         self.assertEqual(reverted.policy_source, SessionPolicyType.APPLICATION)
 
         fetched = self.scalekit_client.organization.get_organization_session_policy(
             organization_id=org_id
-        )
+        )[0].policy
         self.assertEqual(fetched.policy_source, SessionPolicyType.APPLICATION)
 
     def test_set_idle_timeout_disabled(self):
@@ -91,14 +91,14 @@ class TestOrganizationSessionPolicy(BaseTest):
             absolute_session_timeout=480,
             absolute_session_timeout_unit=TimeUnit.MINUTES,
             idle_session_timeout_enabled=False,
-        )
+        )[0].policy
 
         self.assertIsNotNone(policy)
         self.assertEqual(policy.policy_source, SessionPolicyType.CUSTOM)
 
         fetched = self.scalekit_client.organization.get_organization_session_policy(
             organization_id=org_id
-        )
+        )[0].policy
         self.assertTrue(fetched.HasField("idle_session_timeout_enabled"))
         self.assertFalse(fetched.idle_session_timeout_enabled.value)
 
