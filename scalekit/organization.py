@@ -234,11 +234,10 @@ class OrganizationClient:
         :returns:
             OrganizationSessionPolicySettings
         """
-        response = self.core_client.grpc_exec(
+        return self.core_client.grpc_exec(
             self.organization_service.GetOrganizationSessionPolicy.with_call,
             GetOrganizationSessionPolicyRequest(organization_id=organization_id),
         )
-        return response[0].policy
 
     def update_organization_session_policy(
         self,
@@ -290,8 +289,7 @@ class OrganizationClient:
             )
         if idle_session_timeout_unit is not None:
             req.idle_session_timeout_unit = idle_session_timeout_unit
-        response = self.core_client.grpc_exec(
+        return self.core_client.grpc_exec(
             self.organization_service.UpdateOrganizationSessionPolicy.with_call,
             req,
         )
-        return response[0].policy
