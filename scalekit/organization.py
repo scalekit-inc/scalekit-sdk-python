@@ -20,7 +20,13 @@ from scalekit.v1.organizations.organizations_pb2 import (
     UpdateOrganizationSettingsRequest,
     OrganizationUserManagementSettings,
     UpsertUserManagementSettingsRequest,
+    GetOrganizationSessionPolicyRequest,
+    GetOrganizationSessionPolicyResponse,
+    UpdateOrganizationSessionPolicyRequest,
+    UpdateOrganizationSessionPolicyResponse,
+    SessionPolicyType,
 )
+from scalekit.v1.commons.commons_pb2 import TimeUnit
 from scalekit.v1.organizations.organizations_pb2_grpc import OrganizationServiceStub
 
 
@@ -219,3 +225,72 @@ class OrganizationClient:
             )
         )
         return response[0].settings
+
+    def get_organization_session_policy(self, organization_id: str) -> GetOrganizationSessionPolicyResponse:
+        """
+        Get the session policy for an organization.
+
+        :param organization_id: Organization id
+        :type organization_id : ``` str ```
+        :returns:
+            GetOrganizationSessionPolicyResponse
+        """
+        return self.core_client.grpc_exec(
+            self.organization_service.GetOrganizationSessionPolicy.with_call,
+            GetOrganizationSessionPolicyRequest(organization_id=organization_id),
+        )
+
+    def update_organization_session_policy(
+        self,
+        organization_id: str,
+        policy_source: SessionPolicyType,
+        absolute_session_timeout: Optional[int] = None,
+        absolute_session_timeout_unit: Optional[TimeUnit] = None,
+        idle_session_timeout_enabled: Optional[bool] = None,
+        idle_session_timeout: Optional[int] = None,
+        idle_session_timeout_unit: Optional[TimeUnit] = None,
+    ) -> UpdateOrganizationSessionPolicyResponse:
+        """
+        Set a custom session policy for an organization or revert to application defaults.
+
+        :param organization_id: Organization id
+        :type organization_id: ``` str ```
+        :param policy_source: SessionPolicyType.APPLICATION or SessionPolicyType.CUSTOM
+        :type policy_source: ``` SessionPolicyType ```
+        :param absolute_session_timeout: Absolute session timeout value (optional)
+        :type absolute_session_timeout: ``` int | None ```
+        :param absolute_session_timeout_unit: Unit for absolute timeout (optional)
+        :type absolute_session_timeout_unit: ``` TimeUnit | None ```
+        :param idle_session_timeout_enabled: Whether idle session timeout is enabled (optional)
+        :type idle_session_timeout_enabled: ``` bool | None ```
+        :param idle_session_timeout: Idle session timeout value (optional)
+        :type idle_session_timeout: ``` int | None ```
+        :param idle_session_timeout_unit: Unit for idle timeout (optional)
+        :type idle_session_timeout_unit: ``` TimeUnit | None ```
+        :returns:
+            UpdateOrganizationSessionPolicyResponse
+        """
+        req = UpdateOrganizationSessionPolicyRequest(
+            organization_id=organization_id,
+            policy_source=policy_source,
+        )
+        if absolute_session_timeout is not None:
+            req.absolute_session_timeout.CopyFrom(
+                wrappers_pb2.Int32Value(value=absolute_session_timeout)
+            )
+        if absolute_session_timeout_unit is not None:
+            req.absolute_session_timeout_unit = absolute_session_timeout_unit
+        if idle_session_timeout_enabled is not None:
+            req.idle_session_timeout_enabled.CopyFrom(
+                wrappers_pb2.BoolValue(value=idle_session_timeout_enabled)
+            )
+        if idle_session_timeout is not None:
+            req.idle_session_timeout.CopyFrom(
+                wrappers_pb2.Int32Value(value=idle_session_timeout)
+            )
+        if idle_session_timeout_unit is not None:
+            req.idle_session_timeout_unit = idle_session_timeout_unit
+        return self.core_client.grpc_exec(
+            self.organization_service.UpdateOrganizationSessionPolicy.with_call,
+            req,
+        )
