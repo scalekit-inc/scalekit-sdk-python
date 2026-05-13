@@ -20,9 +20,10 @@ from scalekit.v1.organizations.organizations_pb2 import (
     UpdateOrganizationSettingsRequest,
     OrganizationUserManagementSettings,
     UpsertUserManagementSettingsRequest,
-    OrganizationSessionPolicySettings,
     GetOrganizationSessionPolicyRequest,
+    GetOrganizationSessionPolicyResponse,
     UpdateOrganizationSessionPolicyRequest,
+    UpdateOrganizationSessionPolicyResponse,
     SessionPolicyType,
 )
 from scalekit.v1.commons.commons_pb2 import TimeUnit
@@ -225,14 +226,14 @@ class OrganizationClient:
         )
         return response[0].settings
 
-    def get_organization_session_policy(self, organization_id: str) -> OrganizationSessionPolicySettings:
+    def get_organization_session_policy(self, organization_id: str) -> GetOrganizationSessionPolicyResponse:
         """
         Get the session policy for an organization.
 
         :param organization_id: Organization id
         :type organization_id : ``` str ```
         :returns:
-            OrganizationSessionPolicySettings
+            GetOrganizationSessionPolicyResponse
         """
         return self.core_client.grpc_exec(
             self.organization_service.GetOrganizationSessionPolicy.with_call,
@@ -248,7 +249,7 @@ class OrganizationClient:
         idle_session_timeout_enabled: Optional[bool] = None,
         idle_session_timeout: Optional[int] = None,
         idle_session_timeout_unit: Optional[TimeUnit] = None,
-    ) -> OrganizationSessionPolicySettings:
+    ) -> UpdateOrganizationSessionPolicyResponse:
         """
         Set a custom session policy for an organization or revert to application defaults.
 
@@ -267,7 +268,7 @@ class OrganizationClient:
         :param idle_session_timeout_unit: Unit for idle timeout (optional)
         :type idle_session_timeout_unit: ``` TimeUnit | None ```
         :returns:
-            OrganizationSessionPolicySettings
+            UpdateOrganizationSessionPolicyResponse
         """
         req = UpdateOrganizationSessionPolicyRequest(
             organization_id=organization_id,
