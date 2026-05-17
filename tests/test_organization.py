@@ -114,6 +114,64 @@ class TestOrganization(BaseTest):
         self.assertEqual(response[0].organization.metadata, metadata)
         self.assertEqual(response[0].organization.external_id, external_id)
 
+    def test_create_organization_with_logo_url(self):
+        """ Method to test create organization with logo_url """
+        logo_url = 'https://cdn.example.com/acme-logo.png'
+        organization = CreateOrganization(
+            display_name=Faker().company(),
+            external_id=Faker().uuid4(),
+            logo_url=logo_url,
+        )
+        response = self.scalekit_client.organization.create_organization(organization=organization)
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertEqual(response[0].organization.logo_url, logo_url)
+        self.org_id = response[0].organization.id
+
+    def test_update_organization_logo_url(self):
+        """ Method to test setting and clearing logo_url via update """
+        logo_url = 'https://cdn.example.com/acme-logo.png'
+        org = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
+        org_response = self.scalekit_client.organization.create_organization(organization=org)
+        self.org_id = org_response[0].organization.id
+
+        # set logo_url
+        response = self.scalekit_client.organization.update_organization(
+            organization_id=self.org_id,
+            organization=UpdateOrganization(logo_url=logo_url),
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertEqual(response[0].organization.logo_url, logo_url)
+
+        # clear logo_url
+        response = self.scalekit_client.organization.update_organization(
+            organization_id=self.org_id,
+            organization=UpdateOrganization(logo_url=''),
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertEqual(response[0].organization.logo_url, '')
+
+    def test_logo_url_preserved_after_settings_update(self):
+        """ Method to verify logo_url is not wiped by update_organization_settings """
+        logo_url = 'https://cdn.example.com/acme-logo.png'
+        org = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
+        org_response = self.scalekit_client.organization.create_organization(organization=org)
+        self.org_id = org_response[0].organization.id
+
+        # stamp logo_url
+        self.scalekit_client.organization.update_organization(
+            organization_id=self.org_id,
+            organization=UpdateOrganization(logo_url=logo_url),
+        )
+
+        # update features — must not wipe logo_url
+        self.scalekit_client.organization.update_organization_settings(
+            organization_id=self.org_id,
+            settings=[{"name": "sso", "enabled": True}],
+        )
+
+        response = self.scalekit_client.organization.get_organization(organization_id=self.org_id)
+        self.assertEqual(response[0].organization.logo_url, logo_url)
+
     def test_delete_organization(self):
         """ Method to test delete organization """
         organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
