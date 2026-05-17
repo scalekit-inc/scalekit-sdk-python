@@ -34,7 +34,6 @@ class ConnectorType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     BASIC: _ClassVar[ConnectorType]
     OAUTH_M2M: _ClassVar[ConnectorType]
     TRELLO_OAUTH1: _ClassVar[ConnectorType]
-    GOOGLE_DWD: _ClassVar[ConnectorType]
 CONNECTION_STATUS_UNSPECIFIED: ConnectorStatus
 ACTIVE: ConnectorStatus
 EXPIRED: ConnectorStatus
@@ -50,7 +49,6 @@ CUSTOM: ConnectorType
 BASIC: ConnectorType
 OAUTH_M2M: ConnectorType
 TRELLO_OAUTH1: ConnectorType
-GOOGLE_DWD: ConnectorType
 
 class ListConnectedAccountsRequest(_message.Message):
     __slots__ = ("organization_id", "user_id", "connector", "identifier", "provider", "page_size", "page_token", "query")
@@ -297,26 +295,12 @@ class ConnectedAccountForList(_message.Message):
     def __init__(self, identifier: _Optional[str] = ..., provider: _Optional[str] = ..., status: _Optional[_Union[ConnectorStatus, str]] = ..., authorization_type: _Optional[_Union[ConnectorType, str]] = ..., token_expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., connector: _Optional[str] = ..., last_used_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., id: _Optional[str] = ..., connection_id: _Optional[str] = ...) -> None: ...
 
 class AuthorizationDetails(_message.Message):
-    __slots__ = ("oauth_token", "static_auth", "google_dwd")
+    __slots__ = ("oauth_token", "static_auth")
     OAUTH_TOKEN_FIELD_NUMBER: _ClassVar[int]
     STATIC_AUTH_FIELD_NUMBER: _ClassVar[int]
-    GOOGLE_DWD_FIELD_NUMBER: _ClassVar[int]
     oauth_token: OauthToken
     static_auth: StaticAuth
-    google_dwd: GoogleDWDAuth
-    def __init__(self, oauth_token: _Optional[_Union[OauthToken, _Mapping]] = ..., static_auth: _Optional[_Union[StaticAuth, _Mapping]] = ..., google_dwd: _Optional[_Union[GoogleDWDAuth, _Mapping]] = ...) -> None: ...
-
-class GoogleDWDAuth(_message.Message):
-    __slots__ = ("subject", "access_token", "scopes", "token_expires_at")
-    SUBJECT_FIELD_NUMBER: _ClassVar[int]
-    ACCESS_TOKEN_FIELD_NUMBER: _ClassVar[int]
-    SCOPES_FIELD_NUMBER: _ClassVar[int]
-    TOKEN_EXPIRES_AT_FIELD_NUMBER: _ClassVar[int]
-    subject: str
-    access_token: str
-    scopes: _containers.RepeatedScalarFieldContainer[str]
-    token_expires_at: _timestamp_pb2.Timestamp
-    def __init__(self, subject: _Optional[str] = ..., access_token: _Optional[str] = ..., scopes: _Optional[_Iterable[str]] = ..., token_expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+    def __init__(self, oauth_token: _Optional[_Union[OauthToken, _Mapping]] = ..., static_auth: _Optional[_Union[StaticAuth, _Mapping]] = ...) -> None: ...
 
 class OauthToken(_message.Message):
     __slots__ = ("access_token", "refresh_token", "scopes", "domain")
