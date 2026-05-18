@@ -114,6 +114,32 @@ class TestOrganization(BaseTest):
         self.assertEqual(response[0].organization.metadata, metadata)
         self.assertEqual(response[0].organization.external_id, external_id)
 
+    def test_create_organization_with_slug(self):
+        """ Method to test create organization with slug """
+        import time
+        slug = f"test-slug-{int(time.time() * 1000)}"
+        display_name = Faker().company()
+        organization = CreateOrganization(display_name=display_name, slug=slug)
+        response = self.scalekit_client.organization.create_organization(organization=organization)
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertEqual(response[0].organization.slug, slug)
+        self.org_id = response[0].organization.id
+
+    def test_update_organization_with_slug(self):
+        """ Method to test update organization with slug """
+        import time
+        organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
+        org_response = self.scalekit_client.organization.create_organization(organization=organization)
+        self.org_id = org_response[0].organization.id
+
+        slug = f"upd-slug-{int(time.time() * 1000)}"
+        update_organization = UpdateOrganization(slug=slug)
+        response = self.scalekit_client.organization.update_organization(
+            organization_id=self.org_id, organization=update_organization
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertEqual(response[0].organization.slug, slug)
+
     def test_delete_organization(self):
         """ Method to test delete organization """
         organization = CreateOrganization(display_name=Faker().company(), external_id=Faker().uuid4())
