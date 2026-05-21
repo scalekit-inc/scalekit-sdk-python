@@ -293,14 +293,16 @@ class PortalSettings(_message.Message):
     def __init__(self, custom_branding: bool = ..., new_self_serve_sso_scim: bool = ..., enable_conn_delete: bool = ...) -> None: ...
 
 class GetPortalCustomizationResponse(_message.Message):
-    __slots__ = ("environmentId", "customization_settings", "settings")
+    __slots__ = ("environmentId", "customization_settings", "settings", "organization_customizations")
     ENVIRONMENTID_FIELD_NUMBER: _ClassVar[int]
     CUSTOMIZATION_SETTINGS_FIELD_NUMBER: _ClassVar[int]
     SETTINGS_FIELD_NUMBER: _ClassVar[int]
+    ORGANIZATION_CUSTOMIZATIONS_FIELD_NUMBER: _ClassVar[int]
     environmentId: str
     customization_settings: _struct_pb2.Struct
     settings: PortalSettings
-    def __init__(self, environmentId: _Optional[str] = ..., customization_settings: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., settings: _Optional[_Union[PortalSettings, _Mapping]] = ...) -> None: ...
+    organization_customizations: _commons_pb2.OrganizationCustomizations
+    def __init__(self, environmentId: _Optional[str] = ..., customization_settings: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., settings: _Optional[_Union[PortalSettings, _Mapping]] = ..., organization_customizations: _Optional[_Union[_commons_pb2.OrganizationCustomizations, _Mapping]] = ...) -> None: ...
 
 class CreateAssetUploadUrlResponse(_message.Message):
     __slots__ = ("upload_url", "fetch_url")
@@ -414,6 +416,12 @@ class GetEnvironmentUserManagementRequest(_message.Message):
     id: str
     def __init__(self, id: _Optional[str] = ...) -> None: ...
 
+class GetEnvironmentTestUserRequest(_message.Message):
+    __slots__ = ("id",)
+    ID_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    def __init__(self, id: _Optional[str] = ...) -> None: ...
+
 class GetEnvironmentSessionSettingsResponse(_message.Message):
     __slots__ = ("session_settings",)
     SESSION_SETTINGS_FIELD_NUMBER: _ClassVar[int]
@@ -425,6 +433,12 @@ class GetEnvironmentUserManagementResponse(_message.Message):
     USER_MANAGEMENT_FIELD_NUMBER: _ClassVar[int]
     user_management: UserManagement
     def __init__(self, user_management: _Optional[_Union[UserManagement, _Mapping]] = ...) -> None: ...
+
+class GetEnvironmentTestUserResponse(_message.Message):
+    __slots__ = ("test_user",)
+    TEST_USER_FIELD_NUMBER: _ClassVar[int]
+    test_user: TestUser
+    def __init__(self, test_user: _Optional[_Union[TestUser, _Mapping]] = ...) -> None: ...
 
 class CreateEnvironmentSessionSettingsRequest(_message.Message):
     __slots__ = ("id", "session_settings")
@@ -474,6 +488,14 @@ class UpdateEnvironmentUserManagementRequest(_message.Message):
     user_management: UserManagement
     def __init__(self, id: _Optional[str] = ..., user_management: _Optional[_Union[UserManagement, _Mapping]] = ...) -> None: ...
 
+class UpdateEnvironmentTestUserRequest(_message.Message):
+    __slots__ = ("id", "test_user")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    TEST_USER_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    test_user: TestUser
+    def __init__(self, id: _Optional[str] = ..., test_user: _Optional[_Union[TestUser, _Mapping]] = ...) -> None: ...
+
 class UpdateEnvironmentSessionSettingsResponse(_message.Message):
     __slots__ = ("environment_id", "session_settings")
     ENVIRONMENT_ID_FIELD_NUMBER: _ClassVar[int]
@@ -489,6 +511,14 @@ class UpdateEnvironmentUserManagementResponse(_message.Message):
     environment_id: str
     user_management: UserManagement
     def __init__(self, environment_id: _Optional[str] = ..., user_management: _Optional[_Union[UserManagement, _Mapping]] = ...) -> None: ...
+
+class UpdateEnvironmentTestUserResponse(_message.Message):
+    __slots__ = ("environment_id", "test_user")
+    ENVIRONMENT_ID_FIELD_NUMBER: _ClassVar[int]
+    TEST_USER_FIELD_NUMBER: _ClassVar[int]
+    environment_id: str
+    test_user: TestUser
+    def __init__(self, environment_id: _Optional[str] = ..., test_user: _Optional[_Union[TestUser, _Mapping]] = ...) -> None: ...
 
 class SessionSettings(_message.Message):
     __slots__ = ("access_token_expiry", "client_access_token_expiry", "absolute_session_timeout", "session_management_enabled", "idle_session_timeout", "idle_session_enabled", "cookie_persistence_type", "cookie_same_site_setting", "cookie_custom_domain", "access_token_expiry_unit", "absolute_session_timeout_unit", "idle_session_timeout_unit")
@@ -541,6 +571,16 @@ class UserManagement(_message.Message):
     block_public_email_domains: _wrappers_pb2.BoolValue
     sync_user_profile_on_signin: _wrappers_pb2.BoolValue
     def __init__(self, allow_duplicate_user_identities: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., allow_multiple_memberships: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., allow_organization_signup: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., org_user_relationship: _Optional[_Union[OrgUserRelationshipType, str]] = ..., enable_max_users_limit: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., max_users_limit: _Optional[_Union[_wrappers_pb2.Int32Value, _Mapping]] = ..., invitation_expiry: _Optional[_Union[_wrappers_pb2.UInt32Value, _Mapping]] = ..., block_disposable_email_domains: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., block_public_email_domains: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., sync_user_profile_on_signin: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ...) -> None: ...
+
+class TestUser(_message.Message):
+    __slots__ = ("enabled", "static_confirmation_code", "emails")
+    ENABLED_FIELD_NUMBER: _ClassVar[int]
+    STATIC_CONFIRMATION_CODE_FIELD_NUMBER: _ClassVar[int]
+    EMAILS_FIELD_NUMBER: _ClassVar[int]
+    enabled: _wrappers_pb2.BoolValue
+    static_confirmation_code: _wrappers_pb2.StringValue
+    emails: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., static_confirmation_code: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., emails: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class GetContextRequest(_message.Message):
     __slots__ = ("environment_id",)
@@ -624,12 +664,14 @@ class PortalBootstrapRequest(_message.Message):
     def __init__(self) -> None: ...
 
 class PortalCustomizationBootstrap(_message.Message):
-    __slots__ = ("customization_settings", "settings")
+    __slots__ = ("customization_settings", "settings", "organization_customizations")
     CUSTOMIZATION_SETTINGS_FIELD_NUMBER: _ClassVar[int]
     SETTINGS_FIELD_NUMBER: _ClassVar[int]
+    ORGANIZATION_CUSTOMIZATIONS_FIELD_NUMBER: _ClassVar[int]
     customization_settings: _struct_pb2.Struct
     settings: PortalSettings
-    def __init__(self, customization_settings: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., settings: _Optional[_Union[PortalSettings, _Mapping]] = ...) -> None: ...
+    organization_customizations: _commons_pb2.OrganizationCustomizations
+    def __init__(self, customization_settings: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., settings: _Optional[_Union[PortalSettings, _Mapping]] = ..., organization_customizations: _Optional[_Union[_commons_pb2.OrganizationCustomizations, _Mapping]] = ...) -> None: ...
 
 class PortalBootstrapResponse(_message.Message):
     __slots__ = ("session", "portal_customizations", "organization", "connections")
