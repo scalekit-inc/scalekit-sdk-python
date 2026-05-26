@@ -1,7 +1,6 @@
 from faker import Faker
 
 from basetest import BaseTest
-from scalekit.common.exceptions import ScalekitBadRequestException
 from scalekit.v1.organizations.organizations_pb2 import CreateOrganization, UpdateOrganization
 
 
@@ -25,12 +24,7 @@ class TestOrganizationSlugLogo(BaseTest):
             external_id=Faker().uuid4(),
             logo_url=logo_url,
         )
-        try:
-            response = self.scalekit_client.organization.create_organization(organization=organization)
-        except ScalekitBadRequestException as e:
-            if 'logo_url' in str(e):
-                self.skipTest(f"logo_url not yet supported by server: {e}")
-            raise
+        response = self.scalekit_client.organization.create_organization(organization=organization)
         self.assertEqual(response[1].code().name, "OK")
         self.assertIsNotNone(response[0])
         self.org_id = response[0].organization.id
@@ -56,19 +50,17 @@ class TestOrganizationSlugLogo(BaseTest):
 
         logo_url = 'https://logo.debounce.com/microsoft.com'
         update_organization = UpdateOrganization(logo_url=logo_url)
-        try:
-            response = self.scalekit_client.organization.update_organization(
-                organization_id=org_id,
-                organization=update_organization,
-            )
-        except ScalekitBadRequestException as e:
-            if 'logo_url' in str(e):
-                self.skipTest(f"logo_url not yet supported by server: {e}")
-            raise
+        response = self.scalekit_client.organization.update_organization(
+            organization_id=org_id,
+            organization=update_organization,
+        )
         self.assertEqual(response[1].code().name, "OK")
         self.assertIsNotNone(response[0])
         self.assertEqual(response[0].organization.id, org_id)
         self.assertEqual(response[0].organization.logo_url, logo_url)
+
+        fetched = self.scalekit_client.organization.get_organization(organization_id=org_id)
+        self.assertEqual(fetched[0].organization.logo_url, logo_url)
 
     def test_update_slug_and_metadata(self):
         """Updating an existing org's slug and metadata should persist both values."""
@@ -86,6 +78,10 @@ class TestOrganizationSlugLogo(BaseTest):
         self.assertEqual(response[0].organization.id, org_id)
         self.assertEqual(response[0].organization.slug, slug)
         self.assertEqual(response[0].organization.metadata, metadata)
+
+        fetched = self.scalekit_client.organization.get_organization(organization_id=org_id)
+        self.assertEqual(fetched[0].organization.slug, slug)
+        self.assertEqual(fetched[0].organization.metadata, metadata)
 
     def tearDown(self):
         if self.org_id:
