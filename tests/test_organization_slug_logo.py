@@ -32,7 +32,7 @@ class TestOrganizationSlugLogo(BaseTest):
 
     def test_create_with_slug(self):
         """Creating an org with a slug should persist the value."""
-        slug = 'auth.megasoft.com'
+        slug = f"acmecorp-{Faker().uuid4()[:8]}"
         organization = CreateOrganization(
             display_name=Faker().company(),
             external_id=Faker().uuid4(),
@@ -66,8 +66,8 @@ class TestOrganizationSlugLogo(BaseTest):
         """Updating an existing org's slug and metadata should persist both values."""
         org_id = self._create_org()
 
-        slug = 'auth.megasoft.com'
-        metadata = {'custom_domain': 'auth.megasoft.com'}
+        slug = f"acmecorp-{Faker().uuid4()[:8]}"
+        metadata = {'custom_domain': slug}
         update_organization = UpdateOrganization(slug=slug, metadata=metadata)
         response = self.scalekit_client.organization.update_organization(
             organization_id=org_id,
@@ -86,3 +86,4 @@ class TestOrganizationSlugLogo(BaseTest):
     def tearDown(self):
         if self.org_id:
             self.scalekit_client.organization.delete_organization(organization_id=self.org_id)
+        super().tearDown()
