@@ -18,7 +18,7 @@ class TestOrganizationSlugLogo(BaseTest):
 
     def test_create_with_logo_url(self):
         """Creating an org with logo_url should persist the value."""
-        logo_url = 'https://logo.debounce.com/microsoft.com'
+        logo_url = 'https://example.com/logo.png'
         organization = CreateOrganization(
             display_name=Faker().company(),
             external_id=Faker().uuid4(),
@@ -48,7 +48,7 @@ class TestOrganizationSlugLogo(BaseTest):
         """Updating an existing org's logo_url should persist the new value."""
         org_id = self._create_org()
 
-        logo_url = 'https://logo.debounce.com/microsoft.com'
+        logo_url = 'https://example.com/logo.png'
         update_organization = UpdateOrganization(logo_url=logo_url)
         response = self.scalekit_client.organization.update_organization(
             organization_id=org_id,
