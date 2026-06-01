@@ -221,3 +221,13 @@ class ExternalIdentity(_message.Message):
     created_time: _timestamp_pb2.Timestamp
     last_synced_time: _timestamp_pb2.Timestamp
     def __init__(self, connection_id: _Optional[str] = ..., connection_type: _Optional[str] = ..., connection_provider: _Optional[_Union[IdentityProviderType, str]] = ..., connection_user_id: _Optional[str] = ..., is_social: bool = ..., last_login_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., created_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., last_synced_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+
+class OrganizationCustomizations(_message.Message):
+    __slots__ = ("organization_logo_branding", "display_name", "logo_url")
+    ORGANIZATION_LOGO_BRANDING_FIELD_NUMBER: _ClassVar[int]
+    DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
+    LOGO_URL_FIELD_NUMBER: _ClassVar[int]
+    organization_logo_branding: bool
+    display_name: str
+    logo_url: str
+    def __init__(self, organization_logo_branding: bool = ..., display_name: _Optional[str] = ..., logo_url: _Optional[str] = ...) -> None: ...

@@ -136,12 +136,14 @@ class PortalSettings(_message.Message):
     def __init__(self, custom_branding: bool = ..., new_self_serve_sso_scim: bool = ...) -> None: ...
 
 class GetAuthCustomizationsResponse(_message.Message):
-    __slots__ = ("customization_settings", "settings")
+    __slots__ = ("customization_settings", "settings", "organization_customizations")
     CUSTOMIZATION_SETTINGS_FIELD_NUMBER: _ClassVar[int]
     SETTINGS_FIELD_NUMBER: _ClassVar[int]
+    ORGANIZATION_CUSTOMIZATIONS_FIELD_NUMBER: _ClassVar[int]
     customization_settings: _struct_pb2.Struct
     settings: PortalSettings
-    def __init__(self, customization_settings: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., settings: _Optional[_Union[PortalSettings, _Mapping]] = ...) -> None: ...
+    organization_customizations: _commons_pb2.OrganizationCustomizations
+    def __init__(self, customization_settings: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., settings: _Optional[_Union[PortalSettings, _Mapping]] = ..., organization_customizations: _Optional[_Union[_commons_pb2.OrganizationCustomizations, _Mapping]] = ...) -> None: ...
 
 class GetAuthFeaturesResponse(_message.Message):
     __slots__ = ("features",)
@@ -176,7 +178,7 @@ class ListUserOrganizationsResponse(_message.Message):
     def __init__(self, organizations: _Optional[_Iterable[_Union[Organization, _Mapping]]] = ..., user: _Optional[_Union[UserDetails, _Mapping]] = ..., intent: _Optional[_Union[Intent, str]] = ...) -> None: ...
 
 class Organization(_message.Message):
-    __slots__ = ("id", "name", "membership_status", "invitation_inviter_email", "invitation_accepted_at", "invitation_created_at", "invitation_expires_at")
+    __slots__ = ("id", "name", "membership_status", "invitation_inviter_email", "invitation_accepted_at", "invitation_created_at", "invitation_expires_at", "logo_url")
     ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     MEMBERSHIP_STATUS_FIELD_NUMBER: _ClassVar[int]
@@ -184,6 +186,7 @@ class Organization(_message.Message):
     INVITATION_ACCEPTED_AT_FIELD_NUMBER: _ClassVar[int]
     INVITATION_CREATED_AT_FIELD_NUMBER: _ClassVar[int]
     INVITATION_EXPIRES_AT_FIELD_NUMBER: _ClassVar[int]
+    LOGO_URL_FIELD_NUMBER: _ClassVar[int]
     id: str
     name: str
     membership_status: str
@@ -191,7 +194,8 @@ class Organization(_message.Message):
     invitation_accepted_at: _timestamp_pb2.Timestamp
     invitation_created_at: _timestamp_pb2.Timestamp
     invitation_expires_at: _timestamp_pb2.Timestamp
-    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., membership_status: _Optional[str] = ..., invitation_inviter_email: _Optional[str] = ..., invitation_accepted_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., invitation_created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., invitation_expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+    logo_url: str
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., membership_status: _Optional[str] = ..., invitation_inviter_email: _Optional[str] = ..., invitation_accepted_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., invitation_created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., invitation_expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., logo_url: _Optional[str] = ...) -> None: ...
 
 class UserDetails(_message.Message):
     __slots__ = ("email", "first_name", "last_name")
