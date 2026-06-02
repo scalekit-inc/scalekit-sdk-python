@@ -127,6 +127,74 @@ class ConnectionClient:
             CreateConnectionRequest(organization_id=organization_id, connection=connection),
         )
     
+    def list_app_connections(self, page_size: Optional[int] = None, page_token: Optional[str] = None, provider: Optional[str] = None) -> ListAppConnectionsResponse:
+        """
+        Method to list environment-level app connections
+
+        :param page_size    : Maximum number of connections to return (max 30)
+        :type               : ``` int ```
+        :param page_token   : Token for pagination
+        :type               : ``` str ```
+        :param provider     : Filter by provider (e.g. 'HUBSPOT')
+        :type               : ``` str ```
+
+        :returns:
+            List App Connections Response
+        """
+        return self.core_client.grpc_exec(
+            self.connection_service.ListAppConnections.with_call,
+            ListAppConnectionsRequest(page_size=page_size, page_token=page_token, provider=provider),
+        )
+
+    def get_environment_connection(self, connection_id: str) -> GetConnectionResponse:
+        """
+        Method to get an environment-level connection by its id
+
+        :param connection_id    : Connection id to retrieve
+        :type                   : ``` str ```
+
+        :returns:
+            Get Connection Response
+        """
+        return self.core_client.grpc_exec(
+            self.connection_service.GetEnvironmentConnection.with_call,
+            GetEnvironmentConnectionRequest(connection_id=connection_id),
+        )
+
+    def create_environment_connection(self, connection: CreateConnection, flags: Optional[Flags] = None) -> CreateConnectionResponse:
+        """
+        Method to create a new environment-level connection
+
+        :param connection   : CreateConnection object with expected values for conn creation
+        :type               : ``` obj ```
+        :param flags        : Optional Flags (is_login, is_app)
+        :type               : ``` obj ```
+
+        :returns:
+            Create Connection Response
+        """
+        return self.core_client.grpc_exec(
+            self.connection_service.CreateEnvironmentConnection.with_call,
+            CreateEnvironmentConnectionRequest(connection=connection, flags=flags),
+        )
+
+    def update_environment_connection(self, connection_id: str, connection: UpdateConnection) -> UpdateConnectionResponse:
+        """
+        Method to update an environment-level connection
+
+        :param connection_id    : Connection id to update
+        :type                   : ``` str ```
+        :param connection       : UpdateConnection object with fields to update
+        :type                   : ``` obj ```
+
+        :returns:
+            Update Connection Response
+        """
+        return self.core_client.grpc_exec(
+            self.connection_service.UpdateEnvironmentConnection.with_call,
+            UpdateEnvironmentConnectionRequest(connection_id=connection_id, connection=connection),
+        )
+
     def delete_connection(self, organization_id: str, connection_id: str):
         """
         Method to delete a connection based in given organization and connection id
@@ -143,3 +211,5 @@ class ConnectionClient:
             self.connection_service.DeleteConnection.with_call,
             DeleteConnectionRequest(organization_id=organization_id, id=connection_id),
         )
+
+

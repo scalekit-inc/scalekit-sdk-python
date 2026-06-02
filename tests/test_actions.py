@@ -8,6 +8,7 @@ from scalekit.actions.types import (
     ListConnectedAccountsResponse,
     DeleteConnectedAccountResponse,
     GetConnectedAccountAuthResponse,
+    GetConnectedAccountDetailsResponse,
     CreateConnectedAccountResponse,
     UpdateConnectedAccountResponse,
     CreateMcpConfigResponse,
@@ -74,7 +75,7 @@ class TestConnect(BaseTest):
         tool_input = {
             "max_results": 1,
         }
-        
+    
         # Test with invalid tool name - should raise an exception
         with self.assertRaises(Exception) as context:
             self.scalekit_client.connect.execute_tool(
@@ -780,6 +781,83 @@ class TestConnect(BaseTest):
         self.assertIsNotNone(empty_proto)
         self.assertFalse(empty_proto.HasField("authorization_details"))
 
+    def test_google_dwd_create_request_to_proto(self):
+        """CreateConnectedAccountRequest with google_dwd builds correct proto"""
+        from scalekit.actions.models.requests.create_connected_account_request import CreateConnectedAccountRequest
+
+        req = CreateConnectedAccountRequest(
+            connection_name="GDWD",
+            identifier="admin@example.com",
+            authorization_details={"google_dwd": {"subject": "admin@example.com"}}
+        )
+        proto = req.to_proto()
+        self.assertTrue(proto.authorization_details.HasField("google_dwd"))
+        self.assertEqual(proto.authorization_details.google_dwd.subject, "admin@example.com")
+        # access_token must NOT be sent in requests
+        self.assertEqual(proto.authorization_details.google_dwd.access_token, "")
+
+    def test_google_dwd_update_request_to_proto(self):
+        """UpdateConnectedAccountRequest with google_dwd builds correct proto"""
+        from scalekit.actions.models.requests.update_connected_account_request import UpdateConnectedAccountRequest
+
+        req = UpdateConnectedAccountRequest(
+            connection_name="GDWD",
+            identifier="admin@example.com",
+            authorization_details={"google_dwd": {"subject": "admin@example.com"}}
+        )
+        proto = req.to_proto()
+        self.assertTrue(proto.authorization_details.HasField("google_dwd"))
+        self.assertEqual(proto.authorization_details.google_dwd.subject, "admin@example.com")
+
+    def test_google_dwd_response_from_proto(self):
+        """ConnectedAccount.from_proto correctly decodes google_dwd oneof"""
+        from scalekit.actions.models.responses.get_connected_account_auth_response import ConnectedAccount
+        from scalekit.v1.connected_accounts.connected_accounts_pb2 import ConnectedAccount as ProtoCA
+        from google.protobuf.timestamp_pb2 import Timestamp
+
+        proto_ca = ProtoCA()
+        proto_ca.authorization_details.google_dwd.subject = "admin@example.com"
+        proto_ca.authorization_details.google_dwd.access_token = "ya29.token"
+        proto_ca.authorization_details.google_dwd.scopes.extend(["openid", "email"])
+        ts = Timestamp()
+        ts.FromSeconds(2000000000)
+        proto_ca.authorization_details.google_dwd.token_expires_at.CopyFrom(ts)
+
+        ca = ConnectedAccount.from_proto(proto_ca)
+        self.assertIsNotNone(ca.authorization_details)
+        self.assertIn("google_dwd", ca.authorization_details)
+        dwd = ca.authorization_details["google_dwd"]
+        self.assertEqual(dwd["subject"], "admin@example.com")
+        self.assertEqual(dwd["access_token"], "ya29.token")
+        self.assertEqual(dwd["scopes"], ["openid", "email"])
+        self.assertIsNotNone(dwd["token_expires_at"])
+
+    def test_google_dwd_response_no_token_expires_at(self):
+        """google_dwd with no token_expires_at gives None in response"""
+        from scalekit.actions.models.responses.get_connected_account_auth_response import ConnectedAccount
+        from scalekit.v1.connected_accounts.connected_accounts_pb2 import ConnectedAccount as ProtoCA
+
+        proto_ca = ProtoCA()
+        proto_ca.authorization_details.google_dwd.subject = "admin@example.com"
+        proto_ca.authorization_details.google_dwd.access_token = "ya29.token"
+
+        ca = ConnectedAccount.from_proto(proto_ca)
+        dwd = ca.authorization_details["google_dwd"]
+        self.assertIsNone(dwd["token_expires_at"])
+
+    def test_google_dwd_not_set_in_oauth_request(self):
+        """google_dwd is not set when oauth_token auth is used"""
+        from scalekit.actions.models.requests.create_connected_account_request import CreateConnectedAccountRequest
+
+        req = CreateConnectedAccountRequest(
+            connection_name="GMAIL",
+            identifier="user@example.com",
+            authorization_details={"oauth_token": {"access_token": "tok", "refresh_token": "ref", "scopes": []}}
+        )
+        proto = req.to_proto()
+        self.assertTrue(proto.authorization_details.HasField("oauth_token"))
+        self.assertFalse(proto.authorization_details.HasField("google_dwd"))
+
     @unittest.skip
     def test_google_adk_get_tools(self):
 
@@ -1342,7 +1420,7 @@ class TestConnect(BaseTest):
             response = self.scalekit_client.actions.request(
                 connection_name=self.test_connection_name,
                 identifier=self.test_identifier,
-                path="/v1/users/me/profile",
+                path="/gmail/v1/users/me/profile",
                 method="GET"
             )
 
@@ -1367,6 +1445,7 @@ class TestConnect(BaseTest):
 
         except Exception as e:
             raise e
+
 
 class TestActionsMcpConfig(BaseTest):
     """Tests for MCP config operations exposed via the actions client."""
@@ -1669,4 +1748,59 @@ class TestConnectUserVerify(BaseTest):
                 identifier="default"
             )
 
+
+class TestActionsRawBody(BaseTest):
+    """Tests for the raw_body parameter on ActionClient.request() — used for non-JSON payloads such as XML/SOAP."""
+
+    def setUp(self):
+        self.actions_client = self.scalekit_client.actions
+
+    def test_request_salesforce_soap_xml_body(self):
+        """POST a SOAP/XML body to the Salesforce Metadata API via the proxy."""
+        import requests
+
+        soap_body = """<?xml version="1.0" encoding="utf-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:met="http://soap.sforce.com/2006/04/metadata">
+  <soapenv:Header>
+    <met:client>my-client-id</met:client>
+  </soapenv:Header>
+  <soapenv:Body>
+    <met:describeMetadata>
+      <met:asOfVersion>66.0</met:asOfVersion>
+    </met:describeMetadata>
+  </soapenv:Body>
+</soapenv:Envelope>"""
+
+        response = self.actions_client.request(
+            connection_name="salesforce-1hpnGzcD",
+            identifier="john.doe",
+            path="/services/Soap/m/66.0",
+            method="POST",
+            raw_body=soap_body,
+            headers={
+                "Content-Type": "text/xml; charset=UTF-8",
+                "SOAPAction": "describeMetadata",
+            },
+        )
+
+        self.assertIsNotNone(response)
+        self.assertIsInstance(response, requests.Response)
+
+    def test_get_connected_account_details(self):
+        """Fetch Salesforce connected account details (no auth credentials) via get_connected_account_details."""
+        result = self.actions_client.get_connected_account_details(
+            connection_name="salesforce-1hpnGzcD",
+            identifier="john.doe",
+        )
+
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, GetConnectedAccountDetailsResponse)
+        self.assertIsNotNone(result.connected_account)
+
+        account = result.connected_account
+        self.assertEqual(account.identifier, "john.doe")
+        self.assertTrue(hasattr(account, 'id'))
+        self.assertTrue(hasattr(account, 'status'))
+        self.assertTrue(hasattr(account, 'connector'))
 

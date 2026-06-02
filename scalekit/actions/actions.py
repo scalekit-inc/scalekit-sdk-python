@@ -1,9 +1,11 @@
 from typing import Optional, Any, List, Dict, Union
 import requests
-from scalekit.actions.types import ToolRequest,ExecuteToolResponse,MagicLinkResponse,ListConnectedAccountsResponse,DeleteConnectedAccountResponse,GetConnectedAccountAuthResponse,ToolInput, \
+from scalekit.actions.types import ToolRequest,ExecuteToolResponse,MagicLinkResponse,ListConnectedAccountsResponse,DeleteConnectedAccountResponse,GetConnectedAccountAuthResponse,GetConnectedAccountDetailsResponse,ToolInput, \
     UpdateConnectedAccountResponse,CreateMcpConfigResponse,ListMcpConfigsResponse,UpdateMcpConfigResponse,DeleteMcpConfigResponse, \
     EnsureMcpInstanceResponse,UpdateMcpInstanceResponse,GetMcpInstanceResponse,ListMcpInstancesResponse,DeleteMcpInstanceResponse,GetMcpInstanceAuthStateResponse, \
-    McpConfig,McpConfigConnectionToolMapping,VerifyConnectedAccountUserResponse
+    McpConfig,McpConfigConnectionToolMapping,VerifyConnectedAccountUserResponse, \
+    CreateCustomProviderRequest,UpdateCustomProviderRequest,ListProvidersRequest,DeleteCustomProviderRequest, \
+    CreateCustomProviderResponse,UpdateCustomProviderResponse,ListProvidersResponse,DeleteCustomProviderResponse
 from scalekit.actions.models.responses.create_connected_account_response import CreateConnectedAccountResponse
 from scalekit.actions.models.requests.create_connected_account_request import CreateConnectedAccountRequest
 from scalekit.actions.models.requests.update_connected_account_request import UpdateConnectedAccountRequest
@@ -19,17 +21,19 @@ from scalekit.common.exceptions import ScalekitNotFoundException
 class ActionClient:
     """Class definition for Connect Client"""
 
-    def __init__(self,tools_client, connected_accounts_client, mcp_client=None):
+    def __init__(self,tools_client, connected_accounts_client, mcp_client=None, providers_client=None):
         """
         Initialize ActionClient with tools, connected accounts, and MCP dependencies
-        
+
         :param tools_client: ToolsClient instance
         :type: ToolsClient
         :param connected_accounts_client: ConnectedAccountsClient instance
         :type: ConnectedAccountsClient
         :param mcp_client: McpClient instance (optional)
         :type: McpClient
-        
+        :param providers_client: ProvidersClient instance (optional)
+        :type: ProvidersClient
+
         :returns:
             None
         """
@@ -38,6 +42,8 @@ class ActionClient:
         self.connected_accounts = connected_accounts_client
         self._mcp_client = mcp_client
         self._mcp_actions = None
+        self._providers_client = providers_client
+        self._providers_actions = None
         self._modifiers: List[Modifier] = []
         self._google = None
         self._langchain = None
@@ -86,6 +92,20 @@ class ActionClient:
         if self._mcp_actions is None:
             self._mcp_actions = ActionMcp(self)
         return self._mcp_actions
+
+    @property
+    def providers(self) -> "ActionProviders":
+        """Expose custom provider CRUD with typed request and response objects.
+
+        :returns: ActionProviders instance bound to the configured ProvidersClient.
+        :rtype: ActionProviders
+        :raises ValueError: If no ProvidersClient was passed at construction time.
+        """
+        if self._providers_client is None:
+            raise ValueError("Providers client not initialized.")
+        if self._providers_actions is None:
+            self._providers_actions = ActionProviders(self._providers_client)
+        return self._providers_actions
 
     def execute_tool(
         self,
@@ -323,7 +343,51 @@ class ActionClient:
         
         # Convert proto to our GetConnectedAccountAuthResponse class
         return GetConnectedAccountAuthResponse.from_proto(proto_response)
-    
+
+    def get_connected_account_details(
+        self,
+        connection_name: Optional[str] = None,
+        identifier: Optional[str] = None,
+        connected_account_id: Optional[str] = None,
+        **kwargs
+    ) -> GetConnectedAccountDetailsResponse:
+        """
+        Get connected account details by identifier, without auth credentials.
+
+        Use this instead of :meth:`get_connected_account` when you only need
+        account metadata (status, connector, api_config, etc.) and do not
+        require the access/refresh tokens.
+
+        You must provide **one** of the following to identify the connected account:
+
+        - ``connection_name`` **and** ``identifier`` — use when you know the
+          connector name and the end-user's identifier (e.g. email address).
+        - ``connected_account_id`` — use when you already hold the Scalekit
+          connected account ID.
+
+        :param connection_name: Connector identifier, e.g. ``"salesforce-1hpnGzcD"``.
+            Required when ``connected_account_id`` is not provided.
+        :type connection_name: str
+        :param identifier: End-user identifier tied to the connected account,
+            e.g. ``"john.doe"``. Required when ``connected_account_id`` is not provided.
+        :type identifier: str
+        :param connected_account_id: Scalekit connected account ID. When supplied,
+            ``connection_name`` and ``identifier`` are ignored.
+        :type connected_account_id: str
+
+        :returns:
+            GetConnectedAccountDetailsResponse containing account metadata
+            without auth credentials
+        :rtype: GetConnectedAccountDetailsResponse
+        """
+        result_tuple = self.connected_accounts.get_connected_account_details_by_identifier(
+            connector=connection_name,
+            identifier=identifier,
+            connected_account_id=connected_account_id
+        )
+        proto_response = result_tuple[0]
+        return GetConnectedAccountDetailsResponse.from_proto(proto_response)
+
     def add_modifier(self, modifier: Modifier) -> None:
         """Add a modifier to the private list"""
         self._modifiers.append(modifier)
@@ -383,6 +447,7 @@ class ActionClient:
         query_params: Optional[Dict[str, Any]] = None,
         body: Optional[Any] = None,
         form_data: Optional[Dict[str, Any]] = None,
+        raw_body: Optional[Union[bytes, str]] = None,
         headers: Optional[Dict[str, str]] = None,
         **kwargs,
     ) -> requests.Response:
@@ -403,6 +468,14 @@ class ActionClient:
         :type body: Optional[Any]
         :param form_data: Request body sent as URL-encoded form data
         :type form_data: Optional[Dict[str, Any]]
+        :param raw_body: Raw request body sent as-is, without any serialization.
+            Use this **only** when the request payload is not JSON — for example,
+            when the downstream API expects an XML body, a plain-text payload, or
+            any other non-JSON content type. For JSON payloads use ``body`` instead.
+            When ``raw_body`` is provided it takes priority over both ``body`` and
+            ``form_data``. You must also pass a matching ``Content-Type`` header via
+            ``headers`` (e.g. ``"Content-Type": "application/xml"``).
+        :type raw_body: Optional[Union[bytes, str]]
         :param headers: Additional HTTP headers to merge into the request
         :type headers: Optional[Dict[str, str]]
 
@@ -439,8 +512,8 @@ class ActionClient:
             method=method.upper(),
             url=url,
             params=params,
-            json=body,
-            data=form_data,
+            json=body if raw_body is None else None,
+            data=raw_body or form_data,
             headers=req_headers,
             timeout=timeout,
             **kwargs,
@@ -454,8 +527,8 @@ class ActionClient:
                 method=method.upper(),
                 url=url,
                 params=params,
-                json=body,
-                data=form_data,
+                json=body if raw_body is None else None,
+                data=raw_body if raw_body is not None else form_data,
                 headers=req_headers,
                 timeout=timeout,
                 **kwargs,
@@ -1086,3 +1159,116 @@ class ActionMcp:
             include_auth_links=include_auth_links,
         )
         return GetMcpInstanceAuthStateResponse.from_proto(result_tuple[0])
+
+
+class ActionProviders:
+    """Typed action layer over ProvidersClient for custom provider CRUD.
+
+    Accepts typed request objects and returns typed response objects.
+    Access via ActionClient.providers — do not instantiate directly.
+    """
+
+    def __init__(self, providers_client) -> None:
+        self._providers_client = providers_client
+
+    def create_custom_provider(
+        self,
+        request: CreateCustomProviderRequest,
+    ) -> CreateCustomProviderResponse:
+        """Create a new custom provider.
+
+        :param request: Request object containing display_name (required),
+                        proxy_url (required), and optional description,
+                        proxy_enabled, and auth_patterns.
+        :type request: CreateCustomProviderRequest
+
+        :returns: Response containing the created provider with its server-assigned
+                  identifier and all decoded auth_patterns.
+        :rtype: CreateCustomProviderResponse
+
+        :raises ScalekitBadRequestException: If required fields are missing or invalid.
+        :raises ScalekitConflictException: If a provider with the same name already exists.
+        """
+        result_tuple = self._providers_client.create_custom_provider(
+            display_name=request.display_name,
+            proxy_url=request.proxy_url,
+            proxy_enabled=request.proxy_enabled,
+            description=request.description,
+            auth_patterns=request.auth_patterns,
+        )
+        return CreateCustomProviderResponse.from_proto(result_tuple[0])
+
+    def update_custom_provider(
+        self,
+        request: UpdateCustomProviderRequest,
+    ) -> UpdateCustomProviderResponse:
+        """Update an existing custom provider.
+
+        Only fields set to a non-None value in the request are applied.
+        Fields left as None are ignored and their existing server values are kept.
+
+        :param request: Request object containing identifier (required) and any
+                        combination of display_name, description, proxy_url, and
+                        auth_patterns to update.
+        :type request: UpdateCustomProviderRequest
+
+        :returns: Response containing the provider's full state after the update.
+        :rtype: UpdateCustomProviderResponse
+
+        :raises ScalekitNotFoundException: If no provider with the given identifier exists.
+        :raises ScalekitBadRequestException: If any updated field value is invalid.
+        """
+        result_tuple = self._providers_client.update_custom_provider(
+            identifier=request.identifier,
+            display_name=request.display_name,
+            proxy_url=request.proxy_url,
+            description=request.description,
+            auth_patterns=request.auth_patterns,
+        )
+        return UpdateCustomProviderResponse.from_proto(result_tuple[0])
+
+    def list_providers(
+        self,
+        request: ListProvidersRequest,
+    ) -> ListProvidersResponse:
+        """List providers with optional filtering and pagination.
+
+        :param request: Request object with optional provider_type, page_size,
+                        page_token, and identifier filters. All fields are optional —
+                        an empty ListProvidersRequest() returns all providers.
+        :type request: ListProvidersRequest
+
+        :returns: Response containing a page of providers and a next_page_token
+                  for fetching subsequent pages.
+        :rtype: ListProvidersResponse
+        """
+        result_tuple = self._providers_client.list_providers(
+            page_size=request.page_size,
+            page_token=request.page_token,
+            provider_type=request.provider_type,
+            identifier=request.identifier,
+        )
+        return ListProvidersResponse.from_proto(result_tuple[0])
+
+    def delete_custom_provider(
+        self,
+        request: DeleteCustomProviderRequest,
+    ) -> DeleteCustomProviderResponse:
+        """Delete a custom provider by identifier.
+
+        Deletion is permanent. Returns an empty response on success. Any error
+        (provider not found, insufficient permissions) raises a
+        ScalekitServerException subclass before this method returns.
+
+        :param request: Request object containing the identifier of the provider
+                        to delete.
+        :type request: DeleteCustomProviderRequest
+
+        :returns: Empty response confirming deletion.
+        :rtype: DeleteCustomProviderResponse
+
+        :raises ScalekitNotFoundException: If no provider with the given identifier exists.
+        :raises ScalekitForbiddenException: If the caller lacks permission to delete.
+        """
+        result_tuple = self._providers_client.delete_custom_provider(request.identifier)
+        return DeleteCustomProviderResponse.from_proto(result_tuple[0])

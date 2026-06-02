@@ -12,8 +12,9 @@ VENV_PYTHON := $(VENV_DIR)/bin/python
 VENV_PIP := $(VENV_PYTHON) -m pip
 
 PROTO_REPO_URL := https://github.com/scalekit-inc/scalekit.git
-PROTO_REF ?= v0.1.114.0
+PROTO_REF ?= v0.1.123.0
 PROTO_SUBDIR := proto
+LOCAL_PROTO_REPO ?= ../scalekit
 
 TEMP_DIR := temp_scalekit
 SCALEKIT_DIR := scalekit
@@ -22,7 +23,7 @@ GOOGLE_DIR := google
 PROTO_DIR := proto
 PROTOC_DIR := protoc_gen_openapiv2
 
-.PHONY: setup generate lint test tools-check create-venv prepare buf_generate restore generate_init_files cleanup copy_proto_dir
+.PHONY: setup generate generate-local lint test tools-check create-venv prepare buf_generate restore generate_init_files cleanup copy_proto_dir
 
 setup: create-venv
 	@echo "Installing SDK dependencies in $(VENV_DIR)..."
@@ -109,6 +110,28 @@ cleanup:
 	rm -f .dirpath buf.yaml buf.lock
 	@if [ -f buf.work.yaml.bak ]; then mv buf.work.yaml.bak buf.work.yaml; fi
 
+generate-local: tools-check
+	@echo "Using local proto sources from $(LOCAL_PROTO_REPO)..."
+	@set -euo pipefail; \
+	prepared=0; \
+	rollback_and_cleanup() { \
+		if [ "$$prepared" -eq 1 ] && [ -d "$(TEMP_DIR)" ]; then \
+			echo "Generation failed; restoring $(SCALEKIT_DIR) from $(TEMP_DIR)..."; \
+			rsync -a "$(TEMP_DIR)/" "$(SCALEKIT_DIR)/"; \
+		fi; \
+		rm -rf "$(TEMP_DIR)" "$(GOOGLE_DIR)" "$(PROTO_DIR)" "$(PROTOC_DIR)"; \
+		rm -f .dirpath buf.yaml buf.lock; \
+		if [ -f buf.work.yaml.bak ]; then mv buf.work.yaml.bak buf.work.yaml; fi; \
+	}; \
+	trap 'rollback_and_cleanup' EXIT; \
+	$(MAKE) prepare; prepared=1; \
+	buf generate $(LOCAL_PROTO_REPO) --include-imports; \
+	$(MAKE) restore; prepared=0; \
+	$(MAKE) generate_init_files; \
+	$(MAKE) cleanup; \
+	trap - EXIT
+	@echo "Code generation complete."
+
 lint: create-venv
 	@echo "Running static checks..."
 	$(VENV_PYTHON) -m compileall -q scalekit tests
@@ -116,3 +139,13 @@ lint: create-venv
 test: create-venv
 	@echo "Running tests..."
 	$(VENV_PYTHON) -m unittest discover -s tests -p "test_*.py" -v
+
+test-file: create-venv
+	@if [ -z "$(FILE)" ]; then echo "Usage: make test-file FILE=test_actions.py" && exit 1; fi
+	@echo "Running $(FILE)..."
+	$(VENV_PYTHON) -m unittest discover -s tests -p "$(FILE)" -v
+
+test-case: create-venv
+	@if [ -z "$(CASE)" ]; then echo "Usage: make test-case CASE=test_connection.TestConnection.test_create_environment_connection" && exit 1; fi
+	@echo "Running $(CASE)..."
+	cd tests && $(abspath $(VENV_PYTHON)) -m unittest $(CASE) -v

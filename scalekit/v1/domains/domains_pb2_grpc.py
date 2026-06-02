@@ -3,7 +3,6 @@
 import grpc
 
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
-from google.protobuf import wrappers_pb2 as google_dot_protobuf_dot_wrappers__pb2
 from scalekit.v1.domains import domains_pb2 as scalekit_dot_v1_dot_domains_dot_domains__pb2
 
 
@@ -29,7 +28,7 @@ class DomainServiceStub(object):
         self.VerifyDomain = channel.unary_unary(
                 '/scalekit.v1.domains.DomainService/VerifyDomain',
                 request_serializer=scalekit_dot_v1_dot_domains_dot_domains__pb2.VerifyDomainRequest.SerializeToString,
-                response_deserializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
+                response_deserializer=scalekit_dot_v1_dot_domains_dot_domains__pb2.VerifyDomainResponse.FromString,
                 )
         self.GetDomain = channel.unary_unary(
                 '/scalekit.v1.domains.DomainService/GetDomain',
@@ -114,7 +113,7 @@ def add_DomainServiceServicer_to_server(servicer, server):
             'VerifyDomain': grpc.unary_unary_rpc_method_handler(
                     servicer.VerifyDomain,
                     request_deserializer=scalekit_dot_v1_dot_domains_dot_domains__pb2.VerifyDomainRequest.FromString,
-                    response_serializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
+                    response_serializer=scalekit_dot_v1_dot_domains_dot_domains__pb2.VerifyDomainResponse.SerializeToString,
             ),
             'GetDomain': grpc.unary_unary_rpc_method_handler(
                     servicer.GetDomain,
@@ -193,7 +192,7 @@ class DomainService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.domains.DomainService/VerifyDomain',
             scalekit_dot_v1_dot_domains_dot_domains__pb2.VerifyDomainRequest.SerializeToString,
-            google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
+            scalekit_dot_v1_dot_domains_dot_domains__pb2.VerifyDomainResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

@@ -275,6 +275,42 @@ class ConnectedAccountsClient:
             ),
         )
 
+    def get_connected_account_details_by_identifier(
+        self,
+        connector: str,
+        identifier: str,
+        organization_id: Optional[str] = None,
+        user_id: Optional[str] = None,
+        connected_account_id: Optional[str] = None
+    ) -> GetConnectedAccountByIdentifierResponse:
+        """
+        Method to get connected account details (without auth credentials) by identifier
+
+        :param connector        : Connector identifier
+        :type                   : ``` str ```
+        :param identifier       : Identifier for the connector
+        :type                   : ``` str ```
+        :param organization_id  : Organization ID
+        :type                   : ``` str ```
+        :param user_id          : User ID
+        :type                   : ``` str ```
+        :param connected_account_id : ID of the connected account
+        :type                   : ``` str ```
+
+        :returns:
+            Get Connected Account By Identifier Response (without auth credentials)
+        """
+        return self.core_client.grpc_exec(
+            self.connected_accounts_service.GetConnectedAccountDetails.with_call,
+            GetConnectedAccountByIdentifierRequest(
+                organization_id=organization_id,
+                user_id=user_id,
+                connector=connector,
+                identifier=identifier,
+                id=connected_account_id
+            ),
+        )
+
     def verify_connected_account_user(
         self,
         auth_request_id: str,
