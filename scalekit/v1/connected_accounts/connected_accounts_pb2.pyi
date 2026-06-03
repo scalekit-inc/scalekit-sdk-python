@@ -53,7 +53,7 @@ TRELLO_OAUTH1: ConnectorType
 GOOGLE_DWD: ConnectorType
 
 class ListConnectedAccountsRequest(_message.Message):
-    __slots__ = ("organization_id", "user_id", "connector", "identifier", "provider", "page_size", "page_token", "query")
+    __slots__ = ("organization_id", "user_id", "connector", "identifier", "provider", "page_size", "page_token", "query", "connection_names")
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     USER_ID_FIELD_NUMBER: _ClassVar[int]
     CONNECTOR_FIELD_NUMBER: _ClassVar[int]
@@ -62,6 +62,7 @@ class ListConnectedAccountsRequest(_message.Message):
     PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
     PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
     QUERY_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_NAMES_FIELD_NUMBER: _ClassVar[int]
     organization_id: str
     user_id: str
     connector: str
@@ -70,7 +71,8 @@ class ListConnectedAccountsRequest(_message.Message):
     page_size: int
     page_token: str
     query: str
-    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., connector: _Optional[str] = ..., identifier: _Optional[str] = ..., provider: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ..., query: _Optional[str] = ...) -> None: ...
+    connection_names: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., connector: _Optional[str] = ..., identifier: _Optional[str] = ..., provider: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ..., query: _Optional[str] = ..., connection_names: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class ListConnectedAccountsResponse(_message.Message):
     __slots__ = ("connected_accounts", "total_size", "next_page_token", "prev_page_token")
@@ -359,3 +361,13 @@ class DisconnectConnectedAccountResponse(_message.Message):
     CONNECTED_ACCOUNT_FIELD_NUMBER: _ClassVar[int]
     connected_account: ConnectedAccount
     def __init__(self, connected_account: _Optional[_Union[ConnectedAccount, _Mapping]] = ...) -> None: ...
+
+class GetRedirectUrlRequest(_message.Message):
+    __slots__ = ()
+    def __init__(self) -> None: ...
+
+class GetRedirectUrlResponse(_message.Message):
+    __slots__ = ("redirect_url",)
+    REDIRECT_URL_FIELD_NUMBER: _ClassVar[int]
+    redirect_url: str
+    def __init__(self, redirect_url: _Optional[str] = ...) -> None: ...

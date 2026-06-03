@@ -1,5 +1,6 @@
 from buf.validate import validate_pb2 as _validate_pb2
 from google.api import annotations_pb2 as _annotations_pb2
+from google.api import field_behavior_pb2 as _field_behavior_pb2
 from google.api import visibility_pb2 as _visibility_pb2
 from google.protobuf import empty_pb2 as _empty_pb2
 from protoc_gen_openapiv2.options import annotations_pb2 as _annotations_pb2_1
@@ -161,3 +162,23 @@ class MigrateRolePermissionsResponse(_message.Message):
     permissions_created: int
     role_permission_mappings_created: int
     def __init__(self, success_environments: _Optional[int] = ..., failed_environments: _Optional[int] = ..., error_messages: _Optional[_Iterable[str]] = ..., roles_created: _Optional[int] = ..., permissions_created: _Optional[int] = ..., role_permission_mappings_created: _Optional[int] = ...) -> None: ...
+
+class MigrateEnvironmentPermissionsRequest(_message.Message):
+    __slots__ = ("environment_ids", "permissions")
+    ENVIRONMENT_IDS_FIELD_NUMBER: _ClassVar[int]
+    PERMISSIONS_FIELD_NUMBER: _ClassVar[int]
+    environment_ids: _containers.RepeatedScalarFieldContainer[int]
+    permissions: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, environment_ids: _Optional[_Iterable[int]] = ..., permissions: _Optional[_Iterable[str]] = ...) -> None: ...
+
+class MigrateEnvironmentPermissionsResponse(_message.Message):
+    __slots__ = ("success_environments", "failed_environments", "error_messages", "permissions_created")
+    SUCCESS_ENVIRONMENTS_FIELD_NUMBER: _ClassVar[int]
+    FAILED_ENVIRONMENTS_FIELD_NUMBER: _ClassVar[int]
+    ERROR_MESSAGES_FIELD_NUMBER: _ClassVar[int]
+    PERMISSIONS_CREATED_FIELD_NUMBER: _ClassVar[int]
+    success_environments: int
+    failed_environments: int
+    error_messages: _containers.RepeatedScalarFieldContainer[str]
+    permissions_created: int
+    def __init__(self, success_environments: _Optional[int] = ..., failed_environments: _Optional[int] = ..., error_messages: _Optional[_Iterable[str]] = ..., permissions_created: _Optional[int] = ...) -> None: ...
