@@ -48,25 +48,69 @@ class TestConnectedAccounts(BaseTest):
         self.assertTrue(response[0] is not None)
 
     def test_list_connected_accounts_with_connection_names_filter(self):
-        """Test that connection_names filters results to only the specified connectors."""
-        response = self.scalekit_client.connected_accounts.list_connected_accounts(
-            connection_names=[self.test_connector],
-            page_size=10,
-        )
-        self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
-        self.assertTrue(hasattr(response[0], 'connected_accounts'))
-        self.assertTrue(hasattr(response[0], 'total_size'))
+        """connection_names is accepted by the server and the created account appears in results."""
+        connected_account = self._create_oauth_connected_account()
+        filter_identifier = f"ca_filter_test_{self.faker.uuid4()}"
+        created = False
+
+        try:
+            create_response = self.scalekit_client.connected_accounts.create_connected_account(
+                connector=self.test_connector,
+                identifier=filter_identifier,
+                connected_account=connected_account,
+            )
+            self.assertEqual(create_response[1].code().name, "OK")
+            created = True
+
+            response = self.scalekit_client.connected_accounts.list_connected_accounts(
+                connection_names=[self.test_connector],
+                page_size=20,
+            )
+            self.assertEqual(response[1].code().name, "OK")
+            self.assertTrue(hasattr(response[0], 'connected_accounts'))
+            # The newly created account must appear in the results
+            identifiers = [a.identifier for a in response[0].connected_accounts]
+            self.assertIn(filter_identifier, identifiers)
+        finally:
+            if created:
+                self.scalekit_client.connected_accounts.delete_connected_account(
+                    connector=self.test_connector,
+                    identifier=filter_identifier,
+                )
 
     def test_list_connected_accounts_with_connection_names_combined_with_identifier(self):
-        """Test connection_names can be combined with other filters."""
-        response = self.scalekit_client.connected_accounts.list_connected_accounts(
-            connection_names=[self.test_connector],
-            page_size=5,
-        )
-        self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
-        self.assertTrue(hasattr(response[0], 'connected_accounts'))
+        """connection_names combined with identifier narrows results to that specific account."""
+        connected_account = self._create_oauth_connected_account()
+        combined_identifier = f"ca_combined_test_{self.faker.uuid4()}"
+        created = False
+
+        try:
+            create_response = self.scalekit_client.connected_accounts.create_connected_account(
+                connector=self.test_connector,
+                identifier=combined_identifier,
+                connected_account=connected_account,
+            )
+            self.assertEqual(create_response[1].code().name, "OK")
+            created = True
+
+            response = self.scalekit_client.connected_accounts.list_connected_accounts(
+                connection_names=[self.test_connector],
+                identifier=combined_identifier,
+                page_size=10,
+            )
+            self.assertEqual(response[1].code().name, "OK")
+            self.assertTrue(hasattr(response[0], 'connected_accounts'))
+            identifiers = [a.identifier for a in response[0].connected_accounts]
+            self.assertIn(
+                combined_identifier, identifiers,
+                "Account created with this identifier must appear when filtered by it",
+            )
+        finally:
+            if created:
+                self.scalekit_client.connected_accounts.delete_connected_account(
+                    connector=self.test_connector,
+                    identifier=combined_identifier,
+                )
 
     def test_create_connected_account_with_oauth(self):
         """ Method to test create connected account with OAuth """

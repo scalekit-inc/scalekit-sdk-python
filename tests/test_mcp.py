@@ -1,5 +1,5 @@
 import uuid
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 
 from faker import Faker
 from basetest import BaseTest
@@ -276,6 +276,7 @@ class TestMcp(BaseTest):
             self.assertEqual(create_response[1].code().name, "OK")
             created_config_id = create_response[0].config.id
 
+            now = datetime.now(tz=timezone.utc)
             token_response = self.scalekit_client.mcp.create_session_token(
                 mcp_config_id=created_config_id,
                 identifier=self.test_user_identifier,
@@ -284,6 +285,17 @@ class TestMcp(BaseTest):
             self.assertEqual(token_response[1].code().name, "OK")
             self.assertTrue(token_response[0].token, "Expected a non-empty token string")
             self.assertTrue(hasattr(token_response[0], 'expires_at'))
+            expires_at = token_response[0].expires_at.ToDatetime(tzinfo=timezone.utc)
+            self.assertGreater(
+                expires_at,
+                now + timedelta(hours=1, minutes=55),
+                "expires_at should be at least 1h55m from now for a 2-hour expiry",
+            )
+            self.assertLess(
+                expires_at,
+                now + timedelta(hours=2, minutes=5),
+                "expires_at should not exceed 2h5m from now for a 2-hour expiry",
+            )
         finally:
             if created_config_id:
                 self.scalekit_client.mcp.delete_config(config_id=created_config_id)
