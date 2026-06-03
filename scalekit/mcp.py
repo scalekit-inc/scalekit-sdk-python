@@ -1,4 +1,7 @@
+from datetime import timedelta
 from typing import Optional, List
+
+from google.protobuf.duration_pb2 import Duration
 
 from scalekit.core import CoreClient
 from scalekit.v1.mcp.mcp_pb2 import *
@@ -29,33 +32,37 @@ class McpClient:
             filter_id: Optional[str] = None,
             filter_provider: Optional[str] = None,
             filter_name: Optional[str] = None,
+            filter_mcp_server_url: Optional[str] = None,
             search: Optional[str] = None,
     ) -> ListMcpConfigsResponse:
         """
         Method to list MCP Configurations with optional filters
 
-        :param page_size          : Number of items per page
-        :type                     : ``` int ```
-        :param page_token         : Token for the page to retrieve
-        :type                     : ``` str ```
-        :param filter_id          : Filter by MCP Config ID
-        :type                     : ``` str ```
-        :param filter_provider    : Filter by provider
-        :type                     : ``` str ```
-        :param filter_name        : Filter by name
-        :type                     : ``` str ```
-        :param search             : Search term
-        :type                     : ``` str ```
+        :param page_size              : Number of items per page
+        :type                         : ``` int ```
+        :param page_token             : Token for the page to retrieve
+        :type                         : ``` str ```
+        :param filter_id              : Filter by MCP Config ID
+        :type                         : ``` str ```
+        :param filter_provider        : Filter by provider slug
+        :type                         : ``` str ```
+        :param filter_name            : Filter by config name (exact match)
+        :type                         : ``` str ```
+        :param filter_mcp_server_url  : Filter configs whose MCP server URL matches this value
+        :type                         : ``` str ```
+        :param search                 : Free-form search term applied to the name field
+        :type                         : ``` str ```
 
         :returns:
             List MCP Configs Response
         """
         filter_obj = None
-        if any(x is not None for x in (filter_id, filter_provider, filter_name, search)):
+        if any(x is not None for x in (filter_id, filter_provider, filter_name, filter_mcp_server_url, search)):
             filter_obj = ListMcpConfigsRequest.Filter(
                 id=filter_id or "",
                 provider=filter_provider or "",
                 name=filter_name or "",
+                mcp_server_url=filter_mcp_server_url or "",
             )
 
         return self.core_client.grpc_exec(
@@ -225,5 +232,77 @@ class McpClient:
 
         return self.core_client.grpc_exec(
             self.mcp_service.GetMcpInstanceAuthState.with_call,
+            request,
+        )
+
+    def list_mcp_connected_accounts(
+        self,
+        config_id: str,
+        identifier: str,
+        include_auth_link: Optional[bool] = None,
+    ) -> ListMcpConnectedAccountsResponse:
+        """
+        List the connected account auth state for all connections in an MCP config
+        for a given user identifier.
+
+        :param config_id          : ID of the MCP configuration whose connections to inspect
+        :type                     : ``` str ```
+        :param identifier         : End-user identifier (e.g. email or opaque user ID) for
+                                    whom the connected account state is being fetched
+        :type                     : ``` str ```
+        :param include_auth_link  : When True, the response includes a one-time authentication
+                                    link for any connection that is not yet authorised or whose
+                                    token has expired
+        :type                     : ``` bool ```
+
+        :returns:
+            ListMcpConnectedAccountsResponse
+        """
+        request = ListMcpConnectedAccountsRequest(
+            config_id=config_id,
+            identifier=identifier,
+        )
+        if include_auth_link is not None:
+            request.include_auth_link = include_auth_link
+
+        return self.core_client.grpc_exec(
+            self.mcp_service.ListMcpConnectedAccounts.with_call,
+            request,
+        )
+
+    def create_session_token(
+        self,
+        mcp_config_id: str,
+        identifier: str,
+        expiry: Optional[timedelta] = None,
+    ) -> CreateMcpSessionTokenResponse:
+        """
+        Create a short-lived session token for a user to authenticate against an MCP server.
+
+        :param mcp_config_id  : ID of the MCP configuration the session token is scoped to
+        :type                 : ``` str ```
+        :param identifier     : End-user identifier (e.g. email or opaque user ID) for whom
+                                the token is being minted
+        :type                 : ``` str ```
+        :param expiry         : Lifetime of the token as a Python ``timedelta``. When omitted,
+                                the server-side default TTL is applied.
+                                Example: ``timedelta(hours=1)``
+        :type                 : ``` timedelta ```
+
+        :returns:
+            CreateMcpSessionTokenResponse — contains ``token`` (str) and ``expires_at`` (Timestamp)
+        """
+        request = CreateMcpSessionTokenRequest(
+            mcp_config_id=mcp_config_id,
+            identifier=identifier,
+        )
+        if expiry is not None:
+            duration = Duration()
+            total_seconds = int(expiry.total_seconds())
+            duration.seconds = total_seconds
+            request.expiry.CopyFrom(duration)
+
+        return self.core_client.grpc_exec(
+            self.mcp_service.CreateMcpSessionToken.with_call,
             request,
         )
