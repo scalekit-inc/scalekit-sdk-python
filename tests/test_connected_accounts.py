@@ -47,6 +47,26 @@ class TestConnectedAccounts(BaseTest):
         self.assertEqual(response[1].code().name, "OK")
         self.assertTrue(response[0] is not None)
 
+    def test_list_connected_accounts_with_connection_names_filter(self):
+        """Test that connection_names filters results to only the specified connectors."""
+        response = self.scalekit_client.connected_accounts.list_connected_accounts(
+            connection_names=[self.test_connector],
+            page_size=10,
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertTrue(response[0] is not None)
+        self.assertTrue(hasattr(response[0], 'connected_accounts'))
+        self.assertTrue(hasattr(response[0], 'total_size'))
+
+    def test_list_connected_accounts_with_multiple_connection_names(self):
+        """Test connection_names filter accepts a list with more than one entry."""
+        response = self.scalekit_client.connected_accounts.list_connected_accounts(
+            connection_names=[self.test_connector, "nonexistent-connector"],
+            page_size=10,
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertTrue(response[0] is not None)
+
     def test_create_connected_account_with_oauth(self):
         """ Method to test create connected account with OAuth """
         connected_account = self._create_oauth_connected_account()
