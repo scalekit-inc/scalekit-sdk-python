@@ -250,9 +250,21 @@ class McpClient:
         :param identifier         : End-user identifier (e.g. email or opaque user ID) for
                                     whom the connected account state is being fetched
         :type                     : ``` str ```
-        :param include_auth_link  : When True, the response includes a one-time authentication
-                                    link for any connection that is not yet authorised or whose
-                                    token has expired
+        :param include_auth_link  : When True, every connected account in the response will
+                                    include an ``authentication_link`` field regardless of its
+                                    current status. Set this to True when you are building a
+                                    connected-account integration page for an MCP server and
+                                    want the end user to see the status of all their connections
+                                    and be able to authorise or re-authorise any of them.
+
+                                    When False (default), ``authentication_link`` is omitted.
+                                    If a connected account does not exist for a connection,
+                                    ``connected_account_id`` will be an empty string. To
+                                    generate an auth link in that case, either call
+                                    ``get_authorization_link`` for the specific connection or
+                                    re-call this method with ``include_auth_link=True``.
+
+                                    Note: generated auth links are valid for 1 minute only.
         :type                     : ``` bool ```
 
         :returns:

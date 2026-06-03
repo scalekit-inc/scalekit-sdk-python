@@ -1206,11 +1206,22 @@ class ActionMcp:
             identifier: End-user identifier for whom to fetch auth state — usually
                 an email address or opaque user ID that was used when calling
                 ``ensure_instance``, e.g. ``"alice@example.com"``.
-            include_auth_link: When ``True``, the response includes an
-                ``authentication_link`` for every connection whose connected account
-                is not in the ``"active"`` state. The user must open this link to
-                complete OAuth or API-key setup before tool calls will succeed.
-                Defaults to ``False`` (no link generated).
+            include_auth_link: When ``True``, every connected account in the response
+                will include an ``authentication_link`` regardless of its current
+                status. Set this to ``True`` when building a connected-account
+                integration page for an MCP server — it lets the end user see the
+                status of all their connections and authorise or re-authorise any of
+                them in one pass.
+
+                When ``False`` (default), ``authentication_link`` is omitted from
+                the response. If a connected account does not yet exist for a given
+                connection, ``connected_account_id`` will be an empty string. In
+                that situation you can either call ``get_authorization_link`` for
+                the specific connection or re-call this method with
+                ``include_auth_link=True``.
+
+                **Auth links are valid for 1 minute only** — generate them close
+                to the time you redirect the user.
 
         Returns:
             ListMcpConnectedAccountsResponse: Contains a ``connected_accounts`` list.
@@ -1218,9 +1229,12 @@ class ActionMcp:
 
             - ``connection_name`` — slug of the connector (``"github"``)
             - ``provider`` — OAuth provider (``"github"``)
-            - ``connected_account_id`` — Scalekit ID for the user's connected account
+            - ``connected_account_id`` — Scalekit ID for the user's connected account;
+              empty string if no connected account exists yet for this connection
             - ``connected_account_status`` — ``"active"``, ``"expired"``, or ``"disconnected"``
-            - ``authentication_link`` — re-auth URL (only present when requested and needed)
+            - ``authentication_link`` — auth/re-auth URL valid for 1 minute;
+              present for all connections when ``include_auth_link=True``,
+              otherwise omitted
 
         Raises:
             ValueError: If ``config_id`` or ``identifier`` is blank.
