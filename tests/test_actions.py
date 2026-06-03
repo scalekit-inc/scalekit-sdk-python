@@ -1730,6 +1730,7 @@ class TestActionsMcpConnectedAccounts(BaseTest):
     def setUp(self):
         import uuid
         self.actions_client = self.scalekit_client.actions
+        self.config_id = None  # set before any call so tearDown can always guard on it
         config_name = f"py-test-ca-{uuid.uuid4().hex[:8]}"
         create_response = self.actions_client.mcp.create_config(
             name=config_name,
@@ -1741,8 +1742,8 @@ class TestActionsMcpConnectedAccounts(BaseTest):
                 )
             ],
         )
+        self.config_id = create_response.config.id  # assign before asserting so tearDown can clean up
         self.assertIsInstance(create_response, CreateMcpConfigResponse)
-        self.config_id = create_response.config.id
         self.assertIsNotNone(self.config_id)
 
     def tearDown(self):
