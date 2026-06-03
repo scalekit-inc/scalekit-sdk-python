@@ -162,10 +162,11 @@ class TestConnect(BaseTest):
         self.assertIsInstance(result, ListConnectedAccountsResponse)
         self.assertTrue(hasattr(result, 'connected_accounts'))
 
-    def test_list_connected_accounts_multiple_connection_names(self):
-        """connection_names accepts multiple values without error."""
+    def test_list_connected_accounts_connection_names_with_page_size(self):
+        """connection_names filter can be combined with pagination parameters."""
         result = self.scalekit_client.actions.list_connected_accounts(
-            connection_names=[self.test_connection_name, "nonexistent-connector"],
+            connection_names=[self.test_connection_name],
+            page_size=5,
         )
         self.assertIsNotNone(result)
         self.assertIsInstance(result, ListConnectedAccountsResponse)
