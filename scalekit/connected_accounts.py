@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from scalekit.core import CoreClient
 from scalekit.v1.connected_accounts.connected_accounts_pb2 import (
@@ -47,7 +47,8 @@ class ConnectedAccountsClient:
         identifier: Optional[str] = None,
         provider: Optional[str] = None,
         page_size: Optional[int] = None,
-        page_token: Optional[str] = None
+        page_token: Optional[str] = None,
+        connection_names: Optional[List[str]] = None,
     ) -> ListConnectedAccountsResponse:
         """
         Method to list connected accounts for a user
@@ -66,21 +67,28 @@ class ConnectedAccountsClient:
         :type                   : ``` int ```
         :param page_token       : Page token for pagination (optional)
         :type                   : ``` str ```
+        :param connection_names : Filter results to only connected accounts belonging to these
+                                  connection names (optional). Each entry is the slug name of
+                                  a connector, e.g. ``["github", "google-calendar"]``.
+        :type                   : ``` List[str] ```
 
         :returns:
             List Connected Accounts Response
         """
+        request = ListConnectedAccountsRequest(
+            organization_id=organization_id,
+            user_id=user_id,
+            connector=connector,
+            identifier=identifier,
+            provider=provider,
+            page_size=page_size,
+            page_token=page_token,
+        )
+        if connection_names:
+            request.connection_names.extend(connection_names)
         return self.core_client.grpc_exec(
             self.connected_accounts_service.ListConnectedAccounts.with_call,
-            ListConnectedAccountsRequest(
-                organization_id=organization_id,
-                user_id=user_id,
-                connector=connector,
-                identifier=identifier,
-                provider=provider,
-                page_size=page_size,
-                page_token=page_token
-            ),
+            request,
         )
 
     def create_connected_account(

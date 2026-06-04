@@ -1,3 +1,4 @@
+from datetime import timedelta
 from typing import Optional, Any, List, Dict, Union
 import requests
 from scalekit.actions.types import ToolRequest,ExecuteToolResponse,MagicLinkResponse,ListConnectedAccountsResponse,DeleteConnectedAccountResponse,GetConnectedAccountAuthResponse,GetConnectedAccountDetailsResponse,ToolInput, \
@@ -5,7 +6,8 @@ from scalekit.actions.types import ToolRequest,ExecuteToolResponse,MagicLinkResp
     EnsureMcpInstanceResponse,UpdateMcpInstanceResponse,GetMcpInstanceResponse,ListMcpInstancesResponse,DeleteMcpInstanceResponse,GetMcpInstanceAuthStateResponse, \
     McpConfig,McpConfigConnectionToolMapping,VerifyConnectedAccountUserResponse, \
     CreateCustomProviderRequest,UpdateCustomProviderRequest,ListProvidersRequest,DeleteCustomProviderRequest, \
-    CreateCustomProviderResponse,UpdateCustomProviderResponse,ListProvidersResponse,DeleteCustomProviderResponse
+    CreateCustomProviderResponse,UpdateCustomProviderResponse,ListProvidersResponse,DeleteCustomProviderResponse, \
+    ListMcpConnectedAccountsResponse,CreateMcpSessionTokenResponse,McpConnectionAuthState
 from scalekit.actions.models.responses.create_connected_account_response import CreateConnectedAccountResponse
 from scalekit.actions.models.requests.create_connected_account_request import CreateConnectedAccountRequest
 from scalekit.actions.models.requests.update_connected_account_request import UpdateConnectedAccountRequest
@@ -242,37 +244,35 @@ class ActionClient:
         return VerifyConnectedAccountUserResponse.from_proto(proto_response)
     
     def list_connected_accounts(
-        self, 
+        self,
         connection_name: Optional[str] = None,
         identifier: Optional[str] = None,
         provider: Optional[str] = None,
+        connection_names: Optional[List[str]] = None,
         **kwargs
     ) -> ListConnectedAccountsResponse:
+        """List connected accounts with optional filtering.
+
+        Args:
+            connection_name: Filter by a single connector slug, e.g. ``"github"``.
+                Mapped to the ``connector`` field in the underlying request.
+            identifier: Filter by end-user identifier, e.g. email or opaque user ID.
+            provider: Filter by OAuth/API-key provider slug, e.g. ``"google"``.
+            connection_names: Filter results to connected accounts belonging to *any*
+                of these connection slugs. Useful when you want to check multiple
+                connectors at once, e.g. ``["github", "google-calendar", "slack"]``.
+                Can be combined with ``identifier`` to narrow results to a specific user.
+
+        Returns:
+            ListConnectedAccountsResponse containing the matching connected accounts.
         """
-        List connected accounts with optional filtering
-        
-        :param connection_name: Connector identifier (optional)
-        :type: str
-        :param identifier: Identifier filter (optional)
-        :type: str
-        :param provider: Provider filter (optional)
-        :type: str
-        
-        :returns:
-            ListConnectedAccountsResponse containing list of connected accounts
-        """
-        # Call the existing connected_accounts method which returns (response, metadata) tuple
         result_tuple = self.connected_accounts.list_connected_accounts(
             connector=connection_name,
             identifier=identifier,
-            provider=provider
+            provider=provider,
+            connection_names=connection_names,
         )
-        
-        # Extract the response[0] (the actual ListConnectedAccountsResponse proto object)
-        proto_response = result_tuple[0]
-        
-        # Convert proto to our ListConnectedAccountsResponse class
-        return ListConnectedAccountsResponse.from_proto(proto_response)
+        return ListConnectedAccountsResponse.from_proto(result_tuple[0])
     
     def delete_connected_account(
         self,
@@ -543,6 +543,7 @@ class ActionClient:
         filter_id: Optional[str] = None,
         filter_provider: Optional[str] = None,
         filter_name: Optional[str] = None,
+        filter_mcp_server_url: Optional[str] = None,
         search: Optional[str] = None,
         **kwargs,
     ) -> ListMcpConfigsResponse:
@@ -554,6 +555,7 @@ class ActionClient:
             filter_id=filter_id,
             filter_provider=filter_provider,
             filter_name=filter_name,
+            filter_mcp_server_url=filter_mcp_server_url,
             search=search,
         )
 
@@ -900,23 +902,43 @@ class ActionMcp:
         filter_id: Optional[str] = None,
         filter_provider: Optional[str] = None,
         filter_name: Optional[str] = None,
+        filter_mcp_server_url: Optional[str] = None,
         search: Optional[str] = None,
     ) -> ListMcpConfigsResponse:
         """List MCP configurations with optional pagination and filtering.
 
         Args:
             page_size: Maximum number of configs to include in the current page.
-            page_token: Cursor token returned by a previous `list_configs` call.
-            filter_id: Restrict results to a specific configuration identifier.
-            filter_provider: Restrict results to configs for a given provider slug.
-            filter_name: Restrict results to configs whose names match exactly.
-            search: Free-form search query applied to name field.
+                Defaults to the server-side default (typically 20).
+            page_token: Cursor token returned by a previous ``list_configs`` call.
+                Pass this to fetch the next page of results.
+            filter_id: Restrict results to a specific configuration by its Scalekit ID,
+                e.g. ``"cfg_01abc123"``.
+            filter_provider: Restrict results to configs for a given provider slug,
+                e.g. ``"github"`` or ``"google-calendar"``.
+            filter_name: Restrict results to configs whose name matches exactly,
+                e.g. ``"My GitHub Config"``.
+            filter_mcp_server_url: Restrict results to configs whose MCP server URL
+                matches this value, e.g. ``"https://mcp.example.com/sse"``.
+            search: Free-form search query applied to the config name field.
 
         Returns:
-            ListMcpConfigsResponse: Parsed wrapper around the proto response.
+            ListMcpConfigsResponse: Parsed wrapper around the proto response containing
+            a ``configs`` list, ``next_page_token``, and ``total_count``.
 
         Raises:
             ValueError: If an MCP client has not been configured on the action client.
+
+        Example::
+
+            page1 = client.actions.mcp.list_configs(page_size=10)
+            for cfg in page1.configs:
+                print(cfg.name, cfg.mcp_server_url)
+
+            if page1.next_page_token:
+                page2 = client.actions.mcp.list_configs(
+                    page_size=10, page_token=page1.next_page_token
+                )
         """
         client = self._client()
         result_tuple = client.list_configs(
@@ -925,6 +947,7 @@ class ActionMcp:
             filter_id=filter_id,
             filter_provider=filter_provider,
             filter_name=filter_name,
+            filter_mcp_server_url=filter_mcp_server_url,
             search=search,
         )
         return ListMcpConfigsResponse.from_proto(result_tuple[0])
@@ -1159,6 +1182,146 @@ class ActionMcp:
             include_auth_links=include_auth_links,
         )
         return GetMcpInstanceAuthStateResponse.from_proto(result_tuple[0])
+
+    def list_mcp_connected_accounts(
+        self,
+        config_id: str,
+        identifier: str,
+        include_auth_link: Optional[bool] = None,
+    ) -> ListMcpConnectedAccountsResponse:
+        """List the connected account auth state for all connections in an MCP config.
+
+        For each connection defined in the MCP configuration, this method returns the
+        current authorisation status of the end-user's connected account and,
+        optionally, a one-time link the user can open to authorise or re-authorise
+        the connection.
+
+        This is typically called server-side before serving MCP tool calls, to
+        determine whether the user still has valid credentials for every connector
+        the MCP config requires.
+
+        Args:
+            config_id: Scalekit ID of the MCP configuration to inspect,
+                e.g. ``"cfg_01abc123"``.
+            identifier: End-user identifier for whom to fetch auth state — usually
+                an email address or opaque user ID that was used when calling
+                ``ensure_instance``, e.g. ``"alice@example.com"``.
+            include_auth_link: When ``True``, every connected account in the response
+                will include an ``authentication_link`` regardless of its current
+                status. Set this to ``True`` when building a connected-account
+                integration page for an MCP server — it lets the end user see the
+                status of all their connections and authorise or re-authorise any of
+                them in one pass.
+
+                When ``False`` (default), ``authentication_link`` is omitted from
+                the response. If a connected account does not yet exist for a given
+                connection, ``connected_account_id`` will be an empty string. In
+                that situation you can either call ``get_authorization_link`` for
+                the specific connection or re-call this method with
+                ``include_auth_link=True``.
+
+                **Auth links are valid for 1 minute only** — generate them close
+                to the time you redirect the user.
+
+        Returns:
+            ListMcpConnectedAccountsResponse: Contains a ``connected_accounts`` list.
+            Each item is a :class:`McpConnectionAuthState` with fields:
+
+            - ``connection_name`` — slug of the connector (``"github"``)
+            - ``provider`` — OAuth provider (``"github"``)
+            - ``connected_account_id`` — Scalekit ID for the user's connected account;
+              empty string if no connected account exists yet for this connection
+            - ``connected_account_status`` — ``"active"``, ``"expired"``, or ``"disconnected"``
+            - ``authentication_link`` — auth/re-auth URL valid for 1 minute;
+              present for all connections when ``include_auth_link=True``,
+              otherwise omitted
+
+        Raises:
+            ValueError: If ``config_id`` or ``identifier`` is blank.
+
+        Example::
+
+            state = client.actions.mcp.list_mcp_connected_accounts(
+                config_id="cfg_01abc123",
+                identifier="alice@example.com",
+                include_auth_link=True,
+            )
+            for account in state.connected_accounts:
+                if account.connected_account_status != "active":
+                    print(
+                        f"{account.connection_name} needs auth: "
+                        f"{account.authentication_link}"
+                    )
+        """
+        if not config_id:
+            raise ValueError("config_id is required")
+        if not identifier:
+            raise ValueError("identifier is required")
+        result_tuple = self._client().list_mcp_connected_accounts(
+            config_id=config_id,
+            identifier=identifier,
+            include_auth_link=include_auth_link,
+        )
+        return ListMcpConnectedAccountsResponse.from_proto(result_tuple[0])
+
+    def create_session_token(
+        self,
+        mcp_config_id: str,
+        identifier: str,
+        expiry: Optional[timedelta] = None,
+    ) -> CreateMcpSessionTokenResponse:
+        """Create a short-lived session token for a user to access an MCP server.
+
+        The token is scoped to a specific MCP configuration and end-user. Pass it
+        as a ``Bearer`` token in the ``Authorization`` header when making requests
+        to the MCP server URL associated with the config.
+
+        Args:
+            mcp_config_id: Scalekit ID of the MCP configuration the token should
+                grant access to, e.g. ``"cfg_01abc123"``.
+            identifier: End-user identifier for whom the token is minted — typically
+                the same email or opaque ID used when calling ``ensure_instance``,
+                e.g. ``"alice@example.com"``.
+            expiry: Requested lifetime for the token as a Python ``timedelta``.
+                When omitted, the server-side default TTL is applied (typically
+                1 hour). Example values:
+
+                - ``timedelta(minutes=30)`` — 30-minute token
+                - ``timedelta(hours=8)``    — 8-hour token (work-day session)
+                - ``timedelta(days=1)``     — 24-hour token
+
+        Returns:
+            CreateMcpSessionTokenResponse: Contains:
+
+            - ``token`` (``str``) — opaque bearer token string.
+            - ``expires_at`` (``datetime``) — UTC datetime when the token expires.
+
+        Raises:
+            ValueError: If ``mcp_config_id`` or ``identifier`` is blank.
+
+        Example::
+
+            from datetime import timedelta
+
+            resp = client.actions.mcp.create_session_token(
+                mcp_config_id="cfg_01abc123",
+                identifier="alice@example.com",
+                expiry=timedelta(hours=8),
+            )
+
+            headers = {"Authorization": f"Bearer {resp.token}"}
+            # Use headers when calling the MCP server URL
+        """
+        if not mcp_config_id:
+            raise ValueError("mcp_config_id is required")
+        if not identifier:
+            raise ValueError("identifier is required")
+        result_tuple = self._client().create_session_token(
+            mcp_config_id=mcp_config_id,
+            identifier=identifier,
+            expiry=expiry,
+        )
+        return CreateMcpSessionTokenResponse.from_proto(result_tuple[0])
 
 
 class ActionProviders:

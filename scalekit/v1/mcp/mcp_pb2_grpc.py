@@ -89,6 +89,16 @@ class McpServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.GetMcpInstanceAuthStateRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.GetMcpInstanceAuthStateResponse.FromString,
                 )
+        self.CreateMcpSessionToken = channel.unary_unary(
+                '/scalekit.v1.mcp.McpService/CreateMcpSessionToken',
+                request_serializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.CreateMcpSessionTokenRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.CreateMcpSessionTokenResponse.FromString,
+                )
+        self.ListMcpConnectedAccounts = channel.unary_unary(
+                '/scalekit.v1.mcp.McpService/ListMcpConnectedAccounts',
+                request_serializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.ListMcpConnectedAccountsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.ListMcpConnectedAccountsResponse.FromString,
+                )
 
 
 class McpServiceServicer(object):
@@ -184,6 +194,18 @@ class McpServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def CreateMcpSessionToken(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListMcpConnectedAccounts(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_McpServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -261,6 +283,16 @@ def add_McpServiceServicer_to_server(servicer, server):
                     servicer.GetMcpInstanceAuthState,
                     request_deserializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.GetMcpInstanceAuthStateRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.GetMcpInstanceAuthStateResponse.SerializeToString,
+            ),
+            'CreateMcpSessionToken': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateMcpSessionToken,
+                    request_deserializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.CreateMcpSessionTokenRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.CreateMcpSessionTokenResponse.SerializeToString,
+            ),
+            'ListMcpConnectedAccounts': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListMcpConnectedAccounts,
+                    request_deserializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.ListMcpConnectedAccountsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_mcp_dot_mcp__pb2.ListMcpConnectedAccountsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -524,5 +556,39 @@ class McpService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.mcp.McpService/GetMcpInstanceAuthState',
             scalekit_dot_v1_dot_mcp_dot_mcp__pb2.GetMcpInstanceAuthStateRequest.SerializeToString,
             scalekit_dot_v1_dot_mcp_dot_mcp__pb2.GetMcpInstanceAuthStateResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def CreateMcpSessionToken(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.mcp.McpService/CreateMcpSessionToken',
+            scalekit_dot_v1_dot_mcp_dot_mcp__pb2.CreateMcpSessionTokenRequest.SerializeToString,
+            scalekit_dot_v1_dot_mcp_dot_mcp__pb2.CreateMcpSessionTokenResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListMcpConnectedAccounts(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.mcp.McpService/ListMcpConnectedAccounts',
+            scalekit_dot_v1_dot_mcp_dot_mcp__pb2.ListMcpConnectedAccountsRequest.SerializeToString,
+            scalekit_dot_v1_dot_mcp_dot_mcp__pb2.ListMcpConnectedAccountsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

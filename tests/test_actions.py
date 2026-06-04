@@ -1,4 +1,5 @@
 import unittest
+from datetime import timedelta
 
 from basetest import BaseTest
 from scalekit.common.exceptions import ScalekitNotFoundException
@@ -23,6 +24,8 @@ from scalekit.actions.types import (
     DeleteMcpInstanceResponse,
     GetMcpInstanceAuthStateResponse,
     VerifyConnectedAccountUserResponse,
+    ListMcpConnectedAccountsResponse,
+    CreateMcpSessionTokenResponse,
 )
 from scalekit.actions.models.responses.get_connected_account_auth_response import ConnectedAccount
 from scalekit.actions.modifier import Modifier
@@ -149,6 +152,24 @@ class TestConnect(BaseTest):
             self.assertTrue(hasattr(result, 'previous_page_token'))
         except Exception as e:
            raise e
+
+    def test_list_connected_accounts_with_connection_names_filter(self):
+        """connection_names filter passes through the action layer and returns a valid response."""
+        result = self.scalekit_client.actions.list_connected_accounts(
+            connection_names=[self.test_connection_name],
+        )
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, ListConnectedAccountsResponse)
+        self.assertTrue(hasattr(result, 'connected_accounts'))
+
+    def test_list_connected_accounts_connection_names_with_page_size(self):
+        """connection_names filter can be combined with pagination parameters."""
+        result = self.scalekit_client.actions.list_connected_accounts(
+            connection_names=[self.test_connection_name],
+            page_size=5,
+        )
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, ListConnectedAccountsResponse)
 
     def test_magic_link_response_structure(self):
         """Method to test MagicLinkResponse structure and methods"""
@@ -1535,6 +1556,46 @@ class TestActionsMcpConfig(BaseTest):
                 )
                 self.assertIsInstance(delete_response, DeleteMcpConfigResponse)
 
+    def test_list_configs_filter_by_mcp_server_url(self):
+        """list_configs(filter_mcp_server_url=...) returns only configs with that server URL."""
+        import uuid
+
+        config_name = f"py-test-url-filter-{uuid.uuid4().hex[:8]}"
+        created_config_id = None
+
+        try:
+            create_response = self.actions_client.mcp.create_config(
+                name=config_name,
+                description="mcp_server_url filter test",
+                connection_tool_mappings=[
+                    McpConfigConnectionToolMapping(
+                        connection_name=self.seed_connection_name,
+                        tools=self.seed_tools[:1],
+                    )
+                ],
+            )
+            self.assertIsInstance(create_response, CreateMcpConfigResponse)
+            created_config_id = create_response.config.id
+
+            # Retrieve the server-assigned mcp_server_url
+            by_id = self.actions_client.mcp.list_configs(filter_id=created_config_id)
+            self.assertIsInstance(by_id, ListMcpConfigsResponse)
+            self.assertTrue(by_id.configs)
+
+            mcp_server_url = by_id.configs[0].mcp_server_url
+            if not mcp_server_url:
+                self.skipTest("Server did not assign mcp_server_url to this config")
+
+            filtered = self.actions_client.mcp.list_configs(
+                filter_mcp_server_url=mcp_server_url
+            )
+            self.assertIsInstance(filtered, ListMcpConfigsResponse)
+            self.assertIn(created_config_id, [c.id for c in filtered.configs])
+
+        finally:
+            if created_config_id:
+                self.actions_client.mcp.delete_config(config_id=created_config_id)
+
 
 class TestActionsMcpInstance(BaseTest):
     """Tests for MCP instance lifecycle via the actions client."""
@@ -1653,6 +1714,134 @@ class TestActionsMcpInstance(BaseTest):
                     instance_id=instance_id
                 )
                 self.assertIsInstance(delete_response, DeleteMcpInstanceResponse)
+
+
+class TestActionsMcpConnectedAccounts(BaseTest):
+    """Tests for list_mcp_connected_accounts and create_session_token via the actions client.
+
+    Uses a fixed test identifier (john-doe-sdk-test) that has MY_CALENDAR connected.
+    A fresh MCP config is created in setUp and deleted in tearDown so every test
+    gets a clean slate without duplicating create/delete boilerplate.
+    """
+
+    MCP_CONNECTION_NAME = "MY_CALENDAR"
+    MCP_TOOLS = ["googlecalendar_create_event", "googlecalendar_delete_event"]
+    USER_IDENTIFIER = "john-doe-sdk-test"
+
+    def setUp(self):
+        import uuid
+        self.actions_client = self.scalekit_client.actions
+        self.config_id = None  # set before any call so tearDown can always guard on it
+        config_name = f"py-test-ca-{uuid.uuid4().hex[:8]}"
+        create_response = self.actions_client.mcp.create_config(
+            name=config_name,
+            description="Test config for connected account / session token tests",
+            connection_tool_mappings=[
+                McpConfigConnectionToolMapping(
+                    connection_name=self.MCP_CONNECTION_NAME,
+                    tools=self.MCP_TOOLS,
+                )
+            ],
+        )
+        self.config_id = create_response.config.id  # assign before asserting so tearDown can clean up
+        self.assertIsInstance(create_response, CreateMcpConfigResponse)
+        self.assertIsNotNone(self.config_id)
+
+    def tearDown(self):
+        if getattr(self, 'config_id', None):
+            self.actions_client.mcp.delete_config(config_id=self.config_id)
+
+    def test_list_mcp_connected_accounts(self):
+        """Returns one entry per connection; no auth link when include_auth_link is omitted."""
+        result = self.actions_client.mcp.list_mcp_connected_accounts(
+            config_id=self.config_id,
+            identifier=self.USER_IDENTIFIER,
+        )
+        self.assertIsInstance(result, ListMcpConnectedAccountsResponse)
+        self.assertTrue(hasattr(result, 'connected_accounts'))
+        # Config has exactly one connection (MY_CALENDAR)
+        self.assertEqual(len(result.connected_accounts), 1)
+        account = result.connected_accounts[0]
+        self.assertTrue(hasattr(account, 'connection_name'))
+        self.assertTrue(hasattr(account, 'connected_account_status'))
+        # Auth link should be absent when include_auth_link was not requested
+        self.assertFalse(account.authentication_link)
+
+    def test_list_mcp_connected_accounts_with_auth_link(self):
+        """include_auth_link=True causes every connection to carry an authentication_link."""
+        result = self.actions_client.mcp.list_mcp_connected_accounts(
+            config_id=self.config_id,
+            identifier=self.USER_IDENTIFIER,
+            include_auth_link=True,
+        )
+        self.assertIsInstance(result, ListMcpConnectedAccountsResponse)
+        self.assertEqual(len(result.connected_accounts), 1)
+        for account in result.connected_accounts:
+            self.assertTrue(
+                account.authentication_link,
+                f"Expected authentication_link for {account.connection_name} when include_auth_link=True",
+            )
+
+    def test_list_mcp_connected_accounts_without_auth_link(self):
+        """include_auth_link=False explicitly omits the authentication_link."""
+        result = self.actions_client.mcp.list_mcp_connected_accounts(
+            config_id=self.config_id,
+            identifier=self.USER_IDENTIFIER,
+            include_auth_link=False,
+        )
+        self.assertIsInstance(result, ListMcpConnectedAccountsResponse)
+        for account in result.connected_accounts:
+            self.assertFalse(
+                account.authentication_link,
+                f"Expected no authentication_link for {account.connection_name} when include_auth_link=False",
+            )
+
+    def test_list_mcp_connected_accounts_validation(self):
+        """Omitting config_id or identifier raises ValueError."""
+        with self.assertRaises(ValueError):
+            self.actions_client.mcp.list_mcp_connected_accounts(
+                config_id="",
+                identifier=self.USER_IDENTIFIER,
+            )
+        with self.assertRaises(ValueError):
+            self.actions_client.mcp.list_mcp_connected_accounts(
+                config_id=self.config_id,
+                identifier="",
+            )
+
+    def test_create_session_token(self):
+        """create_session_token returns a non-empty token string and an expiry timestamp."""
+        result = self.actions_client.mcp.create_session_token(
+            mcp_config_id=self.config_id,
+            identifier=self.USER_IDENTIFIER,
+        )
+        self.assertIsInstance(result, CreateMcpSessionTokenResponse)
+        self.assertTrue(result.token, "Expected a non-empty token string")
+        self.assertIsNotNone(result.expires_at)
+
+    def test_create_session_token_with_custom_expiry(self):
+        """create_session_token accepts an explicit timedelta expiry."""
+        result = self.actions_client.mcp.create_session_token(
+            mcp_config_id=self.config_id,
+            identifier=self.USER_IDENTIFIER,
+            expiry=timedelta(hours=2),
+        )
+        self.assertIsInstance(result, CreateMcpSessionTokenResponse)
+        self.assertTrue(result.token, "Expected a non-empty token string")
+        self.assertIsNotNone(result.expires_at)
+
+    def test_create_session_token_validation(self):
+        """Omitting mcp_config_id or identifier raises ValueError."""
+        with self.assertRaises(ValueError):
+            self.actions_client.mcp.create_session_token(
+                mcp_config_id="",
+                identifier=self.USER_IDENTIFIER,
+            )
+        with self.assertRaises(ValueError):
+            self.actions_client.mcp.create_session_token(
+                mcp_config_id=self.config_id,
+                identifier="",
+            )
 
 
 class TestConnectUserVerify(BaseTest):

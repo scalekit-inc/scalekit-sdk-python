@@ -54,6 +54,11 @@ class ConnectedAccountServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.DisconnectConnectedAccountRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.DisconnectConnectedAccountResponse.FromString,
                 )
+        self.GetRedirectUrl = channel.unary_unary(
+                '/scalekit.v1.connected_accounts.ConnectedAccountService/GetRedirectUrl',
+                request_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetRedirectUrlRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetRedirectUrlResponse.FromString,
+                )
         self.GetConnectedAccountAuth = channel.unary_unary(
                 '/scalekit.v1.connected_accounts.ConnectedAccountService/GetConnectedAccountAuth',
                 request_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetConnectedAccountByIdentifierRequest.SerializeToString,
@@ -130,6 +135,13 @@ class ConnectedAccountServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetRedirectUrl(self, request, context):
+        """Get Redirect URL for Connected Account Portal
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def GetConnectedAccountAuth(self, request, context):
         """Get Connected Account Authentication Details
         """
@@ -193,6 +205,11 @@ def add_ConnectedAccountServiceServicer_to_server(servicer, server):
                     servicer.DisconnectConnectedAccount,
                     request_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.DisconnectConnectedAccountRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.DisconnectConnectedAccountResponse.SerializeToString,
+            ),
+            'GetRedirectUrl': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetRedirectUrl,
+                    request_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetRedirectUrlRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetRedirectUrlResponse.SerializeToString,
             ),
             'GetConnectedAccountAuth': grpc.unary_unary_rpc_method_handler(
                     servicer.GetConnectedAccountAuth,
@@ -352,6 +369,23 @@ class ConnectedAccountService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connected_accounts.ConnectedAccountService/DisconnectConnectedAccount',
             scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.DisconnectConnectedAccountRequest.SerializeToString,
             scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.DisconnectConnectedAccountResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetRedirectUrl(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connected_accounts.ConnectedAccountService/GetRedirectUrl',
+            scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetRedirectUrlRequest.SerializeToString,
+            scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetRedirectUrlResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
