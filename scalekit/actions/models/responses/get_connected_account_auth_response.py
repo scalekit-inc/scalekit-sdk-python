@@ -68,6 +68,15 @@ class ConnectedAccount(BaseModel):
                     "token_expires_at": dwd.token_expires_at.ToDatetime() if dwd.HasField("token_expires_at") else None,
                 }
                 authorization_details["google_dwd"] = dwd_dict
+            elif which == "trusted_idp":
+                idp = proto_account.authorization_details.trusted_idp
+                authorization_details["trusted_idp"] = {
+                    "db_user": idp.db_user,
+                    "access_key_id": idp.access_key_id,
+                    "secret_access_key": idp.secret_access_key,
+                    "session_token": idp.session_token,
+                    "expiry": idp.expiry.ToDatetime() if idp.HasField("expiry") else None,
+                }
 
         # Convert api_config protobuf Struct to dict
         api_config_dict = None
