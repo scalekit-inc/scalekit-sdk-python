@@ -164,6 +164,8 @@ class CoreClient:
             return resp
         except grpc.RpcError as exp:
             if exp.code() == grpc.StatusCode.UNAUTHENTICATED:
+                if retry <= 0:
+                    raise ScalekitServerException.promote(exp)
                 try:
                     self.__authenticate_client()
                     return self.grpc_exec(func, data, retry=retry-1)

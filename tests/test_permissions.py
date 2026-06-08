@@ -1,6 +1,6 @@
 from faker import Faker
 
-from scalekit.common.exceptions import ScalekitBadRequestException, ScalekitNotFoundException, ScalekitException
+from scalekit.common.exceptions import ScalekitBadRequestException, ScalekitNotFoundException, ScalekitException, ScalekitConflictException
 from tests.basetest import BaseTest
 
 from scalekit.v1.roles.roles_pb2 import CreatePermission, CreateRole
@@ -303,7 +303,7 @@ class TestPermissions(BaseTest):
         self.scalekit_client.permissions.create_permission(permission=permission1)
 
         # Try to create second permission with same name - should fail
-        with self.assertRaises(ScalekitBadRequestException):
+        with self.assertRaises(ScalekitConflictException):
             self.scalekit_client.permissions.create_permission(permission=permission2)
 
     def tearDown(self):
