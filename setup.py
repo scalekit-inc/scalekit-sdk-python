@@ -11,7 +11,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         "grpcio>=1.81.0,<2.0",
-        "protobuf>=5.29.5,<7.0.0",
+        "protobuf>=5.29.5,<8.0.0",
         "google>=3.0",
         "requests>=2.34.0",
         "PyJWT>=2.13.0",
