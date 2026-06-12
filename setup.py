@@ -10,7 +10,7 @@ setup(
     version=__version__,
     packages=find_packages(),
     install_requires=[
-        "grpcio>=1.64.1",
+        "grpcio>=1.81.0,<2.0",
         "protobuf>=5.29.5,<7.0.0",
         "google>=3.0",
         "requests>=2.34.0",
@@ -18,7 +18,7 @@ setup(
         "cffi>=1.15.1",
         "cryptography==46.0.6,<47",
         "setuptools>=78.1.1,<83.0",
-        "grpcio-status>=1.64,<1.67",
+        "grpcio-status>=1.81.0,<2.0",
         "protoc-gen-openapiv2>=0.0.1",
         "googleapis-common-protos>=1.72.0",
         "deprecation>=2.1.0",
