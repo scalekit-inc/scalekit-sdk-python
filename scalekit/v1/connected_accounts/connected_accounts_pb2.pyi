@@ -20,6 +20,8 @@ class ConnectorStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     ACTIVE: _ClassVar[ConnectorStatus]
     EXPIRED: _ClassVar[ConnectorStatus]
     PENDING_AUTH: _ClassVar[ConnectorStatus]
+    PENDING_VERIFICATION: _ClassVar[ConnectorStatus]
+    DISCONNECTED: _ClassVar[ConnectorStatus]
 
 class ConnectorType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
@@ -30,10 +32,16 @@ class ConnectorType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     BEARER_TOKEN: _ClassVar[ConnectorType]
     CUSTOM: _ClassVar[ConnectorType]
     BASIC: _ClassVar[ConnectorType]
+    OAUTH_M2M: _ClassVar[ConnectorType]
+    TRELLO_OAUTH1: _ClassVar[ConnectorType]
+    GOOGLE_DWD: _ClassVar[ConnectorType]
+    TRUSTED_IDP: _ClassVar[ConnectorType]
 CONNECTION_STATUS_UNSPECIFIED: ConnectorStatus
 ACTIVE: ConnectorStatus
 EXPIRED: ConnectorStatus
 PENDING_AUTH: ConnectorStatus
+PENDING_VERIFICATION: ConnectorStatus
+DISCONNECTED: ConnectorStatus
 CONNECTION_TYPE_UNSPECIFIED: ConnectorType
 OAUTH: ConnectorType
 API_KEY: ConnectorType
@@ -41,9 +49,13 @@ BASIC_AUTH: ConnectorType
 BEARER_TOKEN: ConnectorType
 CUSTOM: ConnectorType
 BASIC: ConnectorType
+OAUTH_M2M: ConnectorType
+TRELLO_OAUTH1: ConnectorType
+GOOGLE_DWD: ConnectorType
+TRUSTED_IDP: ConnectorType
 
 class ListConnectedAccountsRequest(_message.Message):
-    __slots__ = ("organization_id", "user_id", "connector", "identifier", "provider", "page_size", "page_token", "query")
+    __slots__ = ("organization_id", "user_id", "connector", "identifier", "provider", "page_size", "page_token", "query", "connection_names")
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     USER_ID_FIELD_NUMBER: _ClassVar[int]
     CONNECTOR_FIELD_NUMBER: _ClassVar[int]
@@ -52,6 +64,7 @@ class ListConnectedAccountsRequest(_message.Message):
     PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
     PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
     QUERY_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_NAMES_FIELD_NUMBER: _ClassVar[int]
     organization_id: str
     user_id: str
     connector: str
@@ -60,7 +73,8 @@ class ListConnectedAccountsRequest(_message.Message):
     page_size: int
     page_token: str
     query: str
-    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., connector: _Optional[str] = ..., identifier: _Optional[str] = ..., provider: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ..., query: _Optional[str] = ...) -> None: ...
+    connection_names: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., connector: _Optional[str] = ..., identifier: _Optional[str] = ..., provider: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ..., query: _Optional[str] = ..., connection_names: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class ListConnectedAccountsResponse(_message.Message):
     __slots__ = ("connected_accounts", "total_size", "next_page_token", "prev_page_token")
@@ -159,18 +173,22 @@ class DeleteConnectedAccountResponse(_message.Message):
     def __init__(self) -> None: ...
 
 class GetMagicLinkForConnectedAccountRequest(_message.Message):
-    __slots__ = ("organization_id", "user_id", "connector", "identifier", "id")
+    __slots__ = ("organization_id", "user_id", "connector", "identifier", "id", "state", "user_verify_url")
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     USER_ID_FIELD_NUMBER: _ClassVar[int]
     CONNECTOR_FIELD_NUMBER: _ClassVar[int]
     IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
     ID_FIELD_NUMBER: _ClassVar[int]
+    STATE_FIELD_NUMBER: _ClassVar[int]
+    USER_VERIFY_URL_FIELD_NUMBER: _ClassVar[int]
     organization_id: str
     user_id: str
     connector: str
     identifier: str
     id: str
-    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., connector: _Optional[str] = ..., identifier: _Optional[str] = ..., id: _Optional[str] = ...) -> None: ...
+    state: str
+    user_verify_url: str
+    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., connector: _Optional[str] = ..., identifier: _Optional[str] = ..., id: _Optional[str] = ..., state: _Optional[str] = ..., user_verify_url: _Optional[str] = ...) -> None: ...
 
 class GetMagicLinkForConnectedAccountResponse(_message.Message):
     __slots__ = ("link", "expiry")
@@ -179,6 +197,20 @@ class GetMagicLinkForConnectedAccountResponse(_message.Message):
     link: str
     expiry: _timestamp_pb2.Timestamp
     def __init__(self, link: _Optional[str] = ..., expiry: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+
+class VerifyConnectedAccountUserRequest(_message.Message):
+    __slots__ = ("auth_request_id", "identifier")
+    AUTH_REQUEST_ID_FIELD_NUMBER: _ClassVar[int]
+    IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
+    auth_request_id: str
+    identifier: str
+    def __init__(self, auth_request_id: _Optional[str] = ..., identifier: _Optional[str] = ...) -> None: ...
+
+class VerifyConnectedAccountUserResponse(_message.Message):
+    __slots__ = ("post_user_verify_redirect_url",)
+    POST_USER_VERIFY_REDIRECT_URL_FIELD_NUMBER: _ClassVar[int]
+    post_user_verify_redirect_url: str
+    def __init__(self, post_user_verify_redirect_url: _Optional[str] = ...) -> None: ...
 
 class GetConnectedAccountByIdentifierRequest(_message.Message):
     __slots__ = ("organization_id", "user_id", "connector", "identifier", "id")
@@ -269,12 +301,42 @@ class ConnectedAccountForList(_message.Message):
     def __init__(self, identifier: _Optional[str] = ..., provider: _Optional[str] = ..., status: _Optional[_Union[ConnectorStatus, str]] = ..., authorization_type: _Optional[_Union[ConnectorType, str]] = ..., token_expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., connector: _Optional[str] = ..., last_used_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., id: _Optional[str] = ..., connection_id: _Optional[str] = ...) -> None: ...
 
 class AuthorizationDetails(_message.Message):
-    __slots__ = ("oauth_token", "static_auth")
+    __slots__ = ("oauth_token", "static_auth", "google_dwd", "trusted_idp")
     OAUTH_TOKEN_FIELD_NUMBER: _ClassVar[int]
     STATIC_AUTH_FIELD_NUMBER: _ClassVar[int]
+    GOOGLE_DWD_FIELD_NUMBER: _ClassVar[int]
+    TRUSTED_IDP_FIELD_NUMBER: _ClassVar[int]
     oauth_token: OauthToken
     static_auth: StaticAuth
-    def __init__(self, oauth_token: _Optional[_Union[OauthToken, _Mapping]] = ..., static_auth: _Optional[_Union[StaticAuth, _Mapping]] = ...) -> None: ...
+    google_dwd: GoogleDWDAuth
+    trusted_idp: TrustedIDPAuth
+    def __init__(self, oauth_token: _Optional[_Union[OauthToken, _Mapping]] = ..., static_auth: _Optional[_Union[StaticAuth, _Mapping]] = ..., google_dwd: _Optional[_Union[GoogleDWDAuth, _Mapping]] = ..., trusted_idp: _Optional[_Union[TrustedIDPAuth, _Mapping]] = ...) -> None: ...
+
+class GoogleDWDAuth(_message.Message):
+    __slots__ = ("subject", "access_token", "scopes", "token_expires_at")
+    SUBJECT_FIELD_NUMBER: _ClassVar[int]
+    ACCESS_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    SCOPES_FIELD_NUMBER: _ClassVar[int]
+    TOKEN_EXPIRES_AT_FIELD_NUMBER: _ClassVar[int]
+    subject: str
+    access_token: str
+    scopes: _containers.RepeatedScalarFieldContainer[str]
+    token_expires_at: _timestamp_pb2.Timestamp
+    def __init__(self, subject: _Optional[str] = ..., access_token: _Optional[str] = ..., scopes: _Optional[_Iterable[str]] = ..., token_expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+
+class TrustedIDPAuth(_message.Message):
+    __slots__ = ("db_user", "access_key_id", "secret_access_key", "session_token", "expiry")
+    DB_USER_FIELD_NUMBER: _ClassVar[int]
+    ACCESS_KEY_ID_FIELD_NUMBER: _ClassVar[int]
+    SECRET_ACCESS_KEY_FIELD_NUMBER: _ClassVar[int]
+    SESSION_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    EXPIRY_FIELD_NUMBER: _ClassVar[int]
+    db_user: str
+    access_key_id: str
+    secret_access_key: str
+    session_token: str
+    expiry: _timestamp_pb2.Timestamp
+    def __init__(self, db_user: _Optional[str] = ..., access_key_id: _Optional[str] = ..., secret_access_key: _Optional[str] = ..., session_token: _Optional[str] = ..., expiry: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
 class OauthToken(_message.Message):
     __slots__ = ("access_token", "refresh_token", "scopes", "domain")
@@ -293,3 +355,37 @@ class StaticAuth(_message.Message):
     DETAILS_FIELD_NUMBER: _ClassVar[int]
     details: _struct_pb2.Struct
     def __init__(self, details: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
+
+class GetConnectedAccountRequest(_message.Message):
+    __slots__ = ("id",)
+    ID_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    def __init__(self, id: _Optional[str] = ...) -> None: ...
+
+class GetConnectedAccountResponse(_message.Message):
+    __slots__ = ("connected_account",)
+    CONNECTED_ACCOUNT_FIELD_NUMBER: _ClassVar[int]
+    connected_account: ConnectedAccount
+    def __init__(self, connected_account: _Optional[_Union[ConnectedAccount, _Mapping]] = ...) -> None: ...
+
+class DisconnectConnectedAccountRequest(_message.Message):
+    __slots__ = ("id",)
+    ID_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    def __init__(self, id: _Optional[str] = ...) -> None: ...
+
+class DisconnectConnectedAccountResponse(_message.Message):
+    __slots__ = ("connected_account",)
+    CONNECTED_ACCOUNT_FIELD_NUMBER: _ClassVar[int]
+    connected_account: ConnectedAccount
+    def __init__(self, connected_account: _Optional[_Union[ConnectedAccount, _Mapping]] = ...) -> None: ...
+
+class GetRedirectUrlRequest(_message.Message):
+    __slots__ = ()
+    def __init__(self) -> None: ...
+
+class GetRedirectUrlResponse(_message.Message):
+    __slots__ = ("redirect_url",)
+    REDIRECT_URL_FIELD_NUMBER: _ClassVar[int]
+    redirect_url: str
+    def __init__(self, redirect_url: _Optional[str] = ...) -> None: ...

@@ -2,6 +2,7 @@ from buf.validate import validate_pb2 as _validate_pb2
 from google.api import annotations_pb2 as _annotations_pb2
 from google.api import field_behavior_pb2 as _field_behavior_pb2
 from google.api import visibility_pb2 as _visibility_pb2
+from google.protobuf import duration_pb2 as _duration_pb2
 from google.protobuf import empty_pb2 as _empty_pb2
 from google.protobuf import struct_pb2 as _struct_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
@@ -143,14 +144,16 @@ class GetMcpConfigResponse(_message.Message):
 class ListMcpConfigsRequest(_message.Message):
     __slots__ = ("filter", "search", "page_size", "page_token")
     class Filter(_message.Message):
-        __slots__ = ("id", "name", "provider")
+        __slots__ = ("id", "name", "provider", "mcp_server_url")
         ID_FIELD_NUMBER: _ClassVar[int]
         NAME_FIELD_NUMBER: _ClassVar[int]
         PROVIDER_FIELD_NUMBER: _ClassVar[int]
+        MCP_SERVER_URL_FIELD_NUMBER: _ClassVar[int]
         id: str
         name: str
         provider: str
-        def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., provider: _Optional[str] = ...) -> None: ...
+        mcp_server_url: str
+        def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., provider: _Optional[str] = ..., mcp_server_url: _Optional[str] = ...) -> None: ...
     FILTER_FIELD_NUMBER: _ClassVar[int]
     SEARCH_FIELD_NUMBER: _ClassVar[int]
     PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
@@ -188,6 +191,38 @@ class EnsureMcpInstanceResponse(_message.Message):
     INSTANCE_FIELD_NUMBER: _ClassVar[int]
     instance: McpInstance
     def __init__(self, instance: _Optional[_Union[McpInstance, _Mapping]] = ...) -> None: ...
+
+class McpConnectionAuthState(_message.Message):
+    __slots__ = ("connection_id", "connection_name", "provider", "connected_account_id", "connected_account_status", "authentication_link")
+    CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_NAME_FIELD_NUMBER: _ClassVar[int]
+    PROVIDER_FIELD_NUMBER: _ClassVar[int]
+    CONNECTED_ACCOUNT_ID_FIELD_NUMBER: _ClassVar[int]
+    CONNECTED_ACCOUNT_STATUS_FIELD_NUMBER: _ClassVar[int]
+    AUTHENTICATION_LINK_FIELD_NUMBER: _ClassVar[int]
+    connection_id: str
+    connection_name: str
+    provider: str
+    connected_account_id: str
+    connected_account_status: str
+    authentication_link: str
+    def __init__(self, connection_id: _Optional[str] = ..., connection_name: _Optional[str] = ..., provider: _Optional[str] = ..., connected_account_id: _Optional[str] = ..., connected_account_status: _Optional[str] = ..., authentication_link: _Optional[str] = ...) -> None: ...
+
+class ListMcpConnectedAccountsRequest(_message.Message):
+    __slots__ = ("config_id", "identifier", "include_auth_link")
+    CONFIG_ID_FIELD_NUMBER: _ClassVar[int]
+    IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
+    INCLUDE_AUTH_LINK_FIELD_NUMBER: _ClassVar[int]
+    config_id: str
+    identifier: str
+    include_auth_link: bool
+    def __init__(self, config_id: _Optional[str] = ..., identifier: _Optional[str] = ..., include_auth_link: bool = ...) -> None: ...
+
+class ListMcpConnectedAccountsResponse(_message.Message):
+    __slots__ = ("connected_accounts",)
+    CONNECTED_ACCOUNTS_FIELD_NUMBER: _ClassVar[int]
+    connected_accounts: _containers.RepeatedCompositeFieldContainer[McpConnectionAuthState]
+    def __init__(self, connected_accounts: _Optional[_Iterable[_Union[McpConnectionAuthState, _Mapping]]] = ...) -> None: ...
 
 class ListMcpInstancesRequest(_message.Message):
     __slots__ = ("filter", "search", "page_size", "page_token")
@@ -311,16 +346,18 @@ class McpInstance(_message.Message):
     def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., user_identifier: _Optional[str] = ..., config: _Optional[_Union[McpConfig, _Mapping]] = ..., last_used_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., url: _Optional[str] = ...) -> None: ...
 
 class McpConfig(_message.Message):
-    __slots__ = ("id", "name", "description", "connection_tool_mappings")
+    __slots__ = ("id", "name", "description", "connection_tool_mappings", "mcp_server_url")
     ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     CONNECTION_TOOL_MAPPINGS_FIELD_NUMBER: _ClassVar[int]
+    MCP_SERVER_URL_FIELD_NUMBER: _ClassVar[int]
     id: str
     name: str
     description: str
     connection_tool_mappings: _containers.RepeatedCompositeFieldContainer[McpConfigConnectionToolMapping]
-    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., connection_tool_mappings: _Optional[_Iterable[_Union[McpConfigConnectionToolMapping, _Mapping]]] = ...) -> None: ...
+    mcp_server_url: str
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., connection_tool_mappings: _Optional[_Iterable[_Union[McpConfigConnectionToolMapping, _Mapping]]] = ..., mcp_server_url: _Optional[str] = ...) -> None: ...
 
 class McpConfigConnectionToolMapping(_message.Message):
     __slots__ = ("connection_id", "connection_name", "provider", "tools", "connected_account_id", "connected_account_status")
@@ -337,3 +374,21 @@ class McpConfigConnectionToolMapping(_message.Message):
     connected_account_id: str
     connected_account_status: str
     def __init__(self, connection_id: _Optional[str] = ..., connection_name: _Optional[str] = ..., provider: _Optional[str] = ..., tools: _Optional[_Iterable[str]] = ..., connected_account_id: _Optional[str] = ..., connected_account_status: _Optional[str] = ...) -> None: ...
+
+class CreateMcpSessionTokenRequest(_message.Message):
+    __slots__ = ("mcp_config_id", "identifier", "expiry")
+    MCP_CONFIG_ID_FIELD_NUMBER: _ClassVar[int]
+    IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
+    EXPIRY_FIELD_NUMBER: _ClassVar[int]
+    mcp_config_id: str
+    identifier: str
+    expiry: _duration_pb2.Duration
+    def __init__(self, mcp_config_id: _Optional[str] = ..., identifier: _Optional[str] = ..., expiry: _Optional[_Union[_duration_pb2.Duration, _Mapping]] = ...) -> None: ...
+
+class CreateMcpSessionTokenResponse(_message.Message):
+    __slots__ = ("token", "expires_at")
+    TOKEN_FIELD_NUMBER: _ClassVar[int]
+    EXPIRES_AT_FIELD_NUMBER: _ClassVar[int]
+    token: str
+    expires_at: _timestamp_pb2.Timestamp
+    def __init__(self, token: _Optional[str] = ..., expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...

@@ -94,7 +94,8 @@ class ToolsClient:
         tool_name: str,
         identifier: str,
         params: Optional[dict] = None,
-        connected_account_id: Optional[str] = None
+        connected_account_id: Optional[str] = None,
+        connection_name: Optional[str] = None
     ) -> ExecuteToolResponse:
         """
         Method to execute a tool using a connected account
@@ -107,23 +108,26 @@ class ToolsClient:
         :type                   : ``` dict ```
         :param connected_account_id : ID of the connected account to use for tool execution
         :type                   : ``` str ```
+        :param connection_name  : Name of the connector/provider (e.g., 'Google Workspace', 'Slack')
+        :type                   : ``` str ```
 
         :returns:
             Execute Tool Response
         """
         from google.protobuf import struct_pb2
-        
+
         params_struct = None
         if params:
             params_struct = struct_pb2.Struct()
             params_struct.update(params)
-        
+
         return self.core_client.grpc_exec(
             self.tool_service.ExecuteTool.with_call,
             ExecuteToolRequest(
                 tool_name=tool_name,
                 identifier=identifier,
                 params=params_struct,
-                connected_account_id=connected_account_id
+                connected_account_id=connected_account_id,
+                connector=connection_name
             ),
         )

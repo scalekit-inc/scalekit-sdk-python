@@ -28,7 +28,8 @@ class CoreClient:
     """Class definition for Core Client"""
 
     sdk_version = f"Scalekit-Python/{_sdk_version}"
-    api_version = "20260310"
+    # YYYYMMDD
+    api_version = "20260603"
     user_agent = f"{sdk_version} Python/{platform.python_version()} ({platform.system()}; {platform.architecture()}"
 
     def __init__(self, env_url, client_id, client_secret):
@@ -163,6 +164,8 @@ class CoreClient:
             return resp
         except grpc.RpcError as exp:
             if exp.code() == grpc.StatusCode.UNAUTHENTICATED:
+                if retry <= 0:
+                    raise ScalekitServerException.promote(exp)
                 try:
                     self.__authenticate_client()
                     return self.grpc_exec(func, data, retry=retry-1)

@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime, timedelta, timezone
 
 from faker import Faker
 from basetest import BaseTest
@@ -18,6 +19,7 @@ class TestMcp(BaseTest):
         """ """
         self.faker = Faker()
         self.test_connected_account_identifier = "default"
+        self.test_user_identifier = "john-doe-sdk-test"
 
     def _create_test_mcp(self):
         """Helper method to create test MCP object"""
@@ -154,3 +156,146 @@ class TestMcp(BaseTest):
             if instance_id:
                 self.scalekit_client.mcp.delete_instance(instance_id=instance_id)
             self.scalekit_client.mcp.delete_config(config_id=created_config_id)
+
+    def test_list_configs_filter_by_mcp_server_url(self):
+        """list_configs(filter_mcp_server_url=...) should return the matching config."""
+        mcp_config = self._create_test_mcp_config()
+        mcp_config.name = f"py-test-url-filter-{uuid.uuid4().hex[:8]}"
+        created_config_id = None
+
+        try:
+            create_response = self.scalekit_client.mcp.create_config(mcp_config=mcp_config)
+            self.assertEqual(create_response[1].code().name, "OK")
+            created_config_id = create_response[0].config.id
+
+            # Retrieve the server-assigned mcp_server_url via filter_id
+            list_response = self.scalekit_client.mcp.list_configs(filter_id=created_config_id)
+            self.assertEqual(list_response[1].code().name, "OK")
+            self.assertTrue(list_response[0].configs)
+
+            mcp_server_url = list_response[0].configs[0].mcp_server_url
+            if not mcp_server_url:
+                self.skipTest("Server did not assign mcp_server_url to this config")
+
+            filtered_response = self.scalekit_client.mcp.list_configs(
+                filter_mcp_server_url=mcp_server_url
+            )
+            self.assertEqual(filtered_response[1].code().name, "OK")
+            config_ids = [c.id for c in filtered_response[0].configs]
+            self.assertIn(created_config_id, config_ids)
+        finally:
+            if created_config_id:
+                self.scalekit_client.mcp.delete_config(config_id=created_config_id)
+
+    def test_list_mcp_connected_accounts(self):
+        """list_mcp_connected_accounts returns one entry per connection, no auth link by default."""
+        mcp_config = self._create_test_mcp_config()
+        mcp_config.name = f"py-test-connected-accts-{uuid.uuid4().hex[:8]}"
+        created_config_id = None
+
+        try:
+            create_response = self.scalekit_client.mcp.create_config(mcp_config=mcp_config)
+            self.assertEqual(create_response[1].code().name, "OK")
+            created_config_id = create_response[0].config.id
+
+            response = self.scalekit_client.mcp.list_mcp_connected_accounts(
+                config_id=created_config_id,
+                identifier=self.test_user_identifier,
+            )
+            self.assertEqual(response[1].code().name, "OK")
+            self.assertTrue(hasattr(response[0], 'connected_accounts'))
+            # Config has one connection (MY_CALENDAR) so expect one entry
+            self.assertEqual(len(response[0].connected_accounts), 1)
+            account = response[0].connected_accounts[0]
+            self.assertTrue(hasattr(account, 'connection_name'))
+            self.assertTrue(hasattr(account, 'connected_account_status'))
+            # No auth link requested
+            self.assertFalse(account.authentication_link)
+        finally:
+            if created_config_id:
+                self.scalekit_client.mcp.delete_config(config_id=created_config_id)
+
+    def test_list_mcp_connected_accounts_with_auth_link(self):
+        """include_auth_link=True causes every connection entry to carry an authentication_link."""
+        mcp_config = self._create_test_mcp_config()
+        mcp_config.name = f"py-test-auth-link-{uuid.uuid4().hex[:8]}"
+        created_config_id = None
+
+        try:
+            create_response = self.scalekit_client.mcp.create_config(mcp_config=mcp_config)
+            self.assertEqual(create_response[1].code().name, "OK")
+            created_config_id = create_response[0].config.id
+
+            response = self.scalekit_client.mcp.list_mcp_connected_accounts(
+                config_id=created_config_id,
+                identifier=self.test_user_identifier,
+                include_auth_link=True,
+            )
+            self.assertEqual(response[1].code().name, "OK")
+            self.assertTrue(hasattr(response[0], 'connected_accounts'))
+            self.assertEqual(len(response[0].connected_accounts), 1)
+            for account in response[0].connected_accounts:
+                self.assertTrue(
+                    account.authentication_link,
+                    f"Expected authentication_link for {account.connection_name} when include_auth_link=True",
+                )
+        finally:
+            if created_config_id:
+                self.scalekit_client.mcp.delete_config(config_id=created_config_id)
+
+    def test_create_session_token(self):
+        """create_session_token returns a non-empty token and an expiry timestamp."""
+        mcp_config = self._create_test_mcp_config()
+        mcp_config.name = f"py-test-session-token-{uuid.uuid4().hex[:8]}"
+        created_config_id = None
+
+        try:
+            create_response = self.scalekit_client.mcp.create_config(mcp_config=mcp_config)
+            self.assertEqual(create_response[1].code().name, "OK")
+            created_config_id = create_response[0].config.id
+
+            token_response = self.scalekit_client.mcp.create_session_token(
+                mcp_config_id=created_config_id,
+                identifier=self.test_user_identifier,
+            )
+            self.assertEqual(token_response[1].code().name, "OK")
+            self.assertTrue(token_response[0].token, "Expected a non-empty token string")
+            self.assertTrue(hasattr(token_response[0], 'expires_at'))
+        finally:
+            if created_config_id:
+                self.scalekit_client.mcp.delete_config(config_id=created_config_id)
+
+    def test_create_session_token_with_custom_expiry(self):
+        """create_session_token respects an explicit expiry timedelta."""
+        mcp_config = self._create_test_mcp_config()
+        mcp_config.name = f"py-test-session-expiry-{uuid.uuid4().hex[:8]}"
+        created_config_id = None
+
+        try:
+            create_response = self.scalekit_client.mcp.create_config(mcp_config=mcp_config)
+            self.assertEqual(create_response[1].code().name, "OK")
+            created_config_id = create_response[0].config.id
+
+            now = datetime.now(tz=timezone.utc)
+            token_response = self.scalekit_client.mcp.create_session_token(
+                mcp_config_id=created_config_id,
+                identifier=self.test_user_identifier,
+                expiry=timedelta(hours=2),
+            )
+            self.assertEqual(token_response[1].code().name, "OK")
+            self.assertTrue(token_response[0].token, "Expected a non-empty token string")
+            self.assertTrue(hasattr(token_response[0], 'expires_at'))
+            expires_at = token_response[0].expires_at.ToDatetime(tzinfo=timezone.utc)
+            self.assertGreater(
+                expires_at,
+                now + timedelta(hours=1, minutes=55),
+                "expires_at should be at least 1h55m from now for a 2-hour expiry",
+            )
+            self.assertLess(
+                expires_at,
+                now + timedelta(hours=2, minutes=5),
+                "expires_at should not exceed 2h5m from now for a 2-hour expiry",
+            )
+        finally:
+            if created_config_id:
+                self.scalekit_client.mcp.delete_config(config_id=created_config_id)

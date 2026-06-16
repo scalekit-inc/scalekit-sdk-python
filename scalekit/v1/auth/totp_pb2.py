@@ -15,6 +15,7 @@ _sym_db = _symbol_database.Default()
 from buf.validate import validate_pb2 as buf_dot_validate_dot_validate__pb2
 from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
 from google.api import field_behavior_pb2 as google_dot_api_dot_field__behavior__pb2
+from google.api import visibility_pb2 as google_dot_api_dot_visibility__pb2
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 from google.protobuf import struct_pb2 as google_dot_protobuf_dot_struct__pb2
 from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
@@ -23,7 +24,7 @@ from scalekit.v1.commons import commons_pb2 as scalekit_dot_v1_dot_commons_dot_c
 from scalekit.v1.options import options_pb2 as scalekit_dot_v1_dot_options_dot_options__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1bscalekit/v1/auth/totp.proto\x12\x15scalekit.v1.auth.totp\x1a\x1b\x62uf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a.protoc-gen-openapiv2/options/annotations.proto\x1a!scalekit/v1/commons/commons.proto\x1a!scalekit/v1/options/options.proto\"t\n\x17TOTPRegistrationRequest\x12Y\n\x11totp_registration\x18\x01 \x01(\x0b\x32\'.scalekit.v1.auth.totp.TOTPRegistrationB\x03\xbaH\x00R\x10totpRegistration\"u\n\x18TOTPRegistrationResponse\x12Y\n\x11totp_registration\x18\x01 \x01(\x0b\x32\'.scalekit.v1.auth.totp.TOTPRegistrationB\x03\xbaH\x00R\x10totpRegistration\"\x84\x07\n\x10TOTPRegistration\x12{\n\x02id\x18\x01 \x01(\tBk\x92\x41h2MUnique scalekit-generated identifier that uniquely references an organizationJ\x17\"org_59615193906282635\"R\x02id\x12\x8c\x01\n\x0b\x63reate_time\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.TimestampBO\x92\x41I2+Timestamp when the organization was createdJ\x1a\"2025-02-15T06:23:44.560Z\"\xe0\x41\x02R\ncreateTime\x12\x8e\x01\n\x0bupdate_time\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.TimestampBQ\x92\x41N20Timestamp when the organization was last updatedJ\x1a\"2025-02-15T06:23:44.560Z\"R\nupdateTime\x12y\n\x07user_id\x18\x04 \x01(\tB^\x92\x41L21The user ID associated with the TOTP registrationJ\x17\"usr_59615193906282635\"\xbaH\x0cr\n\x10\x01\x18 :\x04usr_H\x00R\x06userId\x12|\n\x0c\x61\x63\x63ount_name\x18\x05 \x01(\tBW\x92\x41J26The account name associated with the TOTP registrationJ\x10\"me@example.com\"\xbaH\x07r\x05\x10\x01\x18\xe3\x02H\x00R\x0b\x61\x63\x63ountName\x12\xb2\x01\n\x0bqr_code_uri\x18\x06 \x01(\tB\x8c\x01\x92\x41|2+The URI for the QR code used to set up TOTPJM\"otpauth://totp/Scalekit:usr_59615193906282635?secret=ABC123&issuer=Scalekit\"\xe0\x41\x03\xbaH\x07r\x05\x10\x01\x18\x80\x08H\x01R\tqrCodeUri\x88\x01\x01\x42\x15\n\x13UserIdOrAccountNameB\x0e\n\x0c_qr_code_uri\"l\n\x1d\x45nableRegistrationTOTPRequest\x12/\n\x0fregistration_id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x0eregistrationId\x12\x1a\n\x04\x63ode\x18\x02 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04\x63ode\"[\n\x1e\x45nableRegistrationTOTPResponse\x12\x16\n\x02id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x02id\x12!\n\x0c\x62\x61\x63kup_codes\x18\x03 \x03(\tR\x0b\x62\x61\x63kupCodes\"m\n\x1e\x44isableRegistrationTOTPRequest\x12/\n\x0fregistration_id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x0eregistrationId\x12\x1a\n\x04\x63ode\x18\x02 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04\x63ode\"\x87\x01\n\x15GenerateQRCodeRequest\x12-\n\x0e\x65nvironment_id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\renvironmentId\x12&\n\nidentifier\x18\x02 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\nidentifier\x12\x17\n\x07is_user\x18\x03 \x01(\x08R\x06isUser\"1\n\x16GenerateQRCodeResponse\x12\x17\n\x07qr_code\x18\x01 \x01(\tR\x06qrCode\"T\n\x15VerifyUserCodeRequest\x12\x1f\n\x07user_id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x06userId\x12\x1a\n\x04\x63ode\x18\x02 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04\x63ode\"*\n\x12VerifyCodeResponse\x12\x14\n\x05valid\x18\x01 \x01(\x08R\x05valid\"l\n\x1dVerifyRegistrationCodeRequest\x12/\n\x0fregistration_id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x0eregistrationId\x12\x1a\n\x04\x63ode\x18\x02 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04\x63ode2\xdc\x06\n\x0bTOTPService\x12\xab\x01\n\x0cRegisterTOTP\x12..scalekit.v1.auth.totp.TOTPRegistrationRequest\x1a/.scalekit.v1.auth.totp.TOTPRegistrationResponse\":\x82\xb5\x18\x02\x18\x44\x82\xd3\xe4\x93\x02.\"\x19/api/v1/totp/registration:\x11totp_registration\x12\xb1\x01\n\nEnableTOTP\x12\x34.scalekit.v1.auth.totp.EnableRegistrationTOTPRequest\x1a\x35.scalekit.v1.auth.totp.EnableRegistrationTOTPResponse\"6\x82\xb5\x18\x02\x18\x44\x82\xd3\xe4\x93\x02*\"%/api/v1/totp/{registration_id}/enable:\x01*\x12\x9e\x01\n\x0eVerifyUserCode\x12,.scalekit.v1.auth.totp.VerifyUserCodeRequest\x1a).scalekit.v1.auth.totp.VerifyCodeResponse\"3\x82\xb5\x18\x02\x18\x44\x82\xd3\xe4\x93\x02\'\"\"/api/v1/user/{user_id}/totp:verify:\x01*\x12\xb1\x01\n\x16VerifyRegistrationCode\x12\x34.scalekit.v1.auth.totp.VerifyRegistrationCodeRequest\x1a).scalekit.v1.auth.totp.VerifyCodeResponse\"6\x82\xb5\x18\x02\x18\x44\x82\xd3\xe4\x93\x02*\"%/api/v1/totp/{registration_id}/verify:\x01*\x12\x95\x01\n\x0b\x44isableTOTP\x12\x35.scalekit.v1.auth.totp.DisableRegistrationTOTPRequest\x1a\x16.google.protobuf.Empty\"7\x82\xb5\x18\x02\x18\x44\x82\xd3\xe4\x93\x02+\"&/api/v1/totp/{registration_id}/disable:\x01*B5Z3github.com/scalekit-inc/scalekit/pkg/grpc/auth/totpb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1bscalekit/v1/auth/totp.proto\x12\x15scalekit.v1.auth.totp\x1a\x1b\x62uf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1bgoogle/api/visibility.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a.protoc-gen-openapiv2/options/annotations.proto\x1a!scalekit/v1/commons/commons.proto\x1a!scalekit/v1/options/options.proto\"t\n\x17TOTPRegistrationRequest\x12Y\n\x11totp_registration\x18\x01 \x01(\x0b\x32\'.scalekit.v1.auth.totp.TOTPRegistrationB\x03\xbaH\x00R\x10totpRegistration\"u\n\x18TOTPRegistrationResponse\x12Y\n\x11totp_registration\x18\x01 \x01(\x0b\x32\'.scalekit.v1.auth.totp.TOTPRegistrationB\x03\xbaH\x00R\x10totpRegistration\"\x84\x07\n\x10TOTPRegistration\x12{\n\x02id\x18\x01 \x01(\tBk\x92\x41h2MUnique scalekit-generated identifier that uniquely references an organizationJ\x17\"org_59615193906282635\"R\x02id\x12\x8c\x01\n\x0b\x63reate_time\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.TimestampBO\x92\x41I2+Timestamp when the organization was createdJ\x1a\"2025-02-15T06:23:44.560Z\"\xe0\x41\x02R\ncreateTime\x12\x8e\x01\n\x0bupdate_time\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.TimestampBQ\x92\x41N20Timestamp when the organization was last updatedJ\x1a\"2025-02-15T06:23:44.560Z\"R\nupdateTime\x12y\n\x07user_id\x18\x04 \x01(\tB^\x92\x41L21The user ID associated with the TOTP registrationJ\x17\"usr_59615193906282635\"\xbaH\x0cr\n\x10\x01\x18 :\x04usr_H\x00R\x06userId\x12|\n\x0c\x61\x63\x63ount_name\x18\x05 \x01(\tBW\x92\x41J26The account name associated with the TOTP registrationJ\x10\"me@example.com\"\xbaH\x07r\x05\x10\x01\x18\xe3\x02H\x00R\x0b\x61\x63\x63ountName\x12\xb2\x01\n\x0bqr_code_uri\x18\x06 \x01(\tB\x8c\x01\x92\x41|2+The URI for the QR code used to set up TOTPJM\"otpauth://totp/Scalekit:usr_59615193906282635?secret=ABC123&issuer=Scalekit\"\xe0\x41\x03\xbaH\x07r\x05\x10\x01\x18\x80\x08H\x01R\tqrCodeUri\x88\x01\x01\x42\x15\n\x13UserIdOrAccountNameB\x0e\n\x0c_qr_code_uri\"l\n\x1d\x45nableRegistrationTOTPRequest\x12/\n\x0fregistration_id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x0eregistrationId\x12\x1a\n\x04\x63ode\x18\x02 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04\x63ode\"[\n\x1e\x45nableRegistrationTOTPResponse\x12\x16\n\x02id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x02id\x12!\n\x0c\x62\x61\x63kup_codes\x18\x03 \x03(\tR\x0b\x62\x61\x63kupCodes\"m\n\x1e\x44isableRegistrationTOTPRequest\x12/\n\x0fregistration_id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x0eregistrationId\x12\x1a\n\x04\x63ode\x18\x02 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04\x63ode\"\x87\x01\n\x15GenerateQRCodeRequest\x12-\n\x0e\x65nvironment_id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\renvironmentId\x12&\n\nidentifier\x18\x02 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\nidentifier\x12\x17\n\x07is_user\x18\x03 \x01(\x08R\x06isUser\"1\n\x16GenerateQRCodeResponse\x12\x17\n\x07qr_code\x18\x01 \x01(\tR\x06qrCode\"T\n\x15VerifyUserCodeRequest\x12\x1f\n\x07user_id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x06userId\x12\x1a\n\x04\x63ode\x18\x02 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04\x63ode\"*\n\x12VerifyCodeResponse\x12\x14\n\x05valid\x18\x01 \x01(\x08R\x05valid\"l\n\x1dVerifyRegistrationCodeRequest\x12/\n\x0fregistration_id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x0eregistrationId\x12\x1a\n\x04\x63ode\x18\x02 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04\x63ode2\xa7\x07\n\x0bTOTPService\x12\xba\x01\n\x0cRegisterTOTP\x12..scalekit.v1.auth.totp.TOTPRegistrationRequest\x1a/.scalekit.v1.auth.totp.TOTPRegistrationResponse\"I\x82\xb5\x18\x02\x18\x44\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02.\"\x19/api/v1/totp/registration:\x11totp_registration\x12\xc0\x01\n\nEnableTOTP\x12\x34.scalekit.v1.auth.totp.EnableRegistrationTOTPRequest\x1a\x35.scalekit.v1.auth.totp.EnableRegistrationTOTPResponse\"E\x82\xb5\x18\x02\x18\x44\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02*\"%/api/v1/totp/{registration_id}/enable:\x01*\x12\xad\x01\n\x0eVerifyUserCode\x12,.scalekit.v1.auth.totp.VerifyUserCodeRequest\x1a).scalekit.v1.auth.totp.VerifyCodeResponse\"B\x82\xb5\x18\x02\x18\x44\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02\'\"\"/api/v1/user/{user_id}/totp:verify:\x01*\x12\xc0\x01\n\x16VerifyRegistrationCode\x12\x34.scalekit.v1.auth.totp.VerifyRegistrationCodeRequest\x1a).scalekit.v1.auth.totp.VerifyCodeResponse\"E\x82\xb5\x18\x02\x18\x44\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02*\"%/api/v1/totp/{registration_id}/verify:\x01*\x12\xa4\x01\n\x0b\x44isableTOTP\x12\x35.scalekit.v1.auth.totp.DisableRegistrationTOTPRequest\x1a\x16.google.protobuf.Empty\"F\x82\xb5\x18\x02\x18\x44\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02+\"&/api/v1/totp/{registration_id}/disable:\x01*B5Z3github.com/scalekit-inc/scalekit/pkg/grpc/auth/totpb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -70,37 +71,37 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_VERIFYREGISTRATIONCODEREQUEST'].fields_by_name['code']._loaded_options = None
   _globals['_VERIFYREGISTRATIONCODEREQUEST'].fields_by_name['code']._serialized_options = b'\272H\003\310\001\001'
   _globals['_TOTPSERVICE'].methods_by_name['RegisterTOTP']._loaded_options = None
-  _globals['_TOTPSERVICE'].methods_by_name['RegisterTOTP']._serialized_options = b'\202\265\030\002\030D\202\323\344\223\002.\"\031/api/v1/totp/registration:\021totp_registration'
+  _globals['_TOTPSERVICE'].methods_by_name['RegisterTOTP']._serialized_options = b'\202\265\030\002\030D\372\322\344\223\002\t\022\007PREVIEW\202\323\344\223\002.\"\031/api/v1/totp/registration:\021totp_registration'
   _globals['_TOTPSERVICE'].methods_by_name['EnableTOTP']._loaded_options = None
-  _globals['_TOTPSERVICE'].methods_by_name['EnableTOTP']._serialized_options = b'\202\265\030\002\030D\202\323\344\223\002*\"%/api/v1/totp/{registration_id}/enable:\001*'
+  _globals['_TOTPSERVICE'].methods_by_name['EnableTOTP']._serialized_options = b'\202\265\030\002\030D\372\322\344\223\002\t\022\007PREVIEW\202\323\344\223\002*\"%/api/v1/totp/{registration_id}/enable:\001*'
   _globals['_TOTPSERVICE'].methods_by_name['VerifyUserCode']._loaded_options = None
-  _globals['_TOTPSERVICE'].methods_by_name['VerifyUserCode']._serialized_options = b'\202\265\030\002\030D\202\323\344\223\002\'\"\"/api/v1/user/{user_id}/totp:verify:\001*'
+  _globals['_TOTPSERVICE'].methods_by_name['VerifyUserCode']._serialized_options = b'\202\265\030\002\030D\372\322\344\223\002\t\022\007PREVIEW\202\323\344\223\002\'\"\"/api/v1/user/{user_id}/totp:verify:\001*'
   _globals['_TOTPSERVICE'].methods_by_name['VerifyRegistrationCode']._loaded_options = None
-  _globals['_TOTPSERVICE'].methods_by_name['VerifyRegistrationCode']._serialized_options = b'\202\265\030\002\030D\202\323\344\223\002*\"%/api/v1/totp/{registration_id}/verify:\001*'
+  _globals['_TOTPSERVICE'].methods_by_name['VerifyRegistrationCode']._serialized_options = b'\202\265\030\002\030D\372\322\344\223\002\t\022\007PREVIEW\202\323\344\223\002*\"%/api/v1/totp/{registration_id}/verify:\001*'
   _globals['_TOTPSERVICE'].methods_by_name['DisableTOTP']._loaded_options = None
-  _globals['_TOTPSERVICE'].methods_by_name['DisableTOTP']._serialized_options = b'\202\265\030\002\030D\202\323\344\223\002+\"&/api/v1/totp/{registration_id}/disable:\001*'
-  _globals['_TOTPREGISTRATIONREQUEST']._serialized_start=356
-  _globals['_TOTPREGISTRATIONREQUEST']._serialized_end=472
-  _globals['_TOTPREGISTRATIONRESPONSE']._serialized_start=474
-  _globals['_TOTPREGISTRATIONRESPONSE']._serialized_end=591
-  _globals['_TOTPREGISTRATION']._serialized_start=594
-  _globals['_TOTPREGISTRATION']._serialized_end=1494
-  _globals['_ENABLEREGISTRATIONTOTPREQUEST']._serialized_start=1496
-  _globals['_ENABLEREGISTRATIONTOTPREQUEST']._serialized_end=1604
-  _globals['_ENABLEREGISTRATIONTOTPRESPONSE']._serialized_start=1606
-  _globals['_ENABLEREGISTRATIONTOTPRESPONSE']._serialized_end=1697
-  _globals['_DISABLEREGISTRATIONTOTPREQUEST']._serialized_start=1699
-  _globals['_DISABLEREGISTRATIONTOTPREQUEST']._serialized_end=1808
-  _globals['_GENERATEQRCODEREQUEST']._serialized_start=1811
-  _globals['_GENERATEQRCODEREQUEST']._serialized_end=1946
-  _globals['_GENERATEQRCODERESPONSE']._serialized_start=1948
-  _globals['_GENERATEQRCODERESPONSE']._serialized_end=1997
-  _globals['_VERIFYUSERCODEREQUEST']._serialized_start=1999
-  _globals['_VERIFYUSERCODEREQUEST']._serialized_end=2083
-  _globals['_VERIFYCODERESPONSE']._serialized_start=2085
-  _globals['_VERIFYCODERESPONSE']._serialized_end=2127
-  _globals['_VERIFYREGISTRATIONCODEREQUEST']._serialized_start=2129
-  _globals['_VERIFYREGISTRATIONCODEREQUEST']._serialized_end=2237
-  _globals['_TOTPSERVICE']._serialized_start=2240
-  _globals['_TOTPSERVICE']._serialized_end=3100
+  _globals['_TOTPSERVICE'].methods_by_name['DisableTOTP']._serialized_options = b'\202\265\030\002\030D\372\322\344\223\002\t\022\007PREVIEW\202\323\344\223\002+\"&/api/v1/totp/{registration_id}/disable:\001*'
+  _globals['_TOTPREGISTRATIONREQUEST']._serialized_start=385
+  _globals['_TOTPREGISTRATIONREQUEST']._serialized_end=501
+  _globals['_TOTPREGISTRATIONRESPONSE']._serialized_start=503
+  _globals['_TOTPREGISTRATIONRESPONSE']._serialized_end=620
+  _globals['_TOTPREGISTRATION']._serialized_start=623
+  _globals['_TOTPREGISTRATION']._serialized_end=1523
+  _globals['_ENABLEREGISTRATIONTOTPREQUEST']._serialized_start=1525
+  _globals['_ENABLEREGISTRATIONTOTPREQUEST']._serialized_end=1633
+  _globals['_ENABLEREGISTRATIONTOTPRESPONSE']._serialized_start=1635
+  _globals['_ENABLEREGISTRATIONTOTPRESPONSE']._serialized_end=1726
+  _globals['_DISABLEREGISTRATIONTOTPREQUEST']._serialized_start=1728
+  _globals['_DISABLEREGISTRATIONTOTPREQUEST']._serialized_end=1837
+  _globals['_GENERATEQRCODEREQUEST']._serialized_start=1840
+  _globals['_GENERATEQRCODEREQUEST']._serialized_end=1975
+  _globals['_GENERATEQRCODERESPONSE']._serialized_start=1977
+  _globals['_GENERATEQRCODERESPONSE']._serialized_end=2026
+  _globals['_VERIFYUSERCODEREQUEST']._serialized_start=2028
+  _globals['_VERIFYUSERCODEREQUEST']._serialized_end=2112
+  _globals['_VERIFYCODERESPONSE']._serialized_start=2114
+  _globals['_VERIFYCODERESPONSE']._serialized_end=2156
+  _globals['_VERIFYREGISTRATIONCODEREQUEST']._serialized_start=2158
+  _globals['_VERIFYREGISTRATIONCODEREQUEST']._serialized_end=2266
+  _globals['_TOTPSERVICE']._serialized_start=2269
+  _globals['_TOTPSERVICE']._serialized_end=3204
 # @@protoc_insertion_point(module_scope)

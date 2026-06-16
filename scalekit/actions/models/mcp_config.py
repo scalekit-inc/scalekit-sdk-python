@@ -74,6 +74,10 @@ class McpConfig(BaseModel):
         default_factory=list,
         description="Mappings that connect tools to underlying connections",
     )
+    mcp_server_url: Optional[str] = Field(
+        None,
+        description="URL of the MCP server endpoint associated with this config (read-only)",
+    )
 
     def to_proto(self) -> ProtoMcpConfig:
         """Convert the model into a protobuf MCP config."""
@@ -117,6 +121,7 @@ class McpConfig(BaseModel):
                 McpConfigConnectionToolMapping.from_proto(mapping)
                 for mapping in proto_config.connection_tool_mappings
             ],
+            mcp_server_url=proto_config.mcp_server_url or None,
         )
 
     def to_dict(self) -> dict:
@@ -129,6 +134,7 @@ class McpConfig(BaseModel):
             "connection_tool_mappings": [
                 mapping.model_dump() for mapping in self.connection_tool_mappings
             ],
+            "mcp_server_url": self.mcp_server_url,
         }
 
     class Config:

@@ -2,3 +2,66 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
+from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
+from scalekit.v1.errdetails import errdetails_pb2 as scalekit_dot_v1_dot_errdetails_dot_errdetails__pb2
+
+
+class DummyStub(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.DummyService = channel.unary_unary(
+                '/scalekit.v1.errdetails.Dummy/DummyService',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_errdetails_dot_errdetails__pb2.ErrorInfo.FromString,
+                )
+
+
+class DummyServicer(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def DummyService(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_DummyServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'DummyService': grpc.unary_unary_rpc_method_handler(
+                    servicer.DummyService,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=scalekit_dot_v1_dot_errdetails_dot_errdetails__pb2.ErrorInfo.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'scalekit.v1.errdetails.Dummy', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+
+
+ # This class is part of an EXPERIMENTAL API.
+class Dummy(object):
+    """Missing associated documentation comment in .proto file."""
+
+    @staticmethod
+    def DummyService(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.errdetails.Dummy/DummyService',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            scalekit_dot_v1_dot_errdetails_dot_errdetails__pb2.ErrorInfo.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

@@ -4,7 +4,9 @@ from scalekit.v1.connected_accounts.connected_accounts_pb2 import (
     UpdateConnectedAccount,
     AuthorizationDetails,
     OauthToken,
-    StaticAuth
+    StaticAuth,
+    GoogleDWDAuth,
+    TrustedIDPAuth
 )
 from google.protobuf import struct_pb2
 
@@ -45,6 +47,28 @@ class UpdateConnectedAccountRequest(BaseModel):
             struct_details.update(static_data)
             static_auth = StaticAuth(details=struct_details)
             auth_details = AuthorizationDetails(static_auth=static_auth)
+
+        elif self.authorization_details and "google_dwd" in self.authorization_details:
+            dwd_data = self.authorization_details["google_dwd"]
+            if not isinstance(dwd_data, dict):
+                raise ValueError("authorization_details.google_dwd must be an object")
+            subject = dwd_data.get("subject")
+            if not subject:
+                raise ValueError("authorization_details.google_dwd.subject is required")
+            google_dwd = GoogleDWDAuth(subject=subject)
+            auth_details = AuthorizationDetails(google_dwd=google_dwd)
+
+        elif self.authorization_details and "trusted_idp" in self.authorization_details:
+            idp_data = self.authorization_details["trusted_idp"]
+            if not isinstance(idp_data, dict):
+                raise ValueError("authorization_details.trusted_idp must be an object")
+            trusted_idp = TrustedIDPAuth(
+                db_user=idp_data.get("db_user", ""),
+                access_key_id=idp_data.get("access_key_id", ""),
+                secret_access_key=idp_data.get("secret_access_key", ""),
+                session_token=idp_data.get("session_token", ""),
+            )
+            auth_details = AuthorizationDetails(trusted_idp=trusted_idp)
 
         # Handle api_config if provided
         api_config_struct = None

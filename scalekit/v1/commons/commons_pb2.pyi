@@ -60,6 +60,13 @@ class AuthenticationMode(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     AUTHENTICATION_MODE_UNSPECIFIED: _ClassVar[AuthenticationMode]
     MODULAR_AUTH: _ClassVar[AuthenticationMode]
     FULL_STACK_AUTH: _ClassVar[AuthenticationMode]
+
+class TimeUnit(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    SESSION_TIME_UNIT_UNSPECIFIED: _ClassVar[TimeUnit]
+    MINUTES: _ClassVar[TimeUnit]
+    HOURS: _ClassVar[TimeUnit]
+    DAYS: _ClassVar[TimeUnit]
 REGION_CODE_UNSPECIFIED: RegionCode
 US: RegionCode
 EU: RegionCode
@@ -91,6 +98,10 @@ ADFS: IdentityProviderType
 AUTHENTICATION_MODE_UNSPECIFIED: AuthenticationMode
 MODULAR_AUTH: AuthenticationMode
 FULL_STACK_AUTH: AuthenticationMode
+SESSION_TIME_UNIT_UNSPECIFIED: TimeUnit
+MINUTES: TimeUnit
+HOURS: TimeUnit
+DAYS: TimeUnit
 
 class OrganizationMembership(_message.Message):
     __slots__ = ("organization_id", "join_time", "membership_status", "roles", "name", "metadata", "display_name", "inviter_email", "created_at", "accepted_at", "expires_at", "provisioning_method", "permissions")
@@ -210,3 +221,13 @@ class ExternalIdentity(_message.Message):
     created_time: _timestamp_pb2.Timestamp
     last_synced_time: _timestamp_pb2.Timestamp
     def __init__(self, connection_id: _Optional[str] = ..., connection_type: _Optional[str] = ..., connection_provider: _Optional[_Union[IdentityProviderType, str]] = ..., connection_user_id: _Optional[str] = ..., is_social: bool = ..., last_login_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., created_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., last_synced_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+
+class OrganizationCustomizations(_message.Message):
+    __slots__ = ("organization_logo_branding", "display_name", "logo_url")
+    ORGANIZATION_LOGO_BRANDING_FIELD_NUMBER: _ClassVar[int]
+    DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
+    LOGO_URL_FIELD_NUMBER: _ClassVar[int]
+    organization_logo_branding: bool
+    display_name: str
+    logo_url: str
+    def __init__(self, organization_logo_branding: bool = ..., display_name: _Optional[str] = ..., logo_url: _Optional[str] = ...) -> None: ...

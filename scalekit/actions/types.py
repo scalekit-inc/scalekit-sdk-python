@@ -6,7 +6,7 @@ from .models.responses.execute_tool_response import ExecuteToolResponse
 from .models.responses.magic_link_response import MagicLinkResponse
 from .models.responses.list_connected_accounts_response import ListConnectedAccountsResponse
 from .models.responses.delete_connected_account_response import DeleteConnectedAccountResponse
-from .models.responses.get_connected_account_auth_response import GetConnectedAccountAuthResponse
+from .models.responses.get_connected_account_auth_response import GetConnectedAccountAuthResponse, GetConnectedAccountDetailsResponse
 from .models.responses.create_connected_account_response import CreateConnectedAccountResponse
 from .models.responses.update_connected_account_response import UpdateConnectedAccountResponse
 from .models.responses.create_mcp_response import CreateMcpResponse
@@ -21,10 +21,23 @@ from .models.responses.update_mcp_config_response import UpdateMcpConfigResponse
 from .models.responses.update_mcp_instance_response import UpdateMcpInstanceResponse
 from .models.responses.delete_mcp_config_response import DeleteMcpConfigResponse
 from .models.responses.delete_mcp_instance_response import DeleteMcpInstanceResponse
+from .models.responses.verify_connected_account_user_response import VerifyConnectedAccountUserResponse
 from .models.tool_input_output import ToolInput, ToolOutput
 from .models.tool_mapping import ToolMapping
 from .models.mcp_config import McpConfig, McpConfigConnectionToolMapping
 from .models.mcp_instance import McpInstance, McpInstanceConnectionAuthState
+from .models.custom_provider import AuthPattern, AuthField, OAuthConfig, Provider
+from .models.requests.create_custom_provider_request import CreateCustomProviderRequest
+from .models.requests.update_custom_provider_request import UpdateCustomProviderRequest
+from .models.requests.list_providers_request import ListProvidersRequest
+from .models.requests.delete_custom_provider_request import DeleteCustomProviderRequest
+from .models.responses.create_custom_provider_response import CreateCustomProviderResponse
+from .models.responses.update_custom_provider_response import UpdateCustomProviderResponse
+from .models.responses.list_providers_response import ListProvidersResponse
+from .models.responses.delete_custom_provider_response import DeleteCustomProviderResponse
+from .models.responses.list_mcp_connected_accounts_response import ListMcpConnectedAccountsResponse
+from .models.responses.create_mcp_session_token_response import CreateMcpSessionTokenResponse
+from .models.mcp_connection_auth_state import McpConnectionAuthState
 
 
 __all__ = [
@@ -37,6 +50,7 @@ __all__ = [
     'ListConnectedAccountsResponse',
     'DeleteConnectedAccountResponse',
     'GetConnectedAccountAuthResponse',
+    'GetConnectedAccountDetailsResponse',
     'CreateConnectedAccountResponse',
     'UpdateConnectedAccountResponse',
     'CreateMcpResponse',
@@ -58,4 +72,20 @@ __all__ = [
     'McpConfigConnectionToolMapping',
     'McpInstance',
     'McpInstanceConnectionAuthState',
+    'AuthPattern',
+    'AuthField',
+    'OAuthConfig',
+    'Provider',
+    'CreateCustomProviderRequest',
+    'UpdateCustomProviderRequest',
+    'ListProvidersRequest',
+    'DeleteCustomProviderRequest',
+    'CreateCustomProviderResponse',
+    'UpdateCustomProviderResponse',
+    'ListProvidersResponse',
+    'DeleteCustomProviderResponse',
+    'VerifyConnectedAccountUserResponse',
+    'ListMcpConnectedAccountsResponse',
+    'CreateMcpSessionTokenResponse',
+    'McpConnectionAuthState',
 ]

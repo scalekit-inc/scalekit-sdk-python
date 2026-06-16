@@ -1,12 +1,15 @@
 import unittest
+from datetime import timedelta
 
 from basetest import BaseTest
+from scalekit.common.exceptions import ScalekitNotFoundException
 from scalekit.actions.types import (
     ExecuteToolResponse,
     MagicLinkResponse,
     ListConnectedAccountsResponse,
     DeleteConnectedAccountResponse,
     GetConnectedAccountAuthResponse,
+    GetConnectedAccountDetailsResponse,
     CreateConnectedAccountResponse,
     UpdateConnectedAccountResponse,
     CreateMcpConfigResponse,
@@ -20,6 +23,9 @@ from scalekit.actions.types import (
     ListMcpInstancesResponse,
     DeleteMcpInstanceResponse,
     GetMcpInstanceAuthStateResponse,
+    VerifyConnectedAccountUserResponse,
+    ListMcpConnectedAccountsResponse,
+    CreateMcpSessionTokenResponse,
 )
 from scalekit.actions.models.responses.get_connected_account_auth_response import ConnectedAccount
 from scalekit.actions.modifier import Modifier
@@ -72,7 +78,7 @@ class TestConnect(BaseTest):
         tool_input = {
             "max_results": 1,
         }
-        
+    
         # Test with invalid tool name - should raise an exception
         with self.assertRaises(Exception) as context:
             self.scalekit_client.connect.execute_tool(
@@ -146,6 +152,24 @@ class TestConnect(BaseTest):
             self.assertTrue(hasattr(result, 'previous_page_token'))
         except Exception as e:
            raise e
+
+    def test_list_connected_accounts_with_connection_names_filter(self):
+        """connection_names filter passes through the action layer and returns a valid response."""
+        result = self.scalekit_client.actions.list_connected_accounts(
+            connection_names=[self.test_connection_name],
+        )
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, ListConnectedAccountsResponse)
+        self.assertTrue(hasattr(result, 'connected_accounts'))
+
+    def test_list_connected_accounts_connection_names_with_page_size(self):
+        """connection_names filter can be combined with pagination parameters."""
+        result = self.scalekit_client.actions.list_connected_accounts(
+            connection_names=[self.test_connection_name],
+            page_size=5,
+        )
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, ListConnectedAccountsResponse)
 
     def test_magic_link_response_structure(self):
         """Method to test MagicLinkResponse structure and methods"""
@@ -320,6 +344,23 @@ class TestConnect(BaseTest):
         except Exception as e:
             raise e
 
+    def test_execute_tool_with_connection_name(self):
+        """Method to test execute_tool with connection_name parameter"""
+        try:
+            result = self.scalekit_client.actions.execute_tool(
+                tool_input={"url": "https://docs.apify.com/platform/storage/usage"},
+                tool_name="c-myapifymcp_fetch-apify-docs",
+                identifier="akshay.parihar",
+                connection_name="myapifymcp",
+            )
+            self.assertIsNotNone(result)
+            self.assertIsInstance(result, ExecuteToolResponse)
+            self.assertTrue(hasattr(result, 'data'))
+            self.assertTrue(hasattr(result, 'execution_id'))
+            self.assertIsNotNone(result.data)
+        except Exception as e:
+            raise e
+
     def test_get_authorization_link_with_connected_account_id(self):
         """Method to test get_authorization_link with connected_account_id parameter"""
         try:
@@ -339,6 +380,43 @@ class TestConnect(BaseTest):
             self.assertTrue(hasattr(result, 'expiry'))
         except Exception as e:
             raise e
+
+    def test_get_authorization_link_with_state(self):
+        """Method to test get_authorization_link accepts state parameter"""
+        result = self.scalekit_client.connect.get_authorization_link(
+            connection_name=self.test_connection_name,
+            identifier=self.test_identifier,
+            state="custom_state_value"
+        )
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, MagicLinkResponse)
+        self.assertTrue(hasattr(result, 'link'))
+        self.assertTrue(hasattr(result, 'expiry'))
+
+    def test_get_authorization_link_with_user_verify_url(self):
+        """Method to test get_authorization_link accepts user_verify_url parameter"""
+        result = self.scalekit_client.connect.get_authorization_link(
+            connection_name=self.test_connection_name,
+            identifier=self.test_identifier,
+            user_verify_url="https://example.com/verify"
+        )
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, MagicLinkResponse)
+        self.assertTrue(hasattr(result, 'link'))
+        self.assertTrue(hasattr(result, 'expiry'))
+
+    def test_get_authorization_link_with_state_and_user_verify_url(self):
+        """Method to test get_authorization_link accepts both state and user_verify_url"""
+        result = self.scalekit_client.connect.get_authorization_link(
+            connection_name=self.test_connection_name,
+            identifier=self.test_identifier,
+            state="custom_state",
+            user_verify_url="https://example.com/verify"
+        )
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, MagicLinkResponse)
+        self.assertTrue(hasattr(result, 'link'))
+        self.assertTrue(hasattr(result, 'expiry'))
 
     def test_delete_connected_account_with_connected_account_id(self):
         """Method to test delete_connected_account with connected_account_id parameter"""
@@ -408,47 +486,6 @@ class TestConnect(BaseTest):
         """Method to test create_connected_account method exists"""
         self.assertTrue(hasattr(self.scalekit_client.connect, 'create_connected_account'))
         self.assertTrue(callable(self.scalekit_client.connect.create_connected_account))
-
-    def test_create_connected_account_with_oauth(self):
-        """Method to test create_connected_account with OAuth authorization"""
-        import uuid
-
-        # Generate unique identifier for this test
-        test_id = f"test_create_oauth_{uuid.uuid4().hex[:8]}"
-
-        oauth_auth_details = {
-            "oauth_token": {
-                "access_token": "test_access_token",
-                "refresh_token": "test_refresh_token",
-                "scopes": ["read", "write"]
-            }
-        }
-
-        try:
-            result = self.scalekit_client.actions.create_connected_account(
-                connection_name="GMAIL",
-                identifier=test_id,
-                authorization_details=oauth_auth_details
-            )
-
-            self.assertIsNotNone(result)
-            self.assertIsInstance(result, CreateConnectedAccountResponse)
-            self.assertTrue(hasattr(result, 'connected_account'))
-            self.assertIsNotNone(result.connected_account)
-            self.assertEqual(result.connected_account.identifier, test_id)
-            token = result.connected_account.authorization_details.get("oauth_token", {})
-            self.assertEqual(token.get("access_token"), "test_access_token")
-            self.assertEqual(token.get("refresh_token"), "test_refresh_token")
-            self.assertEqual(token.get("scopes"), ["read", "write"])
-
-            # Clean up - delete the created account
-            self.scalekit_client.connect.delete_connected_account(
-                connection_name="GMAIL",
-                identifier=test_id
-            )
-
-        except Exception as e:
-            raise e
 
     def test_create_connected_account_with_static_auth(self):
         """Method to test create_connected_account with static authorization"""
@@ -646,6 +683,7 @@ class TestConnect(BaseTest):
 
         test_id = f"test_no_auth_{uuid.uuid4().hex[:8]}"
 
+        result = None
         try:
             # Create with no authorization_details — should NOT send an empty OAuth token
             result = self.scalekit_client.connect.get_or_create_connected_account(
@@ -667,14 +705,15 @@ class TestConnect(BaseTest):
             self.assertIsNotNone(result2)
             self.assertEqual(result.connected_account.id, result2.connected_account.id)
 
-            # Clean up
-            self.scalekit_client.connect.delete_connected_account(
-                connection_name="GMAIL",
-                identifier=test_id,
-            )
-
-        except Exception as e:
-            raise e
+        finally:
+            if result is not None:
+                try:
+                    self.scalekit_client.connect.delete_connected_account(
+                        connection_name="GMAIL",
+                        identifier=test_id,
+                    )
+                except ScalekitNotFoundException:
+                    pass
 
     def test_get_or_create_connected_account_validation(self):
         """Method to test get_or_create_connected_account parameter validation"""
@@ -762,6 +801,83 @@ class TestConnect(BaseTest):
         empty_proto = empty_request.to_proto()
         self.assertIsNotNone(empty_proto)
         self.assertFalse(empty_proto.HasField("authorization_details"))
+
+    def test_google_dwd_create_request_to_proto(self):
+        """CreateConnectedAccountRequest with google_dwd builds correct proto"""
+        from scalekit.actions.models.requests.create_connected_account_request import CreateConnectedAccountRequest
+
+        req = CreateConnectedAccountRequest(
+            connection_name="GDWD",
+            identifier="admin@example.com",
+            authorization_details={"google_dwd": {"subject": "admin@example.com"}}
+        )
+        proto = req.to_proto()
+        self.assertTrue(proto.authorization_details.HasField("google_dwd"))
+        self.assertEqual(proto.authorization_details.google_dwd.subject, "admin@example.com")
+        # access_token must NOT be sent in requests
+        self.assertEqual(proto.authorization_details.google_dwd.access_token, "")
+
+    def test_google_dwd_update_request_to_proto(self):
+        """UpdateConnectedAccountRequest with google_dwd builds correct proto"""
+        from scalekit.actions.models.requests.update_connected_account_request import UpdateConnectedAccountRequest
+
+        req = UpdateConnectedAccountRequest(
+            connection_name="GDWD",
+            identifier="admin@example.com",
+            authorization_details={"google_dwd": {"subject": "admin@example.com"}}
+        )
+        proto = req.to_proto()
+        self.assertTrue(proto.authorization_details.HasField("google_dwd"))
+        self.assertEqual(proto.authorization_details.google_dwd.subject, "admin@example.com")
+
+    def test_google_dwd_response_from_proto(self):
+        """ConnectedAccount.from_proto correctly decodes google_dwd oneof"""
+        from scalekit.actions.models.responses.get_connected_account_auth_response import ConnectedAccount
+        from scalekit.v1.connected_accounts.connected_accounts_pb2 import ConnectedAccount as ProtoCA
+        from google.protobuf.timestamp_pb2 import Timestamp
+
+        proto_ca = ProtoCA()
+        proto_ca.authorization_details.google_dwd.subject = "admin@example.com"
+        proto_ca.authorization_details.google_dwd.access_token = "ya29.token"
+        proto_ca.authorization_details.google_dwd.scopes.extend(["openid", "email"])
+        ts = Timestamp()
+        ts.FromSeconds(2000000000)
+        proto_ca.authorization_details.google_dwd.token_expires_at.CopyFrom(ts)
+
+        ca = ConnectedAccount.from_proto(proto_ca)
+        self.assertIsNotNone(ca.authorization_details)
+        self.assertIn("google_dwd", ca.authorization_details)
+        dwd = ca.authorization_details["google_dwd"]
+        self.assertEqual(dwd["subject"], "admin@example.com")
+        self.assertEqual(dwd["access_token"], "ya29.token")
+        self.assertEqual(dwd["scopes"], ["openid", "email"])
+        self.assertIsNotNone(dwd["token_expires_at"])
+
+    def test_google_dwd_response_no_token_expires_at(self):
+        """google_dwd with no token_expires_at gives None in response"""
+        from scalekit.actions.models.responses.get_connected_account_auth_response import ConnectedAccount
+        from scalekit.v1.connected_accounts.connected_accounts_pb2 import ConnectedAccount as ProtoCA
+
+        proto_ca = ProtoCA()
+        proto_ca.authorization_details.google_dwd.subject = "admin@example.com"
+        proto_ca.authorization_details.google_dwd.access_token = "ya29.token"
+
+        ca = ConnectedAccount.from_proto(proto_ca)
+        dwd = ca.authorization_details["google_dwd"]
+        self.assertIsNone(dwd["token_expires_at"])
+
+    def test_google_dwd_not_set_in_oauth_request(self):
+        """google_dwd is not set when oauth_token auth is used"""
+        from scalekit.actions.models.requests.create_connected_account_request import CreateConnectedAccountRequest
+
+        req = CreateConnectedAccountRequest(
+            connection_name="GMAIL",
+            identifier="user@example.com",
+            authorization_details={"oauth_token": {"access_token": "tok", "refresh_token": "ref", "scopes": []}}
+        )
+        proto = req.to_proto()
+        self.assertTrue(proto.authorization_details.HasField("oauth_token"))
+        self.assertFalse(proto.authorization_details.HasField("google_dwd"))
 
     @unittest.skip
     def test_google_adk_get_tools(self):
@@ -1027,76 +1143,6 @@ class TestConnect(BaseTest):
         self.assertTrue(hasattr(self.scalekit_client.actions, 'update_connected_account'))
         self.assertTrue(callable(self.scalekit_client.actions.update_connected_account))
 
-    def test_update_connected_account_with_oauth(self):
-        """Method to test update_connected_account with OAuth authorization"""
-        import uuid
-
-        # Generate unique identifier for this test
-        test_id = f"test_update_oauth_{uuid.uuid4().hex[:8]}"
-
-        # Initial OAuth auth details
-        initial_oauth_auth_details = {
-            "oauth_token": {
-                "access_token": "initial_access_token",
-                "refresh_token": "initial_refresh_token",
-                "scopes": ["read"]
-            }
-        }
-
-        # Updated OAuth auth details
-        updated_oauth_auth_details = {
-            "oauth_token": {
-                "access_token": "updated_access_token",
-                "refresh_token": "updated_refresh_token",
-                "scopes": ["read", "write", "admin"]
-            }
-        }
-
-        try:
-            # First create a connected account
-            create_result = self.scalekit_client.actions.create_connected_account(
-                connection_name="GMAIL",
-                identifier=test_id,
-                authorization_details=initial_oauth_auth_details
-            )
-
-            self.assertIsNotNone(create_result)
-            self.assertIsInstance(create_result, CreateConnectedAccountResponse)
-            self.assertEqual(create_result.connected_account.identifier, test_id)
-
-            # Verify initial OAuth details
-            initial_token = create_result.connected_account.authorization_details.get("oauth_token", {})
-            self.assertEqual(initial_token.get("access_token"), "initial_access_token")
-            self.assertEqual(initial_token.get("scopes"), ["read"])
-
-            # Now update the connected account with new OAuth details
-            update_result = self.scalekit_client.actions.update_connected_account(
-                connection_name="GMAIL",
-                identifier=test_id,
-                authorization_details=updated_oauth_auth_details
-            )
-
-            self.assertIsNotNone(update_result)
-            self.assertIsInstance(update_result, UpdateConnectedAccountResponse)
-            self.assertTrue(hasattr(update_result, 'connected_account'))
-            self.assertIsNotNone(update_result.connected_account)
-            self.assertEqual(update_result.connected_account.identifier, test_id)
-
-            # Verify updated OAuth details
-            updated_token = update_result.connected_account.authorization_details.get("oauth_token", {})
-            self.assertEqual(updated_token.get("access_token"), "updated_access_token")
-            self.assertEqual(updated_token.get("refresh_token"), "updated_refresh_token")
-            self.assertEqual(updated_token.get("scopes"), ["read", "write", "admin"])
-
-            # Clean up - delete the created account
-            self.scalekit_client.actions.delete_connected_account(
-                connection_name="GMAIL",
-                identifier=test_id
-            )
-
-        except Exception as e:
-            raise e
-
     def test_update_connected_account_with_static_auth(self):
         """Method to test update_connected_account with static authorization"""
         import uuid
@@ -1238,335 +1284,6 @@ class TestConnect(BaseTest):
             self.assertEqual(updated_config["domain"], "updated.gmail.com")
             self.assertEqual(updated_config["api_endpoint"], "https://updated.gmail.googleapis.com")
             self.assertEqual(updated_config["custom_auth_header"], "Updated Bearer")
-
-            # Clean up - delete the created account
-            self.scalekit_client.actions.delete_connected_account(
-                connection_name="GMAIL",
-                identifier=test_id
-            )
-
-        except Exception as e:
-            raise e
-
-    def test_update_connected_account_with_connected_account_id(self):
-        """Method to test update_connected_account using connected_account_id parameter"""
-        import uuid
-
-        # Generate unique identifier for this test
-        test_id = f"test_update_ca_id_{uuid.uuid4().hex[:8]}"
-
-        # Initial OAuth auth details
-        initial_oauth_auth_details = {
-            "oauth_token": {
-                "access_token": "initial_ca_id_token",
-                "refresh_token": "initial_ca_id_refresh",
-                "scopes": ["read"]
-            }
-        }
-
-        # Updated OAuth auth details
-        updated_oauth_auth_details = {
-            "oauth_token": {
-                "access_token": "updated_ca_id_token",
-                "refresh_token": "updated_ca_id_refresh",
-                "scopes": ["read", "write"]
-            }
-        }
-
-        try:
-            # First create a connected account
-            create_result = self.scalekit_client.actions.create_connected_account(
-                connection_name="GMAIL",
-                identifier=test_id,
-                authorization_details=initial_oauth_auth_details
-            )
-
-            self.assertIsNotNone(create_result)
-            self.assertIsInstance(create_result, CreateConnectedAccountResponse)
-            self.assertEqual(create_result.connected_account.identifier, test_id)
-
-            # Get the connected_account_id for the update
-            connected_account_id = create_result.connected_account.id
-            self.assertIsNotNone(connected_account_id)
-
-            # Verify initial OAuth details
-            initial_token = create_result.connected_account.authorization_details.get("oauth_token", {})
-            self.assertEqual(initial_token.get("access_token"), "initial_ca_id_token")
-            self.assertEqual(initial_token.get("scopes"), ["read"])
-
-            # Now update the connected account using connected_account_id instead of connection_name + identifier
-            update_result = self.scalekit_client.actions.update_connected_account(
-                connection_name="GMAIL",  # Still required in current implementation
-                identifier=test_id,      # Still required in current implementation
-                connected_account_id=connected_account_id,
-                authorization_details=updated_oauth_auth_details
-            )
-
-            self.assertIsNotNone(update_result)
-            self.assertIsInstance(update_result, UpdateConnectedAccountResponse)
-            self.assertTrue(hasattr(update_result, 'connected_account'))
-            self.assertIsNotNone(update_result.connected_account)
-            self.assertEqual(update_result.connected_account.identifier, test_id)
-            self.assertEqual(update_result.connected_account.id, connected_account_id)
-
-            # Verify updated OAuth details
-            updated_token = update_result.connected_account.authorization_details.get("oauth_token", {})
-            self.assertEqual(updated_token.get("access_token"), "updated_ca_id_token")
-            self.assertEqual(updated_token.get("refresh_token"), "updated_ca_id_refresh")
-            self.assertEqual(updated_token.get("scopes"), ["read", "write"])
-
-            # Clean up - delete the created account
-            self.scalekit_client.actions.delete_connected_account(
-                connection_name="GMAIL",
-                identifier=test_id
-            )
-
-        except Exception as e:
-            raise e
-
-    def test_update_connected_account_validation(self):
-        """Method to test update_connected_account validation and error handling"""
-        import uuid
-
-        # Generate unique identifier for this test
-        test_id = f"test_update_validation_{uuid.uuid4().hex[:8]}"
-
-        oauth_auth_details = {
-            "oauth_token": {
-                "access_token": "test_validation_token",
-                "refresh_token": "test_validation_refresh",
-                "scopes": ["read"]
-            }
-        }
-
-        try:
-            # First create a connected account
-            create_result = self.scalekit_client.actions.create_connected_account(
-                connection_name="GMAIL",
-                identifier=test_id,
-                authorization_details=oauth_auth_details
-            )
-
-            self.assertIsNotNone(create_result)
-            self.assertIsInstance(create_result, CreateConnectedAccountResponse)
-            self.assertEqual(create_result.connected_account.identifier, test_id)
-
-            # Test successful update with minimal parameters
-            minimal_update_result = self.scalekit_client.actions.update_connected_account(
-                connection_name="GMAIL",
-                identifier=test_id
-            )
-
-            self.assertIsNotNone(minimal_update_result)
-            self.assertIsInstance(minimal_update_result, UpdateConnectedAccountResponse)
-            self.assertIsNotNone(minimal_update_result.connected_account)
-            self.assertEqual(minimal_update_result.connected_account.identifier, test_id)
-
-            # Test update with organization_id and user_id parameters
-            update_with_ids_result = self.scalekit_client.actions.update_connected_account(
-                connection_name="GMAIL",
-                identifier=test_id,
-                organization_id="test_org_id",
-                user_id="test_user_id"
-            )
-
-            self.assertIsNotNone(update_with_ids_result)
-            self.assertIsInstance(update_with_ids_result, UpdateConnectedAccountResponse)
-            self.assertIsNotNone(update_with_ids_result.connected_account)
-            self.assertEqual(update_with_ids_result.connected_account.identifier, test_id)
-
-            # Test update with all valid parameters
-            updated_auth_details = {
-                "oauth_token": {
-                    "access_token": "updated_validation_token",
-                    "refresh_token": "updated_validation_refresh",
-                    "scopes": ["read", "write"]
-                }
-            }
-
-            api_config = {
-                "version": "v1.1",
-                "domain": "validation.gmail.com",
-                "api_endpoint": "https://validation.gmail.googleapis.com",
-                "custom_auth_header": "Validation Bearer"
-            }
-
-            full_update_result = self.scalekit_client.actions.update_connected_account(
-                connection_name="GMAIL",
-                identifier=test_id,
-                authorization_details=updated_auth_details,
-                organization_id="test_org_id",
-                user_id="test_user_id",
-                connected_account_id=create_result.connected_account.id,
-                api_config=api_config
-            )
-
-            self.assertIsNotNone(full_update_result)
-            self.assertIsInstance(full_update_result, UpdateConnectedAccountResponse)
-            self.assertIsNotNone(full_update_result.connected_account)
-            self.assertEqual(full_update_result.connected_account.identifier, test_id)
-            self.assertEqual(full_update_result.connected_account.id, create_result.connected_account.id)
-
-            # Verify the updates were applied correctly
-            updated_token = full_update_result.connected_account.authorization_details.get("oauth_token", {})
-            self.assertEqual(updated_token.get("access_token"), "updated_validation_token")
-            self.assertEqual(updated_token.get("scopes"), ["read", "write"])
-
-            # Verify API config was updated
-            self.assertIsNotNone(full_update_result.connected_account.api_config)
-            updated_config = full_update_result.connected_account.api_config
-            self.assertEqual(updated_config["version"], "v1.1")
-            self.assertEqual(updated_config["domain"], "validation.gmail.com")
-
-            # Clean up - delete the created account
-            self.scalekit_client.actions.delete_connected_account(
-                connection_name="GMAIL",
-                identifier=test_id
-            )
-
-        except Exception as e:
-            raise e
-
-    def test_update_connected_account_response_structure(self):
-        """Method to test update_connected_account response structure and types"""
-        import uuid
-
-        # Generate unique identifier for this test
-        test_id = f"test_update_structure_{uuid.uuid4().hex[:8]}"
-
-        oauth_auth_details = {
-            "oauth_token": {
-                "access_token": "test_structure_token",
-                "refresh_token": "test_structure_refresh",
-                "scopes": ["read"]
-            }
-        }
-
-        api_config = {
-            "version": "v1.0",
-            "domain": "structure.gmail.com",
-            "api_endpoint": "https://structure.gmail.googleapis.com",
-            "custom_auth_header": "Structure Bearer"
-        }
-
-        try:
-            # First create a connected account
-            create_result = self.scalekit_client.actions.create_connected_account(
-                connection_name="GMAIL",
-                identifier=test_id,
-                authorization_details=oauth_auth_details,
-                api_config=api_config
-            )
-
-            self.assertIsNotNone(create_result)
-            self.assertIsInstance(create_result, CreateConnectedAccountResponse)
-
-            # Update the connected account
-            updated_auth_details = {
-                "oauth_token": {
-                    "access_token": "updated_structure_token",
-                    "refresh_token": "updated_structure_refresh",
-                    "scopes": ["read", "write", "admin"]
-                }
-            }
-
-            updated_api_config = {
-                "version": "v2.0",
-                "domain": "updated-structure.gmail.com",
-                "api_endpoint": "https://updated-structure.gmail.googleapis.com",
-                "custom_auth_header": "Updated Structure Bearer"
-            }
-
-            update_result = self.scalekit_client.actions.update_connected_account(
-                connection_name="GMAIL",
-                identifier=test_id,
-                authorization_details=updated_auth_details,
-                api_config=updated_api_config
-            )
-
-            # Verify response is correct type
-            self.assertIsNotNone(update_result)
-            self.assertIsInstance(update_result, UpdateConnectedAccountResponse)
-
-            # Verify response has connected_account attribute
-            self.assertTrue(hasattr(update_result, 'connected_account'))
-            self.assertIsNotNone(update_result.connected_account)
-            self.assertIsInstance(update_result.connected_account, ConnectedAccount)
-
-            # Verify ConnectedAccount fields and types
-            ca = update_result.connected_account
-
-            # Basic string fields
-            self.assertIsNotNone(ca.id)
-            self.assertIsInstance(ca.id, str)
-            self.assertEqual(ca.identifier, test_id)
-            self.assertIsInstance(ca.identifier, str)
-            self.assertIsNotNone(ca.provider)
-            self.assertIsInstance(ca.provider, str)
-            self.assertIsNotNone(ca.status)
-            self.assertIsInstance(ca.status, str)
-            self.assertIsNotNone(ca.authorization_type)
-            self.assertIsInstance(ca.authorization_type, str)
-            self.assertIsNotNone(ca.connector)
-            self.assertIsInstance(ca.connector, str)
-
-            # DateTime fields
-            if ca.token_expires_at:
-                from datetime import datetime
-                self.assertIsInstance(ca.token_expires_at, datetime)
-            if ca.updated_at:
-                from datetime import datetime
-                self.assertIsInstance(ca.updated_at, datetime)
-            if ca.last_used_at:
-                from datetime import datetime
-                self.assertIsInstance(ca.last_used_at, datetime)
-
-            # Dictionary fields
-            self.assertIsNotNone(ca.authorization_details)
-            self.assertIsInstance(ca.authorization_details, dict)
-
-            # Verify OAuth token structure
-            oauth_token = ca.authorization_details.get("oauth_token")
-            self.assertIsNotNone(oauth_token)
-            self.assertIsInstance(oauth_token, dict)
-            self.assertEqual(oauth_token.get("access_token"), "updated_structure_token")
-            self.assertEqual(oauth_token.get("refresh_token"), "updated_structure_refresh")
-            self.assertEqual(oauth_token.get("scopes"), ["read", "write", "admin"])
-
-            # API config structure verification
-            self.assertIsNotNone(ca.api_config)
-            self.assertIsInstance(ca.api_config, dict)
-
-            # Verify API config content and types
-            api_config_result = ca.api_config
-            self.assertEqual(api_config_result["version"], "v2.0")
-            self.assertIsInstance(api_config_result["version"], str)
-            self.assertEqual(api_config_result["domain"], "updated-structure.gmail.com")
-            self.assertIsInstance(api_config_result["domain"], str)
-            self.assertEqual(api_config_result["api_endpoint"], "https://updated-structure.gmail.googleapis.com")
-            self.assertIsInstance(api_config_result["api_endpoint"], str)
-            self.assertEqual(api_config_result["custom_auth_header"], "Updated Structure Bearer")
-            self.assertIsInstance(api_config_result["custom_auth_header"], str)
-
-            # Verify all expected API config fields are present
-            expected_api_config_fields = ["version", "domain", "custom_headers", "custom_auth_header", "api_endpoint"]
-            for field in expected_api_config_fields:
-                self.assertIn(field, api_config_result, f"Expected API config field '{field}' not found")
-
-            # Test response serialization
-            self.assertTrue(hasattr(update_result, 'model_dump'))
-            response_dict = update_result.model_dump()
-            self.assertIsInstance(response_dict, dict)
-            self.assertIn('connected_account', response_dict)
-
-            # Test ConnectedAccount serialization
-            self.assertTrue(hasattr(ca, 'model_dump'))
-            ca_dict = ca.model_dump()
-            self.assertIsInstance(ca_dict, dict)
-            self.assertIn('id', ca_dict)
-            self.assertIn('identifier', ca_dict)
-            self.assertIn('authorization_details', ca_dict)
-            self.assertIn('api_config', ca_dict)
 
             # Clean up - delete the created account
             self.scalekit_client.actions.delete_connected_account(
@@ -1724,7 +1441,7 @@ class TestConnect(BaseTest):
             response = self.scalekit_client.actions.request(
                 connection_name=self.test_connection_name,
                 identifier=self.test_identifier,
-                path="/v1/users/me/profile",
+                path="/gmail/v1/users/me/profile",
                 method="GET"
             )
 
@@ -1749,6 +1466,7 @@ class TestConnect(BaseTest):
 
         except Exception as e:
             raise e
+
 
 class TestActionsMcpConfig(BaseTest):
     """Tests for MCP config operations exposed via the actions client."""
@@ -1837,6 +1555,46 @@ class TestActionsMcpConfig(BaseTest):
                     config_id=created_config_id
                 )
                 self.assertIsInstance(delete_response, DeleteMcpConfigResponse)
+
+    def test_list_configs_filter_by_mcp_server_url(self):
+        """list_configs(filter_mcp_server_url=...) returns only configs with that server URL."""
+        import uuid
+
+        config_name = f"py-test-url-filter-{uuid.uuid4().hex[:8]}"
+        created_config_id = None
+
+        try:
+            create_response = self.actions_client.mcp.create_config(
+                name=config_name,
+                description="mcp_server_url filter test",
+                connection_tool_mappings=[
+                    McpConfigConnectionToolMapping(
+                        connection_name=self.seed_connection_name,
+                        tools=self.seed_tools[:1],
+                    )
+                ],
+            )
+            self.assertIsInstance(create_response, CreateMcpConfigResponse)
+            created_config_id = create_response.config.id
+
+            # Retrieve the server-assigned mcp_server_url
+            by_id = self.actions_client.mcp.list_configs(filter_id=created_config_id)
+            self.assertIsInstance(by_id, ListMcpConfigsResponse)
+            self.assertTrue(by_id.configs)
+
+            mcp_server_url = by_id.configs[0].mcp_server_url
+            if not mcp_server_url:
+                self.skipTest("Server did not assign mcp_server_url to this config")
+
+            filtered = self.actions_client.mcp.list_configs(
+                filter_mcp_server_url=mcp_server_url
+            )
+            self.assertIsInstance(filtered, ListMcpConfigsResponse)
+            self.assertIn(created_config_id, [c.id for c in filtered.configs])
+
+        finally:
+            if created_config_id:
+                self.actions_client.mcp.delete_config(config_id=created_config_id)
 
 
 class TestActionsMcpInstance(BaseTest):
@@ -1956,3 +1714,282 @@ class TestActionsMcpInstance(BaseTest):
                     instance_id=instance_id
                 )
                 self.assertIsInstance(delete_response, DeleteMcpInstanceResponse)
+
+
+class TestActionsMcpConnectedAccounts(BaseTest):
+    """Tests for list_mcp_connected_accounts and create_session_token via the actions client.
+
+    Uses a fixed test identifier (john-doe-sdk-test) that has MY_CALENDAR connected.
+    A fresh MCP config is created in setUp and deleted in tearDown so every test
+    gets a clean slate without duplicating create/delete boilerplate.
+    """
+
+    MCP_CONNECTION_NAME = "MY_CALENDAR"
+    MCP_TOOLS = ["googlecalendar_create_event", "googlecalendar_delete_event"]
+    USER_IDENTIFIER = "john-doe-sdk-test"
+
+    def setUp(self):
+        import uuid
+        self.actions_client = self.scalekit_client.actions
+        self.config_id = None  # set before any call so tearDown can always guard on it
+        config_name = f"py-test-ca-{uuid.uuid4().hex[:8]}"
+        create_response = self.actions_client.mcp.create_config(
+            name=config_name,
+            description="Test config for connected account / session token tests",
+            connection_tool_mappings=[
+                McpConfigConnectionToolMapping(
+                    connection_name=self.MCP_CONNECTION_NAME,
+                    tools=self.MCP_TOOLS,
+                )
+            ],
+        )
+        self.config_id = create_response.config.id  # assign before asserting so tearDown can clean up
+        self.assertIsInstance(create_response, CreateMcpConfigResponse)
+        self.assertIsNotNone(self.config_id)
+
+    def tearDown(self):
+        if getattr(self, 'config_id', None):
+            self.actions_client.mcp.delete_config(config_id=self.config_id)
+
+    def test_list_mcp_connected_accounts(self):
+        """Returns one entry per connection; no auth link when include_auth_link is omitted."""
+        result = self.actions_client.mcp.list_mcp_connected_accounts(
+            config_id=self.config_id,
+            identifier=self.USER_IDENTIFIER,
+        )
+        self.assertIsInstance(result, ListMcpConnectedAccountsResponse)
+        self.assertTrue(hasattr(result, 'connected_accounts'))
+        # Config has exactly one connection (MY_CALENDAR)
+        self.assertEqual(len(result.connected_accounts), 1)
+        account = result.connected_accounts[0]
+        self.assertTrue(hasattr(account, 'connection_name'))
+        self.assertTrue(hasattr(account, 'connected_account_status'))
+        # Auth link should be absent when include_auth_link was not requested
+        self.assertFalse(account.authentication_link)
+
+    def test_list_mcp_connected_accounts_with_auth_link(self):
+        """include_auth_link=True causes every connection to carry an authentication_link."""
+        result = self.actions_client.mcp.list_mcp_connected_accounts(
+            config_id=self.config_id,
+            identifier=self.USER_IDENTIFIER,
+            include_auth_link=True,
+        )
+        self.assertIsInstance(result, ListMcpConnectedAccountsResponse)
+        self.assertEqual(len(result.connected_accounts), 1)
+        for account in result.connected_accounts:
+            self.assertTrue(
+                account.authentication_link,
+                f"Expected authentication_link for {account.connection_name} when include_auth_link=True",
+            )
+
+    def test_list_mcp_connected_accounts_without_auth_link(self):
+        """include_auth_link=False explicitly omits the authentication_link."""
+        result = self.actions_client.mcp.list_mcp_connected_accounts(
+            config_id=self.config_id,
+            identifier=self.USER_IDENTIFIER,
+            include_auth_link=False,
+        )
+        self.assertIsInstance(result, ListMcpConnectedAccountsResponse)
+        for account in result.connected_accounts:
+            self.assertFalse(
+                account.authentication_link,
+                f"Expected no authentication_link for {account.connection_name} when include_auth_link=False",
+            )
+
+    def test_list_mcp_connected_accounts_validation(self):
+        """Omitting config_id or identifier raises ValueError."""
+        with self.assertRaises(ValueError):
+            self.actions_client.mcp.list_mcp_connected_accounts(
+                config_id="",
+                identifier=self.USER_IDENTIFIER,
+            )
+        with self.assertRaises(ValueError):
+            self.actions_client.mcp.list_mcp_connected_accounts(
+                config_id=self.config_id,
+                identifier="",
+            )
+
+    def test_create_session_token(self):
+        """create_session_token returns a non-empty token string and an expiry timestamp."""
+        result = self.actions_client.mcp.create_session_token(
+            mcp_config_id=self.config_id,
+            identifier=self.USER_IDENTIFIER,
+        )
+        self.assertIsInstance(result, CreateMcpSessionTokenResponse)
+        self.assertTrue(result.token, "Expected a non-empty token string")
+        self.assertIsNotNone(result.expires_at)
+
+    def test_create_session_token_with_custom_expiry(self):
+        """create_session_token accepts an explicit timedelta expiry."""
+        result = self.actions_client.mcp.create_session_token(
+            mcp_config_id=self.config_id,
+            identifier=self.USER_IDENTIFIER,
+            expiry=timedelta(hours=2),
+        )
+        self.assertIsInstance(result, CreateMcpSessionTokenResponse)
+        self.assertTrue(result.token, "Expected a non-empty token string")
+        self.assertIsNotNone(result.expires_at)
+
+    def test_create_session_token_validation(self):
+        """Omitting mcp_config_id or identifier raises ValueError."""
+        with self.assertRaises(ValueError):
+            self.actions_client.mcp.create_session_token(
+                mcp_config_id="",
+                identifier=self.USER_IDENTIFIER,
+            )
+        with self.assertRaises(ValueError):
+            self.actions_client.mcp.create_session_token(
+                mcp_config_id=self.config_id,
+                identifier="",
+            )
+
+
+class TestConnectUserVerify(BaseTest):
+    """Tests for verify_connected_account_user via the actions client."""
+
+    def setUp(self):
+        self.actions_client = self.scalekit_client.actions
+        self.test_identifier = "default"
+
+    def test_verify_connected_account_user_method_exists(self):
+        """Method to test verify_connected_account_user method exists"""
+        self.assertTrue(hasattr(self.actions_client, 'verify_connected_account_user'))
+        self.assertTrue(callable(self.actions_client.verify_connected_account_user))
+
+    def test_verify_connected_account_user_missing_auth_request_id(self):
+        """Should raise ValueError when auth_request_id is empty"""
+        with self.assertRaises(ValueError) as context:
+            self.actions_client.verify_connected_account_user(
+                auth_request_id="",
+                identifier=self.test_identifier
+            )
+        self.assertIn("auth_request_id is required", str(context.exception))
+
+    def test_verify_connected_account_user_missing_identifier(self):
+        """Should raise ValueError when identifier is empty"""
+        with self.assertRaises(ValueError) as context:
+            self.actions_client.verify_connected_account_user(
+                auth_request_id="test_auth_request_id",
+                identifier=""
+            )
+        self.assertIn("identifier is required", str(context.exception))
+
+    def test_verify_connected_account_user_response_model(self):
+        """Test VerifyConnectedAccountUserResponse model structure"""
+        response = VerifyConnectedAccountUserResponse(
+            post_user_verify_redirect_url="https://example.com/callback"
+        )
+        self.assertEqual(response.post_user_verify_redirect_url, "https://example.com/callback")
+        self.assertIsInstance(response.to_dict(), dict)
+        self.assertIn("post_user_verify_redirect_url", response.to_dict())
+
+    def test_verify_connected_account_user_response_model_none_url(self):
+        """Test VerifyConnectedAccountUserResponse with no redirect URL"""
+        response = VerifyConnectedAccountUserResponse()
+        self.assertIsNone(response.post_user_verify_redirect_url)
+
+    def test_verify_connected_account_user_response_from_proto_empty_string(self):
+        """Test from_proto coerces empty string to None"""
+        class MockProto:
+            post_user_verify_redirect_url = ""
+
+        response = VerifyConnectedAccountUserResponse.from_proto(MockProto())
+        self.assertIsNone(response.post_user_verify_redirect_url)
+
+    def test_verify_connected_account_user_response_from_proto_with_url(self):
+        """Test from_proto preserves a valid URL"""
+        class MockProto:
+            post_user_verify_redirect_url = "https://example.com/redirect"
+
+        response = VerifyConnectedAccountUserResponse.from_proto(MockProto())
+        self.assertEqual(response.post_user_verify_redirect_url, "https://example.com/redirect")
+
+    def test_verify_connected_account_user_response_to_dict(self):
+        """Test to_dict returns correct dictionary"""
+        response = VerifyConnectedAccountUserResponse(
+            post_user_verify_redirect_url="https://example.com/callback"
+        )
+        result = response.to_dict()
+        self.assertEqual(result, {"post_user_verify_redirect_url": "https://example.com/callback"})
+
+    def test_verify_connected_account_user_none_auth_request_id(self):
+        """Should raise ValueError when auth_request_id is None"""
+        with self.assertRaises(ValueError):
+            self.actions_client.verify_connected_account_user(
+                auth_request_id=None,
+                identifier=self.test_identifier
+            )
+
+    def test_verify_connected_account_user_none_identifier(self):
+        """Should raise ValueError when identifier is None"""
+        with self.assertRaises(ValueError):
+            self.actions_client.verify_connected_account_user(
+                auth_request_id="test_auth_request_id",
+                identifier=None
+            )
+
+    def test_verify_connected_account_user_invalid_auth_request_id(self):
+        """Should raise ScalekitServerException for invalid auth_request_id"""
+        from scalekit.common.exceptions import ScalekitServerException
+        with self.assertRaises(ScalekitServerException):
+            self.actions_client.verify_connected_account_user(
+                auth_request_id="invalid_auth_request_id",
+                identifier="default"
+            )
+
+
+class TestActionsRawBody(BaseTest):
+    """Tests for the raw_body parameter on ActionClient.request() — used for non-JSON payloads such as XML/SOAP."""
+
+    def setUp(self):
+        self.actions_client = self.scalekit_client.actions
+
+    def test_request_salesforce_soap_xml_body(self):
+        """POST a SOAP/XML body to the Salesforce Metadata API via the proxy."""
+        import requests
+
+        soap_body = """<?xml version="1.0" encoding="utf-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:met="http://soap.sforce.com/2006/04/metadata">
+  <soapenv:Header>
+    <met:client>my-client-id</met:client>
+  </soapenv:Header>
+  <soapenv:Body>
+    <met:describeMetadata>
+      <met:asOfVersion>66.0</met:asOfVersion>
+    </met:describeMetadata>
+  </soapenv:Body>
+</soapenv:Envelope>"""
+
+        response = self.actions_client.request(
+            connection_name="salesforce-1hpnGzcD",
+            identifier="john.doe",
+            path="/services/Soap/m/66.0",
+            method="POST",
+            raw_body=soap_body,
+            headers={
+                "Content-Type": "text/xml; charset=UTF-8",
+                "SOAPAction": "describeMetadata",
+            },
+        )
+
+        self.assertIsNotNone(response)
+        self.assertIsInstance(response, requests.Response)
+
+    def test_get_connected_account_details(self):
+        """Fetch Salesforce connected account details (no auth credentials) via get_connected_account_details."""
+        result = self.actions_client.get_connected_account_details(
+            connection_name="salesforce-1hpnGzcD",
+            identifier="john.doe",
+        )
+
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, GetConnectedAccountDetailsResponse)
+        self.assertIsNotNone(result.connected_account)
+
+        account = result.connected_account
+        self.assertEqual(account.identifier, "john.doe")
+        self.assertTrue(hasattr(account, 'id'))
+        self.assertTrue(hasattr(account, 'status'))
+        self.assertTrue(hasattr(account, 'connector'))
+

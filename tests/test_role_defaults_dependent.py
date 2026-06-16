@@ -6,21 +6,23 @@ from tests.basetest import BaseTest
 class TestRoleDefaultsAndDependent(BaseTest):
     """ Class definition for Test Role Defaults and Dependent Roles """
 
-    def test_update_default_roles_no_params(self):
-        """ Method to test update_default_roles with no params (no-op update) """
-        response = self.scalekit_client.roles.update_default_roles()
-        self.assertEqual(response[1].code().name, "OK")
-        self.assertIsNotNone(response[0])
+    def test_update_default_roles_requires_both_params(self):
+        """ Method to test update_default_roles requires both parameters """
+        with self.assertRaises(ValueError) as ctx:
+            self.scalekit_client.roles.update_default_roles()
+        self.assertEqual(str(ctx.exception), "default_creator_role is required")
 
-    def test_update_default_roles_with_member_role(self):
-        """ Method to test update_default_roles setting default_member_role """
-        # Restore the default after the test so environment state is not permanently mutated.
-        # No getter exists for the current default, so we restore to the known baseline.
+    def test_update_default_roles_with_both_roles(self):
+        """ Method to test update_default_roles setting both default roles """
+        # Restore the defaults after the test so environment state is not permanently mutated.
+        # No getter exists for the current defaults, so we restore to the known baseline.
         self.addCleanup(
             self.scalekit_client.roles.update_default_roles,
+            default_creator_role="admin",
             default_member_role="member",
         )
         response = self.scalekit_client.roles.update_default_roles(
+            default_creator_role="admin",
             default_member_role="member"
         )
         self.assertEqual(response[1].code().name, "OK")

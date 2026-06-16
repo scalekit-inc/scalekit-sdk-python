@@ -360,6 +360,8 @@ class RoleClient:
         """
         Method to update default environment-level roles
 
+        Both default_creator_role and default_member_role must be provided.
+
         :param default_creator_role : Name of the role to set as default creator role
         :type                       : ``` str ```
         :param default_member_role  : Name of the role to set as default member role
@@ -368,11 +370,13 @@ class RoleClient:
         :returns:
             Update Default Roles Response
         """
+        if not default_creator_role:
+            raise ValueError("default_creator_role is required")
+        if not default_member_role:
+            raise ValueError("default_member_role is required")
         req = UpdateDefaultRolesRequest()
-        if default_creator_role is not None:
-            req.default_creator_role = default_creator_role
-        if default_member_role is not None:
-            req.default_member_role = default_member_role
+        req.default_creator_role = default_creator_role
+        req.default_member_role = default_member_role
         return self.core_client.grpc_exec(
             self.role_service.UpdateDefaultRoles.with_call,
             req,
