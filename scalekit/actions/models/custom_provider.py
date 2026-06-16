@@ -260,7 +260,7 @@ class AuthPattern(BaseModel):
             type=d.get("type", ""),
             display_name=d.get("display_name", ""),
             description=d.get("description", ""),
-            fields=[AuthField.from_dict(f) for f in d.get("fields", [])],
+            fields=[AuthField.from_dict(f) for f in d.get("fields") or []],
             is_mcp=d.get("is_mcp", False),
             oauth_config=oauth_cfg,
         )
