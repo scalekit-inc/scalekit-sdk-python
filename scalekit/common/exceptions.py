@@ -104,9 +104,39 @@ class ScalekitServerException(ScalekitException):
                     self._error_code = info.error_code
 
     @staticmethod
+    def _extract_error_code(error: grpc.RpcError) -> str | None:
+        """ Extract error_code from gRPC trailing metadata without constructing a full exception """
+        from grpc_status import rpc_status
+        try:
+            status = rpc_status.from_call(error)
+            if status is None:
+                return None
+            for detail in status.details:
+                info = ErrorInfo()
+                detail.Unpack(info)
+                if info.error_code:
+                    return info.error_code
+        except Exception:
+            pass
+        return None
+
+    @staticmethod
     def promote(error: Response | grpc.RpcError):
         """ Promote a ScalekitServerException (Response or RpcError) to a specific error type """
         grpc_status = HTTP_TO_GRPC.get(error.status_code) if isinstance(error, Response) else error.code()
+
+        # Check for upstream provider errors signaled by error_code == "TOOL_ERROR"
+        if isinstance(error, grpc.RpcError):
+            error_code = ScalekitServerException._extract_error_code(error)
+            if error_code == "TOOL_ERROR":
+                if grpc_status == StatusCode.RESOURCE_EXHAUSTED:
+                    return ScalekitToolRateLimitException(error)
+                elif grpc_status == StatusCode.UNAUTHENTICATED:
+                    return ScalekitToolUnauthorizedException(error)
+                elif grpc_status == StatusCode.PERMISSION_DENIED:
+                    return ScalekitToolForbiddenException(error)
+                else:
+                    return ScalekitToolException(error)
 
         if grpc_status == StatusCode.INVALID_ARGUMENT:
             return ScalekitBadRequestException(error)
@@ -258,3 +288,52 @@ class ScalekitCancelledException(ScalekitServerException):
 class ScalekitUnknownException(ScalekitServerException):
     def __init__(self, error: Response | grpc.RpcError):
         super().__init__(error)
+
+
+class ScalekitToolException(ScalekitServerException):
+    """ Base class for upstream provider tool errors (error_code == 'TOOL_ERROR') """
+    def __init__(self, error: Response | grpc.RpcError):
+        super().__init__(error)
+        # Extract ToolErrorInfo from the unpacked ErrorInfo details
+        self._tool_error_code = None
+        self._tool_error_message = None
+        self._execution_id = None
+        for info in self._unpacked_details:
+            if info.HasField("tool_error_info"):
+                self._tool_error_code = info.tool_error_info.tool_error_code or None
+                self._tool_error_message = info.tool_error_info.tool_error_message or None
+                self._execution_id = info.tool_error_info.execution_id or None
+                break
+
+    @property
+    def tool_error_code(self):
+        """ Provider-specific error code from tool execution """
+        return self._tool_error_code
+
+    @property
+    def tool_error_message(self):
+        """ Provider-specific error message from tool execution """
+        return self._tool_error_message
+
+    @property
+    def execution_id(self):
+        """ Execution ID for the tool call that failed """
+        return self._execution_id
+
+
+class ScalekitToolRateLimitException(ScalekitToolException, ScalekitTooManyRequestsException):
+    """ Provider returned 429/rate-limit during tool execution """
+    def __init__(self, error: Response | grpc.RpcError):
+        ScalekitToolException.__init__(self, error)
+
+
+class ScalekitToolUnauthorizedException(ScalekitToolException, ScalekitUnauthorizedException):
+    """ Provider returned 401/unauthorized during tool execution """
+    def __init__(self, error: Response | grpc.RpcError):
+        ScalekitToolException.__init__(self, error)
+
+
+class ScalekitToolForbiddenException(ScalekitToolException, ScalekitForbiddenException):
+    """ Provider returned 403/forbidden during tool execution """
+    def __init__(self, error: Response | grpc.RpcError):
+        ScalekitToolException.__init__(self, error)
