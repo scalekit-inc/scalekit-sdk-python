@@ -791,7 +791,17 @@ class ActionClient:
                 organization_id=organization_id,
                 user_id=user_id
             )
-            
+
+            if authorization_details:
+                return self.update_connected_account(
+                    connection_name=connection_name,
+                    identifier=identifier,
+                    authorization_details=authorization_details,
+                    organization_id=organization_id,
+                    user_id=user_id,
+                    api_config=api_config
+                )
+
             # If we found it, convert the GetConnectedAccountAuthResponse to CreateConnectedAccountResponse format
             return CreateConnectedAccountResponse(connected_account=existing_response.connected_account)
             
@@ -805,6 +815,10 @@ class ActionClient:
                 user_id=user_id,
                 api_config=api_config
             )
+
+    def upsert_connected_account(self, *args, **kwargs) -> CreateConnectedAccountResponse:
+        """Alias for get_or_create_connected_account — identical behavior, preferred name."""
+        return self.get_or_create_connected_account(*args, **kwargs)
 
     def update_connected_account(
         self,
