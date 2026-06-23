@@ -791,10 +791,22 @@ class ActionClient:
                 organization_id=organization_id,
                 user_id=user_id
             )
-            
-            # If we found it, convert the GetConnectedAccountAuthResponse to CreateConnectedAccountResponse format
+
+            # True upsert: if credentials were supplied, apply them regardless of
+            # the account's current status (PENDING_AUTH, ACTIVE, EXPIRED, DISCONNECTED).
+            if authorization_details:
+                update_response = self.update_connected_account(
+                    connection_name=connection_name,
+                    identifier=identifier,
+                    authorization_details=authorization_details,
+                    organization_id=organization_id,
+                    user_id=user_id,
+                    api_config=api_config
+                )
+                return CreateConnectedAccountResponse(connected_account=update_response.connected_account)
+
             return CreateConnectedAccountResponse(connected_account=existing_response.connected_account)
-            
+
         except ScalekitNotFoundException:
             # Connected account doesn't exist, create a new one
             return self.create_connected_account(
@@ -805,6 +817,9 @@ class ActionClient:
                 user_id=user_id,
                 api_config=api_config
             )
+
+    #: Alias for :meth:`get_or_create_connected_account` — preferred name for upsert semantics.
+    upsert_connected_account = get_or_create_connected_account
 
     def update_connected_account(
         self,
