@@ -84,11 +84,11 @@ class AuthField(BaseModel):
         :rtype: AuthField
         """
         return cls(
-            field_name=d.get("field_name", ""),
-            label=d.get("label", ""),
-            input_type=d.get("input_type", "text"),
-            hint=d.get("hint", ""),
-            required=d.get("required", False),
+            field_name=d.get("field_name") or "",
+            label=d.get("label") or "",
+            input_type=d.get("input_type") or "text",
+            hint=d.get("hint") or "",
+            required=d.get("required") or False,
         )
 
 
