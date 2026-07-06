@@ -348,7 +348,7 @@ class TestConnect(BaseTest):
         """Method to test execute_tool with connection_name parameter"""
         try:
             result = self.scalekit_client.actions.execute_tool(
-                tool_input={"url": "https://docs.apify.com/platform/storage/usage"},
+                tool_input={"url": "https://docs.apify.com/platform/storage"},
                 tool_name="c-myapifymcp_fetch-apify-docs",
                 identifier="akshay.parihar",
                 connection_name="myapifymcp",
