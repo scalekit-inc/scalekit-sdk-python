@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 from cryptography.hazmat.primitives import serialization
 from scalekit._version import __version__ as _sdk_version
 from scalekit.common.scalekit import GrantType
-from scalekit.common.exceptions import ScalekitServerException, ScalekitException
+from scalekit.common.exceptions import ScalekitServerException, ScalekitException, ScalekitTooManyRequestsException
 
 TRequest = TypeVar("TRequest")
 TResponse = TypeVar("TResponse")
@@ -163,6 +163,11 @@ class CoreClient:
             )
             return resp
         except grpc.RpcError as exp:
+            # Check for upstream provider errors first — never retry, never refresh M2M
+            error_code = ScalekitServerException._extract_error_code(exp)
+            if error_code == "TOOL_ERROR":
+                raise ScalekitServerException.promote(exp)
+
             if exp.code() == grpc.StatusCode.UNAUTHENTICATED:
                 if retry <= 0:
                     raise ScalekitServerException.promote(exp)
@@ -171,6 +176,9 @@ class CoreClient:
                     return self.grpc_exec(func, data, retry=retry-1)
                 except Exception as refresh_exp:
                     raise ScalekitServerException.promote(exp)
+            elif exp.code() == grpc.StatusCode.RESOURCE_EXHAUSTED:
+                # Surface Scalekit rate-limits immediately — retrying triples the damage
+                raise ScalekitServerException.promote(exp)
             elif retry > 0:
                 return self.grpc_exec(func, data, retry=retry - 1)
             else:
