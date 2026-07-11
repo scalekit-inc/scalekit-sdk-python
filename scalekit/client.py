@@ -49,7 +49,14 @@ webhook_signature_version = "v1"
 class ScalekitClient:
     """ Class definition for scalekit client """
 
-    def __init__(self, env_url: str, client_id: str, client_secret: str):
+    def __init__(
+        self,
+        env_url: str,
+        client_id: str,
+        client_secret: str,
+        timeout_ms: Optional[int] = None,
+        tool_timeout_ms: Optional[int] = None,
+    ):
         """
         Initializer for Scalekit base class
 
@@ -59,13 +66,27 @@ class ScalekitClient:
         :type                 : ``` str ```
         :param client_secret  : Client Secret
         :type                 : ``` str ```
+        :param timeout_ms     : gRPC call deadline in ms for control-plane RPCs (organizations,
+                                 users, connections, etc). Set below your infrastructure backend
+                                 timeout (e.g. GCP LB = 30s) so the SDK surfaces a clean error.
+                                 Defaults to 20000 (20s).
+        :type                 : ``` int ```
+        :param tool_timeout_ms : gRPC call deadline in ms for tool-execution RPCs (ToolsClient,
+                                  ActionClient.execute_tool/request), which proxy to third-party
+                                  provider APIs and can legitimately run longer. Defaults to 60000 (60s).
+        :type                 : ``` int ```
 
         :returns:
             None
         """
         try:
+            core_kwargs = {}
+            if timeout_ms is not None:
+                core_kwargs["timeout_ms"] = timeout_ms
+            if tool_timeout_ms is not None:
+                core_kwargs["tool_timeout_ms"] = tool_timeout_ms
             self.core_client = CoreClient(
-                env_url=env_url, client_id=client_id, client_secret=client_secret)
+                env_url=env_url, client_id=client_id, client_secret=client_secret, **core_kwargs)
             self.domain = DomainClient(self.core_client)
             self.connection = ConnectionClient(self.core_client)
             self.organization = OrganizationClient(self.core_client)

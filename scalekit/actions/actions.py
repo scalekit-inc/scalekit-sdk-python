@@ -479,6 +479,11 @@ class ActionClient:
         :param headers: Additional HTTP headers to merge into the request
         :type headers: Optional[Dict[str, str]]
 
+        Pass ``timeout`` (seconds) via ``**kwargs`` to override the default request
+        timeout, which is ``ScalekitClient(..., tool_timeout_ms=...)`` (60s by default)
+        since this proxies to a third-party API and can legitimately run longer than
+        a typical control-plane call.
+
         :returns:
             requests.Response — the raw HTTP response; call .json(), .text,
             .status_code, .headers, etc. as needed
@@ -505,8 +510,9 @@ class ActionClient:
             proxy_headers.update(headers)
         req_headers = core.get_headers(proxy_headers)
 
-        # add default timeout and allow override via kwargs
-        timeout = kwargs.pop("timeout", 30)
+        # Default timeout mirrors tool_timeout_ms (proxies to a third-party API and can
+        # legitimately run longer); allow override via kwargs for a per-call value.
+        timeout = kwargs.pop("timeout", core.tool_timeout_ms / 1000)
 
         response = requests.request(
             method=method.upper(),

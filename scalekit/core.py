@@ -1,3 +1,5 @@
+import random
+import time
 from typing import TypeVar, Optional, Protocol
 
 import grpc
@@ -19,9 +21,22 @@ TMetadata = TypeVar("TMetadata")
 TOKEN_ENDPOINT = "/oauth/token"
 JWKS_ENDPOINT = "/keys"
 
+# gRPC call deadline for control-plane RPCs (organizations, users, connections, etc).
+# Kept below typical infra timeouts (e.g. GCP LB = 30s) so the SDK surfaces a clean
+# DeadlineExceeded error rather than a raw TCP abort on a silently dropped connection.
+DEFAULT_TIMEOUT_MS = 20_000
+
+# gRPC call deadline for tool-execution RPCs (ToolsClient / ActionClient.execute_tool,
+# ActionClient.request). These proxy to third-party provider APIs (Google Calendar,
+# Slack, etc.) and can legitimately run longer than typical control-plane calls, so
+# they use their own, longer deadline instead of DEFAULT_TIMEOUT_MS.
+DEFAULT_TOOL_TIMEOUT_MS = 60_000
+
 
 class WithCall(Protocol):
-    def __call__(self, request: TRequest, metadata: TMetadata) -> TResponse: ...
+    def __call__(
+        self, request: TRequest, metadata: TMetadata, timeout: Optional[float] = None
+    ) -> TResponse: ...
 
 
 class CoreClient:
@@ -32,7 +47,14 @@ class CoreClient:
     api_version = "20260603"
     user_agent = f"{sdk_version} Python/{platform.python_version()} ({platform.system()}; {platform.architecture()}"
 
-    def __init__(self, env_url, client_id, client_secret):
+    def __init__(
+        self,
+        env_url,
+        client_id,
+        client_secret,
+        timeout_ms: int = DEFAULT_TIMEOUT_MS,
+        tool_timeout_ms: int = DEFAULT_TOOL_TIMEOUT_MS,
+    ):
         """
         Initializer for Core client
 
@@ -42,6 +64,11 @@ class CoreClient:
         :type                 : ``` str ```
         :param client_secret  : Client Secret
         :type                 : ``` str ```
+        :param timeout_ms     : gRPC call deadline in ms for control-plane RPCs. Defaults to 20000 (20s).
+        :type                 : ``` int ```
+        :param tool_timeout_ms : gRPC call deadline in ms for tool-execution RPCs, which proxy to
+                                  third-party provider APIs and can legitimately run longer. Defaults to 60000 (60s).
+        :type                 : ``` int ```
         :returns
             None
         """
@@ -50,6 +77,8 @@ class CoreClient:
         self.env_url = env_url
         self.client_id = client_id
         self.client_secret = client_secret
+        self.timeout_ms = timeout_ms
+        self.tool_timeout_ms = tool_timeout_ms
         self.keys = {}
         self.access_token = None
         self.grpc_secure_channel = None
@@ -155,11 +184,18 @@ class CoreClient:
         func: WithCall,
         data: TRequest,
         retry=2,
+        attempt=0,
+        timeout_ms: Optional[int] = None,
     ) -> TResponse:
+        effective_timeout_ms = timeout_ms if timeout_ms is not None else self.timeout_ms
+        timeout_seconds = (
+            effective_timeout_ms / 1000 if effective_timeout_ms and effective_timeout_ms > 0 else None
+        )
         try:
             resp = func(
                 data,
                 metadata=tuple(self.get_headers().items()),
+                timeout=timeout_seconds,
             )
             return resp
         except grpc.RpcError as exp:
@@ -173,14 +209,20 @@ class CoreClient:
                     raise ScalekitServerException.promote(exp)
                 try:
                     self.__authenticate_client()
-                    return self.grpc_exec(func, data, retry=retry-1)
+                    return self.grpc_exec(func, data, retry=retry-1, attempt=attempt + 1, timeout_ms=timeout_ms)
                 except Exception as refresh_exp:
                     raise ScalekitServerException.promote(exp)
             elif exp.code() == grpc.StatusCode.RESOURCE_EXHAUSTED:
                 # Surface Scalekit rate-limits immediately — retrying triples the damage
                 raise ScalekitServerException.promote(exp)
+            elif exp.code() == grpc.StatusCode.UNAVAILABLE and retry > 0:
+                # Retry transient infrastructure errors with backoff, mirroring the Node SDK.
+                base_backoff = min(1 * 2 ** attempt, 30)
+                backoff_seconds = base_backoff * (0.5 + random.random() * 0.5)
+                time.sleep(backoff_seconds)
+                return self.grpc_exec(func, data, retry=retry - 1, attempt=attempt + 1, timeout_ms=timeout_ms)
             elif retry > 0:
-                return self.grpc_exec(func, data, retry=retry - 1)
+                return self.grpc_exec(func, data, retry=retry - 1, attempt=attempt + 1, timeout_ms=timeout_ms)
             else:
                 raise ScalekitServerException.promote(exp)
         except Exception as exp:
