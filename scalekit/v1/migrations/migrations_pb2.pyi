@@ -26,16 +26,47 @@ FSA_DATA_TYPE_SESSION: FSADataType
 FSA_DATA_TYPE_USER_MANAGEMENT: FSADataType
 
 class MigrateEnvKeysRequest(_message.Message):
-    __slots__ = ("environment_ids",)
+    __slots__ = ("environment_ids", "key_type", "key_ref", "provider", "force_reencrypt")
     ENVIRONMENT_IDS_FIELD_NUMBER: _ClassVar[int]
+    KEY_TYPE_FIELD_NUMBER: _ClassVar[int]
+    KEY_REF_FIELD_NUMBER: _ClassVar[int]
+    PROVIDER_FIELD_NUMBER: _ClassVar[int]
+    FORCE_REENCRYPT_FIELD_NUMBER: _ClassVar[int]
+    ASYNC_FIELD_NUMBER: _ClassVar[int]
     environment_ids: _containers.RepeatedScalarFieldContainer[str]
-    def __init__(self, environment_ids: _Optional[_Iterable[str]] = ...) -> None: ...
+    key_type: str
+    key_ref: str
+    provider: str
+    force_reencrypt: bool
+    def __init__(self, environment_ids: _Optional[_Iterable[str]] = ..., key_type: _Optional[str] = ..., key_ref: _Optional[str] = ..., provider: _Optional[str] = ..., force_reencrypt: bool = ..., **kwargs) -> None: ...
+
+class SkippedTableSummary(_message.Message):
+    __slots__ = ("table", "count")
+    TABLE_FIELD_NUMBER: _ClassVar[int]
+    COUNT_FIELD_NUMBER: _ClassVar[int]
+    table: str
+    count: int
+    def __init__(self, table: _Optional[str] = ..., count: _Optional[int] = ...) -> None: ...
+
+class EnvironmentReencryptSkips(_message.Message):
+    __slots__ = ("environment_id", "tables")
+    ENVIRONMENT_ID_FIELD_NUMBER: _ClassVar[int]
+    TABLES_FIELD_NUMBER: _ClassVar[int]
+    environment_id: str
+    tables: _containers.RepeatedCompositeFieldContainer[SkippedTableSummary]
+    def __init__(self, environment_id: _Optional[str] = ..., tables: _Optional[_Iterable[_Union[SkippedTableSummary, _Mapping]]] = ...) -> None: ...
 
 class MigrateEnvKeysResponse(_message.Message):
-    __slots__ = ("environments_processed",)
+    __slots__ = ("environments_processed", "failed_environment_ids", "unrecoverable_rows", "accepted")
     ENVIRONMENTS_PROCESSED_FIELD_NUMBER: _ClassVar[int]
+    FAILED_ENVIRONMENT_IDS_FIELD_NUMBER: _ClassVar[int]
+    UNRECOVERABLE_ROWS_FIELD_NUMBER: _ClassVar[int]
+    ACCEPTED_FIELD_NUMBER: _ClassVar[int]
     environments_processed: int
-    def __init__(self, environments_processed: _Optional[int] = ...) -> None: ...
+    failed_environment_ids: _containers.RepeatedScalarFieldContainer[str]
+    unrecoverable_rows: _containers.RepeatedCompositeFieldContainer[EnvironmentReencryptSkips]
+    accepted: bool
+    def __init__(self, environments_processed: _Optional[int] = ..., failed_environment_ids: _Optional[_Iterable[str]] = ..., unrecoverable_rows: _Optional[_Iterable[_Union[EnvironmentReencryptSkips, _Mapping]]] = ..., accepted: bool = ...) -> None: ...
 
 class MigrationServiceResponse(_message.Message):
     __slots__ = ("success_environments", "failed_environments")

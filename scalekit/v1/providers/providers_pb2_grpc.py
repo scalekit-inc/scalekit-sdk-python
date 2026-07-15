@@ -50,6 +50,11 @@ class ProviderServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.ListProvidersRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.ListProvidersResponse.FromString,
                 )
+        self.ListMyProviders = channel.unary_unary(
+                '/scalekit.v1.providers.ProviderService/ListMyProviders',
+                request_serializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.ListMyProvidersRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.ListProvidersResponse.FromString,
+                )
 
 
 class ProviderServiceServicer(object):
@@ -98,6 +103,22 @@ class ProviderServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ListMyProviders(self, request, context):
+        """Phase 2 — SESSION_USER-authed counterpart to ListProviders, for the
+        /ui end-user surface. Reuses the same per-env scoping as
+        ListProviders(filter.provider_type=ALL): built-in catalog + this
+        env's custom providers; cross-env / cross-workspace catalog
+        entries are never returned (env_id resolves from the session, not
+        a client header — see service/providers.go).
+
+        Excludes coming_soon entries so the end-user catalog stays
+        actionable. Same response shape as ListProviders, so the
+        frontend's providerMap consumer doesn't need to branch.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_ProviderServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -134,6 +155,11 @@ def add_ProviderServiceServicer_to_server(servicer, server):
             'ListProviders': grpc.unary_unary_rpc_method_handler(
                     servicer.ListProviders,
                     request_deserializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.ListProvidersRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.ListProvidersResponse.SerializeToString,
+            ),
+            'ListMyProviders': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListMyProviders,
+                    request_deserializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.ListMyProvidersRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.ListProvidersResponse.SerializeToString,
             ),
     }
@@ -262,6 +288,23 @@ class ProviderService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.providers.ProviderService/ListProviders',
             scalekit_dot_v1_dot_providers_dot_providers__pb2.ListProvidersRequest.SerializeToString,
+            scalekit_dot_v1_dot_providers_dot_providers__pb2.ListProvidersResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListMyProviders(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.providers.ProviderService/ListMyProviders',
+            scalekit_dot_v1_dot_providers_dot_providers__pb2.ListMyProvidersRequest.SerializeToString,
             scalekit_dot_v1_dot_providers_dot_providers__pb2.ListProvidersResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

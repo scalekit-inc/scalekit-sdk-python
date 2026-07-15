@@ -24,6 +24,11 @@ class AgentkitLogsServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_agentkit__logs_dot_agentkit__logs__pb2.GetToolCallLogRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_agentkit__logs_dot_agentkit__logs__pb2.ToolCallLog.FromString,
                 )
+        self.ListCurrentToolCallLogs = channel.unary_unary(
+                '/scalekit.v1.agentkit_logs.AgentkitLogsService/ListCurrentToolCallLogs',
+                request_serializer=scalekit_dot_v1_dot_agentkit__logs_dot_agentkit__logs__pb2.ListCurrentToolCallLogsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_agentkit__logs_dot_agentkit__logs__pb2.ListToolCallLogsResponse.FromString,
+                )
 
 
 class AgentkitLogsServiceServicer(object):
@@ -41,6 +46,15 @@ class AgentkitLogsServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ListCurrentToolCallLogs(self, request, context):
+        """ListCurrentToolCallLogs is the SESSION_USER-authed counterpart of
+        ListToolCallLogs — same shape, server forces identifier to the
+        calling end-user. Mounted under /ui/agent-activity.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_AgentkitLogsServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -53,6 +67,11 @@ def add_AgentkitLogsServiceServicer_to_server(servicer, server):
                     servicer.GetToolCallLog,
                     request_deserializer=scalekit_dot_v1_dot_agentkit__logs_dot_agentkit__logs__pb2.GetToolCallLogRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_agentkit__logs_dot_agentkit__logs__pb2.ToolCallLog.SerializeToString,
+            ),
+            'ListCurrentToolCallLogs': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListCurrentToolCallLogs,
+                    request_deserializer=scalekit_dot_v1_dot_agentkit__logs_dot_agentkit__logs__pb2.ListCurrentToolCallLogsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_agentkit__logs_dot_agentkit__logs__pb2.ListToolCallLogsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -95,5 +114,22 @@ class AgentkitLogsService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.agentkit_logs.AgentkitLogsService/GetToolCallLog',
             scalekit_dot_v1_dot_agentkit__logs_dot_agentkit__logs__pb2.GetToolCallLogRequest.SerializeToString,
             scalekit_dot_v1_dot_agentkit__logs_dot_agentkit__logs__pb2.ToolCallLog.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListCurrentToolCallLogs(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.agentkit_logs.AgentkitLogsService/ListCurrentToolCallLogs',
+            scalekit_dot_v1_dot_agentkit__logs_dot_agentkit__logs__pb2.ListCurrentToolCallLogsRequest.SerializeToString,
+            scalekit_dot_v1_dot_agentkit__logs_dot_agentkit__logs__pb2.ListToolCallLogsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

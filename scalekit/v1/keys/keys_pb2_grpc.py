@@ -7,9 +7,7 @@ from scalekit.v1.keys import keys_pb2 as scalekit_dot_v1_dot_keys_dot_keys__pb2
 
 
 class KeyManagementServiceStub(object):
-    """KeyManagementService provides operations for managing encryption keys
-    including Data Encryption Keys (DEKs) and master key rotation.
-    """
+    """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
         """Constructor.
@@ -22,45 +20,70 @@ class KeyManagementServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.CreateDEKRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.CreateDEKResponse.FromString,
                 )
-        self.RotateDEK = channel.unary_unary(
-                '/scalekit.v1.keys.KeyManagementService/RotateDEK',
-                request_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.RotateDEKRequest.SerializeToString,
-                response_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.RotateDEKResponse.FromString,
+        self.ActivateDEK = channel.unary_unary(
+                '/scalekit.v1.keys.KeyManagementService/ActivateDEK',
+                request_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.ActivateDEKRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.ActivateDEKResponse.FromString,
+                )
+        self.ReencryptData = channel.unary_unary(
+                '/scalekit.v1.keys.KeyManagementService/ReencryptData',
+                request_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.ReencryptDataRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.ReencryptDataResponse.FromString,
                 )
         self.ListDEKs = channel.unary_unary(
                 '/scalekit.v1.keys.KeyManagementService/ListDEKs',
                 request_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.ListDEKsRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.ListDEKsResponse.FromString,
                 )
-        self.DeleteDEK = channel.unary_unary(
-                '/scalekit.v1.keys.KeyManagementService/DeleteDEK',
-                request_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.DeleteDEKRequest.SerializeToString,
+        self.GetDEK = channel.unary_unary(
+                '/scalekit.v1.keys.KeyManagementService/GetDEK',
+                request_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.GetDEKRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.GetDEKResponse.FromString,
+                )
+        self.PatchDEK = channel.unary_unary(
+                '/scalekit.v1.keys.KeyManagementService/PatchDEK',
+                request_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.PatchDEKRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.PatchDEKResponse.FromString,
+                )
+        self.DestroyDEK = channel.unary_unary(
+                '/scalekit.v1.keys.KeyManagementService/DestroyDEK',
+                request_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.DestroyDEKRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
-        self.RotateMasterKey = channel.unary_unary(
-                '/scalekit.v1.keys.KeyManagementService/RotateMasterKey',
-                request_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.RotateMasterKeyRequest.SerializeToString,
-                response_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.RotateMasterKeyResponse.FromString,
+        self.GetBYOKSetupInfo = channel.unary_unary(
+                '/scalekit.v1.keys.KeyManagementService/GetBYOKSetupInfo',
+                request_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.GetBYOKSetupInfoRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.GetBYOKSetupInfoResponse.FromString,
+                )
+        self.VerifyBYOKKey = channel.unary_unary(
+                '/scalekit.v1.keys.KeyManagementService/VerifyBYOKKey',
+                request_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.VerifyBYOKKeyRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.VerifyBYOKKeyResponse.FromString,
                 )
         self.CreateMasterKey = channel.unary_unary(
                 '/scalekit.v1.keys.KeyManagementService/CreateMasterKey',
                 request_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.CreateMasterKeyRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.CreateMasterKeyResponse.FromString,
                 )
-        self.SetActiveDEK = channel.unary_unary(
-                '/scalekit.v1.keys.KeyManagementService/SetActiveDEK',
-                request_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.SetActiveDEKRequest.SerializeToString,
-                response_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.SetActiveDEKResponse.FromString,
+        self.ActivateMasterKey = channel.unary_unary(
+                '/scalekit.v1.keys.KeyManagementService/ActivateMasterKey',
+                request_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.ActivateMasterKeyRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.ActivateMasterKeyResponse.FromString,
                 )
-        self.SetActiveMasterKey = channel.unary_unary(
-                '/scalekit.v1.keys.KeyManagementService/SetActiveMasterKey',
-                request_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.SetActiveMasterKeyRequest.SerializeToString,
-                response_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.SetActiveMasterKeyResponse.FromString,
+        self.RewrapDEKs = channel.unary_unary(
+                '/scalekit.v1.keys.KeyManagementService/RewrapDEKs',
+                request_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.RewrapDEKsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.RewrapDEKsResponse.FromString,
                 )
-        self.DestroyDEK = channel.unary_unary(
-                '/scalekit.v1.keys.KeyManagementService/DestroyDEK',
-                request_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.DestroyDEKRequest.SerializeToString,
-                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+        self.ListMasterKeys = channel.unary_unary(
+                '/scalekit.v1.keys.KeyManagementService/ListMasterKeys',
+                request_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.ListMasterKeysRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.ListMasterKeysResponse.FromString,
+                )
+        self.GetMasterKey = channel.unary_unary(
+                '/scalekit.v1.keys.KeyManagementService/GetMasterKey',
+                request_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.GetMasterKeyRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.GetMasterKeyResponse.FromString,
                 )
         self.DestroyMasterKey = channel.unary_unary(
                 '/scalekit.v1.keys.KeyManagementService/DestroyMasterKey',
@@ -70,65 +93,53 @@ class KeyManagementServiceStub(object):
 
 
 class KeyManagementServiceServicer(object):
-    """KeyManagementService provides operations for managing encryption keys
-    including Data Encryption Keys (DEKs) and master key rotation.
-    """
+    """Missing associated documentation comment in .proto file."""
 
     def CreateDEK(self, request, context):
-        """CreateDEK creates a new Data Encryption Key (DEK) for an environment.
-        If a DEK already exists, this will create a new version.
+        """─── DEK Operations (WORKSPACE_CLIENT) ───────────────────────────────────
+
+        CreateDEK creates a new DEK version in CREATED state.
+        The DEK is not used for encryption until ActivateDEK is called.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def RotateDEK(self, request, context):
-        """RotateDEK creates a new DEK version for an environment.
-        Re-encrypts existing data (oidc_client_secrets, connection client_secrets) and deprecates old DEK versions.
+    def ActivateDEK(self, request, context):
+        """ActivateDEK promotes a CREATED DEK to ACTIVE and deprecates all other versions.
+        Only DEKs in CREATED state can be activated.
+        After activation, call ReencryptData to migrate existing encrypted data.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ReencryptData(self, request, context):
+        """ReencryptData re-encrypts all application secrets under the currently active DEK.
+        Run this after ActivateDEK to complete data migration.
+        Required before DestroyDEK is allowed on the old version.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def ListDEKs(self, request, context):
-        """ListDEKs lists DEKs for an environment with pagination.
+        """ListDEKs lists DEK versions for an environment with pagination and optional status filter.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def DeleteDEK(self, request, context):
-        """DeleteDEK deprecates or permanently deletes a DEK version.
-        Deprecated DEKs can still be used for decryption but not for encryption.
+    def GetDEK(self, request, context):
+        """GetDEK returns a single DEK version by its version number.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def RotateMasterKey(self, request, context):
-        """RotateMasterKey rotates the master key and rewraps all DEKs.
-        This operation is idempotent and supports zero-downtime rotation.
-        """
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def CreateMasterKey(self, request, context):
-        """CreateMasterKey creates a new master key version (in a non-active state).
-        """
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def SetActiveDEK(self, request, context):
-        """SetActiveDEK sets a specific DEK version as active for an environment.
-        """
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def SetActiveMasterKey(self, request, context):
-        """SetActiveMasterKey sets a specific master key version as active.
+    def PatchDEK(self, request, context):
+        """PatchDEK updates the key_type, provider, and key_ref of a DEK version.
+        Only allowed on DEKs in CREATED state. Use this to correct a misconfigured key before activation.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -136,7 +147,67 @@ class KeyManagementServiceServicer(object):
 
     def DestroyDEK(self, request, context):
         """DestroyDEK permanently deletes a DEK version.
-        WARNING: This operation is irreversible and will make data encrypted with this DEK unrecoverable.
+        Only allowed on DEPRECATED DEKs where ReencryptData has already run (rotated_at is set).
+        This operation is irreversible.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetBYOKSetupInfo(self, request, context):
+        """GetBYOKSetupInfo returns the Scalekit service account that customers must
+        grant KMS access to when configuring a BYOK key.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def VerifyBYOKKey(self, request, context):
+        """VerifyBYOKKey checks whether Scalekit's BYOK service account can encrypt using
+        the customer-supplied GCP KMS key. Call this before CreateDEK to catch IAM
+        misconfiguration early (fail-fast).
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def CreateMasterKey(self, request, context):
+        """─── Master Key Operations (CLIENT — Scalekit platform only) ─────────────
+
+        CreateMasterKey creates a new master key version in CREATED state.
+        The master key is not used for encryption until ActivateMasterKey is called.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ActivateMasterKey(self, request, context):
+        """ActivateMasterKey promotes a CREATED master key to ACTIVE and deprecates all other versions.
+        Only master keys in CREATED state can be activated.
+        After activation, call RewrapDEKs to re-wrap all DEKs under the new master key.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def RewrapDEKs(self, request, context):
+        """RewrapDEKs re-wraps all DEKs under the currently active master key.
+        Run this after ActivateMasterKey to complete master key rotation.
+        Required before DestroyMasterKey is allowed on the old version.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListMasterKeys(self, request, context):
+        """ListMasterKeys lists master key versions with pagination and optional status filter.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetMasterKey(self, request, context):
+        """GetMasterKey returns a single master key version by its version number.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -144,7 +215,8 @@ class KeyManagementServiceServicer(object):
 
     def DestroyMasterKey(self, request, context):
         """DestroyMasterKey permanently deletes a master key version.
-        WARNING: This operation is irreversible and will make DEKs wrapped with this master key unrecoverable.
+        Only allowed on DEPRECATED master keys with no DEKs still wrapped under them.
+        Run RewrapDEKs before calling this. This operation is irreversible.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -158,45 +230,70 @@ def add_KeyManagementServiceServicer_to_server(servicer, server):
                     request_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.CreateDEKRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.CreateDEKResponse.SerializeToString,
             ),
-            'RotateDEK': grpc.unary_unary_rpc_method_handler(
-                    servicer.RotateDEK,
-                    request_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.RotateDEKRequest.FromString,
-                    response_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.RotateDEKResponse.SerializeToString,
+            'ActivateDEK': grpc.unary_unary_rpc_method_handler(
+                    servicer.ActivateDEK,
+                    request_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.ActivateDEKRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.ActivateDEKResponse.SerializeToString,
+            ),
+            'ReencryptData': grpc.unary_unary_rpc_method_handler(
+                    servicer.ReencryptData,
+                    request_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.ReencryptDataRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.ReencryptDataResponse.SerializeToString,
             ),
             'ListDEKs': grpc.unary_unary_rpc_method_handler(
                     servicer.ListDEKs,
                     request_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.ListDEKsRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.ListDEKsResponse.SerializeToString,
             ),
-            'DeleteDEK': grpc.unary_unary_rpc_method_handler(
-                    servicer.DeleteDEK,
-                    request_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.DeleteDEKRequest.FromString,
+            'GetDEK': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetDEK,
+                    request_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.GetDEKRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.GetDEKResponse.SerializeToString,
+            ),
+            'PatchDEK': grpc.unary_unary_rpc_method_handler(
+                    servicer.PatchDEK,
+                    request_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.PatchDEKRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.PatchDEKResponse.SerializeToString,
+            ),
+            'DestroyDEK': grpc.unary_unary_rpc_method_handler(
+                    servicer.DestroyDEK,
+                    request_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.DestroyDEKRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
-            'RotateMasterKey': grpc.unary_unary_rpc_method_handler(
-                    servicer.RotateMasterKey,
-                    request_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.RotateMasterKeyRequest.FromString,
-                    response_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.RotateMasterKeyResponse.SerializeToString,
+            'GetBYOKSetupInfo': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetBYOKSetupInfo,
+                    request_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.GetBYOKSetupInfoRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.GetBYOKSetupInfoResponse.SerializeToString,
+            ),
+            'VerifyBYOKKey': grpc.unary_unary_rpc_method_handler(
+                    servicer.VerifyBYOKKey,
+                    request_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.VerifyBYOKKeyRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.VerifyBYOKKeyResponse.SerializeToString,
             ),
             'CreateMasterKey': grpc.unary_unary_rpc_method_handler(
                     servicer.CreateMasterKey,
                     request_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.CreateMasterKeyRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.CreateMasterKeyResponse.SerializeToString,
             ),
-            'SetActiveDEK': grpc.unary_unary_rpc_method_handler(
-                    servicer.SetActiveDEK,
-                    request_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.SetActiveDEKRequest.FromString,
-                    response_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.SetActiveDEKResponse.SerializeToString,
+            'ActivateMasterKey': grpc.unary_unary_rpc_method_handler(
+                    servicer.ActivateMasterKey,
+                    request_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.ActivateMasterKeyRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.ActivateMasterKeyResponse.SerializeToString,
             ),
-            'SetActiveMasterKey': grpc.unary_unary_rpc_method_handler(
-                    servicer.SetActiveMasterKey,
-                    request_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.SetActiveMasterKeyRequest.FromString,
-                    response_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.SetActiveMasterKeyResponse.SerializeToString,
+            'RewrapDEKs': grpc.unary_unary_rpc_method_handler(
+                    servicer.RewrapDEKs,
+                    request_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.RewrapDEKsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.RewrapDEKsResponse.SerializeToString,
             ),
-            'DestroyDEK': grpc.unary_unary_rpc_method_handler(
-                    servicer.DestroyDEK,
-                    request_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.DestroyDEKRequest.FromString,
-                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            'ListMasterKeys': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListMasterKeys,
+                    request_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.ListMasterKeysRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.ListMasterKeysResponse.SerializeToString,
+            ),
+            'GetMasterKey': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetMasterKey,
+                    request_deserializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.GetMasterKeyRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_keys_dot_keys__pb2.GetMasterKeyResponse.SerializeToString,
             ),
             'DestroyMasterKey': grpc.unary_unary_rpc_method_handler(
                     servicer.DestroyMasterKey,
@@ -211,9 +308,7 @@ def add_KeyManagementServiceServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class KeyManagementService(object):
-    """KeyManagementService provides operations for managing encryption keys
-    including Data Encryption Keys (DEKs) and master key rotation.
-    """
+    """Missing associated documentation comment in .proto file."""
 
     @staticmethod
     def CreateDEK(request,
@@ -233,7 +328,7 @@ class KeyManagementService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def RotateDEK(request,
+    def ActivateDEK(request,
             target,
             options=(),
             channel_credentials=None,
@@ -243,9 +338,26 @@ class KeyManagementService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.keys.KeyManagementService/RotateDEK',
-            scalekit_dot_v1_dot_keys_dot_keys__pb2.RotateDEKRequest.SerializeToString,
-            scalekit_dot_v1_dot_keys_dot_keys__pb2.RotateDEKResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.keys.KeyManagementService/ActivateDEK',
+            scalekit_dot_v1_dot_keys_dot_keys__pb2.ActivateDEKRequest.SerializeToString,
+            scalekit_dot_v1_dot_keys_dot_keys__pb2.ActivateDEKResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ReencryptData(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.keys.KeyManagementService/ReencryptData',
+            scalekit_dot_v1_dot_keys_dot_keys__pb2.ReencryptDataRequest.SerializeToString,
+            scalekit_dot_v1_dot_keys_dot_keys__pb2.ReencryptDataResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -267,7 +379,7 @@ class KeyManagementService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def DeleteDEK(request,
+    def GetDEK(request,
             target,
             options=(),
             channel_credentials=None,
@@ -277,14 +389,48 @@ class KeyManagementService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.keys.KeyManagementService/DeleteDEK',
-            scalekit_dot_v1_dot_keys_dot_keys__pb2.DeleteDEKRequest.SerializeToString,
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.keys.KeyManagementService/GetDEK',
+            scalekit_dot_v1_dot_keys_dot_keys__pb2.GetDEKRequest.SerializeToString,
+            scalekit_dot_v1_dot_keys_dot_keys__pb2.GetDEKResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def PatchDEK(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.keys.KeyManagementService/PatchDEK',
+            scalekit_dot_v1_dot_keys_dot_keys__pb2.PatchDEKRequest.SerializeToString,
+            scalekit_dot_v1_dot_keys_dot_keys__pb2.PatchDEKResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DestroyDEK(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.keys.KeyManagementService/DestroyDEK',
+            scalekit_dot_v1_dot_keys_dot_keys__pb2.DestroyDEKRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def RotateMasterKey(request,
+    def GetBYOKSetupInfo(request,
             target,
             options=(),
             channel_credentials=None,
@@ -294,9 +440,26 @@ class KeyManagementService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.keys.KeyManagementService/RotateMasterKey',
-            scalekit_dot_v1_dot_keys_dot_keys__pb2.RotateMasterKeyRequest.SerializeToString,
-            scalekit_dot_v1_dot_keys_dot_keys__pb2.RotateMasterKeyResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.keys.KeyManagementService/GetBYOKSetupInfo',
+            scalekit_dot_v1_dot_keys_dot_keys__pb2.GetBYOKSetupInfoRequest.SerializeToString,
+            scalekit_dot_v1_dot_keys_dot_keys__pb2.GetBYOKSetupInfoResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def VerifyBYOKKey(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.keys.KeyManagementService/VerifyBYOKKey',
+            scalekit_dot_v1_dot_keys_dot_keys__pb2.VerifyBYOKKeyRequest.SerializeToString,
+            scalekit_dot_v1_dot_keys_dot_keys__pb2.VerifyBYOKKeyResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -318,7 +481,7 @@ class KeyManagementService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def SetActiveDEK(request,
+    def ActivateMasterKey(request,
             target,
             options=(),
             channel_credentials=None,
@@ -328,14 +491,14 @@ class KeyManagementService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.keys.KeyManagementService/SetActiveDEK',
-            scalekit_dot_v1_dot_keys_dot_keys__pb2.SetActiveDEKRequest.SerializeToString,
-            scalekit_dot_v1_dot_keys_dot_keys__pb2.SetActiveDEKResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.keys.KeyManagementService/ActivateMasterKey',
+            scalekit_dot_v1_dot_keys_dot_keys__pb2.ActivateMasterKeyRequest.SerializeToString,
+            scalekit_dot_v1_dot_keys_dot_keys__pb2.ActivateMasterKeyResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def SetActiveMasterKey(request,
+    def RewrapDEKs(request,
             target,
             options=(),
             channel_credentials=None,
@@ -345,14 +508,14 @@ class KeyManagementService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.keys.KeyManagementService/SetActiveMasterKey',
-            scalekit_dot_v1_dot_keys_dot_keys__pb2.SetActiveMasterKeyRequest.SerializeToString,
-            scalekit_dot_v1_dot_keys_dot_keys__pb2.SetActiveMasterKeyResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.keys.KeyManagementService/RewrapDEKs',
+            scalekit_dot_v1_dot_keys_dot_keys__pb2.RewrapDEKsRequest.SerializeToString,
+            scalekit_dot_v1_dot_keys_dot_keys__pb2.RewrapDEKsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def DestroyDEK(request,
+    def ListMasterKeys(request,
             target,
             options=(),
             channel_credentials=None,
@@ -362,9 +525,26 @@ class KeyManagementService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.keys.KeyManagementService/DestroyDEK',
-            scalekit_dot_v1_dot_keys_dot_keys__pb2.DestroyDEKRequest.SerializeToString,
-            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.keys.KeyManagementService/ListMasterKeys',
+            scalekit_dot_v1_dot_keys_dot_keys__pb2.ListMasterKeysRequest.SerializeToString,
+            scalekit_dot_v1_dot_keys_dot_keys__pb2.ListMasterKeysResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetMasterKey(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.keys.KeyManagementService/GetMasterKey',
+            scalekit_dot_v1_dot_keys_dot_keys__pb2.GetMasterKeyRequest.SerializeToString,
+            scalekit_dot_v1_dot_keys_dot_keys__pb2.GetMasterKeyResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

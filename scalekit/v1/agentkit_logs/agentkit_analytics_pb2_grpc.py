@@ -19,6 +19,11 @@ class AgentkitAnalyticsServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_agentkit__logs_dot_agentkit__analytics__pb2.GetOverviewStatsRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_agentkit__logs_dot_agentkit__analytics__pb2.OverviewStats.FromString,
                 )
+        self.GetCurrentOverviewStats = channel.unary_unary(
+                '/scalekit.v1.agentkit_logs.AgentkitAnalyticsService/GetCurrentOverviewStats',
+                request_serializer=scalekit_dot_v1_dot_agentkit__logs_dot_agentkit__analytics__pb2.GetOverviewStatsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_agentkit__logs_dot_agentkit__analytics__pb2.OverviewStats.FromString,
+                )
 
 
 class AgentkitAnalyticsServiceServicer(object):
@@ -30,11 +35,27 @@ class AgentkitAnalyticsServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetCurrentOverviewStats(self, request, context):
+        """GetCurrentOverviewStats is the SESSION_USER-authed counterpart of
+        GetOverviewStats — same request shape, scoped to the calling end-user.
+        The server derives identifier from the session token; the request body
+        carries no identifier field, so a /ui caller cannot peek at another
+        user's stats. Mounted under /ui/agent-activity.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_AgentkitAnalyticsServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'GetOverviewStats': grpc.unary_unary_rpc_method_handler(
                     servicer.GetOverviewStats,
+                    request_deserializer=scalekit_dot_v1_dot_agentkit__logs_dot_agentkit__analytics__pb2.GetOverviewStatsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_agentkit__logs_dot_agentkit__analytics__pb2.OverviewStats.SerializeToString,
+            ),
+            'GetCurrentOverviewStats': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetCurrentOverviewStats,
                     request_deserializer=scalekit_dot_v1_dot_agentkit__logs_dot_agentkit__analytics__pb2.GetOverviewStatsRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_agentkit__logs_dot_agentkit__analytics__pb2.OverviewStats.SerializeToString,
             ),
@@ -60,6 +81,23 @@ class AgentkitAnalyticsService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.agentkit_logs.AgentkitAnalyticsService/GetOverviewStats',
+            scalekit_dot_v1_dot_agentkit__logs_dot_agentkit__analytics__pb2.GetOverviewStatsRequest.SerializeToString,
+            scalekit_dot_v1_dot_agentkit__logs_dot_agentkit__analytics__pb2.OverviewStats.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetCurrentOverviewStats(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.agentkit_logs.AgentkitAnalyticsService/GetCurrentOverviewStats',
             scalekit_dot_v1_dot_agentkit__logs_dot_agentkit__analytics__pb2.GetOverviewStatsRequest.SerializeToString,
             scalekit_dot_v1_dot_agentkit__logs_dot_agentkit__analytics__pb2.OverviewStats.FromString,
             options, channel_credentials,

@@ -140,6 +140,16 @@ class ClientServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListResourceClientsRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListResourceClientsResponse.FromString,
                 )
+        self.ListCurrentAgentConsents = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/ListCurrentAgentConsents',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListCurrentAgentConsentsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListCurrentAgentConsentsResponse.FromString,
+                )
+        self.RevokeCurrentAgentConsent = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/RevokeCurrentAgentConsent',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.RevokeCurrentAgentConsentRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.RevokeCurrentAgentConsentResponse.FromString,
+                )
         self.ListResourceUserConsents = channel.unary_unary(
                 '/scalekit.v1.clients.ClientService/ListResourceUserConsents',
                 request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListResourceUserConsentsRequest.SerializeToString,
@@ -345,6 +355,32 @@ class ClientServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ListCurrentAgentConsents(self, request, context):
+        """Phase 2 — SESSION_USER-authed counterpart for the /ui end-user
+        surface. Resolves the Gateway resource from the env's
+        gateway_configurations.application_id automatically; external_user_id
+        is forced from the session, so the caller cannot list another user's
+        consents. Shape mirrors ListResourceUserConsentsResponse so the
+        frontend's consent-list consumer doesn't need to branch on mode.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def RevokeCurrentAgentConsent(self, request, context):
+        """Phase 2 — SESSION_USER revoke. The caller can only revoke a
+        consent row whose external_user_id matches the calling user's
+        session (server-side ownership check). Revocation atomically
+        deletes the consent row AND marks every ACTIVE refresh token
+        minted for (env, client_id, external_user_id) as REVOKED so the
+        agent cannot mint new access tokens. Access tokens already in
+        the wild continue to work until their bounded JWT TTL — that
+        window is configurable per MCP server via access_token_expiry.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def ListResourceUserConsents(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -532,6 +568,16 @@ def add_ClientServiceServicer_to_server(servicer, server):
                     servicer.ListResourceClients,
                     request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListResourceClientsRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListResourceClientsResponse.SerializeToString,
+            ),
+            'ListCurrentAgentConsents': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListCurrentAgentConsents,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListCurrentAgentConsentsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.ListCurrentAgentConsentsResponse.SerializeToString,
+            ),
+            'RevokeCurrentAgentConsent': grpc.unary_unary_rpc_method_handler(
+                    servicer.RevokeCurrentAgentConsent,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.RevokeCurrentAgentConsentRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.RevokeCurrentAgentConsentResponse.SerializeToString,
             ),
             'ListResourceUserConsents': grpc.unary_unary_rpc_method_handler(
                     servicer.ListResourceUserConsents,
@@ -1015,6 +1061,40 @@ class ClientService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/ListResourceClients',
             scalekit_dot_v1_dot_clients_dot_clients__pb2.ListResourceClientsRequest.SerializeToString,
             scalekit_dot_v1_dot_clients_dot_clients__pb2.ListResourceClientsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListCurrentAgentConsents(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/ListCurrentAgentConsents',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.ListCurrentAgentConsentsRequest.SerializeToString,
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.ListCurrentAgentConsentsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def RevokeCurrentAgentConsent(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/RevokeCurrentAgentConsent',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.RevokeCurrentAgentConsentRequest.SerializeToString,
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.RevokeCurrentAgentConsentResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

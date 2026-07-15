@@ -19,6 +19,11 @@ class EventsServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_events_dot_events__pb2.ListEventsRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_events_dot_events__pb2.ListEventsResponse.FromString,
                 )
+        self.ListEventsPaginated = channel.unary_unary(
+                '/scalekit.v1.events.EventsService/ListEventsPaginated',
+                request_serializer=scalekit_dot_v1_dot_events_dot_events__pb2.ListEventsPaginatedRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_events_dot_events__pb2.ListEventsPaginatedResponse.FromString,
+                )
         self.SendCustomEvent = channel.unary_unary(
                 '/scalekit.v1.events.EventsService/SendCustomEvent',
                 request_serializer=scalekit_dot_v1_dot_events_dot_events__pb2.SendCustomEventRequest.SerializeToString,
@@ -30,6 +35,12 @@ class EventsServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def ListEvents(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListEventsPaginated(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -48,6 +59,11 @@ def add_EventsServiceServicer_to_server(servicer, server):
                     servicer.ListEvents,
                     request_deserializer=scalekit_dot_v1_dot_events_dot_events__pb2.ListEventsRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_events_dot_events__pb2.ListEventsResponse.SerializeToString,
+            ),
+            'ListEventsPaginated': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListEventsPaginated,
+                    request_deserializer=scalekit_dot_v1_dot_events_dot_events__pb2.ListEventsPaginatedRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_events_dot_events__pb2.ListEventsPaginatedResponse.SerializeToString,
             ),
             'SendCustomEvent': grpc.unary_unary_rpc_method_handler(
                     servicer.SendCustomEvent,
@@ -78,6 +94,23 @@ class EventsService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.events.EventsService/ListEvents',
             scalekit_dot_v1_dot_events_dot_events__pb2.ListEventsRequest.SerializeToString,
             scalekit_dot_v1_dot_events_dot_events__pb2.ListEventsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListEventsPaginated(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.events.EventsService/ListEventsPaginated',
+            scalekit_dot_v1_dot_events_dot_events__pb2.ListEventsPaginatedRequest.SerializeToString,
+            scalekit_dot_v1_dot_events_dot_events__pb2.ListEventsPaginatedResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

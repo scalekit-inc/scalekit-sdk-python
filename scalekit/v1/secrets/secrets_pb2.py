@@ -25,7 +25,7 @@ from scalekit.v1.commons import commons_pb2 as scalekit_dot_v1_dot_commons_dot_c
 from scalekit.v1.options import options_pb2 as scalekit_dot_v1_dot_options_dot_options__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n!scalekit/v1/secrets/secrets.proto\x12\x13scalekit.v1.secrets\x1a\x1b\x62uf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1bgoogle/api/visibility.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1egoogle/protobuf/wrappers.proto\x1a.protoc-gen-openapiv2/options/annotations.proto\x1a!scalekit/v1/commons/commons.proto\x1a!scalekit/v1/options/options.proto\"X\n\x13\x43reateSecretRequest\x12\x41\n\x06secret\x18\x01 \x01(\x0b\x32!.scalekit.v1.secrets.CreateSecretB\x06\xbaH\x03\xc8\x01\x01R\x06secret\"\xac\x01\n\x0c\x43reateSecret\x12M\n\x0bsecret_type\x18\x01 \x01(\x0e\x32\x1f.scalekit.v1.secrets.SecretTypeB\x0b\xbaH\x08\x82\x01\x05\x10\x01\"\x01\x00R\nsecretType\x12M\n\x0btenant_type\x18\x02 \x01(\x0e\x32\x1f.scalekit.v1.secrets.TenantTypeB\x0b\xbaH\x08\x82\x01\x05\x10\x01\"\x01\x00R\ntenantType\"e\n\x14\x43reateSecretResponse\x12M\n\x06secret\x18\x01 \x01(\x0b\x32\x1b.scalekit.v1.secrets.SecretB\x18\x92\x41\x15\x32\x13The new HMAC secretR\x06secret\"`\n\x13RotateSecretRequest\x12I\n\x02id\x18\x01 \x01(\tB9\x92\x41$2\tSecret IDJ\x17\"sec_91735381321449672\"\xbaH\x0fr\n\x10\x01\x18 :\x04sec_\xc8\x01\x01R\x02id\"K\n\x14RotateSecretResponse\x12\x33\n\x06secret\x18\x01 \x01(\x0b\x32\x1b.scalekit.v1.secrets.SecretR\x06secret\"\x97\x01\n\x10GetSecretRequest\x12I\n\x02id\x18\x01 \x01(\tB9\x92\x41$2\tSecret IDJ\x17\"sec_91735381321449672\"\xbaH\x0fr\n\x10\x01\x18 :\x04sec_\xc8\x01\x01R\x02id\x12\x38\n\x18include_plaintext_secret\x18\x02 \x01(\x08R\x16includePlaintextSecret\"H\n\x11GetSecretResponse\x12\x33\n\x06secret\x18\x01 \x01(\x0b\x32\x1b.scalekit.v1.secrets.SecretR\x06secret\"`\n\x12ListSecretsRequest\x12J\n\x0bsecret_type\x18\x01 \x01(\x0e\x32\x1f.scalekit.v1.secrets.SecretTypeB\x08\xbaH\x05\x82\x01\x02\x10\x01R\nsecretType\"`\n\x13\x44\x65leteSecretRequest\x12I\n\x02id\x18\x01 \x01(\tB9\x92\x41$2\tSecret IDJ\x17\"sec_91735381321449672\"\xbaH\x0fr\n\x10\x01\x18 :\x04sec_\xc8\x01\x01R\x02id\"J\n\x13ListSecretsResponse\x12\x33\n\x06secret\x18\x01 \x03(\x0b\x32\x1b.scalekit.v1.secrets.SecretR\x06secret\"\xe2\x03\n\x06Secret\x12\x13\n\x02id\x18\x01 \x01(\tB\x03\xe0\x41\x03R\x02id\x12\x45\n\x0btenant_type\x18\x03 \x01(\x0e\x32\x1f.scalekit.v1.secrets.TenantTypeB\x03\xe0\x41\x03R\ntenantType\x12\x45\n\x0bsecret_type\x18\x02 \x01(\x0e\x32\x1f.scalekit.v1.secrets.SecretTypeB\x03\xe0\x41\x03R\nsecretType\x12(\n\rsecret_suffix\x18\x04 \x01(\tB\x03\xe0\x41\x03R\x0csecretSuffix\x12\x33\n\x10plaintext_secret\x18\x05 \x01(\tB\x03\xe0\x41\x03H\x00R\x0fplaintextSecret\x88\x01\x01\x12>\n\ncreated_at\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.TimestampB\x03\xe0\x41\x03R\tcreatedAt\x12\x41\n\x0clast_used_at\x18\x07 \x01(\x0b\x32\x1a.google.protobuf.TimestampB\x03\xe0\x41\x03R\nlastUsedAt\x12>\n\nexpires_at\x18\x08 \x01(\x0b\x32\x1a.google.protobuf.TimestampB\x03\xe0\x41\x03R\texpiresAtB\x13\n\x11_plaintext_secret*T\n\nSecretType\x12\x1b\n\x17SECRET_TYPE_UNSPECIFIED\x10\x00\x12\x14\n\x10INTERCEPTOR_HMAC\x10\x01\x12\x13\n\x0f\x44IRECTORY_TOKEN\x10\x02*I\n\nTenantType\x12\x1b\n\x17TENANT_TYPE_UNSPECIFIED\x10\x00\x12\x0f\n\x0bINTERCEPTOR\x10\x01\x12\r\n\tDIRECTORY\x10\x02\x32\x9b\x06\n\rSecretService\x12\x99\x01\n\x0c\x43reateSecret\x12(.scalekit.v1.secrets.CreateSecretRequest\x1a).scalekit.v1.secrets.CreateSecretResponse\"4\x82\xb5\x18\x02\x18\x44\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02\x19\"\x0f/api/v1/secrets:\x06secret\x12\x9d\x01\n\x0cRotateSecret\x12(.scalekit.v1.secrets.RotateSecretRequest\x1a).scalekit.v1.secrets.RotateSecretResponse\"8\x82\xb5\x18\x02\x18\x44\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02\x1d\"\x1b/api/v1/secrets/{id}:rotate\x12\x8d\x01\n\tGetSecret\x12%.scalekit.v1.secrets.GetSecretRequest\x1a&.scalekit.v1.secrets.GetSecretResponse\"1\x82\xb5\x18\x02\x18\x44\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02\x16\x12\x14/api/v1/secrets/{id}\x12\xb7\x01\n\x0bListSecrets\x12\'.scalekit.v1.secrets.ListSecretsRequest\x1a(.scalekit.v1.secrets.ListSecretsResponse\"U\x92\x41&\x12\x0cList secrets\x1a\x16List available secrets\x82\xb5\x18\x02\x18\x44\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02\x11\x12\x0f/api/v1/secrets\x12\x83\x01\n\x0c\x44\x65leteSecret\x12(.scalekit.v1.secrets.DeleteSecretRequest\x1a\x16.google.protobuf.Empty\"1\x82\xb5\x18\x02\x18\x44\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02\x16*\x14/api/v1/secrets/{id}B3Z1github.com/scalekit-inc/scalekit/pkg/grpc/secretsb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n!scalekit/v1/secrets/secrets.proto\x12\x13scalekit.v1.secrets\x1a\x1b\x62uf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1bgoogle/api/visibility.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1egoogle/protobuf/wrappers.proto\x1a.protoc-gen-openapiv2/options/annotations.proto\x1a!scalekit/v1/commons/commons.proto\x1a!scalekit/v1/options/options.proto\"X\n\x13\x43reateSecretRequest\x12\x41\n\x06secret\x18\x01 \x01(\x0b\x32!.scalekit.v1.secrets.CreateSecretB\x06\xbaH\x03\xc8\x01\x01R\x06secret\"\xaa\x01\n\x0c\x43reateSecret\x12L\n\x0bsecret_type\x18\x01 \x01(\x0e\x32\x1f.scalekit.v1.secrets.SecretTypeB\n\xbaH\x07\x82\x01\x04\x10\x01 \x00R\nsecretType\x12L\n\x0btenant_type\x18\x02 \x01(\x0e\x32\x1f.scalekit.v1.secrets.TenantTypeB\n\xbaH\x07\x82\x01\x04\x10\x01 \x00R\ntenantType\"e\n\x14\x43reateSecretResponse\x12M\n\x06secret\x18\x01 \x01(\x0b\x32\x1b.scalekit.v1.secrets.SecretB\x18\x92\x41\x15\x32\x13The new HMAC secretR\x06secret\"`\n\x13RotateSecretRequest\x12I\n\x02id\x18\x01 \x01(\tB9\x92\x41$2\tSecret IDJ\x17\"sec_91735381321449672\"\xbaH\x0fr\n\x10\x01\x18 :\x04sec_\xc8\x01\x01R\x02id\"K\n\x14RotateSecretResponse\x12\x33\n\x06secret\x18\x01 \x01(\x0b\x32\x1b.scalekit.v1.secrets.SecretR\x06secret\"\x97\x01\n\x10GetSecretRequest\x12I\n\x02id\x18\x01 \x01(\tB9\x92\x41$2\tSecret IDJ\x17\"sec_91735381321449672\"\xbaH\x0fr\n\x10\x01\x18 :\x04sec_\xc8\x01\x01R\x02id\x12\x38\n\x18include_plaintext_secret\x18\x02 \x01(\x08R\x16includePlaintextSecret\"H\n\x11GetSecretResponse\x12\x33\n\x06secret\x18\x01 \x01(\x0b\x32\x1b.scalekit.v1.secrets.SecretR\x06secret\"`\n\x12ListSecretsRequest\x12J\n\x0bsecret_type\x18\x01 \x01(\x0e\x32\x1f.scalekit.v1.secrets.SecretTypeB\x08\xbaH\x05\x82\x01\x02\x10\x01R\nsecretType\"`\n\x13\x44\x65leteSecretRequest\x12I\n\x02id\x18\x01 \x01(\tB9\x92\x41$2\tSecret IDJ\x17\"sec_91735381321449672\"\xbaH\x0fr\n\x10\x01\x18 :\x04sec_\xc8\x01\x01R\x02id\"J\n\x13ListSecretsResponse\x12\x33\n\x06secret\x18\x01 \x03(\x0b\x32\x1b.scalekit.v1.secrets.SecretR\x06secret\"\xe2\x03\n\x06Secret\x12\x13\n\x02id\x18\x01 \x01(\tB\x03\xe0\x41\x03R\x02id\x12\x45\n\x0btenant_type\x18\x03 \x01(\x0e\x32\x1f.scalekit.v1.secrets.TenantTypeB\x03\xe0\x41\x03R\ntenantType\x12\x45\n\x0bsecret_type\x18\x02 \x01(\x0e\x32\x1f.scalekit.v1.secrets.SecretTypeB\x03\xe0\x41\x03R\nsecretType\x12(\n\rsecret_suffix\x18\x04 \x01(\tB\x03\xe0\x41\x03R\x0csecretSuffix\x12\x33\n\x10plaintext_secret\x18\x05 \x01(\tB\x03\xe0\x41\x03H\x00R\x0fplaintextSecret\x88\x01\x01\x12>\n\ncreated_at\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.TimestampB\x03\xe0\x41\x03R\tcreatedAt\x12\x41\n\x0clast_used_at\x18\x07 \x01(\x0b\x32\x1a.google.protobuf.TimestampB\x03\xe0\x41\x03R\nlastUsedAt\x12>\n\nexpires_at\x18\x08 \x01(\x0b\x32\x1a.google.protobuf.TimestampB\x03\xe0\x41\x03R\texpiresAtB\x13\n\x11_plaintext_secret*T\n\nSecretType\x12\x1b\n\x17SECRET_TYPE_UNSPECIFIED\x10\x00\x12\x14\n\x10INTERCEPTOR_HMAC\x10\x01\x12\x13\n\x0f\x44IRECTORY_TOKEN\x10\x02*I\n\nTenantType\x12\x1b\n\x17TENANT_TYPE_UNSPECIFIED\x10\x00\x12\x0f\n\x0bINTERCEPTOR\x10\x01\x12\r\n\tDIRECTORY\x10\x02\x32\x9b\x06\n\rSecretService\x12\x99\x01\n\x0c\x43reateSecret\x12(.scalekit.v1.secrets.CreateSecretRequest\x1a).scalekit.v1.secrets.CreateSecretResponse\"4\x82\xb5\x18\x02\x18\x44\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02\x19\"\x0f/api/v1/secrets:\x06secret\x12\x9d\x01\n\x0cRotateSecret\x12(.scalekit.v1.secrets.RotateSecretRequest\x1a).scalekit.v1.secrets.RotateSecretResponse\"8\x82\xb5\x18\x02\x18\x44\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02\x1d\"\x1b/api/v1/secrets/{id}:rotate\x12\x8d\x01\n\tGetSecret\x12%.scalekit.v1.secrets.GetSecretRequest\x1a&.scalekit.v1.secrets.GetSecretResponse\"1\x82\xb5\x18\x02\x18\x44\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02\x16\x12\x14/api/v1/secrets/{id}\x12\xb7\x01\n\x0bListSecrets\x12\'.scalekit.v1.secrets.ListSecretsRequest\x1a(.scalekit.v1.secrets.ListSecretsResponse\"U\x92\x41&\x12\x0cList secrets\x1a\x16List available secrets\x82\xb5\x18\x02\x18\x44\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02\x11\x12\x0f/api/v1/secrets\x12\x83\x01\n\x0c\x44\x65leteSecret\x12(.scalekit.v1.secrets.DeleteSecretRequest\x1a\x16.google.protobuf.Empty\"1\x82\xb5\x18\x02\x18\x44\xfa\xd2\xe4\x93\x02\t\x12\x07PREVIEW\x82\xd3\xe4\x93\x02\x16*\x14/api/v1/secrets/{id}B3Z1github.com/scalekit-inc/scalekit/pkg/grpc/secretsb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -36,9 +36,9 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CREATESECRETREQUEST'].fields_by_name['secret']._loaded_options = None
   _globals['_CREATESECRETREQUEST'].fields_by_name['secret']._serialized_options = b'\272H\003\310\001\001'
   _globals['_CREATESECRET'].fields_by_name['secret_type']._loaded_options = None
-  _globals['_CREATESECRET'].fields_by_name['secret_type']._serialized_options = b'\272H\010\202\001\005\020\001\"\001\000'
+  _globals['_CREATESECRET'].fields_by_name['secret_type']._serialized_options = b'\272H\007\202\001\004\020\001 \000'
   _globals['_CREATESECRET'].fields_by_name['tenant_type']._loaded_options = None
-  _globals['_CREATESECRET'].fields_by_name['tenant_type']._serialized_options = b'\272H\010\202\001\005\020\001\"\001\000'
+  _globals['_CREATESECRET'].fields_by_name['tenant_type']._serialized_options = b'\272H\007\202\001\004\020\001 \000'
   _globals['_CREATESECRETRESPONSE'].fields_by_name['secret']._loaded_options = None
   _globals['_CREATESECRETRESPONSE'].fields_by_name['secret']._serialized_options = b'\222A\0252\023The new HMAC secret'
   _globals['_ROTATESECRETREQUEST'].fields_by_name['id']._loaded_options = None
@@ -75,32 +75,32 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_SECRETSERVICE'].methods_by_name['ListSecrets']._serialized_options = b'\222A&\022\014List secrets\032\026List available secrets\202\265\030\002\030D\372\322\344\223\002\t\022\007PREVIEW\202\323\344\223\002\021\022\017/api/v1/secrets'
   _globals['_SECRETSERVICE'].methods_by_name['DeleteSecret']._loaded_options = None
   _globals['_SECRETSERVICE'].methods_by_name['DeleteSecret']._serialized_options = b'\202\265\030\002\030D\372\322\344\223\002\t\022\007PREVIEW\202\323\344\223\002\026*\024/api/v1/secrets/{id}'
-  _globals['_SECRETTYPE']._serialized_start=1949
-  _globals['_SECRETTYPE']._serialized_end=2033
-  _globals['_TENANTTYPE']._serialized_start=2035
-  _globals['_TENANTTYPE']._serialized_end=2108
+  _globals['_SECRETTYPE']._serialized_start=1947
+  _globals['_SECRETTYPE']._serialized_end=2031
+  _globals['_TENANTTYPE']._serialized_start=2033
+  _globals['_TENANTTYPE']._serialized_end=2106
   _globals['_CREATESECRETREQUEST']._serialized_start=421
   _globals['_CREATESECRETREQUEST']._serialized_end=509
   _globals['_CREATESECRET']._serialized_start=512
-  _globals['_CREATESECRET']._serialized_end=684
-  _globals['_CREATESECRETRESPONSE']._serialized_start=686
-  _globals['_CREATESECRETRESPONSE']._serialized_end=787
-  _globals['_ROTATESECRETREQUEST']._serialized_start=789
-  _globals['_ROTATESECRETREQUEST']._serialized_end=885
-  _globals['_ROTATESECRETRESPONSE']._serialized_start=887
-  _globals['_ROTATESECRETRESPONSE']._serialized_end=962
-  _globals['_GETSECRETREQUEST']._serialized_start=965
-  _globals['_GETSECRETREQUEST']._serialized_end=1116
-  _globals['_GETSECRETRESPONSE']._serialized_start=1118
-  _globals['_GETSECRETRESPONSE']._serialized_end=1190
-  _globals['_LISTSECRETSREQUEST']._serialized_start=1192
-  _globals['_LISTSECRETSREQUEST']._serialized_end=1288
-  _globals['_DELETESECRETREQUEST']._serialized_start=1290
-  _globals['_DELETESECRETREQUEST']._serialized_end=1386
-  _globals['_LISTSECRETSRESPONSE']._serialized_start=1388
-  _globals['_LISTSECRETSRESPONSE']._serialized_end=1462
-  _globals['_SECRET']._serialized_start=1465
-  _globals['_SECRET']._serialized_end=1947
-  _globals['_SECRETSERVICE']._serialized_start=2111
-  _globals['_SECRETSERVICE']._serialized_end=2906
+  _globals['_CREATESECRET']._serialized_end=682
+  _globals['_CREATESECRETRESPONSE']._serialized_start=684
+  _globals['_CREATESECRETRESPONSE']._serialized_end=785
+  _globals['_ROTATESECRETREQUEST']._serialized_start=787
+  _globals['_ROTATESECRETREQUEST']._serialized_end=883
+  _globals['_ROTATESECRETRESPONSE']._serialized_start=885
+  _globals['_ROTATESECRETRESPONSE']._serialized_end=960
+  _globals['_GETSECRETREQUEST']._serialized_start=963
+  _globals['_GETSECRETREQUEST']._serialized_end=1114
+  _globals['_GETSECRETRESPONSE']._serialized_start=1116
+  _globals['_GETSECRETRESPONSE']._serialized_end=1188
+  _globals['_LISTSECRETSREQUEST']._serialized_start=1190
+  _globals['_LISTSECRETSREQUEST']._serialized_end=1286
+  _globals['_DELETESECRETREQUEST']._serialized_start=1288
+  _globals['_DELETESECRETREQUEST']._serialized_end=1384
+  _globals['_LISTSECRETSRESPONSE']._serialized_start=1386
+  _globals['_LISTSECRETSRESPONSE']._serialized_end=1460
+  _globals['_SECRET']._serialized_start=1463
+  _globals['_SECRET']._serialized_end=1945
+  _globals['_SECRETSERVICE']._serialized_start=2109
+  _globals['_SECRETSERVICE']._serialized_end=2904
 # @@protoc_insertion_point(module_scope)
