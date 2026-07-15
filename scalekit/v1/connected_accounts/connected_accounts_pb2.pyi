@@ -36,6 +36,7 @@ class ConnectorType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     TRELLO_OAUTH1: _ClassVar[ConnectorType]
     GOOGLE_DWD: _ClassVar[ConnectorType]
     TRUSTED_IDP: _ClassVar[ConnectorType]
+    SMART_FHIR: _ClassVar[ConnectorType]
 CONNECTION_STATUS_UNSPECIFIED: ConnectorStatus
 ACTIVE: ConnectorStatus
 EXPIRED: ConnectorStatus
@@ -53,6 +54,53 @@ OAUTH_M2M: ConnectorType
 TRELLO_OAUTH1: ConnectorType
 GOOGLE_DWD: ConnectorType
 TRUSTED_IDP: ConnectorType
+SMART_FHIR: ConnectorType
+
+class ListMyAppConnectionsRequest(_message.Message):
+    __slots__ = ()
+    def __init__(self) -> None: ...
+
+class MyAppConnectionEntry(_message.Message):
+    __slots__ = ("connection_id", "provider", "connection_name", "enabled", "user_status", "connected_account_id")
+    CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
+    PROVIDER_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_NAME_FIELD_NUMBER: _ClassVar[int]
+    ENABLED_FIELD_NUMBER: _ClassVar[int]
+    USER_STATUS_FIELD_NUMBER: _ClassVar[int]
+    CONNECTED_ACCOUNT_ID_FIELD_NUMBER: _ClassVar[int]
+    connection_id: str
+    provider: str
+    connection_name: str
+    enabled: bool
+    user_status: str
+    connected_account_id: str
+    def __init__(self, connection_id: _Optional[str] = ..., provider: _Optional[str] = ..., connection_name: _Optional[str] = ..., enabled: bool = ..., user_status: _Optional[str] = ..., connected_account_id: _Optional[str] = ...) -> None: ...
+
+class ListMyAppConnectionsResponse(_message.Message):
+    __slots__ = ("connections",)
+    CONNECTIONS_FIELD_NUMBER: _ClassVar[int]
+    connections: _containers.RepeatedCompositeFieldContainer[MyAppConnectionEntry]
+    def __init__(self, connections: _Optional[_Iterable[_Union[MyAppConnectionEntry, _Mapping]]] = ...) -> None: ...
+
+class DisconnectMyConnectedAccountRequest(_message.Message):
+    __slots__ = ("id",)
+    ID_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    def __init__(self, id: _Optional[str] = ...) -> None: ...
+
+class GetMyConnectionMagicLinkRequest(_message.Message):
+    __slots__ = ("connection_name",)
+    CONNECTION_NAME_FIELD_NUMBER: _ClassVar[int]
+    connection_name: str
+    def __init__(self, connection_name: _Optional[str] = ...) -> None: ...
+
+class GetMyConnectionMagicLinkResponse(_message.Message):
+    __slots__ = ("link", "expiry")
+    LINK_FIELD_NUMBER: _ClassVar[int]
+    EXPIRY_FIELD_NUMBER: _ClassVar[int]
+    link: str
+    expiry: _timestamp_pb2.Timestamp
+    def __init__(self, link: _Optional[str] = ..., expiry: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
 class ListConnectedAccountsRequest(_message.Message):
     __slots__ = ("organization_id", "user_id", "connector", "identifier", "provider", "page_size", "page_token", "query", "connection_names")
