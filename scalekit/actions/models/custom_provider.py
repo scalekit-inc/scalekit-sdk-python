@@ -1,4 +1,4 @@
-from typing import List, Literal, Optional
+from typing import Dict, List, Literal, Optional
 
 from google.protobuf.json_format import MessageToDict
 from pydantic import BaseModel, Field, root_validator
@@ -301,6 +301,17 @@ class Provider(BaseModel):
         False,
         description="Whether request proxying is enabled for this provider.",
     )
+    icon_src: str = Field(
+        "",
+        description="URL of the provider's icon image. Empty string when not set.",
+    )
+    metadata: Dict[str, str] = Field(
+        default_factory=dict,
+        description=(
+            "Arbitrary string key-value pairs attached to the provider. "
+            "Empty dict when none are set."
+        ),
+    )
     is_custom: bool = Field(
         False,
         description="True for all providers created via create_custom_provider.",
@@ -339,6 +350,8 @@ class Provider(BaseModel):
             description=proto.description,
             proxy_url=proto.proxy_url,
             proxy_enabled=proto.proxy_enabled,
+            icon_src=proto.icon_src,
+            metadata=dict(proto.metadata),
             is_custom=proto.is_custom,
             is_custom_mcp=proto.is_custom_mcp,
             auth_patterns=[AuthPattern.from_dict(p) for p in auth_patterns_raw],
