@@ -333,7 +333,7 @@ class TestNoAuthCustomProviderFlow(BaseTest):
                 auth_patterns=[
                     AuthPattern(
                         type="NO_AUTH",
-                        display_name="No Auth",
+                        display_name="Public",
                         description="Connector requires no credentials",
                         is_mcp=True,
                     )
