@@ -12,8 +12,34 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
+class ListCurrentToolCallLogsRequest(_message.Message):
+    __slots__ = ("start_time", "end_time", "status", "provider", "connection_id", "connected_account_id", "agent_run_id", "page_size", "page_token", "connection_name", "source")
+    START_TIME_FIELD_NUMBER: _ClassVar[int]
+    END_TIME_FIELD_NUMBER: _ClassVar[int]
+    STATUS_FIELD_NUMBER: _ClassVar[int]
+    PROVIDER_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
+    CONNECTED_ACCOUNT_ID_FIELD_NUMBER: _ClassVar[int]
+    AGENT_RUN_ID_FIELD_NUMBER: _ClassVar[int]
+    PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
+    PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_NAME_FIELD_NUMBER: _ClassVar[int]
+    SOURCE_FIELD_NUMBER: _ClassVar[int]
+    start_time: _timestamp_pb2.Timestamp
+    end_time: _timestamp_pb2.Timestamp
+    status: _containers.RepeatedScalarFieldContainer[str]
+    provider: _containers.RepeatedScalarFieldContainer[str]
+    connection_id: str
+    connected_account_id: str
+    agent_run_id: str
+    page_size: int
+    page_token: str
+    connection_name: str
+    source: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, start_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., end_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., status: _Optional[_Iterable[str]] = ..., provider: _Optional[_Iterable[str]] = ..., connection_id: _Optional[str] = ..., connected_account_id: _Optional[str] = ..., agent_run_id: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ..., connection_name: _Optional[str] = ..., source: _Optional[_Iterable[str]] = ...) -> None: ...
+
 class ListToolCallLogsRequest(_message.Message):
-    __slots__ = ("start_time", "end_time", "status", "provider", "connection_id", "connected_account_id", "identifier", "agent_run_id", "page_size", "page_token", "connection_name")
+    __slots__ = ("start_time", "end_time", "status", "provider", "connection_id", "connected_account_id", "identifier", "agent_run_id", "page_size", "page_token", "connection_name", "source")
     START_TIME_FIELD_NUMBER: _ClassVar[int]
     END_TIME_FIELD_NUMBER: _ClassVar[int]
     STATUS_FIELD_NUMBER: _ClassVar[int]
@@ -25,6 +51,7 @@ class ListToolCallLogsRequest(_message.Message):
     PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
     PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
     CONNECTION_NAME_FIELD_NUMBER: _ClassVar[int]
+    SOURCE_FIELD_NUMBER: _ClassVar[int]
     start_time: _timestamp_pb2.Timestamp
     end_time: _timestamp_pb2.Timestamp
     status: _containers.RepeatedScalarFieldContainer[str]
@@ -36,7 +63,8 @@ class ListToolCallLogsRequest(_message.Message):
     page_size: int
     page_token: str
     connection_name: str
-    def __init__(self, start_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., end_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., status: _Optional[_Iterable[str]] = ..., provider: _Optional[_Iterable[str]] = ..., connection_id: _Optional[str] = ..., connected_account_id: _Optional[str] = ..., identifier: _Optional[str] = ..., agent_run_id: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ..., connection_name: _Optional[str] = ...) -> None: ...
+    source: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, start_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., end_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., status: _Optional[_Iterable[str]] = ..., provider: _Optional[_Iterable[str]] = ..., connection_id: _Optional[str] = ..., connected_account_id: _Optional[str] = ..., identifier: _Optional[str] = ..., agent_run_id: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ..., connection_name: _Optional[str] = ..., source: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class ListToolCallLogsResponse(_message.Message):
     __slots__ = ("tool_call_logs", "next_page_token", "total_size", "prev_page_token")
@@ -57,7 +85,7 @@ class GetToolCallLogRequest(_message.Message):
     def __init__(self, execution_id: _Optional[str] = ...) -> None: ...
 
 class ToolCallLog(_message.Message):
-    __slots__ = ("id", "environment_id", "execution_id", "agent_run_id", "tool_name", "provider", "connected_account_id", "connection_id", "connection_name", "identifier", "user_id", "organization_id", "source", "status", "error_tier", "error_code", "error_message", "duration_ms", "started_at", "workspace_id")
+    __slots__ = ("id", "environment_id", "execution_id", "agent_run_id", "tool_name", "provider", "connected_account_id", "connection_id", "connection_name", "identifier", "user_id", "organization_id", "source", "status", "error_tier", "error_code", "error_message", "duration_ms", "started_at", "workspace_id", "agent_id")
     ID_FIELD_NUMBER: _ClassVar[int]
     ENVIRONMENT_ID_FIELD_NUMBER: _ClassVar[int]
     EXECUTION_ID_FIELD_NUMBER: _ClassVar[int]
@@ -78,6 +106,7 @@ class ToolCallLog(_message.Message):
     DURATION_MS_FIELD_NUMBER: _ClassVar[int]
     STARTED_AT_FIELD_NUMBER: _ClassVar[int]
     WORKSPACE_ID_FIELD_NUMBER: _ClassVar[int]
+    AGENT_ID_FIELD_NUMBER: _ClassVar[int]
     id: str
     environment_id: str
     execution_id: str
@@ -98,4 +127,5 @@ class ToolCallLog(_message.Message):
     duration_ms: int
     started_at: _timestamp_pb2.Timestamp
     workspace_id: str
-    def __init__(self, id: _Optional[str] = ..., environment_id: _Optional[str] = ..., execution_id: _Optional[str] = ..., agent_run_id: _Optional[str] = ..., tool_name: _Optional[str] = ..., provider: _Optional[str] = ..., connected_account_id: _Optional[str] = ..., connection_id: _Optional[str] = ..., connection_name: _Optional[str] = ..., identifier: _Optional[str] = ..., user_id: _Optional[str] = ..., organization_id: _Optional[str] = ..., source: _Optional[str] = ..., status: _Optional[str] = ..., error_tier: _Optional[str] = ..., error_code: _Optional[str] = ..., error_message: _Optional[str] = ..., duration_ms: _Optional[int] = ..., started_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., workspace_id: _Optional[str] = ...) -> None: ...
+    agent_id: str
+    def __init__(self, id: _Optional[str] = ..., environment_id: _Optional[str] = ..., execution_id: _Optional[str] = ..., agent_run_id: _Optional[str] = ..., tool_name: _Optional[str] = ..., provider: _Optional[str] = ..., connected_account_id: _Optional[str] = ..., connection_id: _Optional[str] = ..., connection_name: _Optional[str] = ..., identifier: _Optional[str] = ..., user_id: _Optional[str] = ..., organization_id: _Optional[str] = ..., source: _Optional[str] = ..., status: _Optional[str] = ..., error_tier: _Optional[str] = ..., error_code: _Optional[str] = ..., error_message: _Optional[str] = ..., duration_ms: _Optional[int] = ..., started_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., workspace_id: _Optional[str] = ..., agent_id: _Optional[str] = ...) -> None: ...

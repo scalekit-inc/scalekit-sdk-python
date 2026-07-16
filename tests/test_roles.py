@@ -1,6 +1,6 @@
 from faker import Faker
 
-from scalekit.common.exceptions import ScalekitBadRequestException, ScalekitNotFoundException, ScalekitException
+from scalekit.common.exceptions import ScalekitBadRequestException, ScalekitNotFoundException, ScalekitException, ScalekitConflictException
 from tests.basetest import BaseTest
 
 from scalekit.v1.roles.roles_pb2 import CreateRole, UpdateRole
@@ -305,9 +305,9 @@ class TestRoles(BaseTest):
         try:
             self.scalekit_client.roles.create_role(role=role2)
             self.fail("Should have failed due to duplicate name")
-        except ScalekitBadRequestException as exp:
-            # Expected behavior - duplicate name error
-            self.assertTrue(exp.message, 'duplicate key not allowed')
+        except ScalekitConflictException as exp:
+            # Expected behavior - duplicate role key returns ALREADY_EXISTS (409)
+            self.assertEqual(exp.error_code, "ROLE_KEYNAME_CONFLICT")
 
     def test_delete_role_base(self):
         """ Method to test deleting the base inheritance relationship for an environment-level role """

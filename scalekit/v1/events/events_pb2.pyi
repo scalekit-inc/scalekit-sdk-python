@@ -207,6 +207,26 @@ class ListEventsResponse(_message.Message):
     total_size: int
     def __init__(self, events: _Optional[_Iterable[_Union[ScalekitEvent, _Mapping]]] = ..., next_page_token: _Optional[str] = ..., prev_page_token: _Optional[str] = ..., total_size: _Optional[int] = ...) -> None: ...
 
+class ListEventsPaginatedRequest(_message.Message):
+    __slots__ = ("filter", "page_size", "page_token")
+    FILTER_FIELD_NUMBER: _ClassVar[int]
+    PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
+    PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    filter: EventFilter
+    page_size: int
+    page_token: str
+    def __init__(self, filter: _Optional[_Union[EventFilter, _Mapping]] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ...) -> None: ...
+
+class ListEventsPaginatedResponse(_message.Message):
+    __slots__ = ("events", "next_page_token", "prev_page_token")
+    EVENTS_FIELD_NUMBER: _ClassVar[int]
+    NEXT_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    PREV_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    events: _containers.RepeatedCompositeFieldContainer[ScalekitEvent]
+    next_page_token: str
+    prev_page_token: str
+    def __init__(self, events: _Optional[_Iterable[_Union[ScalekitEvent, _Mapping]]] = ..., next_page_token: _Optional[str] = ..., prev_page_token: _Optional[str] = ...) -> None: ...
+
 class IEvent(_message.Message):
     __slots__ = ("spec_version", "id", "type", "occurred_at", "actor", "tenant_id", "target", "source", "data", "old_data", "context", "metadata")
     class ContextEntry(_message.Message):

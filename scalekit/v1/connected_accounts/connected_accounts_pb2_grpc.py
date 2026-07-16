@@ -74,6 +74,21 @@ class ConnectedAccountServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.VerifyConnectedAccountUserRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.VerifyConnectedAccountUserResponse.FromString,
                 )
+        self.ListMyAppConnections = channel.unary_unary(
+                '/scalekit.v1.connected_accounts.ConnectedAccountService/ListMyAppConnections',
+                request_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.ListMyAppConnectionsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.ListMyAppConnectionsResponse.FromString,
+                )
+        self.DisconnectMyConnectedAccount = channel.unary_unary(
+                '/scalekit.v1.connected_accounts.ConnectedAccountService/DisconnectMyConnectedAccount',
+                request_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.DisconnectMyConnectedAccountRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.DisconnectConnectedAccountResponse.FromString,
+                )
+        self.GetMyConnectionMagicLink = channel.unary_unary(
+                '/scalekit.v1.connected_accounts.ConnectedAccountService/GetMyConnectionMagicLink',
+                request_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetMyConnectionMagicLinkRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetMyConnectionMagicLinkResponse.FromString,
+                )
 
 
 class ConnectedAccountServiceServicer(object):
@@ -163,6 +178,38 @@ class ConnectedAccountServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ListMyAppConnections(self, request, context):
+        """Phase 2 — SESSION_USER-authed: end-user lists every app connection
+        configured in the env joined with their own per-connection status
+        (CONNECTED / NOT_CONNECTED / EXPIRED / PENDING_AUTH / ...). Mirrors
+        the shape of Gateway's list_connections meta-tool so /ui and the
+        agent surface stay consistent. Server forces identifier from the
+        session.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DisconnectMyConnectedAccount(self, request, context):
+        """Phase 2 — SESSION_USER-authed: end-user disconnects one of their
+        own connected accounts. Ownership is enforced server-side: the
+        target CA's identifier must equal the session identifier, else
+        Forbidden.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetMyConnectionMagicLink(self, request, context):
+        """Phase 2 — SESSION_USER-authed: end-user gets a one-time magic link
+        to connect (or reconnect) a specific app connection by name. The
+        caller's identifier is resolved from the session — the request body
+        carries no identifier field so a /ui caller cannot impersonate.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_ConnectedAccountServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -225,6 +272,21 @@ def add_ConnectedAccountServiceServicer_to_server(servicer, server):
                     servicer.VerifyConnectedAccountUser,
                     request_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.VerifyConnectedAccountUserRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.VerifyConnectedAccountUserResponse.SerializeToString,
+            ),
+            'ListMyAppConnections': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListMyAppConnections,
+                    request_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.ListMyAppConnectionsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.ListMyAppConnectionsResponse.SerializeToString,
+            ),
+            'DisconnectMyConnectedAccount': grpc.unary_unary_rpc_method_handler(
+                    servicer.DisconnectMyConnectedAccount,
+                    request_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.DisconnectMyConnectedAccountRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.DisconnectConnectedAccountResponse.SerializeToString,
+            ),
+            'GetMyConnectionMagicLink': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetMyConnectionMagicLink,
+                    request_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetMyConnectionMagicLinkRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetMyConnectionMagicLinkResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -437,5 +499,56 @@ class ConnectedAccountService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connected_accounts.ConnectedAccountService/VerifyConnectedAccountUser',
             scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.VerifyConnectedAccountUserRequest.SerializeToString,
             scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.VerifyConnectedAccountUserResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListMyAppConnections(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connected_accounts.ConnectedAccountService/ListMyAppConnections',
+            scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.ListMyAppConnectionsRequest.SerializeToString,
+            scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.ListMyAppConnectionsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DisconnectMyConnectedAccount(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connected_accounts.ConnectedAccountService/DisconnectMyConnectedAccount',
+            scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.DisconnectMyConnectedAccountRequest.SerializeToString,
+            scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.DisconnectConnectedAccountResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetMyConnectionMagicLink(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connected_accounts.ConnectedAccountService/GetMyConnectionMagicLink',
+            scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetMyConnectionMagicLinkRequest.SerializeToString,
+            scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetMyConnectionMagicLinkResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

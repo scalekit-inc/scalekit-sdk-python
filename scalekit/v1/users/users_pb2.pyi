@@ -110,12 +110,14 @@ class GetUserResponse(_message.Message):
     def __init__(self, user: _Optional[_Union[User, _Mapping]] = ...) -> None: ...
 
 class GetCurrentUserResponse(_message.Message):
-    __slots__ = ("user", "current_session_id")
+    __slots__ = ("user", "current_session_id", "gateway_enabled")
     USER_FIELD_NUMBER: _ClassVar[int]
     CURRENT_SESSION_ID_FIELD_NUMBER: _ClassVar[int]
+    GATEWAY_ENABLED_FIELD_NUMBER: _ClassVar[int]
     user: User
     current_session_id: str
-    def __init__(self, user: _Optional[_Union[User, _Mapping]] = ..., current_session_id: _Optional[str] = ...) -> None: ...
+    gateway_enabled: bool
+    def __init__(self, user: _Optional[_Union[User, _Mapping]] = ..., current_session_id: _Optional[str] = ..., gateway_enabled: bool = ...) -> None: ...
 
 class GetCurrentUserRequest(_message.Message):
     __slots__ = ()

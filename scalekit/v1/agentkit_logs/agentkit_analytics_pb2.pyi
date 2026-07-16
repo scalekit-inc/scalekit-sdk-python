@@ -13,20 +13,22 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class GetOverviewStatsRequest(_message.Message):
-    __slots__ = ("start_time", "end_time", "provider", "status", "error_code", "connection_name")
+    __slots__ = ("start_time", "end_time", "provider", "status", "error_code", "connection_name", "source")
     START_TIME_FIELD_NUMBER: _ClassVar[int]
     END_TIME_FIELD_NUMBER: _ClassVar[int]
     PROVIDER_FIELD_NUMBER: _ClassVar[int]
     STATUS_FIELD_NUMBER: _ClassVar[int]
     ERROR_CODE_FIELD_NUMBER: _ClassVar[int]
     CONNECTION_NAME_FIELD_NUMBER: _ClassVar[int]
+    SOURCE_FIELD_NUMBER: _ClassVar[int]
     start_time: _timestamp_pb2.Timestamp
     end_time: _timestamp_pb2.Timestamp
     provider: _containers.RepeatedScalarFieldContainer[str]
     status: _containers.RepeatedScalarFieldContainer[str]
     error_code: _containers.RepeatedScalarFieldContainer[str]
     connection_name: str
-    def __init__(self, start_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., end_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., provider: _Optional[_Iterable[str]] = ..., status: _Optional[_Iterable[str]] = ..., error_code: _Optional[_Iterable[str]] = ..., connection_name: _Optional[str] = ...) -> None: ...
+    source: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, start_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., end_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., provider: _Optional[_Iterable[str]] = ..., status: _Optional[_Iterable[str]] = ..., error_code: _Optional[_Iterable[str]] = ..., connection_name: _Optional[str] = ..., source: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class OverviewStats(_message.Message):
     __slots__ = ("total", "success", "errors", "provider_errors", "platform_errors", "top_error_codes", "connector_breakdown", "time_series")
