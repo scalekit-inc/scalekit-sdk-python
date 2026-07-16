@@ -149,14 +149,17 @@ class AuthPattern(BaseModel):
                     the token input.
       - "API_KEY" — Static API key supplied by the user. Add AuthFields for the
                     key input.
+      - "NO_AUTH" — Connector requires no credentials (e.g. public docs MCP
+                    servers). Attach no fields and no OAuthConfig.
     """
 
-    type: Literal["OAUTH", "BEARER", "API_KEY"] = Field(
+    type: Literal["OAUTH", "BEARER", "API_KEY", "NO_AUTH"] = Field(
         ...,
         description=(
             "Required. Authentication mechanism for this pattern. "
             "Accepted values: 'OAUTH' (browser OAuth flow), "
-            "'BEARER' (static bearer token), 'API_KEY' (static API key)."
+            "'BEARER' (static bearer token), 'API_KEY' (static API key), "
+            "'NO_AUTH' (connector requires no credentials)."
         ),
     )
     display_name: str = Field(
@@ -181,8 +184,8 @@ class AuthPattern(BaseModel):
             "Optional. List of AuthField objects defining the credential inputs "
             "the user must supply. Only applicable to BEARER and API_KEY types — "
             "must be empty (or omitted) for OAUTH, which collects credentials "
-            "through the browser OAuth flow and does not use static input fields. "
-            "Defaults to empty list."
+            "through the browser OAuth flow, and for NO_AUTH, which collects no "
+            "credentials at all. Defaults to empty list."
         ),
     )
     is_mcp: bool = Field(
@@ -219,6 +222,8 @@ class AuthPattern(BaseModel):
         else:
             if oauth_config is not None:
                 raise ValueError(f"oauth_config must be None when type='{auth_type}'")
+            if auth_type == "NO_AUTH" and fields:
+                raise ValueError("fields must be empty when type='NO_AUTH'")
         return values
 
     def to_dict(self) -> dict:
