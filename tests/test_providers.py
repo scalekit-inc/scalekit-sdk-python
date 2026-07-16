@@ -346,6 +346,7 @@ class TestNoAuthCustomProviderFlow(BaseTest):
         self.assertIsNotNone(provider)
         self.provider_identifier = provider.identifier
         self.assertTrue(provider.is_custom)
+        self.assertTrue(provider.is_custom_mcp)  # is_mcp=True on the pattern
         self.assertEqual(len(provider.auth_patterns), 1)
         pattern = provider.auth_patterns[0]
         self.assertEqual(pattern.type, "NO_AUTH")
@@ -368,6 +369,7 @@ class TestNoAuthCustomProviderFlow(BaseTest):
         self.connection_name = connection.key_id
         self.assertTrue(self.connection_name, "connection key_id (connector slug) should be set")
         self.assertEqual(connection.type, ConnectionType.NO_AUTH)
+        self.assertEqual(connection.provider_key, self.provider_identifier)
 
         # 3. Connected account with empty static_auth (the NO_AUTH form).
         self.account_identifier = f"noauth-user-{suffix}@example.com"
@@ -383,6 +385,8 @@ class TestNoAuthCustomProviderFlow(BaseTest):
         # NO_AUTH connectors have no credential step, so the account is active
         # immediately on creation.
         self.assertEqual(account.status, "ACTIVE")
+        self.assertEqual(account.authorization_type, "NO_AUTH")
+        self.assertEqual(account.connector, self.connection_name)
 
     def test_no_auth_via_low_level_providers_client(self):
         """Same NO_AUTH flow but driven through the low-level clients directly.
@@ -416,6 +420,7 @@ class TestNoAuthCustomProviderFlow(BaseTest):
         provider = create_result[0].provider  # proto Provider, not the typed model
         self.provider_identifier = provider.identifier
         self.assertTrue(provider.is_custom)
+        self.assertTrue(provider.is_custom_mcp)  # is_mcp=True on the pattern
         # metadata is supported by the low-level client and should round-trip.
         self.assertEqual(dict(provider.metadata), {"tenant_id": tenant_id})
 
@@ -433,6 +438,7 @@ class TestNoAuthCustomProviderFlow(BaseTest):
         self.connection_name = connection.key_id
         self.assertTrue(self.connection_name, "connection key_id (connector slug) should be set")
         self.assertEqual(connection.type, ConnectionType.NO_AUTH)
+        self.assertEqual(connection.provider_key, self.provider_identifier)
 
         # 3. Connected account with empty static_auth (the NO_AUTH form).
         self.account_identifier = f"noauth-direct-{suffix}@example.com"
@@ -446,3 +452,5 @@ class TestNoAuthCustomProviderFlow(BaseTest):
         self.assertIsNotNone(account)
         self.assertEqual(account.identifier, self.account_identifier)
         self.assertEqual(account.status, "ACTIVE")
+        self.assertEqual(account.authorization_type, "NO_AUTH")
+        self.assertEqual(account.connector, self.connection_name)
