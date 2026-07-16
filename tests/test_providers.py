@@ -1,3 +1,5 @@
+import uuid
+
 from faker import Faker
 from basetest import BaseTest
 
@@ -380,4 +382,67 @@ class TestNoAuthCustomProviderFlow(BaseTest):
         self.assertEqual(account.identifier, self.account_identifier)
         # NO_AUTH connectors have no credential step, so the account is active
         # immediately on creation.
+        self.assertEqual(account.status, "ACTIVE")
+
+    def test_no_auth_via_low_level_providers_client(self):
+        """Same NO_AUTH flow but driven through the low-level clients directly.
+
+        Some callers bypass the typed ActionProviders wrapper and use
+        actions._providers_client.create_custom_provider(...) with keyword
+        arguments (which also lets them set metadata, unavailable on the typed
+        wrapper). This returns a (proto, call) tuple, so provider is read as
+        create_result[0].provider — a proto message, not a typed model.
+        """
+        suffix = self.faker.unique.random_number(digits=6)
+        tenant_id = str(uuid.uuid4())
+
+        # 1. NO_AUTH custom provider via the low-level client (kwargs + metadata).
+        create_result = self.scalekit_client.actions._providers_client.create_custom_provider(
+            display_name=f"Test No Auth Direct {suffix}",
+            description="Integration test NO_AUTH via low-level client",
+            proxy_url="https://server.example.com/mcp",
+            proxy_enabled=True,
+            auth_patterns=[
+                AuthPattern(
+                    type="NO_AUTH",
+                    display_name="Public",
+                    description="Connector requires no credentials",
+                    is_mcp=True,
+                )
+            ],
+            metadata={"tenant_id": tenant_id},
+        )
+        self.assertEqual(create_result[1].code().name, "OK")
+        provider = create_result[0].provider  # proto Provider, not the typed model
+        self.provider_identifier = provider.identifier
+        self.assertTrue(provider.is_custom)
+        # metadata is supported by the low-level client and should round-trip.
+        self.assertEqual(dict(provider.metadata), {"tenant_id": tenant_id})
+
+        # 2. App connection created from the provider.
+        conn_resp = self.scalekit_client.connection.create_environment_connection(
+            connection=CreateConnection(
+                provider_key=self.provider_identifier,
+                type=ConnectionType.NO_AUTH,
+            ),
+            flags=Flags(is_app=True, is_login=False),
+        )
+        self.assertEqual(conn_resp[1].code().name, "OK")
+        connection = conn_resp[0].connection
+        self.connection_id = connection.id
+        self.connection_name = connection.key_id
+        self.assertTrue(self.connection_name, "connection key_id (connector slug) should be set")
+        self.assertEqual(connection.type, ConnectionType.NO_AUTH)
+
+        # 3. Connected account with empty static_auth (the NO_AUTH form).
+        self.account_identifier = f"noauth-direct-{suffix}@example.com"
+        ca_response = self.scalekit_client.actions.create_connected_account(
+            connection_name=self.connection_name,
+            identifier=self.account_identifier,
+            authorization_details={"static_auth": {}},
+        )
+        self.assertIsNotNone(ca_response)
+        account = ca_response.connected_account
+        self.assertIsNotNone(account)
+        self.assertEqual(account.identifier, self.account_identifier)
         self.assertEqual(account.status, "ACTIVE")
