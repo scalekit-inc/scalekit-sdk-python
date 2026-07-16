@@ -37,6 +37,7 @@ class ConnectorType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     GOOGLE_DWD: _ClassVar[ConnectorType]
     TRUSTED_IDP: _ClassVar[ConnectorType]
     SMART_FHIR: _ClassVar[ConnectorType]
+    NO_AUTH: _ClassVar[ConnectorType]
 CONNECTION_STATUS_UNSPECIFIED: ConnectorStatus
 ACTIVE: ConnectorStatus
 EXPIRED: ConnectorStatus
@@ -55,6 +56,7 @@ TRELLO_OAUTH1: ConnectorType
 GOOGLE_DWD: ConnectorType
 TRUSTED_IDP: ConnectorType
 SMART_FHIR: ConnectorType
+NO_AUTH: ConnectorType
 
 class ListMyAppConnectionsRequest(_message.Message):
     __slots__ = ()

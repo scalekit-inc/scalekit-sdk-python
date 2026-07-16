@@ -313,3 +313,83 @@ class InterceptorResponse(_message.Message):
     decision: InterceptorDecision
     error: InterceptorError
     def __init__(self, decision: _Optional[_Union[InterceptorDecision, str]] = ..., error: _Optional[_Union[InterceptorError, _Mapping]] = ...) -> None: ...
+
+class TokenTemplateConfig(_message.Message):
+    __slots__ = ("template", "enabled", "created_at", "updated_at")
+    TEMPLATE_FIELD_NUMBER: _ClassVar[int]
+    ENABLED_FIELD_NUMBER: _ClassVar[int]
+    CREATED_AT_FIELD_NUMBER: _ClassVar[int]
+    UPDATED_AT_FIELD_NUMBER: _ClassVar[int]
+    template: _struct_pb2.Struct
+    enabled: bool
+    created_at: _timestamp_pb2.Timestamp
+    updated_at: _timestamp_pb2.Timestamp
+    def __init__(self, template: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., enabled: bool = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+
+class UpsertTokenTemplateRequest(_message.Message):
+    __slots__ = ("template",)
+    TEMPLATE_FIELD_NUMBER: _ClassVar[int]
+    template: _struct_pb2.Struct
+    def __init__(self, template: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
+
+class UpsertTokenTemplateResponse(_message.Message):
+    __slots__ = ("config",)
+    CONFIG_FIELD_NUMBER: _ClassVar[int]
+    config: TokenTemplateConfig
+    def __init__(self, config: _Optional[_Union[TokenTemplateConfig, _Mapping]] = ...) -> None: ...
+
+class GetTokenTemplateRequest(_message.Message):
+    __slots__ = ()
+    def __init__(self) -> None: ...
+
+class GetTokenTemplateResponse(_message.Message):
+    __slots__ = ("config",)
+    CONFIG_FIELD_NUMBER: _ClassVar[int]
+    config: TokenTemplateConfig
+    def __init__(self, config: _Optional[_Union[TokenTemplateConfig, _Mapping]] = ...) -> None: ...
+
+class DeleteTokenTemplateRequest(_message.Message):
+    __slots__ = ()
+    def __init__(self) -> None: ...
+
+class EnableTokenTemplateRequest(_message.Message):
+    __slots__ = ()
+    def __init__(self) -> None: ...
+
+class DisableTokenTemplateRequest(_message.Message):
+    __slots__ = ()
+    def __init__(self) -> None: ...
+
+class PreviewTokenTemplateRequest(_message.Message):
+    __slots__ = ("template", "user_id", "organization_id")
+    TEMPLATE_FIELD_NUMBER: _ClassVar[int]
+    USER_ID_FIELD_NUMBER: _ClassVar[int]
+    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
+    template: _struct_pb2.Struct
+    user_id: str
+    organization_id: str
+    def __init__(self, template: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., user_id: _Optional[str] = ..., organization_id: _Optional[str] = ...) -> None: ...
+
+class PreviewTokenTemplateResponse(_message.Message):
+    __slots__ = ("claims", "omitted_keys", "error", "token_preview")
+    CLAIMS_FIELD_NUMBER: _ClassVar[int]
+    OMITTED_KEYS_FIELD_NUMBER: _ClassVar[int]
+    ERROR_FIELD_NUMBER: _ClassVar[int]
+    TOKEN_PREVIEW_FIELD_NUMBER: _ClassVar[int]
+    claims: _struct_pb2.Struct
+    omitted_keys: _containers.RepeatedScalarFieldContainer[str]
+    error: ErrorMessage
+    token_preview: _struct_pb2.Struct
+    def __init__(self, claims: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., omitted_keys: _Optional[_Iterable[str]] = ..., error: _Optional[_Union[ErrorMessage, _Mapping]] = ..., token_preview: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
+
+class GetTokenTemplateContextRequest(_message.Message):
+    __slots__ = ()
+    def __init__(self) -> None: ...
+
+class GetTokenTemplateContextResponse(_message.Message):
+    __slots__ = ("variables", "accesstoken_reserved_claims")
+    VARIABLES_FIELD_NUMBER: _ClassVar[int]
+    ACCESSTOKEN_RESERVED_CLAIMS_FIELD_NUMBER: _ClassVar[int]
+    variables: _struct_pb2.Struct
+    accesstoken_reserved_claims: _struct_pb2.Struct
+    def __init__(self, variables: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., accesstoken_reserved_claims: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
