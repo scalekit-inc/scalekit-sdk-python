@@ -12,6 +12,12 @@ from scalekit.actions.types import (
     DeleteCustomProviderRequest,
 )
 from scalekit.v1.providers.providers_pb2 import ProviderType
+from scalekit.v1.connections.connections_pb2 import (
+    CreateConnection,
+    Flags,
+    ConnectionType,
+    DeleteEnvironmentConnectionRequest,
+)
 
 
 class TestProviders(BaseTest):
@@ -258,3 +264,120 @@ class TestProviders(BaseTest):
         )
         identifiers = [lp.identifier for lp in list_resp.providers]
         self.assertNotIn(identifier, identifiers)
+
+
+class TestNoAuthCustomProviderFlow(BaseTest):
+    """End-to-end NO_AUTH flow: custom provider -> connection -> connected account.
+
+    Exercises the credential-free connector path (e.g. public docs MCP servers):
+    a NO_AUTH custom provider, an app connection created from it, and a
+    connected account created with empty static_auth. tearDown deletes all
+    three in reverse order so the test is self-cleaning even on assertion
+    failure.
+    """
+
+    def setUp(self):
+        self.faker = Faker()
+        self.provider_identifier = None
+        self.connection_id = None
+        self.connection_name = None
+        self.account_identifier = None
+
+    def tearDown(self):
+        # Reverse order: connected account -> connection -> custom provider.
+        # Each guarded independently so one missing resource never masks the
+        # cleanup of the others.
+        if self.connection_name and self.account_identifier:
+            try:
+                self.scalekit_client.actions.delete_connected_account(
+                    connection_name=self.connection_name,
+                    identifier=self.account_identifier,
+                )
+            except ScalekitNotFoundException:
+                pass
+
+        if self.connection_id:
+            # No high-level wrapper exists for deleting an environment/app
+            # connection, so call the gRPC stub directly. delete_connection()
+            # is organization-scoped and would be wrong here.
+            try:
+                self.scalekit_client.connection.core_client.grpc_exec(
+                    self.scalekit_client.connection.connection_service.DeleteEnvironmentConnection.with_call,
+                    DeleteEnvironmentConnectionRequest(connection_id=self.connection_id),
+                )
+            except ScalekitNotFoundException:
+                pass
+
+        if self.provider_identifier:
+            try:
+                self.scalekit_client.actions.providers.delete_custom_provider(
+                    DeleteCustomProviderRequest(identifier=self.provider_identifier)
+                )
+            except ScalekitNotFoundException:
+                pass
+
+        super().tearDown()
+
+    def test_no_auth_custom_provider_end_to_end(self):
+        """Create a NO_AUTH custom provider, an app connection, and a
+        connected account with empty static_auth; assert each step."""
+        suffix = self.faker.unique.random_number(digits=6)
+
+        # 1. NO_AUTH custom provider — no credential fields, no oauth_config.
+        create_resp = self.scalekit_client.actions.providers.create_custom_provider(
+            CreateCustomProviderRequest(
+                display_name=f"Test No Auth Provider {suffix}",
+                description="Integration test NO_AUTH connector",
+                proxy_url="https://server.example.com/mcp",
+                proxy_enabled=True,
+                auth_patterns=[
+                    AuthPattern(
+                        type="NO_AUTH",
+                        display_name="No Auth",
+                        description="Connector requires no credentials",
+                        is_mcp=True,
+                    )
+                ],
+            )
+        )
+        provider = create_resp.provider
+        self.assertIsNotNone(provider)
+        self.provider_identifier = provider.identifier
+        self.assertTrue(provider.is_custom)
+        self.assertEqual(len(provider.auth_patterns), 1)
+        pattern = provider.auth_patterns[0]
+        self.assertEqual(pattern.type, "NO_AUTH")
+        self.assertEqual(pattern.fields, [])
+        self.assertIsNone(pattern.oauth_config)
+
+        # 2. App connection created from the custom provider (provider_key =
+        #    provider identifier). key_id is auto-generated into the connector
+        #    slug used by connected-account calls.
+        conn_resp = self.scalekit_client.connection.create_environment_connection(
+            connection=CreateConnection(
+                provider_key=self.provider_identifier,
+                type=ConnectionType.NO_AUTH,
+            ),
+            flags=Flags(is_app=True, is_login=False),
+        )
+        self.assertEqual(conn_resp[1].code().name, "OK")
+        connection = conn_resp[0].connection
+        self.connection_id = connection.id
+        self.connection_name = connection.key_id
+        self.assertTrue(self.connection_name, "connection key_id (connector slug) should be set")
+        self.assertEqual(connection.type, ConnectionType.NO_AUTH)
+
+        # 3. Connected account with empty static_auth (the NO_AUTH form).
+        self.account_identifier = f"noauth-user-{suffix}@example.com"
+        acc_resp = self.scalekit_client.actions.create_connected_account(
+            connection_name=self.connection_name,
+            identifier=self.account_identifier,
+            authorization_details={"static_auth": {}},
+        )
+        self.assertIsNotNone(acc_resp)
+        account = acc_resp.connected_account
+        self.assertIsNotNone(account)
+        self.assertEqual(account.identifier, self.account_identifier)
+        # NO_AUTH connectors have no credential step, so the account is active
+        # immediately on creation.
+        self.assertEqual(account.status, "ACTIVE")
