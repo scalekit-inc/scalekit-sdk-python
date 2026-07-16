@@ -100,6 +100,7 @@ class ConnectionType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     GOOGLE_DWD: _ClassVar[ConnectionType]
     TRUSTED_IDP: _ClassVar[ConnectionType]
     SMART_FHIR: _ClassVar[ConnectionType]
+    NO_AUTH: _ClassVar[ConnectionType]
 
 class ConnectionStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
@@ -178,6 +179,7 @@ TRELLO_OAUTH1: ConnectionType
 GOOGLE_DWD: ConnectionType
 TRUSTED_IDP: ConnectionType
 SMART_FHIR: ConnectionType
+NO_AUTH: ConnectionType
 CONNECTION_STATUS_UNSPECIFIED: ConnectionStatus
 DRAFT: ConnectionStatus
 IN_PROGRESS: ConnectionStatus

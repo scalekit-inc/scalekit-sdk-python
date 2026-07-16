@@ -55,6 +55,41 @@ class InterceptorServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.TestInterceptorRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.TestInterceptorResponse.FromString,
                 )
+        self.UpsertTokenTemplate = channel.unary_unary(
+                '/scalekit.v1.interceptors.InterceptorService/UpsertTokenTemplate',
+                request_serializer=scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.UpsertTokenTemplateRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.UpsertTokenTemplateResponse.FromString,
+                )
+        self.GetTokenTemplate = channel.unary_unary(
+                '/scalekit.v1.interceptors.InterceptorService/GetTokenTemplate',
+                request_serializer=scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.GetTokenTemplateRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.GetTokenTemplateResponse.FromString,
+                )
+        self.DeleteTokenTemplate = channel.unary_unary(
+                '/scalekit.v1.interceptors.InterceptorService/DeleteTokenTemplate',
+                request_serializer=scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.DeleteTokenTemplateRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
+        self.EnableTokenTemplate = channel.unary_unary(
+                '/scalekit.v1.interceptors.InterceptorService/EnableTokenTemplate',
+                request_serializer=scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.EnableTokenTemplateRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
+        self.DisableTokenTemplate = channel.unary_unary(
+                '/scalekit.v1.interceptors.InterceptorService/DisableTokenTemplate',
+                request_serializer=scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.DisableTokenTemplateRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
+        self.PreviewTokenTemplate = channel.unary_unary(
+                '/scalekit.v1.interceptors.InterceptorService/PreviewTokenTemplate',
+                request_serializer=scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.PreviewTokenTemplateRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.PreviewTokenTemplateResponse.FromString,
+                )
+        self.GetTokenTemplateContext = channel.unary_unary(
+                '/scalekit.v1.interceptors.InterceptorService/GetTokenTemplateContext',
+                request_serializer=scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.GetTokenTemplateContextRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.GetTokenTemplateContextResponse.FromString,
+                )
 
 
 class InterceptorServiceServicer(object):
@@ -108,6 +143,48 @@ class InterceptorServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def UpsertTokenTemplate(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetTokenTemplate(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeleteTokenTemplate(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def EnableTokenTemplate(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DisableTokenTemplate(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def PreviewTokenTemplate(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetTokenTemplateContext(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_InterceptorServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -150,6 +227,41 @@ def add_InterceptorServiceServicer_to_server(servicer, server):
                     servicer.TestInterceptor,
                     request_deserializer=scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.TestInterceptorRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.TestInterceptorResponse.SerializeToString,
+            ),
+            'UpsertTokenTemplate': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpsertTokenTemplate,
+                    request_deserializer=scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.UpsertTokenTemplateRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.UpsertTokenTemplateResponse.SerializeToString,
+            ),
+            'GetTokenTemplate': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetTokenTemplate,
+                    request_deserializer=scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.GetTokenTemplateRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.GetTokenTemplateResponse.SerializeToString,
+            ),
+            'DeleteTokenTemplate': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteTokenTemplate,
+                    request_deserializer=scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.DeleteTokenTemplateRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'EnableTokenTemplate': grpc.unary_unary_rpc_method_handler(
+                    servicer.EnableTokenTemplate,
+                    request_deserializer=scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.EnableTokenTemplateRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'DisableTokenTemplate': grpc.unary_unary_rpc_method_handler(
+                    servicer.DisableTokenTemplate,
+                    request_deserializer=scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.DisableTokenTemplateRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'PreviewTokenTemplate': grpc.unary_unary_rpc_method_handler(
+                    servicer.PreviewTokenTemplate,
+                    request_deserializer=scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.PreviewTokenTemplateRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.PreviewTokenTemplateResponse.SerializeToString,
+            ),
+            'GetTokenTemplateContext': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetTokenTemplateContext,
+                    request_deserializer=scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.GetTokenTemplateContextRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.GetTokenTemplateContextResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -294,5 +406,124 @@ class InterceptorService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.interceptors.InterceptorService/TestInterceptor',
             scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.TestInterceptorRequest.SerializeToString,
             scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.TestInterceptorResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def UpsertTokenTemplate(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.interceptors.InterceptorService/UpsertTokenTemplate',
+            scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.UpsertTokenTemplateRequest.SerializeToString,
+            scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.UpsertTokenTemplateResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetTokenTemplate(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.interceptors.InterceptorService/GetTokenTemplate',
+            scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.GetTokenTemplateRequest.SerializeToString,
+            scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.GetTokenTemplateResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DeleteTokenTemplate(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.interceptors.InterceptorService/DeleteTokenTemplate',
+            scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.DeleteTokenTemplateRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def EnableTokenTemplate(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.interceptors.InterceptorService/EnableTokenTemplate',
+            scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.EnableTokenTemplateRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DisableTokenTemplate(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.interceptors.InterceptorService/DisableTokenTemplate',
+            scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.DisableTokenTemplateRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def PreviewTokenTemplate(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.interceptors.InterceptorService/PreviewTokenTemplate',
+            scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.PreviewTokenTemplateRequest.SerializeToString,
+            scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.PreviewTokenTemplateResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetTokenTemplateContext(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.interceptors.InterceptorService/GetTokenTemplateContext',
+            scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.GetTokenTemplateContextRequest.SerializeToString,
+            scalekit_dot_v1_dot_interceptors_dot_interceptors__pb2.GetTokenTemplateContextResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

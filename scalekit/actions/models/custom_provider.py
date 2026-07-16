@@ -1,4 +1,4 @@
-from typing import List, Literal, Optional
+from typing import Dict, List, Literal, Optional
 
 from google.protobuf.json_format import MessageToDict
 from pydantic import BaseModel, Field, root_validator
@@ -149,14 +149,17 @@ class AuthPattern(BaseModel):
                     the token input.
       - "API_KEY" — Static API key supplied by the user. Add AuthFields for the
                     key input.
+      - "NO_AUTH" — Connector requires no credentials (e.g. public docs MCP
+                    servers). Attach no fields and no OAuthConfig.
     """
 
-    type: Literal["OAUTH", "BEARER", "API_KEY"] = Field(
+    type: Literal["OAUTH", "BEARER", "API_KEY", "NO_AUTH"] = Field(
         ...,
         description=(
             "Required. Authentication mechanism for this pattern. "
             "Accepted values: 'OAUTH' (browser OAuth flow), "
-            "'BEARER' (static bearer token), 'API_KEY' (static API key)."
+            "'BEARER' (static bearer token), 'API_KEY' (static API key), "
+            "'NO_AUTH' (connector requires no credentials)."
         ),
     )
     display_name: str = Field(
@@ -181,8 +184,8 @@ class AuthPattern(BaseModel):
             "Optional. List of AuthField objects defining the credential inputs "
             "the user must supply. Only applicable to BEARER and API_KEY types — "
             "must be empty (or omitted) for OAUTH, which collects credentials "
-            "through the browser OAuth flow and does not use static input fields. "
-            "Defaults to empty list."
+            "through the browser OAuth flow, and for NO_AUTH, which collects no "
+            "credentials at all. Defaults to empty list."
         ),
     )
     is_mcp: bool = Field(
@@ -203,6 +206,16 @@ class AuthPattern(BaseModel):
             "Defaults to None."
         ),
     )
+    auth_header_key_override: str = Field(
+        "",
+        description=(
+            "Optional. Overrides the HTTP header name Scalekit uses when injecting "
+            "the static credential into proxied requests. Applies to BEARER and "
+            "API_KEY patterns. Example: 'x-api-key' to send the credential in the "
+            "'x-api-key' header instead of the default 'Authorization' header. "
+            "Defaults to empty string (use the default header)."
+        ),
+    )
 
     @root_validator(skip_on_failure=True)
     def validate_auth_invariants(cls, values):
@@ -219,14 +232,17 @@ class AuthPattern(BaseModel):
         else:
             if oauth_config is not None:
                 raise ValueError(f"oauth_config must be None when type='{auth_type}'")
+            if auth_type == "NO_AUTH" and fields:
+                raise ValueError("fields must be empty when type='NO_AUTH'")
         return values
 
     def to_dict(self) -> dict:
         """Serialize to a wire-format dict for inclusion in the auth_patterns ListValue.
 
         :returns: Dict representation of this auth pattern. 'description' is omitted
-                  when empty, 'is_mcp' when False, and 'oauth_config' when None, to
-                  keep the wire payload minimal.
+                  when empty, 'is_mcp' when False, 'oauth_config' when None, and
+                  'auth_header_key_override' when empty, to keep the wire payload
+                  minimal.
         :rtype: dict
         """
         d: dict = {
@@ -240,6 +256,8 @@ class AuthPattern(BaseModel):
             d["is_mcp"] = True
         if self.oauth_config is not None:
             d["oauth_config"] = self.oauth_config.to_dict()
+        if self.auth_header_key_override:
+            d["auth_header_key_override"] = self.auth_header_key_override
         return d
 
     @classmethod
@@ -263,6 +281,7 @@ class AuthPattern(BaseModel):
             fields=[AuthField.from_dict(f) for f in d.get("fields", [])],
             is_mcp=d.get("is_mcp", False),
             oauth_config=oauth_cfg,
+            auth_header_key_override=d.get("auth_header_key_override", ""),
         )
 
     class Config:
@@ -300,6 +319,17 @@ class Provider(BaseModel):
     proxy_enabled: bool = Field(
         False,
         description="Whether request proxying is enabled for this provider.",
+    )
+    icon_src: str = Field(
+        "",
+        description="URL of the provider's icon image. Empty string when not set.",
+    )
+    metadata: Dict[str, str] = Field(
+        default_factory=dict,
+        description=(
+            "Arbitrary string key-value pairs attached to the provider. "
+            "Empty dict when none are set."
+        ),
     )
     is_custom: bool = Field(
         False,
@@ -339,6 +369,8 @@ class Provider(BaseModel):
             description=proto.description,
             proxy_url=proto.proxy_url,
             proxy_enabled=proto.proxy_enabled,
+            icon_src=proto.icon_src,
+            metadata=dict(proto.metadata),
             is_custom=proto.is_custom,
             is_custom_mcp=proto.is_custom_mcp,
             auth_patterns=[AuthPattern.from_dict(p) for p in auth_patterns_raw],
