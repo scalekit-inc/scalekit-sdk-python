@@ -206,6 +206,16 @@ class AuthPattern(BaseModel):
             "Defaults to None."
         ),
     )
+    auth_header_key_override: str = Field(
+        "",
+        description=(
+            "Optional. Overrides the HTTP header name Scalekit uses when injecting "
+            "the static credential into proxied requests. Applies to BEARER and "
+            "API_KEY patterns. Example: 'x-api-key' to send the credential in the "
+            "'x-api-key' header instead of the default 'Authorization' header. "
+            "Defaults to empty string (use the default header)."
+        ),
+    )
 
     @root_validator(skip_on_failure=True)
     def validate_auth_invariants(cls, values):
@@ -230,8 +240,9 @@ class AuthPattern(BaseModel):
         """Serialize to a wire-format dict for inclusion in the auth_patterns ListValue.
 
         :returns: Dict representation of this auth pattern. 'description' is omitted
-                  when empty, 'is_mcp' when False, and 'oauth_config' when None, to
-                  keep the wire payload minimal.
+                  when empty, 'is_mcp' when False, 'oauth_config' when None, and
+                  'auth_header_key_override' when empty, to keep the wire payload
+                  minimal.
         :rtype: dict
         """
         d: dict = {
@@ -245,6 +256,8 @@ class AuthPattern(BaseModel):
             d["is_mcp"] = True
         if self.oauth_config is not None:
             d["oauth_config"] = self.oauth_config.to_dict()
+        if self.auth_header_key_override:
+            d["auth_header_key_override"] = self.auth_header_key_override
         return d
 
     @classmethod
@@ -268,6 +281,7 @@ class AuthPattern(BaseModel):
             fields=[AuthField.from_dict(f) for f in d.get("fields", [])],
             is_mcp=d.get("is_mcp", False),
             oauth_config=oauth_cfg,
+            auth_header_key_override=d.get("auth_header_key_override", ""),
         )
 
     class Config:

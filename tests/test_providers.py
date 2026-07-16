@@ -267,6 +267,53 @@ class TestProviders(BaseTest):
         identifiers = [lp.identifier for lp in list_resp.providers]
         self.assertNotIn(identifier, identifiers)
 
+    # ------------------------------------------------------------------
+    # API Key MCP with auth_header_key_override — create + assert round-trip
+    # ------------------------------------------------------------------
+
+    def test_api_key_mcp_with_auth_header_key_override(self):
+        """Create an API Key MCP provider that overrides the credential header
+        name, and verify auth_header_key_override round-trips in the response."""
+        suffix = self.faker.unique.random_number(digits=6)
+
+        create_resp = self.scalekit_client.actions.providers.create_custom_provider(
+            CreateCustomProviderRequest(
+                display_name=f"Test Header Override Provider {suffix}",
+                description="Integration test API Key connector with header override",
+                proxy_url="https://server.example.com/mcp",
+                proxy_enabled=True,
+                auth_patterns=[
+                    AuthPattern(
+                        type="API_KEY",
+                        display_name="API Key",
+                        description="Authenticate with a static API key",
+                        is_mcp=True,
+                        fields=[
+                            AuthField(
+                                field_name="api_key",
+                                label="API Key",
+                                input_type="password",
+                                required=True,
+                            )
+                        ],
+                        auth_header_key_override="x-api-key",
+                    )
+                ],
+            )
+        )
+        provider = create_resp.provider
+        self.assertIsNotNone(provider)
+        self.created_identifier = provider.identifier
+
+        self.assertTrue(provider.is_custom_mcp)
+        self.assertEqual(len(provider.auth_patterns), 1)
+        p = provider.auth_patterns[0]
+        self.assertEqual(p.type, "API_KEY")
+        # the override survives the round-trip through the server
+        self.assertEqual(p.auth_header_key_override, "x-api-key")
+        self.assertEqual(p.fields[0].field_name, "api_key")
+        self.assertTrue(p.fields[0].required)
+
 
 class TestNoAuthCustomProviderFlow(BaseTest):
     """End-to-end NO_AUTH flow: custom provider -> connection -> connected account.
