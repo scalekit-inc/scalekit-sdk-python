@@ -16,6 +16,9 @@ class TestConnection(BaseTest):
         org_response = self.scalekit_client.organization.create_organization(organization=organization)
         self.org_id = org_response[0].organization.id
         self.conn_id = None
+        # Environment/app-level connection id (deleted via DeleteEnvironmentConnection,
+        # not the org-scoped delete_connection used for self.conn_id).
+        self.app_conn_id = None
 
     def test_create_connection(self):
         """ Method to test create connection """
@@ -147,6 +150,8 @@ class TestConnection(BaseTest):
         )
         self.assertEqual(create_resp[1].code().name, "OK")
         created = create_resp[0].connection
+        # Track for cleanup in tearDown (runs whether the test passes or fails).
+        self.app_conn_id = created.id
         # key_id (e.g. "hubspot-xxxx") is unique per connection — a precise match target.
         self.assertTrue(created.key_id)
 
@@ -262,5 +267,15 @@ class TestConnection(BaseTest):
         """ """
         if self.conn_id:
             self.scalekit_client.connection.delete_connection(organization_id=self.org_id, connection_id=self.conn_id)
+        if self.app_conn_id:
+            # App/environment connections have no high-level delete wrapper and are
+            # not org-scoped, so call the DeleteEnvironmentConnection stub directly.
+            try:
+                self.scalekit_client.connection.core_client.grpc_exec(
+                    self.scalekit_client.connection.connection_service.DeleteEnvironmentConnection.with_call,
+                    DeleteEnvironmentConnectionRequest(connection_id=self.app_conn_id),
+                )
+            except ScalekitNotFoundException:
+                pass
         if self.org_id:
             self.scalekit_client.organization.delete_organization(organization_id=self.org_id)
