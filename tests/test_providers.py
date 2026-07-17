@@ -1,3 +1,4 @@
+import unittest
 import uuid
 
 from faker import Faker
@@ -583,3 +584,22 @@ class TestNoAuthCustomProviderFlow(BaseTest):
         self.assertEqual(account.status, "ACTIVE")
         self.assertEqual(account.authorization_type, "NO_AUTH")
         self.assertEqual(account.connector, self.connection_name)
+
+
+class TestAuthPatternDefaults(unittest.TestCase):
+    """Pure unit tests (no network) guarding AuthPattern field defaults.
+
+    NO_AUTH connectors collect no credentials, so an AuthPattern of that type
+    must carry an empty fields list. This guards the contract at the model level
+    so it holds regardless of whether a call site passes fields=[] explicitly.
+    """
+
+    def test_no_auth_pattern_defaults_to_empty_fields(self):
+        pattern = AuthPattern(type="NO_AUTH", display_name="Public")
+        self.assertEqual(pattern.fields, [])
+
+    def test_auth_pattern_fields_default_is_not_shared(self):
+        """Each AuthPattern gets its own fields list (no shared mutable default)."""
+        first = AuthPattern(type="NO_AUTH", display_name="A")
+        second = AuthPattern(type="NO_AUTH", display_name="B")
+        self.assertIsNot(first.fields, second.fields)
