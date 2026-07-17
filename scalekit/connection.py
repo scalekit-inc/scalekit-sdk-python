@@ -127,7 +127,7 @@ class ConnectionClient:
             CreateConnectionRequest(organization_id=organization_id, connection=connection),
         )
     
-    def list_app_connections(self, page_size: Optional[int] = None, page_token: Optional[str] = None, provider: Optional[str] = None) -> ListAppConnectionsResponse:
+    def list_app_connections(self, page_size: Optional[int] = None, page_token: Optional[str] = None, provider: Optional[str] = None, query: Optional[str] = None) -> ListAppConnectionsResponse:
         """
         Method to list environment-level app connections
 
@@ -137,13 +137,15 @@ class ConnectionClient:
         :type               : ``` str ```
         :param provider     : Filter by provider (e.g. 'HUBSPOT')
         :type               : ``` str ```
+        :param query        : Free-text search filter applied to app connections
+        :type               : ``` str ```
 
         :returns:
             List App Connections Response
         """
         return self.core_client.grpc_exec(
             self.connection_service.ListAppConnections.with_call,
-            ListAppConnectionsRequest(page_size=page_size, page_token=page_token, provider=provider),
+            ListAppConnectionsRequest(page_size=page_size, page_token=page_token, provider=provider, query=query),
         )
 
     def get_environment_connection(self, connection_id: str) -> GetConnectionResponse:

@@ -1357,7 +1357,7 @@ class ActionProviders:
 
         :param request: Request object containing display_name (required),
                         proxy_url (required), and optional description,
-                        proxy_enabled, and auth_patterns.
+                        proxy_enabled, auth_patterns, icon_src, and metadata.
         :type request: CreateCustomProviderRequest
 
         :returns: Response containing the created provider with its server-assigned
@@ -1373,6 +1373,8 @@ class ActionProviders:
             proxy_enabled=request.proxy_enabled,
             description=request.description,
             auth_patterns=request.auth_patterns,
+            icon_src=request.icon_src,
+            metadata=request.metadata,
         )
         return CreateCustomProviderResponse.from_proto(result_tuple[0])
 
@@ -1386,8 +1388,8 @@ class ActionProviders:
         Fields left as None are ignored and their existing server values are kept.
 
         :param request: Request object containing identifier (required) and any
-                        combination of display_name, description, proxy_url, and
-                        auth_patterns to update.
+                        combination of display_name, description, proxy_url,
+                        auth_patterns, icon_src, and metadata to update.
         :type request: UpdateCustomProviderRequest
 
         :returns: Response containing the provider's full state after the update.
@@ -1402,6 +1404,8 @@ class ActionProviders:
             proxy_url=request.proxy_url,
             description=request.description,
             auth_patterns=request.auth_patterns,
+            icon_src=request.icon_src,
+            metadata=request.metadata,
         )
         return UpdateCustomProviderResponse.from_proto(result_tuple[0])
 

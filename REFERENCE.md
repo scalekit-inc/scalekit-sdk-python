@@ -1402,7 +1402,7 @@ scalekit_client.connection.delete_connection('org_123456', 'conn_123456')
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connection.py">list_app_connections</a>(page_size?, page_token?, provider?) -> ListAppConnectionsResponse</code></summary>
+<details><summary><code>client.connection.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connection.py">list_app_connections</a>(page_size?, page_token?, provider?, query?) -> ListAppConnectionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1437,6 +1437,9 @@ for conn in response[0].connections:
 
 # Filter by provider
 response = scalekit_client.connection.list_app_connections(provider='HUBSPOT', page_size=10)
+
+# Free-text search across app connections
+response = scalekit_client.connection.list_app_connections(query='hubspot')
 ```
 </dd>
 </dl>
@@ -1468,6 +1471,14 @@ response = scalekit_client.connection.list_app_connections(provider='HUBSPOT', p
 <dd>
 
 **provider:** `Optional[str]` - Filter by provider key (e.g., `'HUBSPOT'`, `'GOOGLEDWD'`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**query:** `Optional[str]` - Free-text search filter applied to app connections
 
 </dd>
 </dl>
@@ -6438,6 +6449,8 @@ response = scalekit_client.actions.providers.create_custom_provider(
         description="Acme integration via MCP",
         proxy_url="https://mcp.acme.com/mcp",
         proxy_enabled=True,
+        icon_src="https://acme.com/icon.png",
+        metadata={"team": "integrations", "tier": "premium"},
         auth_patterns=[
             AuthPattern(
                 type="OAUTH",
@@ -6450,7 +6463,7 @@ response = scalekit_client.actions.providers.create_custom_provider(
     )
 )
 provider = response.provider
-print(f"Created provider: {provider.identifier}")
+print(f"Created provider: {provider.identifier}, metadata: {provider.metadata}")
 
 # Bearer token MCP provider
 response = scalekit_client.actions.providers.create_custom_provider(
@@ -6504,6 +6517,8 @@ response = scalekit_client.actions.providers.create_custom_provider(
   - `is_mcp: bool` - Set `True` for MCP server providers.
   - `oauth_config: Optional[OAuthConfig]` - Required when `type="OAUTH"`. `OAuthConfig(pkce_enabled=True)` by default.
   - `fields: List[AuthField]` - Credential input fields for `BEARER` and `API_KEY` types.
+- `icon_src: str` - URL of the provider's icon image. Defaults to empty string.
+- `metadata: Dict[str, str]` - Arbitrary string key-value pairs attached to the provider. Keys 3-25 chars, values 1-256 chars, max 20 pairs. Defaults to empty dict.
 
 </dd>
 </dl>
@@ -6512,7 +6527,7 @@ response = scalekit_client.actions.providers.create_custom_provider(
 
 **📦 Response**
 
-`CreateCustomProviderResponse` with a `provider` attribute (`Provider`) containing `identifier`, `display_name`, `description`, `proxy_url`, `proxy_enabled`, `is_custom`, `is_custom_mcp`, and `auth_patterns`.
+`CreateCustomProviderResponse` with a `provider` attribute (`Provider`) containing `identifier`, `display_name`, `description`, `proxy_url`, `proxy_enabled`, `icon_src`, `metadata`, `is_custom`, `is_custom_mcp`, and `auth_patterns`.
 
 </dd>
 </dl>
@@ -6598,6 +6613,8 @@ print(f"Updated: {updated.description}")
 - `proxy_url: str` - Required on every update. Must be a valid HTTPS URL.
 - `description: Optional[str]` - New description. Pass `None` to leave unchanged.
 - `auth_patterns: Optional[List[AuthPattern]]` - Replacement auth patterns. When provided, fully replaces the existing list — not merged. Pass `None` to leave unchanged.
+- `icon_src: Optional[str]` - New icon URL. Pass `None` to leave unchanged.
+- `metadata: Optional[Dict[str, str]]` - Replacement metadata key-value pairs. When provided, replaces the entire metadata map — not merged. Keys 3-25 chars, values 1-256 chars, max 20 pairs. Pass `None` to leave unchanged.
 
 </dd>
 </dl>

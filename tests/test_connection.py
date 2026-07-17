@@ -134,6 +134,18 @@ class TestConnection(BaseTest):
         self.assertEqual(response[1].code().name, "OK")
         self.assertLessEqual(len(response[0].connections), 2)
 
+    def test_list_app_connections_with_query(self):
+        """ Method to test list_app_connections accepts the query search filter """
+        # Ensure at least one app connection exists so the query has something to match
+        self.scalekit_client.connection.create_environment_connection(
+            connection=CreateConnection(provider_key="HUBSPOT", type=ConnectionType.OAUTH),
+            flags=Flags(is_app=True)
+        )
+        response = self.scalekit_client.connection.list_app_connections(query="HUBSPOT")
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertIsNotNone(response[0].connections)
+        self.assertIsInstance(response[0].total_size, int)
+
     def test_get_custom_connection(self):
         """ Method to test get_environment_connection - create then get """
         create_response = self.scalekit_client.connection.create_environment_connection(

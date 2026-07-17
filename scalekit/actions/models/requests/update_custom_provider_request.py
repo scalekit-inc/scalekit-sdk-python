@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Dict, List, Optional
 from urllib.parse import urlparse
 
 from pydantic import BaseModel, Field, validator
@@ -51,6 +51,22 @@ class UpdateCustomProviderRequest(BaseModel):
             "it is not merged. Note: currently only a single AuthPattern is supported "
             "— pass a list with exactly one element. The list type is intentional for "
             "future multi-pattern support. Pass None (default) to leave auth_patterns unchanged."
+        ),
+    )
+    icon_src: Optional[str] = Field(
+        None,
+        description=(
+            "Optional. New URL of the provider's icon image. Pass None (default) to "
+            "leave the existing value unchanged."
+        ),
+    )
+    metadata: Optional[Dict[str, str]] = Field(
+        None,
+        description=(
+            "Optional. Replacement metadata key-value pairs. When provided, the server "
+            "replaces the provider's entire metadata map with this value — it is not "
+            "merged. Keys must be 3-25 characters, values 1-256 characters, with a "
+            "maximum of 20 pairs. Pass None (default) to leave metadata unchanged."
         ),
     )
 
