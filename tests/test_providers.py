@@ -342,6 +342,7 @@ class TestProviders(BaseTest):
                         display_name="Public",
                         description="Connector requires no credentials",
                         is_mcp=True,
+                        fields=[],
                     )
                 ],
             )
@@ -454,6 +455,7 @@ class TestNoAuthCustomProviderFlow(BaseTest):
                         display_name="Public",
                         description="Connector requires no credentials",
                         is_mcp=True,
+                        fields=[],
                     )
                 ],
             )
@@ -528,6 +530,7 @@ class TestNoAuthCustomProviderFlow(BaseTest):
                     display_name="Public",
                     description="Connector requires no credentials",
                     is_mcp=True,
+                    fields=[],
                 )
             ],
             metadata={"tenant_id": tenant_id},
