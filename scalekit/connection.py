@@ -137,7 +137,7 @@ class ConnectionClient:
         :type               : ``` str ```
         :param provider     : Filter by provider (e.g. 'HUBSPOT')
         :type               : ``` str ```
-        :param query        : Free-text search filter applied to app connections
+        :param query        : Free-text search matching connections by connection name (key ID) or provider (3-100 characters)
         :type               : ``` str ```
 
         :returns:

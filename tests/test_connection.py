@@ -135,16 +135,32 @@ class TestConnection(BaseTest):
         self.assertLessEqual(len(response[0].connections), 2)
 
     def test_list_app_connections_with_query(self):
-        """ Method to test list_app_connections accepts the query search filter """
-        # Ensure at least one app connection exists so the query has something to match
-        self.scalekit_client.connection.create_environment_connection(
+        """ Method to test list_app_connections query search actually filters.
+
+        The query filter matches connections by connection name (key ID) or
+        provider and requires at least 3 characters (proto: min_len=3, max_len=100).
+        """
+        # Create an app connection so the query has a concrete target to match.
+        create_resp = self.scalekit_client.connection.create_environment_connection(
             connection=CreateConnection(provider_key="HUBSPOT", type=ConnectionType.OAUTH),
             flags=Flags(is_app=True)
         )
-        response = self.scalekit_client.connection.list_app_connections(query="HUBSPOT")
-        self.assertEqual(response[1].code().name, "OK")
-        self.assertIsNotNone(response[0].connections)
-        self.assertIsInstance(response[0].total_size, int)
+        self.assertEqual(create_resp[1].code().name, "OK")
+        created = create_resp[0].connection
+        # key_id (e.g. "hubspot-xxxx") is unique per connection — a precise match target.
+        self.assertTrue(created.key_id)
+
+        # A query on the unique key_id must return the created connection.
+        match_resp = self.scalekit_client.connection.list_app_connections(query=created.key_id)
+        self.assertEqual(match_resp[1].code().name, "OK")
+        matched_ids = [conn.id for conn in match_resp[0].connections]
+        self.assertIn(created.id, matched_ids)
+
+        # A unique, non-matching query (>= 3 chars) must return zero connections.
+        non_matching = f"nomatch{Faker().unique.random_number(digits=10)}"
+        no_match_resp = self.scalekit_client.connection.list_app_connections(query=non_matching)
+        self.assertEqual(no_match_resp[1].code().name, "OK")
+        self.assertEqual(len(no_match_resp[0].connections), 0)
 
     def test_get_custom_connection(self):
         """ Method to test get_environment_connection - create then get """

@@ -1478,7 +1478,7 @@ response = scalekit_client.connection.list_app_connections(query='hubspot')
 <dl>
 <dd>
 
-**query:** `Optional[str]` - Free-text search filter applied to app connections
+**query:** `Optional[str]` - Free-text search that matches app connections by connection name (key ID) or provider. Must be 3-100 characters.
 
 </dd>
 </dl>
