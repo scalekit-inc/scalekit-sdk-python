@@ -365,6 +365,16 @@ class TestProviders(BaseTest):
                 proxy_url="https://server.example.com/mcp",
                 icon_src=new_icon_src,
                 metadata=new_metadata,
+                # auth_patterns is required by the server on every update.
+                auth_patterns=[
+                    AuthPattern(
+                        type="NO_AUTH",
+                        display_name="Public",
+                        description="Connector requires no credentials",
+                        is_mcp=True,
+                        fields=[],
+                    )
+                ],
             )
         )
         updated = update_resp.provider
