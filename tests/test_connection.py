@@ -102,6 +102,8 @@ class TestConnection(BaseTest):
         response = self.scalekit_client.connection.create_environment_connection(connection=connection, flags=flags)
         self.assertEqual(response[1].code().name, "OK")
         conn = response[0].connection
+        # Track for cleanup in tearDown (runs whether the test passes or fails).
+        self.app_conn_id = conn.id
         self.assertIsNotNone(conn)
         self.assertEqual(conn.type, ConnectionType.OAUTH)
         self.assertEqual(conn.provider_key, "HUBSPOT")
@@ -120,10 +122,12 @@ class TestConnection(BaseTest):
     def test_list_app_connections_with_provider_filter(self):
         """ Method to test list_app_connections filtered by provider """
         # First create a HubSpot connection so we know at least one exists
-        self.scalekit_client.connection.create_environment_connection(
+        create_resp = self.scalekit_client.connection.create_environment_connection(
             connection=CreateConnection(provider_key="HUBSPOT", type=ConnectionType.OAUTH),
             flags=Flags(is_app=True)
         )
+        # Track for cleanup in tearDown (runs whether the test passes or fails).
+        self.app_conn_id = create_resp[0].connection.id
         response = self.scalekit_client.connection.list_app_connections(provider="HUBSPOT")
         self.assertEqual(response[1].code().name, "OK")
         connections = response[0].connections
