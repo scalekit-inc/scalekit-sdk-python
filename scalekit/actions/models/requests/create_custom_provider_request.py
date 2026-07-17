@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List
 from urllib.parse import urlparse
 
 from pydantic import BaseModel, Field, validator
@@ -54,6 +54,21 @@ class CreateCustomProviderRequest(BaseModel):
             "Note: currently only a single AuthPattern is supported — pass a list "
             "with exactly one element. The list type is intentional for future "
             "multi-pattern support. Defaults to empty list."
+        ),
+    )
+    icon_src: str = Field(
+        "",
+        description=(
+            "Optional. URL of the provider's icon image shown in the UI. "
+            "Defaults to empty string (no icon)."
+        ),
+    )
+    metadata: Dict[str, str] = Field(
+        default_factory=dict,
+        description=(
+            "Optional. Arbitrary string key-value pairs attached to the provider. "
+            "Keys must be 3-25 characters, values 1-256 characters, with a maximum "
+            "of 20 pairs. Defaults to empty dict (no metadata)."
         ),
     )
 

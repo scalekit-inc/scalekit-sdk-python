@@ -1,3 +1,4 @@
+import unittest
 import uuid
 
 from faker import Faker
@@ -314,6 +315,86 @@ class TestProviders(BaseTest):
         self.assertEqual(p.fields[0].field_name, "api_key")
         self.assertTrue(p.fields[0].required)
 
+    # ------------------------------------------------------------------
+    # metadata + icon_src — create, update, and list round-trip through
+    # the actions.providers facade (CreateCustomProviderRequest /
+    # UpdateCustomProviderRequest now expose these fields)
+    # ------------------------------------------------------------------
+
+    def test_metadata_and_icon_src_create_update_and_list(self):
+        """Create a provider with metadata and icon_src via the facade, verify
+        both round-trip in the create response, update them, and confirm the
+        new values surface in the create/update responses and in list_providers."""
+        suffix = self.faker.unique.random_number(digits=6)
+        icon_src = "https://acme.example.com/icon.png"
+        metadata = {"team": "integrations", "tier": "premium"}
+
+        create_resp = self.scalekit_client.actions.providers.create_custom_provider(
+            CreateCustomProviderRequest(
+                display_name=f"Test Metadata Provider {suffix}",
+                description="Integration test metadata/icon_src connector",
+                proxy_url="https://server.example.com/mcp",
+                proxy_enabled=True,
+                icon_src=icon_src,
+                metadata=metadata,
+                auth_patterns=[
+                    AuthPattern(
+                        type="NO_AUTH",
+                        display_name="Public",
+                        description="Connector requires no credentials",
+                        is_mcp=True,
+                        fields=[],
+                    )
+                ],
+            )
+        )
+        provider = create_resp.provider
+        self.assertIsNotNone(provider)
+        self.created_identifier = provider.identifier
+
+        # metadata + icon_src round-trip on create
+        self.assertEqual(provider.icon_src, icon_src)
+        self.assertEqual(dict(provider.metadata), metadata)
+
+        # update metadata + icon_src to new values
+        new_icon_src = "https://acme.example.com/icon-v2.png"
+        new_metadata = {"team": "platform", "region": "us"}
+        update_resp = self.scalekit_client.actions.providers.update_custom_provider(
+            UpdateCustomProviderRequest(
+                identifier=self.created_identifier,
+                display_name=f"Test Metadata Provider {suffix}",
+                proxy_url="https://server.example.com/mcp",
+                icon_src=new_icon_src,
+                metadata=new_metadata,
+                # auth_patterns is required by the server on every update.
+                auth_patterns=[
+                    AuthPattern(
+                        type="NO_AUTH",
+                        display_name="Public",
+                        description="Connector requires no credentials",
+                        is_mcp=True,
+                        fields=[],
+                    )
+                ],
+            )
+        )
+        updated = update_resp.provider
+        self.assertIsNotNone(updated)
+        self.assertEqual(updated.icon_src, new_icon_src)
+        self.assertEqual(dict(updated.metadata), new_metadata)
+
+        # verify the updated metadata + icon_src surface in list_providers
+        list_resp = self.scalekit_client.actions.providers.list_providers(
+            ListProvidersRequest(provider_type=ProviderType.CUSTOM, page_size=100)
+        )
+        listed = next(
+            (lp for lp in list_resp.providers if lp.identifier == self.created_identifier),
+            None,
+        )
+        self.assertIsNotNone(listed, "Provider with metadata not found in list")
+        self.assertEqual(listed.icon_src, new_icon_src)
+        self.assertEqual(dict(listed.metadata), new_metadata)
+
 
 class TestNoAuthCustomProviderFlow(BaseTest):
     """End-to-end NO_AUTH flow: custom provider -> connection -> connected account.
@@ -385,6 +466,7 @@ class TestNoAuthCustomProviderFlow(BaseTest):
                         display_name="Public",
                         description="Connector requires no credentials",
                         is_mcp=True,
+                        fields=[],
                     )
                 ],
             )
@@ -459,6 +541,7 @@ class TestNoAuthCustomProviderFlow(BaseTest):
                     display_name="Public",
                     description="Connector requires no credentials",
                     is_mcp=True,
+                    fields=[],
                 )
             ],
             metadata={"tenant_id": tenant_id},
@@ -501,3 +584,22 @@ class TestNoAuthCustomProviderFlow(BaseTest):
         self.assertEqual(account.status, "ACTIVE")
         self.assertEqual(account.authorization_type, "NO_AUTH")
         self.assertEqual(account.connector, self.connection_name)
+
+
+class TestAuthPatternDefaults(unittest.TestCase):
+    """Pure unit tests (no network) guarding AuthPattern field defaults.
+
+    NO_AUTH connectors collect no credentials, so an AuthPattern of that type
+    must carry an empty fields list. This guards the contract at the model level
+    so it holds regardless of whether a call site passes fields=[] explicitly.
+    """
+
+    def test_no_auth_pattern_defaults_to_empty_fields(self):
+        pattern = AuthPattern(type="NO_AUTH", display_name="Public")
+        self.assertEqual(pattern.fields, [])
+
+    def test_auth_pattern_fields_default_is_not_shared(self):
+        """Each AuthPattern gets its own fields list (no shared mutable default)."""
+        first = AuthPattern(type="NO_AUTH", display_name="A")
+        second = AuthPattern(type="NO_AUTH", display_name="B")
+        self.assertIsNot(first.fields, second.fields)

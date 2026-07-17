@@ -989,14 +989,16 @@ class Flags(_message.Message):
     def __init__(self, is_login: bool = ..., is_app: bool = ...) -> None: ...
 
 class ListAppConnectionsRequest(_message.Message):
-    __slots__ = ("page_size", "page_token", "provider")
+    __slots__ = ("page_size", "page_token", "provider", "query")
     PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
     PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
     PROVIDER_FIELD_NUMBER: _ClassVar[int]
+    QUERY_FIELD_NUMBER: _ClassVar[int]
     page_size: int
     page_token: str
     provider: str
-    def __init__(self, page_size: _Optional[int] = ..., page_token: _Optional[str] = ..., provider: _Optional[str] = ...) -> None: ...
+    query: str
+    def __init__(self, page_size: _Optional[int] = ..., page_token: _Optional[str] = ..., provider: _Optional[str] = ..., query: _Optional[str] = ...) -> None: ...
 
 class ListAppConnectionsResponse(_message.Message):
     __slots__ = ("connections", "next_page_token", "prev_page_token", "total_size")

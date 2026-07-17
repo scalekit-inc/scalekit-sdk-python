@@ -16,6 +16,9 @@ class TestConnection(BaseTest):
         org_response = self.scalekit_client.organization.create_organization(organization=organization)
         self.org_id = org_response[0].organization.id
         self.conn_id = None
+        # Environment/app-level connection id (deleted via DeleteEnvironmentConnection,
+        # not the org-scoped delete_connection used for self.conn_id).
+        self.app_conn_id = None
 
     def test_create_connection(self):
         """ Method to test create connection """
@@ -99,6 +102,8 @@ class TestConnection(BaseTest):
         response = self.scalekit_client.connection.create_environment_connection(connection=connection, flags=flags)
         self.assertEqual(response[1].code().name, "OK")
         conn = response[0].connection
+        # Track for cleanup in tearDown (runs whether the test passes or fails).
+        self.app_conn_id = conn.id
         self.assertIsNotNone(conn)
         self.assertEqual(conn.type, ConnectionType.OAUTH)
         self.assertEqual(conn.provider_key, "HUBSPOT")
@@ -117,10 +122,12 @@ class TestConnection(BaseTest):
     def test_list_app_connections_with_provider_filter(self):
         """ Method to test list_app_connections filtered by provider """
         # First create a HubSpot connection so we know at least one exists
-        self.scalekit_client.connection.create_environment_connection(
+        create_resp = self.scalekit_client.connection.create_environment_connection(
             connection=CreateConnection(provider_key="HUBSPOT", type=ConnectionType.OAUTH),
             flags=Flags(is_app=True)
         )
+        # Track for cleanup in tearDown (runs whether the test passes or fails).
+        self.app_conn_id = create_resp[0].connection.id
         response = self.scalekit_client.connection.list_app_connections(provider="HUBSPOT")
         self.assertEqual(response[1].code().name, "OK")
         connections = response[0].connections
@@ -133,6 +140,36 @@ class TestConnection(BaseTest):
         response = self.scalekit_client.connection.list_app_connections(page_size=2)
         self.assertEqual(response[1].code().name, "OK")
         self.assertLessEqual(len(response[0].connections), 2)
+
+    def test_list_app_connections_with_query(self):
+        """ Method to test list_app_connections query search actually filters.
+
+        The query filter matches connections by connection name (key ID) or
+        provider and requires at least 3 characters (proto: min_len=3, max_len=100).
+        """
+        # Create an app connection so the query has a concrete target to match.
+        create_resp = self.scalekit_client.connection.create_environment_connection(
+            connection=CreateConnection(provider_key="HUBSPOT", type=ConnectionType.OAUTH),
+            flags=Flags(is_app=True)
+        )
+        self.assertEqual(create_resp[1].code().name, "OK")
+        created = create_resp[0].connection
+        # Track for cleanup in tearDown (runs whether the test passes or fails).
+        self.app_conn_id = created.id
+        # key_id (e.g. "hubspot-xxxx") is unique per connection — a precise match target.
+        self.assertTrue(created.key_id)
+
+        # A query on the unique key_id must return the created connection.
+        match_resp = self.scalekit_client.connection.list_app_connections(query=created.key_id)
+        self.assertEqual(match_resp[1].code().name, "OK")
+        matched_ids = [conn.id for conn in match_resp[0].connections]
+        self.assertIn(created.id, matched_ids)
+
+        # A unique, non-matching query (>= 3 chars) must return zero connections.
+        non_matching = f"nomatch{Faker().unique.random_number(digits=10)}"
+        no_match_resp = self.scalekit_client.connection.list_app_connections(query=non_matching)
+        self.assertEqual(no_match_resp[1].code().name, "OK")
+        self.assertEqual(len(no_match_resp[0].connections), 0)
 
     def test_get_custom_connection(self):
         """ Method to test get_environment_connection - create then get """
@@ -234,5 +271,15 @@ class TestConnection(BaseTest):
         """ """
         if self.conn_id:
             self.scalekit_client.connection.delete_connection(organization_id=self.org_id, connection_id=self.conn_id)
+        if self.app_conn_id:
+            # App/environment connections have no high-level delete wrapper and are
+            # not org-scoped, so call the DeleteEnvironmentConnection stub directly.
+            try:
+                self.scalekit_client.connection.core_client.grpc_exec(
+                    self.scalekit_client.connection.connection_service.DeleteEnvironmentConnection.with_call,
+                    DeleteEnvironmentConnectionRequest(connection_id=self.app_conn_id),
+                )
+            except ScalekitNotFoundException:
+                pass
         if self.org_id:
             self.scalekit_client.organization.delete_organization(organization_id=self.org_id)
