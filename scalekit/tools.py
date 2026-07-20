@@ -7,6 +7,9 @@ from scalekit.v1.tools.tools_pb2_grpc import ToolServiceStub
 from google.protobuf import empty_pb2
 
 
+_SNAKE_CASE_RE = re.compile(r'^[a-z][a-z0-9]*(_[a-z0-9]+)*$')
+
+
 def _camel_to_snake(name: str) -> str:
     """Convert a camelCase string to snake_case."""
     s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
@@ -125,12 +128,21 @@ class ToolsClient:
 
         params_struct = None
         if params:
-            camel_keys = {k: _camel_to_snake(k) for k in params if _camel_to_snake(k) != k}
-            if camel_keys:
-                hints = [f"'{snake}' (you passed '{camel}')" for camel, snake in camel_keys.items()]
+            invalid = {}
+            for k in params:
+                if not _SNAKE_CASE_RE.match(k):
+                    suggestion = _camel_to_snake(k)
+                    invalid[k] = suggestion if suggestion != k else None
+            if invalid:
+                hints = []
+                for key, suggestion in invalid.items():
+                    if suggestion:
+                        hints.append(f"'{suggestion}' (you passed '{key}')")
+                    else:
+                        hints.append(f"'{key}' is not valid snake_case")
                 raise ValueError(
                     f"Tool input keys must be snake_case. "
-                    f"Did you mean: {', '.join(hints)}? "
+                    f"Invalid keys: {', '.join(hints)}. "
                     f"Tool input keys must match the snake_case schema shown for this tool."
                 )
             params_struct = struct_pb2.Struct()
