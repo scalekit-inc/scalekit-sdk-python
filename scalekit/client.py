@@ -28,6 +28,8 @@ from scalekit.sessions import SessionsClient
 from scalekit.auth import AuthClient
 from scalekit.webauthn import WebAuthnClient
 from scalekit.token import TokenClient
+from scalekit.events import EventsClient
+from scalekit.audit_logs import AuditLogsClient
 from scalekit.common.scalekit import (
     AuthorizationUrlOptions,
     CodeAuthenticationOptions,
@@ -85,6 +87,8 @@ class ScalekitClient:
             self.auth = AuthClient(self.core_client)
             self.webauthn = WebAuthnClient(self.core_client)
             self.tokens = TokenClient(self.core_client)
+            self.events = EventsClient(self.core_client)
+            self.audit_logs = AuditLogsClient(self.core_client)
         except Exception:
             raise
 
