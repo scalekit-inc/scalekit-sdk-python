@@ -6768,3 +6768,284 @@ scalekit_client.actions.providers.delete_custom_provider(
 </dd>
 </dl>
 </details>
+
+## Events
+
+<details><summary><code>scalekit_client.events.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/events.py">list_events</a>(event_types?, start_time?, end_time?, organization_id?, source?, auth_request_id?, interceptor_id?, interceptor_status?, interceptor_decision?, connection_id?, connected_account_id?, page_size?, page_token?) -> ListEventsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists events for the current environment, ordered most-recent first, including a total count of matching events. Pass `auth_request_id` to see every event a specific authentication request produced — correlate it with the `auth_request_id` returned by `AuditLogsClient.list_auth_requests`.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.events.list_events(
+    auth_request_id='areq_123456',
+    page_size=10
+)
+
+print(f'Found {response[0].total_size} events')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**event_types:** `Optional[List[str]]` - Filter by one or more event type names
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**start_time:** `Optional[google.protobuf.Timestamp]` - Only return events at or after this timestamp
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**end_time:** `Optional[google.protobuf.Timestamp]` - Only return events at or before this timestamp
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**organization_id:** `Optional[str]` - Filter by organization ID
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**source:** `Optional[str | int]` - Filter by event source ("SCALEKIT" or "DIR_SYNC")
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**auth_request_id:** `Optional[str]` - Filter by the authentication request that produced the events
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**interceptor_id:** `Optional[str]` - Filter by interceptor ID
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**interceptor_status:** `Optional[str]` - Filter by interceptor status
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**interceptor_decision:** `Optional[str]` - Filter by interceptor decision
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**connection_id:** `Optional[str]` - Filter by connection ID
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**connected_account_id:** `Optional[str]` - Filter by connected account ID
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_size:** `Optional[int]` - Number of events to return per page
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_token:** `Optional[str]` - Opaque pagination cursor from a previous response
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+</dd>
+</dl>
+</details>
+
+## Audit Logs
+
+<details><summary><code>scalekit_client.audit_logs.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/audit_logs.py">list_auth_requests</a>(page_size?, page_token?, email?, status?, start_time?, end_time?, resource_id?, connected_account_identifier?, client_id?) -> ListAuthLogResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists authentication request logs for the current environment, ordered most-recent first. Each entry's `auth_request_id` can be passed to `EventsClient.list_events`'s `auth_request_id` filter to see every event a specific login produced.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.audit_logs.list_auth_requests(
+    email='jane.doe@example.com',
+    page_size=10
+)
+
+for entry in response[0].authRequests:
+    print(f'Auth request: {entry.auth_request_id} - {entry.status}')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**page_size:** `Optional[int]` - Number of authentication request logs to return per page
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_token:** `Optional[str]` - Opaque pagination cursor from a previous response
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**email:** `Optional[str]` - Filter by the end user's email address
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**status:** `Optional[List[str]]` - Filter by one or more outcome statuses (e.g. "SUCCESS", "FAILED")
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**start_time:** `Optional[google.protobuf.Timestamp]` - Only return authentication logs at or after this timestamp
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**end_time:** `Optional[google.protobuf.Timestamp]` - Only return authentication logs at or before this timestamp
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**resource_id:** `Optional[str]` - Filter by resource ID
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**connected_account_identifier:** `Optional[str]` - Filter by connected account identifier
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**client_id:** `Optional[str]` - Filter by client ID
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+</dd>
+</dl>
+</details>
