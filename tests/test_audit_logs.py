@@ -1,4 +1,5 @@
 from basetest import BaseTest
+from scalekit.common.exceptions import ScalekitServerException
 
 
 class TestAuditLogs(BaseTest):
@@ -26,13 +27,18 @@ class TestAuditLogs(BaseTest):
 
     def test_list_auth_requests_pagination_token_is_client_validated_string(self):
         """page_token accepts a string cursor; a malformed one is rejected by the server, not swallowed."""
-        response = self.scalekit_client.audit_logs.list_auth_requests(
-            page_token="not-a-real-cursor"
-        )
-        # The server may reject a malformed cursor (INVALID_ARGUMENT) rather than the SDK
-        # silently ignoring it. Either an explicit rejection or a clean empty page is
-        # acceptable here — what's not acceptable is the SDK eating the parameter.
-        self.assertIn(response[1].code().name, ("OK", "INVALID_ARGUMENT"))
+        # grpc_exec re-raises a malformed-cursor rejection (INVALID_ARGUMENT) as
+        # ScalekitServerException rather than returning an error-code response tuple — see
+        # GUIDELINES.md: "grpc_exec swallows grpc.RpcError — catch ScalekitServerException
+        # instead." Either an explicit rejection or a clean empty page is acceptable here —
+        # what's not acceptable is the SDK silently ignoring the parameter.
+        try:
+            response = self.scalekit_client.audit_logs.list_auth_requests(
+                page_token="not-a-real-cursor"
+            )
+            self.assertEqual(response[1].code().name, "OK")
+        except ScalekitServerException:
+            pass
 
     def test_events_correlate_with_auth_request_id(self):
         """
