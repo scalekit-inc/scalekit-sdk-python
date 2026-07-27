@@ -73,7 +73,7 @@ class AuthServiceStub(object):
         self.UpdateLoginUserDetails = channel.unary_unary(
                 '/scalekit.v1.auth.AuthService/UpdateLoginUserDetails',
                 request_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.UpdateLoginUserDetailsRequest.SerializeToString,
-                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                response_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.UpdateLoginUserDetailsResponse.FromString,
                 )
 
 
@@ -213,7 +213,7 @@ def add_AuthServiceServicer_to_server(servicer, server):
             'UpdateLoginUserDetails': grpc.unary_unary_rpc_method_handler(
                     servicer.UpdateLoginUserDetails,
                     request_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.UpdateLoginUserDetailsRequest.FromString,
-                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                    response_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.UpdateLoginUserDetailsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -425,6 +425,6 @@ class AuthService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.auth.AuthService/UpdateLoginUserDetails',
             scalekit_dot_v1_dot_auth_dot_auth__pb2.UpdateLoginUserDetailsRequest.SerializeToString,
-            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            scalekit_dot_v1_dot_auth_dot_auth__pb2.UpdateLoginUserDetailsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
