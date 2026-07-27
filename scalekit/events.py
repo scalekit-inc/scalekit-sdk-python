@@ -1,7 +1,11 @@
 from typing import Optional
 
 from scalekit.core import CoreClient
-from scalekit.v1.events.events_pb2 import *
+from scalekit.v1.events.events_pb2 import (
+    EventFilter,
+    ListEventsPaginatedRequest,
+    ListEventsPaginatedResponse,
+)
 from scalekit.v1.events.events_pb2_grpc import EventsServiceStub
 
 
@@ -26,7 +30,7 @@ class EventsClient:
         self,
         page_size: Optional[int] = None,
         page_token: Optional[str] = None,
-        filter: Optional[EventFilter] = None,
+        filter: Optional[EventFilter] = None,  # noqa: A002
     ) -> ListEventsPaginatedResponse:
         """
         Method to list events with pagination
