@@ -26,6 +26,7 @@ from scalekit.passwordless import PasswordlessClient
 from scalekit.mcp import McpClient
 from scalekit.sessions import SessionsClient
 from scalekit.auth import AuthClient
+from scalekit.events import EventsClient
 from scalekit.webauthn import WebAuthnClient
 from scalekit.token import TokenClient
 from scalekit.common.scalekit import (
@@ -83,6 +84,7 @@ class ScalekitClient:
             self.passwordless = PasswordlessClient(self.core_client)
             self.sessions = SessionsClient(self.core_client)
             self.auth = AuthClient(self.core_client)
+            self.events = EventsClient(self.core_client)
             self.webauthn = WebAuthnClient(self.core_client)
             self.tokens = TokenClient(self.core_client)
         except Exception:

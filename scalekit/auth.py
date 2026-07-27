@@ -1,6 +1,5 @@
 from typing import Optional, Dict, Any, Mapping
 from google.protobuf.json_format import ParseDict
-from google.protobuf.empty_pb2 import Empty
 
 from scalekit.core import CoreClient
 from scalekit.v1.auth import auth_pb2
@@ -29,7 +28,7 @@ class AuthClient:
         connection_id: str,
         login_request_id: str,
         user: Optional[Mapping[str, Any]] = None,
-    ) -> Empty:
+    ) -> auth_pb2.UpdateLoginUserDetailsResponse:
         """
         Method to update user details for a login request
 
@@ -55,7 +54,7 @@ class AuthClient:
         :type                     : ``` dict ```
 
         :returns:
-            Tuple of (Empty response, grpc.Call metadata)
+            Tuple of (UpdateLoginUserDetailsResponse carrying auth_request_id, grpc.Call metadata)
         """
 
         user_data: Dict[str, Any] = {}

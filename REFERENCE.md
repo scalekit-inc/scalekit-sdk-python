@@ -4982,7 +4982,7 @@ print(f'Deleted: {response[0].success}')
 
 ## Auth
 
-<details><summary><code>client.auth.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/auth.py">update_login_user_details</a>(connection_id, login_request_id, user?) -> Empty</code></summary>
+<details><summary><code>client.auth.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/auth.py">update_login_user_details</a>(connection_id, login_request_id, user?) -> UpdateLoginUserDetailsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5011,7 +5011,7 @@ If you are using Auth for MCP solution of Scalekit in "Bring your own Auth" mode
 <dd>
 
 ```python
-scalekit_client.auth.update_login_user_details(
+response = scalekit_client.auth.update_login_user_details(
     'conn_abc123',
     'login_xyz789',
     {
@@ -5019,6 +5019,7 @@ scalekit_client.auth.update_login_user_details(
         'sub': 'unique_user_id_456',
     }
 )
+print(response[0].auth_request_id)
 ```
 </dd>
 </dl>
@@ -5064,6 +5065,84 @@ scalekit_client.auth.update_login_user_details(
 - `locale: Optional[str]` - User's locale preference
 - `groups: Optional[list[str]]` - List of group names or IDs
 - `custom_attributes: Optional[dict]` - Custom attributes as dict
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Events
+
+<details><summary><code>client.events.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/events.py">list_events_paginated</a>(page_size?, page_token?, filter?) -> ListEventsPaginatedResponse</code></summary>
+<dl>
+<dd>
+
+### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists events with pagination, optionally narrowing results with an event filter.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.events.list_events_paginated(
+    page_size=10,
+    page_token=''
+)
+for event in response[0].events:
+    print(event)
+print(response[0].next_page_token)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**page_size:** `Optional[int]` - Page size for the events list fetch (uses server default if not provided)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_token:** `Optional[str]` - Page token for fetching the next page of events
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**filter:** `Optional[EventFilter]` - Filter to narrow the events returned
 
 </dd>
 </dl>
