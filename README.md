@@ -136,7 +136,7 @@ Explore fully functional sample applications built with popular Python framework
 
 | Framework | Repository | Description |
 |-----------|------------|-------------|
-| **FastAPI** | [scalekit-fastapi-example](https://github.com/scalekit-developers/scalekit-fastapi-example) | Modern async Python API framework |
+| **FastAPI** | [scalekit-fastapi-example](https://github.com/scalekit-developers/scalekit-fastapi-example) | Modern async Python API framework  |
 
 ## 🔗 Helpful Links
 
