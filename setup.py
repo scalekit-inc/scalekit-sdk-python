@@ -27,6 +27,12 @@ setup(
         "pydantic>=2.13.4",
         "mcp>=1.27.2",
     ],
+    extras_require={
+        # Framework-specific extras for scalekit.frameworks.* -- kept out of
+        # install_requires so installing the core SDK never pulls in a web
+        # framework the customer isn't using.
+        "flask": ["flask>=2.0"],
+    },
     url="https://github.com/scalekit-inc/scalekit-sdk-python",
     license="MIT",
     author="Team Scalekit",
