@@ -14,7 +14,7 @@ pip install -r requirements.txt
 python manage.py runserver 5001
 ```
 
-Register `http://localhost:5001/callback` as an allowed redirect URI (and `http://localhost:5001/` as an allowed post-logout redirect URI) in your Scalekit dashboard.
+Register these in your Scalekit dashboard: `http://localhost:5001/callback` as an allowed redirect URI, `http://localhost:5001/` as an allowed post-logout redirect URI, and `http://localhost:5001/login` as the Initiate Login URL.
 
 ## What this demonstrates
 
