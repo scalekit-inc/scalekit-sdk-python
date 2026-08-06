@@ -1,7 +1,7 @@
 import os
 
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Request
 from fastapi.responses import HTMLResponse
 
 from scalekit.frameworks.fastapi import ScalekitAuth
@@ -21,8 +21,10 @@ auth.install(app)
 
 
 @app.get("/", response_class=HTMLResponse)
-async def home():
-    return '<a href="/login">Login</a> | <a href="/account">Account</a> | <a href="/logout">Logout</a>'
+async def home(request: Request):
+    if auth.manager.cookie_name in request.cookies:
+        return '<a href="/account">Account</a> | <a href="/logout">Logout</a>'
+    return '<a href="/login">Login</a>'
 
 
 @app.get("/account")

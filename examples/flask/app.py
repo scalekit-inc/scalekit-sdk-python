@@ -2,6 +2,7 @@ import os
 
 from dotenv import load_dotenv
 from flask import Flask
+from flask import request as flask_request
 
 from scalekit.frameworks.flask import ScalekitAuth
 
@@ -21,7 +22,9 @@ auth = ScalekitAuth(
 
 @app.route("/")
 def home():
-    return '<a href="/login">Login</a> | <a href="/account">Account</a> | <a href="/logout">Logout</a>'
+    if auth.manager.cookie_name in flask_request.cookies:
+        return '<a href="/account">Account</a> | <a href="/logout">Logout</a>'
+    return '<a href="/login">Login</a>'
 
 
 @app.route("/account")

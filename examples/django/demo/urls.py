@@ -5,9 +5,10 @@ from scalekit.frameworks.django import login_required
 
 
 def home(request):
-    return HttpResponse(
-        '<a href="/login">Login</a> | <a href="/account">Account</a> | <a href="/logout">Logout</a>'
-    )
+    # ScalekitAuthMiddleware already populates this on every request.
+    if request.scalekit_user is not None:
+        return HttpResponse('<a href="/account">Account</a> | <a href="/logout">Logout</a>')
+    return HttpResponse('<a href="/login">Login</a>')
 
 
 @login_required
