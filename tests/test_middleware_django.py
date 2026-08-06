@@ -62,7 +62,7 @@ class TestScalekitAuthDjango(unittest.TestCase):
         self.client_mock.get_authorization_url.return_value = (
             "https://auth.example.com/oauth/authorize?client_id=x"
         )
-        resp = Client().get("/login/")
+        resp = Client().get("/login")
 
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp.headers["Location"], "https://auth.example.com/oauth/authorize?client_id=x")
@@ -80,7 +80,7 @@ class TestScalekitAuthDjango(unittest.TestCase):
             "exp": time.time() + 300,
         }
 
-        resp = Client().get("/callback/?code=abc123")
+        resp = Client().get("/callback?code=abc123")
 
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp.headers["Location"], "/")
@@ -165,7 +165,7 @@ class TestScalekitAuthDjango(unittest.TestCase):
         self.assertEqual(resp.headers["Location"], "/login")
 
     def test_logout_without_any_cookie_falls_back_to_local_redirect(self):
-        resp = Client().get("/logout/")
+        resp = Client().get("/logout")
 
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp.headers["Location"], "/")
@@ -187,7 +187,7 @@ class TestScalekitAuthDjango(unittest.TestCase):
         tc = Client()
         tc.cookies["sk_session"] = cookie_value
 
-        resp = tc.get("/logout/")
+        resp = tc.get("/logout")
 
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp.headers["Location"], "https://auth.example.com/oidc/logout?id_token_hint=abc")
@@ -211,7 +211,7 @@ class TestScalekitAuthDjango(unittest.TestCase):
         tc = Client()
         tc.cookies["sk_session"] = cookie_value
 
-        resp = tc.get("/logout/")
+        resp = tc.get("/logout")
 
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp.headers["Location"], "/")

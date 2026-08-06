@@ -243,9 +243,12 @@ def logout_view(request: HttpRequest) -> HttpResponse:
     return response
 
 
-# Include via: path("auth/", include("scalekit.frameworks.django"))
+# No trailing slashes -- matches the Flask/FastAPI adapters' paths
+# ("/login", "/callback", "/logout") so a redirect_uri registered in the
+# Scalekit dashboard for one framework works unchanged for the others.
+# Include via: path("", include("scalekit.frameworks.django"))
 urlpatterns = [
-    path("login/", login_view, name="scalekit_login"),
-    path("callback/", callback_view, name="scalekit_callback"),
-    path("logout/", logout_view, name="scalekit_logout"),
+    path("login", login_view, name="scalekit_login"),
+    path("callback", callback_view, name="scalekit_callback"),
+    path("logout", logout_view, name="scalekit_logout"),
 ]
