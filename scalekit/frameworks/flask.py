@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import secrets
+import logging
 import time
 from functools import wraps
 from typing import Any, Callable, Dict, Optional
@@ -21,15 +21,16 @@ from scalekit.common.scalekit import (
     CodeAuthenticationOptions,
     LogoutUrlOptions,
 )
+from scalekit.middleware.csrf_state import (
+    STATE_COOKIE_MAX_AGE,
+    STATE_COOKIE_NAME,
+    generate_state,
+    verify_state,
+)
 from scalekit.middleware.protocol import RequestAdapter, ResponseAdapter
 from scalekit.middleware.session_manager import DEFAULT_COOKIE_NAME, SessionRefreshManager
 
-# Short-lived cookie carrying the OAuth `state` value between /login and
-# /callback, so /callback can verify the provider's callback wasn't forged
-# (CSRF: an attacker's own authorization code smuggled into a victim's
-# browser session) -- see _login_view/_callback_view.
-_STATE_COOKIE_NAME = "sk_oauth_state"
-_STATE_COOKIE_MAX_AGE = 600  # 10 minutes -- generous for a slow login, still short-lived
+logger = logging.getLogger("scalekit.frameworks.flask")
 
 
 class _FlaskRequestAdapter:
@@ -167,19 +168,19 @@ class ScalekitAuth:
         # Bind this authorization request to the browser that started it, so
         # /callback can reject a forged callback carrying an attacker's own
         # authorization code (CSRF).
-        state = secrets.token_urlsafe(32)
+        state = generate_state()
         options.state = state
         url = self.client.get_authorization_url(self.redirect_uri, options)
         response = Response(status=302, headers={"Location": url})
         _FlaskResponseAdapter(response).set_cookie(
-            _STATE_COOKIE_NAME, state, max_age=_STATE_COOKIE_MAX_AGE
+            STATE_COOKIE_NAME, state, max_age=STATE_COOKIE_MAX_AGE
         )
         return response
 
     def _callback_view(self):
         def _redirect_to_login():
             resp = Response(status=302, headers={"Location": self.login_path})
-            _FlaskResponseAdapter(resp).delete_cookie(_STATE_COOKIE_NAME)
+            _FlaskResponseAdapter(resp).delete_cookie(STATE_COOKIE_NAME)
             return resp
 
         # The provider redirects here with `error` (no `code`) if the user
@@ -190,13 +191,9 @@ class ScalekitAuth:
         if error or not code:
             return _redirect_to_login()
 
-        stored_state = flask_request.cookies.get(_STATE_COOKIE_NAME)
+        stored_state = flask_request.cookies.get(STATE_COOKIE_NAME)
         returned_state = flask_request.args.get("state")
-        if (
-            not stored_state
-            or not returned_state
-            or not secrets.compare_digest(stored_state, returned_state)
-        ):
+        if not verify_state(stored_state, returned_state):
             # Missing or mismatched state -- this callback did not originate
             # from a /login this browser actually made. Refuse the exchange.
             return _redirect_to_login()
@@ -212,21 +209,26 @@ class ScalekitAuth:
             # (see SessionRefreshManager._refresh). id_token is kept separately, only
             # for use as id_token_hint on logout.
             claims = self.client.validate_access_token_and_get_claims(access_token)
+            payload = {
+                "user": claims,
+                "access_token": access_token,
+                "refresh_token": result.get("refresh_token"),
+                "id_token": result.get("id_token"),
+                "expires_at": claims.get("exp", time.time() + (result.get("expires_in") or 300)),
+            }
+            # create_session_cookie raises if the encrypted payload exceeds the
+            # browser cookie size limit (e.g. several custom access-token claims
+            # configured) -- must stay inside this try, not just the network
+            # calls above, or this view raises with no wrapper around it.
+            cookie_value = self.manager.create_session_cookie(payload)
         except Exception:
+            logger.exception("login callback failed; redirecting to login")
             return _redirect_to_login()
 
-        payload = {
-            "user": claims,
-            "access_token": access_token,
-            "refresh_token": result.get("refresh_token"),
-            "id_token": result.get("id_token"),
-            "expires_at": claims.get("exp", time.time() + (result.get("expires_in") or 300)),
-        }
-        cookie_value = self.manager.create_session_cookie(payload)
         response = Response(status=302, headers={"Location": self.post_login_redirect})
         adapter = _FlaskResponseAdapter(response)
         adapter.set_cookie(self.manager.cookie_name, cookie_value)
-        adapter.delete_cookie(_STATE_COOKIE_NAME)
+        adapter.delete_cookie(STATE_COOKIE_NAME)
         return response
 
     def _logout_view(self):

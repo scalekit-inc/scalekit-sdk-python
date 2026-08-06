@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import secrets
+import logging
 import time
 from functools import lru_cache, wraps
 from typing import Any, Callable, Optional
@@ -21,14 +21,16 @@ from scalekit.common.scalekit import (
     CodeAuthenticationOptions,
     LogoutUrlOptions,
 )
+from scalekit.middleware.csrf_state import (
+    STATE_COOKIE_MAX_AGE,
+    STATE_COOKIE_NAME,
+    generate_state,
+    verify_state,
+)
 from scalekit.middleware.protocol import RequestAdapter, ResponseAdapter
 from scalekit.middleware.session_manager import DEFAULT_COOKIE_NAME, SessionRefreshManager
 
-# Short-lived cookie carrying the OAuth `state` value between /login and
-# /callback -- see scalekit.frameworks.flask for the full CSRF reasoning
-# (identical here, not framework-specific).
-_STATE_COOKIE_NAME = "sk_oauth_state"
-_STATE_COOKIE_MAX_AGE = 600  # 10 minutes
+logger = logging.getLogger("scalekit.frameworks.django")
 
 
 class _DjangoRequestAdapter:
@@ -197,12 +199,12 @@ def login_view(request: HttpRequest) -> HttpResponse:
     # Bind this authorization request to the browser that started it, so
     # callback_view can reject a forged callback carrying an attacker's own
     # authorization code (CSRF) -- see scalekit.frameworks.flask.
-    state = secrets.token_urlsafe(32)
+    state = generate_state()
     options.state = state
     url = config.client.get_authorization_url(config.redirect_uri, options)
     response = HttpResponseRedirect(url)
     _DjangoResponseAdapter(response).set_cookie(
-        _STATE_COOKIE_NAME, state, max_age=_STATE_COOKIE_MAX_AGE
+        STATE_COOKIE_NAME, state, max_age=STATE_COOKIE_MAX_AGE
     )
     return response
 
@@ -212,7 +214,7 @@ def callback_view(request: HttpRequest) -> HttpResponse:
 
     def _redirect_to_login():
         resp = HttpResponseRedirect(config.login_path)
-        _DjangoResponseAdapter(resp).delete_cookie(_STATE_COOKIE_NAME)
+        _DjangoResponseAdapter(resp).delete_cookie(STATE_COOKIE_NAME)
         return resp
 
     # The provider redirects here with `error` (no `code`) if the user
@@ -223,13 +225,9 @@ def callback_view(request: HttpRequest) -> HttpResponse:
     if error or not code:
         return _redirect_to_login()
 
-    stored_state = request.COOKIES.get(_STATE_COOKIE_NAME)
+    stored_state = request.COOKIES.get(STATE_COOKIE_NAME)
     returned_state = request.GET.get("state")
-    if (
-        not stored_state
-        or not returned_state
-        or not secrets.compare_digest(stored_state, returned_state)
-    ):
+    if not verify_state(stored_state, returned_state):
         # Missing or mismatched state -- this callback did not originate
         # from a /login this browser actually made. Refuse the exchange.
         return _redirect_to_login()
@@ -242,21 +240,25 @@ def callback_view(request: HttpRequest) -> HttpResponse:
         # Access-token claims (not id_token claims) are the source of truth for
         # `user` -- see scalekit.frameworks.flask for the full reasoning.
         claims = config.client.validate_access_token_and_get_claims(access_token)
+        payload = {
+            "user": claims,
+            "access_token": access_token,
+            "refresh_token": result.get("refresh_token"),
+            "id_token": result.get("id_token"),
+            "expires_at": claims.get("exp", time.time() + (result.get("expires_in") or 300)),
+        }
+        # create_session_cookie raises if the encrypted payload exceeds the
+        # browser cookie size limit -- must stay inside this try, not just
+        # the network calls above, or this view raises with no wrapper.
+        cookie_value = config.manager.create_session_cookie(payload)
     except Exception:
+        logger.exception("login callback failed; redirecting to login")
         return _redirect_to_login()
 
-    payload = {
-        "user": claims,
-        "access_token": access_token,
-        "refresh_token": result.get("refresh_token"),
-        "id_token": result.get("id_token"),
-        "expires_at": claims.get("exp", time.time() + (result.get("expires_in") or 300)),
-    }
-    cookie_value = config.manager.create_session_cookie(payload)
     response = HttpResponseRedirect(config.post_login_redirect)
     adapter = _DjangoResponseAdapter(response)
     adapter.set_cookie(config.manager.cookie_name, cookie_value)
-    adapter.delete_cookie(_STATE_COOKIE_NAME)
+    adapter.delete_cookie(STATE_COOKIE_NAME)
     return response
 
 

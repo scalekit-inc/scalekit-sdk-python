@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import json
 import os
+from functools import lru_cache
 from typing import Any, Dict
 
 from cryptography.hazmat.primitives import hashes
@@ -42,7 +43,13 @@ class InvalidSessionError(Exception):
     """
 
 
+@lru_cache(maxsize=8)
 def _derive_key(secret: str) -> bytes:
+    # Cached: every encrypt_session()/decrypt_session() call on the request
+    # hot path was otherwise re-running a full HKDF-SHA256 derivation from
+    # the same static secret. A process normally uses one (or a handful,
+    # across key rotation) distinct secrets, so a small bounded cache is
+    # sufficient -- lru_cache never caches the ValueError below.
     if not secret:
         raise ValueError(_SECRET_HELP)
     hkdf = HKDF(algorithm=hashes.SHA256(), length=32, salt=_HKDF_SALT, info=_HKDF_INFO)
