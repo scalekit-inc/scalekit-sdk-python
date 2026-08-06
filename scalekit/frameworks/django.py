@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import secrets
 import time
 from functools import lru_cache, wraps
 from typing import Any, Callable, Optional
@@ -21,8 +22,13 @@ from scalekit.common.scalekit import (
     LogoutUrlOptions,
 )
 from scalekit.middleware.protocol import RequestAdapter, ResponseAdapter
-from scalekit.middleware.session_crypto import InvalidSessionError, decrypt_session
 from scalekit.middleware.session_manager import DEFAULT_COOKIE_NAME, SessionRefreshManager
+
+# Short-lived cookie carrying the OAuth `state` value between /login and
+# /callback -- see scalekit.frameworks.flask for the full CSRF reasoning
+# (identical here, not framework-specific).
+_STATE_COOKIE_NAME = "sk_oauth_state"
+_STATE_COOKIE_MAX_AGE = 600  # 10 minutes
 
 
 class _DjangoRequestAdapter:
@@ -188,29 +194,69 @@ def login_view(request: HttpRequest) -> HttpResponse:
     # offline_access is required to get a refresh_token back at all -- see
     # scalekit.frameworks.flask for the full explanation.
     options.scopes = ["openid", "profile", "email", "offline_access"]
+    # Bind this authorization request to the browser that started it, so
+    # callback_view can reject a forged callback carrying an attacker's own
+    # authorization code (CSRF) -- see scalekit.frameworks.flask.
+    state = secrets.token_urlsafe(32)
+    options.state = state
     url = config.client.get_authorization_url(config.redirect_uri, options)
-    return HttpResponseRedirect(url)
+    response = HttpResponseRedirect(url)
+    _DjangoResponseAdapter(response).set_cookie(
+        _STATE_COOKIE_NAME, state, max_age=_STATE_COOKIE_MAX_AGE
+    )
+    return response
 
 
 def callback_view(request: HttpRequest) -> HttpResponse:
     config = get_config()
+
+    def _redirect_to_login():
+        resp = HttpResponseRedirect(config.login_path)
+        _DjangoResponseAdapter(resp).delete_cookie(_STATE_COOKIE_NAME)
+        return resp
+
+    # The provider redirects here with `error` (no `code`) if the user
+    # cancels consent or the request is otherwise rejected -- never reflect
+    # error/error_description into the response, it's attacker-influenced.
+    error = request.GET.get("error")
     code = request.GET.get("code")
-    result = config.client.authenticate_with_code(
-        code, config.redirect_uri, CodeAuthenticationOptions()
-    )
-    # Access-token claims (not id_token claims) are the source of truth for
-    # `user` -- see scalekit.frameworks.flask for the full reasoning.
-    claims = config.client.validate_access_token_and_get_claims(result["access_token"])
+    if error or not code:
+        return _redirect_to_login()
+
+    stored_state = request.COOKIES.get(_STATE_COOKIE_NAME)
+    returned_state = request.GET.get("state")
+    if (
+        not stored_state
+        or not returned_state
+        or not secrets.compare_digest(stored_state, returned_state)
+    ):
+        # Missing or mismatched state -- this callback did not originate
+        # from a /login this browser actually made. Refuse the exchange.
+        return _redirect_to_login()
+
+    try:
+        result = config.client.authenticate_with_code(
+            code, config.redirect_uri, CodeAuthenticationOptions()
+        )
+        access_token = result["access_token"]
+        # Access-token claims (not id_token claims) are the source of truth for
+        # `user` -- see scalekit.frameworks.flask for the full reasoning.
+        claims = config.client.validate_access_token_and_get_claims(access_token)
+    except Exception:
+        return _redirect_to_login()
+
     payload = {
         "user": claims,
-        "access_token": result["access_token"],
+        "access_token": access_token,
         "refresh_token": result.get("refresh_token"),
         "id_token": result.get("id_token"),
         "expires_at": claims.get("exp", time.time() + (result.get("expires_in") or 300)),
     }
     cookie_value = config.manager.create_session_cookie(payload)
     response = HttpResponseRedirect(config.post_login_redirect)
-    _DjangoResponseAdapter(response).set_cookie(config.manager.cookie_name, cookie_value)
+    adapter = _DjangoResponseAdapter(response)
+    adapter.set_cookie(config.manager.cookie_name, cookie_value)
+    adapter.delete_cookie(_STATE_COOKIE_NAME)
     return response
 
 
@@ -219,11 +265,9 @@ def logout_view(request: HttpRequest) -> HttpResponse:
     cookie_value = request.COOKIES.get(config.manager.cookie_name)
     id_token = None
     if cookie_value:
-        try:
-            payload = decrypt_session(cookie_value, config.manager._secret)
+        payload = config.manager.read_session(cookie_value)
+        if payload:
             id_token = payload.get("id_token")
-        except InvalidSessionError:
-            pass  # nothing usable to hint with -- fall through to local-only redirect
 
     redirect_url = config.post_logout_redirect_uri
     if config.full_logout and id_token:

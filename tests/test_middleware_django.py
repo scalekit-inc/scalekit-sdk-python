@@ -49,6 +49,13 @@ def _reconfigure(secret=None, full_logout=None):
     return get_config()
 
 
+def _login_and_get_state(tc):
+    """Drive /login through the test client to obtain a valid state cookie,
+    exactly as a real browser would before hitting /callback."""
+    tc.get("/login")
+    return tc.cookies["sk_oauth_state"].value
+
+
 class TestScalekitAuthDjango(unittest.TestCase):
     def setUp(self):
         django_settings.SCALEKIT_FULL_LOGOUT = True
@@ -68,6 +75,7 @@ class TestScalekitAuthDjango(unittest.TestCase):
         self.assertEqual(resp.headers["Location"], "https://auth.example.com/oauth/authorize?client_id=x")
 
     def test_callback_sets_encrypted_cookie_and_redirects(self):
+        self.client_mock.get_authorization_url.return_value = "https://auth.example.com/oauth/authorize"
         self.client_mock.authenticate_with_code.return_value = {
             "user": {"email": "test.user@example.com"},
             "access_token": "at_1",
@@ -80,7 +88,9 @@ class TestScalekitAuthDjango(unittest.TestCase):
             "exp": time.time() + 300,
         }
 
-        resp = Client().get("/callback?code=abc123")
+        tc = Client()
+        state = _login_and_get_state(tc)
+        resp = tc.get(f"/callback?code=abc123&state={state}")
 
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp.headers["Location"], "/")
@@ -88,6 +98,39 @@ class TestScalekitAuthDjango(unittest.TestCase):
         self.assertIn("sk_session=", set_cookie_header)
         self.assertIn("HttpOnly", set_cookie_header)
         self.assertIn("Secure", set_cookie_header)
+
+    def test_callback_with_provider_error_redirects_to_login_not_500(self):
+        resp = Client().get("/callback?error=access_denied")
+
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.headers["Location"], "/login")
+        self.client_mock.authenticate_with_code.assert_not_called()
+
+    def test_callback_with_missing_code_redirects_to_login(self):
+        resp = Client().get("/callback")
+
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.headers["Location"], "/login")
+        self.client_mock.authenticate_with_code.assert_not_called()
+
+    def test_callback_with_missing_state_redirects_to_login(self):
+        # No /login call at all -- no state cookie exists, simulating a
+        # forged callback URL sent directly to a victim.
+        resp = Client().get("/callback?code=abc123&state=whatever")
+
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.headers["Location"], "/login")
+        self.client_mock.authenticate_with_code.assert_not_called()
+
+    def test_callback_with_mismatched_state_redirects_to_login(self):
+        self.client_mock.get_authorization_url.return_value = "https://auth.example.com/oauth/authorize"
+        tc = Client()
+        _login_and_get_state(tc)
+        resp = tc.get("/callback?code=abc123&state=attacker-supplied")
+
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.headers["Location"], "/login")
+        self.client_mock.authenticate_with_code.assert_not_called()
 
     def test_protected_route_without_cookie_redirects_to_login_not_json_401(self):
         # Same property tested for Flask/FastAPI: "no valid session" must be a
@@ -224,11 +267,16 @@ class TestScalekitAuthDjangoConstruction(unittest.TestCase):
 
     def test_missing_cookie_secret_raises_immediately(self):
         get_config.cache_clear()
+        # Restore via addCleanup, not a bare post-assertion line -- if the
+        # assertion below ever failed, the setting would stay "" for every
+        # later test in the run for an unrelated reason.
+        self.addCleanup(
+            setattr, django_settings, "SCALEKIT_COOKIE_ENCRYPTION_SECRET", "django-test-cookie-secret"
+        )
         django_settings.SCALEKIT_COOKIE_ENCRYPTION_SECRET = ""
         django_settings.SCALEKIT_CLIENT = MagicMock()
         with self.assertRaises(ValueError):
             get_config()
-        django_settings.SCALEKIT_COOKIE_ENCRYPTION_SECRET = "django-test-cookie-secret"
 
 
 if __name__ == "__main__":
