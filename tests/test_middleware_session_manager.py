@@ -64,7 +64,11 @@ class TestSessionRefreshManagerCheck(unittest.TestCase):
         self.client.refresh_access_token.return_value = {
             "access_token": "at_new",
             "refresh_token": "rt_new",
-            "expires_in": 300,
+        }
+        fresh_expiry = time.time() + 300
+        self.client.validate_access_token_and_get_claims.return_value = {
+            "email": "user@example.com",
+            "exp": fresh_expiry,
         }
         cookie = self._cookie_for(expires_at=time.time() - 10)  # already expired
 
@@ -73,10 +77,14 @@ class TestSessionRefreshManagerCheck(unittest.TestCase):
         self.assertTrue(result.authenticated)
         self.assertIsNotNone(result.new_cookie_value)
         self.client.refresh_access_token.assert_called_once_with("rt_original")
+        self.client.validate_access_token_and_get_claims.assert_called_once_with("at_new")
 
         new_payload = decrypt_session(result.new_cookie_value, self.secret)
         self.assertEqual(new_payload["access_token"], "at_new")
         self.assertEqual(new_payload["refresh_token"], "rt_new")
+        # user/claims must come from the freshly-issued access token, not the old cache
+        self.assertEqual(new_payload["user"], {"email": "user@example.com", "exp": fresh_expiry})
+        self.assertEqual(new_payload["expires_at"], fresh_expiry)
 
     def test_refresh_failure_clears_cookie_and_redirects(self):
         self.client.refresh_access_token.side_effect = Exception("invalid_grant")
@@ -121,11 +129,15 @@ class TestSessionRefreshManagerConcurrency(unittest.TestCase):
             return {"access_token": "at_new", "refresh_token": "rt_new", "expires_in": 300}
 
         client.refresh_access_token.side_effect = slow_refresh
+        client.validate_access_token_and_get_claims.return_value = {
+            "email": "test.user@example.com",
+            "exp": time.time() + 300,
+        }
         manager = SessionRefreshManager(client, secret)
 
         cookie = encrypt_session(
             {
-                "user": {"email": "alper@example.com"},
+                "user": {"email": "test.user@example.com"},
                 "access_token": "at_old",
                 "refresh_token": "rt_shared",
                 "expires_at": time.time() - 10,

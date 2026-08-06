@@ -8,7 +8,7 @@ from scalekit.frameworks.flask import ScalekitAuth
 from scalekit.middleware.session_crypto import decrypt_session
 
 
-def _build_app(client=None, secret="flask-test-secret"):
+def _build_app(client=None, secret="flask-test-secret", **auth_kwargs):
     app = Flask(__name__)
     app.testing = True
     mock_client = client or MagicMock()
@@ -17,6 +17,7 @@ def _build_app(client=None, secret="flask-test-secret"):
         client=mock_client,
         redirect_uri="https://app.example.com/callback",
         cookie_encryption_secret=secret,
+        **auth_kwargs,
     )
 
     @app.route("/account")
@@ -41,10 +42,15 @@ class TestScalekitAuthFlask(unittest.TestCase):
     def test_callback_sets_encrypted_cookie_and_redirects(self):
         app, auth, client = _build_app(secret="callback-secret")
         client.authenticate_with_code.return_value = {
-            "user": {"email": "alper.gondiken@bloomreach.com"},
+            "user": {"email": "test.user@example.com"},
             "access_token": "at_1",
             "refresh_token": "rt_1",
+            "id_token": "idt_1",
             "expires_in": 300,
+        }
+        client.validate_access_token_and_get_claims.return_value = {
+            "email": "test.user@example.com",
+            "exp": time.time() + 300,
         }
 
         with app.test_client() as tc:
@@ -76,7 +82,7 @@ class TestScalekitAuthFlask(unittest.TestCase):
         app, auth, client = _build_app(secret="valid-session-secret")
         cookie_value = auth.manager.create_session_cookie(
             {
-                "user": {"email": "alper.gondiken@bloomreach.com"},
+                "user": {"email": "test.user@example.com"},
                 "access_token": "at_1",
                 "refresh_token": "rt_1",
                 "expires_at": time.time() + 3600,
@@ -88,7 +94,7 @@ class TestScalekitAuthFlask(unittest.TestCase):
             resp = tc.get("/account")
 
         self.assertEqual(resp.status_code, 200)
-        self.assertIn(b"alper.gondiken@bloomreach.com", resp.data)
+        self.assertIn(b"test.user@example.com", resp.data)
         client.refresh_access_token.assert_not_called()
 
     def test_protected_route_with_expired_session_refreshes_transparently(self):
@@ -96,11 +102,14 @@ class TestScalekitAuthFlask(unittest.TestCase):
         client.refresh_access_token.return_value = {
             "access_token": "at_new",
             "refresh_token": "rt_new",
-            "expires_in": 300,
+        }
+        client.validate_access_token_and_get_claims.return_value = {
+            "email": "test.user@example.com",
+            "exp": time.time() + 300,
         }
         cookie_value = auth.manager.create_session_cookie(
             {
-                "user": {"email": "alper.gondiken@bloomreach.com"},
+                "user": {"email": "test.user@example.com"},
                 "access_token": "at_old",
                 "refresh_token": "rt_old",
                 "expires_at": time.time() - 10,
@@ -139,17 +148,76 @@ class TestScalekitAuthFlask(unittest.TestCase):
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp.headers["Location"], "/login")
 
-    def test_logout_clears_cookie_and_redirects(self):
+    def test_logout_with_invalid_cookie_falls_back_to_local_redirect(self):
         app, auth, client = _build_app()
 
         with app.test_client() as tc:
-            tc.set_cookie("sk_session", "some-value")
+            tc.set_cookie("sk_session", "some-value")  # undecryptable garbage
             resp = tc.get("/logout", follow_redirects=False)
 
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp.headers["Location"], "/")
         set_cookie_header = resp.headers.get("Set-Cookie", "")
         self.assertIn("sk_session=", set_cookie_header)
+        client.get_logout_url.assert_not_called()
+
+    def test_logout_without_any_cookie_falls_back_to_local_redirect(self):
+        app, auth, client = _build_app()
+
+        with app.test_client() as tc:
+            resp = tc.get("/logout", follow_redirects=False)
+
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.headers["Location"], "/")
+        client.get_logout_url.assert_not_called()
+
+    def test_logout_with_valid_session_does_full_logout_via_id_token_hint(self):
+        app, auth, client = _build_app(secret="full-logout-secret")
+        client.get_logout_url.return_value = "https://auth.example.com/oidc/logout?id_token_hint=abc"
+        cookie_value = auth.manager.create_session_cookie(
+            {
+                "user": {"email": "test.user@example.com"},
+                "access_token": "at_1",
+                "refresh_token": "rt_1",
+                "id_token": "idt_1",
+                "expires_at": time.time() + 3600,
+            }
+        )
+
+        with app.test_client() as tc:
+            tc.set_cookie("sk_session", cookie_value)
+            resp = tc.get("/logout", follow_redirects=False)
+
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.headers["Location"], "https://auth.example.com/oidc/logout?id_token_hint=abc")
+        set_cookie_header = resp.headers.get("Set-Cookie", "")
+        self.assertIn("sk_session=", set_cookie_header)  # local cookie still cleared too
+
+        call_options = client.get_logout_url.call_args[0][0]
+        self.assertEqual(call_options.id_token_hint, "idt_1")
+        # Scalekit requires an absolute, allow-listed post-logout redirect URI --
+        # a bare "/" gets absolutized against the request's own host.
+        self.assertEqual(call_options.post_logout_redirect_uri, "http://localhost/")
+
+    def test_full_logout_disabled_does_local_only_logout(self):
+        app, auth, client = _build_app(secret="local-only-secret", full_logout=False)
+        cookie_value = auth.manager.create_session_cookie(
+            {
+                "user": {"email": "test.user@example.com"},
+                "access_token": "at_1",
+                "refresh_token": "rt_1",
+                "id_token": "idt_1",
+                "expires_at": time.time() + 3600,
+            }
+        )
+
+        with app.test_client() as tc:
+            tc.set_cookie("sk_session", cookie_value)
+            resp = tc.get("/logout", follow_redirects=False)
+
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.headers["Location"], "/")
+        client.get_logout_url.assert_not_called()
 
 
 class TestScalekitAuthConstruction(unittest.TestCase):

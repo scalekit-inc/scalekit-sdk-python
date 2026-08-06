@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import threading
 import time
 from dataclasses import dataclass
@@ -23,6 +24,8 @@ _EXPIRY_LEEWAY_SECONDS = 10
 # rotation grace window (~30s) so same-process concurrent callers racing within
 # that window all land on the cached result rather than each hitting the network.
 _REFRESH_CACHE_TTL_SECONDS = 60
+
+logger = logging.getLogger("scalekit.middleware.session_manager")
 
 
 @dataclass
@@ -134,10 +137,19 @@ class SessionRefreshManager:
 
             try:
                 result = self._client.refresh_access_token(refresh_token)
+                new_access_token = result["access_token"]
+                # Re-derive user/claims from the freshly-issued access token rather
+                # than carrying the old cached values forward. Access token claims
+                # (not id_token claims) are the source of truth here -- customers can
+                # configure custom access-token claims in the Scalekit dashboard, and
+                # unlike the id_token, the access token IS reissued on every refresh,
+                # so this keeps `user` genuinely current instead of stale-until-next-login.
+                claims = self._client.validate_access_token_and_get_claims(new_access_token)
                 new_payload = dict(old_payload)
-                new_payload["access_token"] = result["access_token"]
+                new_payload["access_token"] = new_access_token
                 new_payload["refresh_token"] = result["refresh_token"]
-                new_payload["expires_at"] = time.time() + result.get("expires_in", 300)
+                new_payload["user"] = claims
+                new_payload["expires_at"] = claims.get("exp", time.time() + 300)
                 new_cookie_value = encrypt_session(new_payload, self._secret)
                 session_result = SessionResult(
                     authenticated=True,
@@ -145,6 +157,10 @@ class SessionRefreshManager:
                     new_cookie_value=new_cookie_value,
                 )
             except Exception:
+                # Deliberately caught broadly -- any failure here means "treat as
+                # logged out," never a 500. But it must still be visible to
+                # whoever operates this app, so log it rather than swallow it.
+                logger.exception("token refresh failed; clearing session")
                 session_result = SessionResult(
                     authenticated=False,
                     should_clear_cookie=True,

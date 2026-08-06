@@ -15,8 +15,13 @@ except ImportError as exc:  # pragma: no cover -- exercised only without the ext
     ) from exc
 
 from scalekit.client import ScalekitClient
-from scalekit.common.scalekit import AuthorizationUrlOptions, CodeAuthenticationOptions
+from scalekit.common.scalekit import (
+    AuthorizationUrlOptions,
+    CodeAuthenticationOptions,
+    LogoutUrlOptions,
+)
 from scalekit.middleware.protocol import RequestAdapter, ResponseAdapter
+from scalekit.middleware.session_crypto import InvalidSessionError, decrypt_session
 from scalekit.middleware.session_manager import DEFAULT_COOKIE_NAME, SessionRefreshManager
 
 
@@ -102,6 +107,8 @@ class ScalekitAuth:
         callback_path: str = "/callback",
         logout_path: str = "/logout",
         post_login_redirect: str = "/",
+        post_logout_redirect_uri: Optional[str] = None,
+        full_logout: bool = True,
     ):
         if client is None:
             client = ScalekitClient(env_url=env_url, client_id=client_id, client_secret=client_secret)
@@ -111,6 +118,17 @@ class ScalekitAuth:
         self.callback_path = callback_path
         self.logout_path = logout_path
         self.post_login_redirect = post_login_redirect
+        # Must be separately allow-listed in the Scalekit dashboard (Authentication >
+        # Redirects > Post Logout URL) -- it's a different allow-list than the
+        # OAuth redirect_uri, so this is intentionally not just reused from
+        # post_login_redirect even though it defaults to the same value.
+        self.post_logout_redirect_uri = post_logout_redirect_uri or post_login_redirect
+        # Default to full logout (end the Scalekit-side session too, via
+        # id_token_hint) rather than local-only -- local-only silently leaves the
+        # user's Scalekit session alive, so a subsequent /login silently
+        # re-authenticates them with no visible login step at all, which is a
+        # confusing default for most apps. Set full_logout=False to opt out.
+        self.full_logout = full_logout
 
         # Raises immediately if cookie_encryption_secret is missing -- see
         # SessionRefreshManager and scalekit.middleware.session_crypto for why
@@ -132,7 +150,14 @@ class ScalekitAuth:
         return getattr(g, "scalekit_user", None)
 
     def _login_view(self):
-        url = self.client.get_authorization_url(self.redirect_uri, AuthorizationUrlOptions())
+        options = AuthorizationUrlOptions()
+        # offline_access is required to get a refresh_token back at all -- without
+        # it, Scalekit only issues an access_token and transparent refresh has
+        # nothing to work with (confirmed: a normal FSA client does NOT get
+        # offline_access added automatically -- that auto-add only applies to
+        # MCP/agent clients on the backend).
+        options.scopes = ["openid", "profile", "email", "offline_access"]
+        url = self.client.get_authorization_url(self.redirect_uri, options)
         return flask_redirect(url)
 
     def _callback_view(self):
@@ -140,11 +165,18 @@ class ScalekitAuth:
         result = self.client.authenticate_with_code(
             code, self.redirect_uri, CodeAuthenticationOptions()
         )
+        # Access-token claims (not id_token claims) are the source of truth for
+        # `user` -- customers can configure custom access-token claims in the
+        # Scalekit dashboard, and this is also what stays fresh on every refresh
+        # (see SessionRefreshManager._refresh). id_token is kept separately, only
+        # for use as id_token_hint on logout.
+        claims = self.client.validate_access_token_and_get_claims(result["access_token"])
         payload = {
-            "user": result.get("user"),
+            "user": claims,
             "access_token": result["access_token"],
             "refresh_token": result.get("refresh_token"),
-            "expires_at": time.time() + (result.get("expires_in") or 300),
+            "id_token": result.get("id_token"),
+            "expires_at": claims.get("exp", time.time() + (result.get("expires_in") or 300)),
         }
         cookie_value = self.manager.create_session_cookie(payload)
         response = Response(status=302, headers={"Location": self.post_login_redirect})
@@ -153,7 +185,33 @@ class ScalekitAuth:
         return response
 
     def _logout_view(self):
-        response = Response(status=302, headers={"Location": self.post_login_redirect})
+        cookie_value = flask_request.cookies.get(self.manager.cookie_name)
+        id_token = None
+        if cookie_value:
+            try:
+                payload = decrypt_session(cookie_value, self.manager._secret)
+                id_token = payload.get("id_token")
+            except InvalidSessionError:
+                pass  # nothing usable to hint with -- fall through to local-only redirect
+
+        redirect_url = self.post_logout_redirect_uri
+        if self.full_logout and id_token:
+            # Scalekit requires an absolute, dashboard-registered post-logout
+            # redirect URI (a relative path like "/" is rejected as
+            # invalid_request) -- absolutize it against the current request's
+            # host so a developer can still just pass a simple path.
+            absolute_redirect_uri = self.post_logout_redirect_uri
+            if not absolute_redirect_uri.startswith(("http://", "https://")):
+                absolute_redirect_uri = flask_request.host_url.rstrip("/") + absolute_redirect_uri
+            options = LogoutUrlOptions()
+            options.id_token_hint = id_token
+            options.post_logout_redirect_uri = absolute_redirect_uri
+            # A real top-level redirect to Scalekit's own domain is required here --
+            # same reason a background fetch/XHR can't do this: Scalekit needs the
+            # request to actually carry its own session cookie to end that session.
+            redirect_url = self.client.get_logout_url(options)
+
+        response = Response(status=302, headers={"Location": redirect_url})
         _FlaskResponseAdapter(response).delete_cookie(self.manager.cookie_name)
         return response
 

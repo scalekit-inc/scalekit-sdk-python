@@ -12,7 +12,7 @@ class TestSessionCrypto(unittest.TestCase):
     def setUp(self):
         self.secret = "correct-horse-battery-staple-secret"
         self.payload = {
-            "user": {"email": "alper.gondiken@bloomreach.com"},
+            "user": {"email": "test.user@example.com"},
             "access_token": "at_123",
             "refresh_token": "rt_456",
             "expires_at": 9999999999,
