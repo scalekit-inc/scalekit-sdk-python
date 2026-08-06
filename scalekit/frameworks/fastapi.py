@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import secrets
 import time
 from typing import Any, Dict, Optional
 
@@ -20,8 +21,13 @@ from scalekit.common.scalekit import (
     LogoutUrlOptions,
 )
 from scalekit.middleware.protocol import RequestAdapter, ResponseAdapter
-from scalekit.middleware.session_crypto import InvalidSessionError, decrypt_session
 from scalekit.middleware.session_manager import DEFAULT_COOKIE_NAME, SessionRefreshManager
+
+# Short-lived cookie carrying the OAuth `state` value between /login and
+# /callback -- see scalekit.frameworks.flask for the full CSRF reasoning
+# (identical here, not framework-specific).
+_STATE_COOKIE_NAME = "sk_oauth_state"
+_STATE_COOKIE_MAX_AGE = 600  # 10 minutes
 
 
 class _FastAPIRequestAdapter:
@@ -109,6 +115,14 @@ class ScalekitAuth:
         @app.get("/account")
         async def account(user: dict = Depends(auth.requires_auth)):
             return {"email": user["email"]}
+
+    Note: `requires_auth` sets the refreshed session cookie on the injected
+    `response` parameter. If a protected endpoint returns a `Response`
+    instance directly instead of a plain value, FastAPI uses that returned
+    response instead of the injected one, and the refreshed cookie is
+    discarded. If you need to return a `Response` directly from a protected
+    endpoint, copy `response.raw_headers` (or re-apply the cookie) onto the
+    response you return.
     """
 
     def __init__(
@@ -168,40 +182,77 @@ class ScalekitAuth:
         # scalekit.frameworks.flask for the full explanation (same reasoning
         # applies here; the backend behavior isn't framework-specific).
         options.scopes = ["openid", "profile", "email", "offline_access"]
+        # Bind this authorization request to the browser that started it, so
+        # /callback can reject a forged callback carrying an attacker's own
+        # authorization code (CSRF) -- see scalekit.frameworks.flask.
+        state = secrets.token_urlsafe(32)
+        options.state = state
         url = await run_in_threadpool(self.client.get_authorization_url, self.redirect_uri, options)
-        return RedirectResponse(url, status_code=302)
+        response = RedirectResponse(url, status_code=302)
+        _FastAPIResponseAdapter(response).set_cookie(
+            _STATE_COOKIE_NAME, state, max_age=_STATE_COOKIE_MAX_AGE
+        )
+        return response
 
     async def _callback_view(self, request: Request):
+        def _redirect_to_login():
+            resp = RedirectResponse(self.login_path, status_code=302)
+            _FastAPIResponseAdapter(resp).delete_cookie(_STATE_COOKIE_NAME)
+            return resp
+
+        # The provider redirects here with `error` (no `code`) if the user
+        # cancels consent or the request is otherwise rejected -- never reflect
+        # error/error_description into the response, it's attacker-influenced.
+        error = request.query_params.get("error")
         code = request.query_params.get("code")
-        result = await run_in_threadpool(
-            self.client.authenticate_with_code, code, self.redirect_uri, CodeAuthenticationOptions()
-        )
-        # Access-token claims (not id_token claims) are the source of truth for
-        # `user` -- see scalekit.frameworks.flask for the full reasoning.
-        claims = await run_in_threadpool(
-            self.client.validate_access_token_and_get_claims, result["access_token"]
-        )
+        if error or not code:
+            return _redirect_to_login()
+
+        stored_state = request.cookies.get(_STATE_COOKIE_NAME)
+        returned_state = request.query_params.get("state")
+        if (
+            not stored_state
+            or not returned_state
+            or not secrets.compare_digest(stored_state, returned_state)
+        ):
+            # Missing or mismatched state -- this callback did not originate
+            # from a /login this browser actually made. Refuse the exchange.
+            return _redirect_to_login()
+
+        try:
+            result = await run_in_threadpool(
+                self.client.authenticate_with_code, code, self.redirect_uri, CodeAuthenticationOptions()
+            )
+            access_token = result["access_token"]
+            # Access-token claims (not id_token claims) are the source of truth for
+            # `user` -- see scalekit.frameworks.flask for the full reasoning.
+            claims = await run_in_threadpool(
+                self.client.validate_access_token_and_get_claims, access_token
+            )
+        except Exception:
+            return _redirect_to_login()
+
         payload = {
             "user": claims,
-            "access_token": result["access_token"],
+            "access_token": access_token,
             "refresh_token": result.get("refresh_token"),
             "id_token": result.get("id_token"),
             "expires_at": claims.get("exp", time.time() + (result.get("expires_in") or 300)),
         }
         cookie_value = self.manager.create_session_cookie(payload)
         response = RedirectResponse(self.post_login_redirect, status_code=302)
-        _FastAPIResponseAdapter(response).set_cookie(self.manager.cookie_name, cookie_value)
+        adapter = _FastAPIResponseAdapter(response)
+        adapter.set_cookie(self.manager.cookie_name, cookie_value)
+        adapter.delete_cookie(_STATE_COOKIE_NAME)
         return response
 
     async def _logout_view(self, request: Request):
         cookie_value = request.cookies.get(self.manager.cookie_name)
         id_token = None
         if cookie_value:
-            try:
-                payload = decrypt_session(cookie_value, self.manager._secret)
+            payload = self.manager.read_session(cookie_value)
+            if payload:
                 id_token = payload.get("id_token")
-            except InvalidSessionError:
-                pass  # nothing usable to hint with -- fall through to local-only redirect
 
         redirect_url = self.post_logout_redirect_uri
         if self.full_logout and id_token:
@@ -220,7 +271,7 @@ class ScalekitAuth:
         _FastAPIResponseAdapter(response).delete_cookie(self.manager.cookie_name)
         return response
 
-    async def requires_auth(self, request: Request, response: Response) -> Dict[str, Any]:
+    async def requires_auth(self, request: Request, response: Response) -> Optional[Dict[str, Any]]:
         """
         FastAPI dependency: `user: dict = Depends(auth.requires_auth)`.
 
