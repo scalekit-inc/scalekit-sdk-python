@@ -28,7 +28,7 @@ PROTOC_DIR := protoc_gen_openapiv2
 setup: create-venv
 	@echo "Installing SDK dependencies in $(VENV_DIR)..."
 	$(VENV_PIP) install --upgrade pip
-	$(VENV_PIP) install -e .
+	$(VENV_PIP) install -e ".[flask,fastapi,django]"
 
 create-venv:
 	@if [ ! -d "$(VENV_DIR)" ]; then \
