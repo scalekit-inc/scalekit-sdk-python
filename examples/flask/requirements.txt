@@ -1,0 +1,2 @@
+scalekit-sdk-python[flask]
+python-dotenv

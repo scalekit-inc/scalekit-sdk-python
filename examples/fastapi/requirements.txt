@@ -1,0 +1,3 @@
+scalekit-sdk-python[fastapi]
+python-dotenv
+uvicorn

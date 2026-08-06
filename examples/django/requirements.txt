@@ -1,0 +1,2 @@
+scalekit-sdk-python[django]
+python-dotenv

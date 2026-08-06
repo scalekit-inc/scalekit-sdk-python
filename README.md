@@ -138,6 +138,10 @@ Explore fully functional sample applications built with popular Python framework
 |-----------|------------|-------------|
 | **FastAPI** | [scalekit-fastapi-example](https://github.com/scalekit-developers/scalekit-fastapi-example) | Modern async Python API framework |
 
+### Encrypted-session middleware examples (in this repo)
+
+`scalekit-sdk-python` ships optional Flask, FastAPI, and Django extras (`pip install scalekit-sdk-python[flask|fastapi|django]`) that handle encrypted session cookies, transparent token refresh, and secure login/callback/logout routes for you — see [`examples/flask`](./examples/flask), [`examples/fastapi`](./examples/fastapi), and [`examples/django`](./examples/django) for minimal, runnable versions of the middleware itself. For complete production-oriented sample apps, see the framework repos above.
+
 ## 🔗 Helpful Links
 
 ### 📖 Quickstart Guides
