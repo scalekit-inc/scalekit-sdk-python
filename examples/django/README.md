@@ -27,7 +27,7 @@ Register these in your Scalekit dashboard: `http://localhost:5001/callback` as a
 ## In a real app
 
 ```bash
-pip install scalekit-sdk-python[django]
+pip install 'scalekit-sdk-python[django]'
 ```
 
 For a complete, production-oriented sample app (not just this minimal middleware demo), see [`scalekit-django-auth-example`](https://github.com/scalekit-inc/scalekit-django-auth-example).
