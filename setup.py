@@ -33,6 +33,7 @@ setup(
         # framework the customer isn't using.
         "flask": ["flask>=2.0"],
         "fastapi": ["fastapi>=0.100"],
+        "django": ["django>=4.2"],
     },
     url="https://github.com/scalekit-inc/scalekit-sdk-python",
     license="MIT",
