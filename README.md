@@ -149,9 +149,7 @@ Register these under **Dashboard → Authentication → Redirects** before testi
 - **Post Logout Redirect URI** — where users land after full logout. A relative path gets auto-absolutized against the request host, but the resulting absolute URL must still be registered.
 - **Initiate Login URL** — your `/login` path. Scalekit redirects here (not `/callback`) for a bookmarked login page, an IdP portal tile, or an invite/magic link — the login view already handles this correctly, including the `idp_initiated_login` case, with no extra code required.
 
-```bash
-pip install scalekit-sdk-python[flask]    # or [fastapi], or [django]
-```
+pip install "scalekit-sdk-python[flask]"  # or "scalekit-sdk-python[fastapi]" or "scalekit-sdk-python[django]"
 
 ```python
 # Flask
