@@ -155,15 +155,18 @@ pip install scalekit-sdk-python[flask]    # or [fastapi], or [django]
 
 ```python
 # Flask
+import os
 from flask import Flask
 from scalekit.frameworks.flask import ScalekitAuth
 
 app = Flask(__name__)
 auth = ScalekitAuth(
     app,
-    env_url=env_url, client_id=client_id, client_secret=client_secret,
+    env_url=os.environ["SCALEKIT_ENV_URL"],
+    client_id=os.environ["SCALEKIT_CLIENT_ID"],
+    client_secret=os.environ["SCALEKIT_CLIENT_SECRET"],
     redirect_uri="https://myapp.com/callback",
-    cookie_encryption_secret=cookie_encryption_secret,  # openssl rand -base64 32
+    cookie_encryption_secret=os.environ["COOKIE_ENCRYPTION_SECRET"],  # openssl rand -base64 32
 )  # registers /login, /callback, /logout
 
 @app.route("/account")
@@ -174,13 +177,18 @@ def account():
 
 ```python
 # FastAPI -- protect routes with Depends(), FastAPI's idiomatic mechanism
+import os
 from fastapi import Depends, FastAPI
 from scalekit.frameworks.fastapi import ScalekitAuth
 
 app = FastAPI()
-auth = ScalekitAuth(env_url=env_url, client_id=client_id, client_secret=client_secret,
-                     redirect_uri="https://myapp.com/callback",
-                     cookie_encryption_secret=cookie_encryption_secret)
+auth = ScalekitAuth(
+    env_url=os.environ["SCALEKIT_ENV_URL"],
+    client_id=os.environ["SCALEKIT_CLIENT_ID"],
+    client_secret=os.environ["SCALEKIT_CLIENT_SECRET"],
+    redirect_uri="https://myapp.com/callback",
+    cookie_encryption_secret=os.environ["COOKIE_ENCRYPTION_SECRET"],
+)
 auth.install(app)  # registers /login, /callback, /logout
 
 @app.get("/account")
@@ -190,17 +198,21 @@ async def account(user: dict = Depends(auth.requires_auth)):
 
 ```python
 # Django -- settings.py
+import os
+
 MIDDLEWARE = [..., "scalekit.frameworks.django.ScalekitAuthMiddleware"]
-SCALEKIT_ENV_URL = env_url
-SCALEKIT_CLIENT_ID = client_id
-SCALEKIT_CLIENT_SECRET = client_secret
+SCALEKIT_ENV_URL = os.environ["SCALEKIT_ENV_URL"]
+SCALEKIT_CLIENT_ID = os.environ["SCALEKIT_CLIENT_ID"]
+SCALEKIT_CLIENT_SECRET = os.environ["SCALEKIT_CLIENT_SECRET"]
 SCALEKIT_REDIRECT_URI = "https://myapp.com/callback"
-SCALEKIT_COOKIE_ENCRYPTION_SECRET = cookie_encryption_secret
+SCALEKIT_COOKIE_ENCRYPTION_SECRET = os.environ["COOKIE_ENCRYPTION_SECRET"]
 
 # urls.py
+from django.urls import include, path
 urlpatterns = [path("", include("scalekit.frameworks.django")), ...]  # /login, /callback, /logout
 
 # views.py
+from django.http import JsonResponse
 from scalekit.frameworks.django import login_required
 
 @login_required
