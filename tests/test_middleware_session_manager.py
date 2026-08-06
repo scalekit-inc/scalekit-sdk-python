@@ -250,6 +250,38 @@ class TestSessionRefreshManagerConcurrency(unittest.TestCase):
         self.assertIsNotNone(second.new_cookie_value)
         self.assertEqual(attempts["n"], 2, "the second check() must actually retry, not reuse a cached failure")
 
+    def test_lock_entry_is_cleaned_up_after_an_uncached_failed_refresh(self):
+        """
+        A failed refresh is deliberately never cached (see _refresh). Without
+        also removing the lock entry once the last holder releases it,
+        _sweep_expired_locked would never clean it up either -- it only
+        considers keys present in _refresh_cache -- so every distinct
+        refresh_token that ever fails would leak a _LockEntry forever.
+        """
+        client = MagicMock()
+        client.refresh_access_token.side_effect = Exception("invalid_grant")
+        secret = "lock-leak-secret"
+        manager = SessionRefreshManager(client, secret)
+        cookie = encrypt_session(
+            {
+                "user": {},
+                "access_token": "at_old",
+                "refresh_token": "rt_dead",
+                "expires_at": time.time() - 10,
+            },
+            secret,
+        )
+
+        result = manager.check(_FakeRequest(cookie_value=cookie))
+
+        self.assertFalse(result.authenticated)
+        self.assertNotIn("rt_dead", manager._refresh_cache)
+        self.assertNotIn(
+            "rt_dead",
+            manager._session_locks,
+            "the lock entry for a permanently-failed, uncached refresh must not leak",
+        )
+
 
 class TestSessionRefreshManagerReadSession(unittest.TestCase):
     def test_read_session_returns_payload_for_valid_cookie(self):

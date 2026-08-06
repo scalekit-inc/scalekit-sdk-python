@@ -102,8 +102,16 @@ class SessionRefreshManager:
     def _release_lock_ref(self, key: str) -> None:
         with self._locks_guard:
             entry = self._session_locks.get(key)
-            if entry is not None:
-                entry.ref_count -= 1
+            if entry is None:
+                return
+            entry.ref_count -= 1
+            if entry.ref_count <= 0 and key not in self._refresh_cache:
+                # No cache entry to preserve this lock for (a failed refresh is
+                # deliberately never cached -- see _refresh). Without this,
+                # _sweep_expired_locked would never remove it either, since it
+                # only considers keys present in _refresh_cache: every distinct
+                # refresh_token that ever fails would leak here forever.
+                self._session_locks.pop(key, None)
 
     def _sweep_expired_locked(self) -> None:
         """Evict refresh-cache/lock entries older than the TTL. Caller must hold no lock."""
