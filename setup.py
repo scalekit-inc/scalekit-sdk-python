@@ -32,6 +32,7 @@ setup(
         # install_requires so installing the core SDK never pulls in a web
         # framework the customer isn't using.
         "flask": ["flask>=2.0"],
+        "fastapi": ["fastapi>=0.100"],
     },
     url="https://github.com/scalekit-inc/scalekit-sdk-python",
     license="MIT",

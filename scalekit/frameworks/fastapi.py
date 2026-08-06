@@ -1,0 +1,243 @@
+from __future__ import annotations
+
+import time
+from typing import Any, Dict, Optional
+
+try:
+    from fastapi import APIRouter, FastAPI, Request, Response
+    from fastapi.responses import RedirectResponse
+    from starlette.concurrency import run_in_threadpool
+except ImportError as exc:  # pragma: no cover -- exercised only without the extra installed
+    raise ImportError(
+        "FastAPI integration requires the 'fastapi' extra: "
+        "pip install scalekit-sdk-python[fastapi]"
+    ) from exc
+
+from scalekit.client import ScalekitClient
+from scalekit.common.scalekit import (
+    AuthorizationUrlOptions,
+    CodeAuthenticationOptions,
+    LogoutUrlOptions,
+)
+from scalekit.middleware.protocol import RequestAdapter, ResponseAdapter
+from scalekit.middleware.session_crypto import InvalidSessionError, decrypt_session
+from scalekit.middleware.session_manager import DEFAULT_COOKIE_NAME, SessionRefreshManager
+
+
+class _FastAPIRequestAdapter:
+    """RequestAdapter implementation backed by a Starlette/FastAPI Request."""
+
+    def __init__(self, request: Request):
+        self._request = request
+
+    def get_cookie(self, name: str) -> Optional[str]:
+        return self._request.cookies.get(name)
+
+    def get_request_url(self) -> str:
+        return str(self._request.url)
+
+
+class _FastAPIResponseAdapter:
+    """ResponseAdapter implementation that mutates a Starlette/FastAPI Response in place."""
+
+    def __init__(self, response: Response):
+        self.response = response
+
+    def set_cookie(
+        self,
+        name: str,
+        value: str,
+        *,
+        max_age: Optional[int] = None,
+        secure: bool = True,
+        http_only: bool = True,
+        same_site: str = "lax",
+        domain: Optional[str] = None,
+        path: str = "/",
+    ) -> None:
+        self.response.set_cookie(
+            key=name,
+            value=value,
+            max_age=max_age,
+            secure=secure,
+            httponly=http_only,
+            samesite=same_site,
+            domain=domain,
+            path=path,
+        )
+
+    def delete_cookie(
+        self, name: str, *, path: str = "/", domain: Optional[str] = None
+    ) -> None:
+        self.response.delete_cookie(key=name, path=path, domain=domain)
+
+
+class _RequiresLoginRedirect(Exception):
+    """
+    Internal signal raised by `requires_auth` when there's no valid session.
+
+    FastAPI dependencies can't directly return an alternate Response the way a
+    Flask decorator can wrap a whole view -- raising this and handling it via
+    an app-level exception handler (registered by `ScalekitAuth.install`) is
+    what lets "no valid session" produce a real 302 redirect instead of the
+    JSON 401 a raised HTTPException would otherwise produce. That JSON-401
+    default is exactly the failure mode a background fetch/XHR would silently
+    swallow -- the property this whole design exists to avoid.
+    """
+
+    def __init__(self, location: str, clear_cookie: bool, cookie_name: str):
+        self.location = location
+        self.clear_cookie = clear_cookie
+        self.cookie_name = cookie_name
+
+
+class ScalekitAuth:
+    """
+    FastAPI integration wiring Scalekit Full Stack Auth with the same secure
+    defaults as the Flask extension: encrypted session cookie, transparent
+    token refresh, full logout via id_token_hint. Protect routes with the
+    `requires_auth` dependency -- FastAPI's idiomatic protection mechanism is
+    `Depends()`, not a decorator:
+
+        auth = ScalekitAuth(
+            client_id=..., client_secret=..., env_url=...,
+            redirect_uri="https://myapp.com/callback",
+            cookie_encryption_secret=...,
+        )
+        auth.install(app)
+
+        @app.get("/account")
+        async def account(user: dict = Depends(auth.requires_auth)):
+            return {"email": user["email"]}
+    """
+
+    def __init__(
+        self,
+        *,
+        client: Optional[ScalekitClient] = None,
+        client_id: Optional[str] = None,
+        client_secret: Optional[str] = None,
+        env_url: Optional[str] = None,
+        redirect_uri: Optional[str] = None,
+        cookie_encryption_secret: Optional[str] = None,
+        cookie_name: str = DEFAULT_COOKIE_NAME,
+        login_path: str = "/login",
+        callback_path: str = "/callback",
+        logout_path: str = "/logout",
+        post_login_redirect: str = "/",
+        post_logout_redirect_uri: Optional[str] = None,
+        full_logout: bool = True,
+    ):
+        if client is None:
+            client = ScalekitClient(env_url=env_url, client_id=client_id, client_secret=client_secret)
+        self.client = client
+        self.redirect_uri = redirect_uri
+        self.login_path = login_path
+        self.callback_path = callback_path
+        self.logout_path = logout_path
+        self.post_login_redirect = post_login_redirect
+        self.post_logout_redirect_uri = post_logout_redirect_uri or post_login_redirect
+        self.full_logout = full_logout
+
+        # Raises immediately if cookie_encryption_secret is missing -- see
+        # SessionRefreshManager and scalekit.middleware.session_crypto for why
+        # there is intentionally no default.
+        self.manager = SessionRefreshManager(
+            self.client, cookie_encryption_secret, cookie_name=cookie_name
+        )
+
+        self.router = APIRouter()
+        self.router.add_api_route(self.login_path, self._login_view, methods=["GET"])
+        self.router.add_api_route(self.callback_path, self._callback_view, methods=["GET"])
+        self.router.add_api_route(self.logout_path, self._logout_view, methods=["GET"])
+
+    def install(self, app: FastAPI) -> None:
+        """Register the login/callback/logout routes and the redirect exception handler."""
+        app.include_router(self.router)
+        app.add_exception_handler(_RequiresLoginRedirect, self._redirect_exception_handler)
+
+    async def _redirect_exception_handler(self, request: Request, exc: _RequiresLoginRedirect):
+        response = RedirectResponse(exc.location, status_code=302)
+        if exc.clear_cookie:
+            _FastAPIResponseAdapter(response).delete_cookie(exc.cookie_name)
+        return response
+
+    async def _login_view(self):
+        options = AuthorizationUrlOptions()
+        # offline_access is required to get a refresh_token back at all -- see
+        # scalekit.frameworks.flask for the full explanation (same reasoning
+        # applies here; the backend behavior isn't framework-specific).
+        options.scopes = ["openid", "profile", "email", "offline_access"]
+        url = await run_in_threadpool(self.client.get_authorization_url, self.redirect_uri, options)
+        return RedirectResponse(url, status_code=302)
+
+    async def _callback_view(self, request: Request):
+        code = request.query_params.get("code")
+        result = await run_in_threadpool(
+            self.client.authenticate_with_code, code, self.redirect_uri, CodeAuthenticationOptions()
+        )
+        # Access-token claims (not id_token claims) are the source of truth for
+        # `user` -- see scalekit.frameworks.flask for the full reasoning.
+        claims = await run_in_threadpool(
+            self.client.validate_access_token_and_get_claims, result["access_token"]
+        )
+        payload = {
+            "user": claims,
+            "access_token": result["access_token"],
+            "refresh_token": result.get("refresh_token"),
+            "id_token": result.get("id_token"),
+            "expires_at": claims.get("exp", time.time() + (result.get("expires_in") or 300)),
+        }
+        cookie_value = self.manager.create_session_cookie(payload)
+        response = RedirectResponse(self.post_login_redirect, status_code=302)
+        _FastAPIResponseAdapter(response).set_cookie(self.manager.cookie_name, cookie_value)
+        return response
+
+    async def _logout_view(self, request: Request):
+        cookie_value = request.cookies.get(self.manager.cookie_name)
+        id_token = None
+        if cookie_value:
+            try:
+                payload = decrypt_session(cookie_value, self.manager._secret)
+                id_token = payload.get("id_token")
+            except InvalidSessionError:
+                pass  # nothing usable to hint with -- fall through to local-only redirect
+
+        redirect_url = self.post_logout_redirect_uri
+        if self.full_logout and id_token:
+            # Scalekit requires an absolute, dashboard-registered post-logout
+            # redirect URI -- absolutize a relative default against the
+            # current request's host, same as the Flask adapter.
+            absolute_redirect_uri = self.post_logout_redirect_uri
+            if not absolute_redirect_uri.startswith(("http://", "https://")):
+                absolute_redirect_uri = str(request.base_url).rstrip("/") + absolute_redirect_uri
+            options = LogoutUrlOptions()
+            options.id_token_hint = id_token
+            options.post_logout_redirect_uri = absolute_redirect_uri
+            redirect_url = await run_in_threadpool(self.client.get_logout_url, options)
+
+        response = RedirectResponse(redirect_url, status_code=302)
+        _FastAPIResponseAdapter(response).delete_cookie(self.manager.cookie_name)
+        return response
+
+    async def requires_auth(self, request: Request, response: Response) -> Dict[str, Any]:
+        """
+        FastAPI dependency: `user: dict = Depends(auth.requires_auth)`.
+
+        Session check/refresh runs in a thread pool since the underlying
+        client calls are blocking network I/O -- this avoids stalling the
+        event loop on every protected request.
+        """
+        result = await run_in_threadpool(self.manager.check, _FastAPIRequestAdapter(request))
+
+        if not result.authenticated:
+            raise _RequiresLoginRedirect(
+                location=self.login_path,
+                clear_cookie=result.should_clear_cookie,
+                cookie_name=self.manager.cookie_name,
+            )
+
+        if result.new_cookie_value:
+            _FastAPIResponseAdapter(response).set_cookie(self.manager.cookie_name, result.new_cookie_value)
+
+        return result.user
