@@ -15,7 +15,7 @@ setup(
         "google>=3.0",
         "requests>=2.34.0",
         "PyJWT>=2.13.0",
-        "cffi>=1.15.1",
+        "cffi>=2.0.0",
         "cryptography>=46.0.6,<49",
         "setuptools>=82.0.1,<83.0",
         "grpcio-status>=1.81.0,<2.0",
