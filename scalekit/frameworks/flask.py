@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import secrets
 import time
 from functools import wraps
 from typing import Any, Callable, Dict, Optional
 
 try:
-    from flask import Flask, Response, g
+    from flask import Flask, Response, g, make_response
     from flask import redirect as flask_redirect
     from flask import request as flask_request
 except ImportError as exc:  # pragma: no cover -- exercised only without the extra installed
@@ -21,8 +22,14 @@ from scalekit.common.scalekit import (
     LogoutUrlOptions,
 )
 from scalekit.middleware.protocol import RequestAdapter, ResponseAdapter
-from scalekit.middleware.session_crypto import InvalidSessionError, decrypt_session
 from scalekit.middleware.session_manager import DEFAULT_COOKIE_NAME, SessionRefreshManager
+
+# Short-lived cookie carrying the OAuth `state` value between /login and
+# /callback, so /callback can verify the provider's callback wasn't forged
+# (CSRF: an attacker's own authorization code smuggled into a victim's
+# browser session) -- see _login_view/_callback_view.
+_STATE_COOKIE_NAME = "sk_oauth_state"
+_STATE_COOKIE_MAX_AGE = 600  # 10 minutes -- generous for a slow login, still short-lived
 
 
 class _FlaskRequestAdapter:
@@ -157,23 +164,60 @@ class ScalekitAuth:
         # offline_access added automatically -- that auto-add only applies to
         # MCP/agent clients on the backend).
         options.scopes = ["openid", "profile", "email", "offline_access"]
+        # Bind this authorization request to the browser that started it, so
+        # /callback can reject a forged callback carrying an attacker's own
+        # authorization code (CSRF).
+        state = secrets.token_urlsafe(32)
+        options.state = state
         url = self.client.get_authorization_url(self.redirect_uri, options)
-        return flask_redirect(url)
+        response = Response(status=302, headers={"Location": url})
+        _FlaskResponseAdapter(response).set_cookie(
+            _STATE_COOKIE_NAME, state, max_age=_STATE_COOKIE_MAX_AGE
+        )
+        return response
 
     def _callback_view(self):
+        def _redirect_to_login():
+            resp = Response(status=302, headers={"Location": self.login_path})
+            _FlaskResponseAdapter(resp).delete_cookie(_STATE_COOKIE_NAME)
+            return resp
+
+        # The provider redirects here with `error` (no `code`) if the user
+        # cancels consent or the request is otherwise rejected -- never reflect
+        # error/error_description into the response, it's attacker-influenced.
+        error = flask_request.args.get("error")
         code = flask_request.args.get("code")
-        result = self.client.authenticate_with_code(
-            code, self.redirect_uri, CodeAuthenticationOptions()
-        )
-        # Access-token claims (not id_token claims) are the source of truth for
-        # `user` -- customers can configure custom access-token claims in the
-        # Scalekit dashboard, and this is also what stays fresh on every refresh
-        # (see SessionRefreshManager._refresh). id_token is kept separately, only
-        # for use as id_token_hint on logout.
-        claims = self.client.validate_access_token_and_get_claims(result["access_token"])
+        if error or not code:
+            return _redirect_to_login()
+
+        stored_state = flask_request.cookies.get(_STATE_COOKIE_NAME)
+        returned_state = flask_request.args.get("state")
+        if (
+            not stored_state
+            or not returned_state
+            or not secrets.compare_digest(stored_state, returned_state)
+        ):
+            # Missing or mismatched state -- this callback did not originate
+            # from a /login this browser actually made. Refuse the exchange.
+            return _redirect_to_login()
+
+        try:
+            result = self.client.authenticate_with_code(
+                code, self.redirect_uri, CodeAuthenticationOptions()
+            )
+            access_token = result["access_token"]
+            # Access-token claims (not id_token claims) are the source of truth for
+            # `user` -- customers can configure custom access-token claims in the
+            # Scalekit dashboard, and this is also what stays fresh on every refresh
+            # (see SessionRefreshManager._refresh). id_token is kept separately, only
+            # for use as id_token_hint on logout.
+            claims = self.client.validate_access_token_and_get_claims(access_token)
+        except Exception:
+            return _redirect_to_login()
+
         payload = {
             "user": claims,
-            "access_token": result["access_token"],
+            "access_token": access_token,
             "refresh_token": result.get("refresh_token"),
             "id_token": result.get("id_token"),
             "expires_at": claims.get("exp", time.time() + (result.get("expires_in") or 300)),
@@ -182,17 +226,16 @@ class ScalekitAuth:
         response = Response(status=302, headers={"Location": self.post_login_redirect})
         adapter = _FlaskResponseAdapter(response)
         adapter.set_cookie(self.manager.cookie_name, cookie_value)
+        adapter.delete_cookie(_STATE_COOKIE_NAME)
         return response
 
     def _logout_view(self):
         cookie_value = flask_request.cookies.get(self.manager.cookie_name)
         id_token = None
         if cookie_value:
-            try:
-                payload = decrypt_session(cookie_value, self.manager._secret)
+            payload = self.manager.read_session(cookie_value)
+            if payload:
                 id_token = payload.get("id_token")
-            except InvalidSessionError:
-                pass  # nothing usable to hint with -- fall through to local-only redirect
 
         redirect_url = self.post_logout_redirect_uri
         if self.full_logout and id_token:
@@ -227,7 +270,11 @@ class ScalekitAuth:
                 return response
 
             g.scalekit_user = result.user
-            response = Response(response=view_func(*args, **kwargs))
+            # make_response applies Flask's normal view-return handling (dict ->
+            # JSON, (body, status) tuples, an existing Response passed through
+            # unchanged, ...) -- a bare Response(response=...) bypasses all of
+            # that and silently mangles anything but a plain string return.
+            response = make_response(view_func(*args, **kwargs))
             self.manager.apply(result, _FlaskResponseAdapter(response))
             return response
 

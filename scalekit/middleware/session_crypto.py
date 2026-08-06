@@ -14,6 +14,11 @@ from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 _SESSION_FORMAT_VERSION = 1
 _NONCE_SIZE = 12  # bytes, standard for AES-GCM
 
+# Browsers silently drop cookies larger than ~4096 bytes (name + attributes
+# included), which would look like a random, unexplained logout. Fail loudly
+# instead so an oversized `user` claims payload is caught at encrypt time.
+_MAX_COOKIE_VALUE_BYTES = 3800
+
 # Fixed, non-secret HKDF salt/info: cookie_encryption_secret itself is expected to be a
 # high-entropy, developer-generated secret (not a low-entropy password), so a fast KDF
 # derivation is appropriate here -- this is not password storage.
@@ -59,7 +64,14 @@ def encrypt_session(payload: Dict[str, Any], secret: str) -> str:
     plaintext = json.dumps(payload, separators=(",", ":")).encode("utf-8")
     ciphertext = AESGCM(key).encrypt(nonce, plaintext, None)
     raw = bytes([_SESSION_FORMAT_VERSION]) + nonce + ciphertext
-    return base64.urlsafe_b64encode(raw).decode("ascii").rstrip("=")
+    encoded = base64.urlsafe_b64encode(raw).decode("ascii").rstrip("=")
+    if len(encoded) > _MAX_COOKIE_VALUE_BYTES:
+        raise ValueError(
+            f"encrypted session is {len(encoded)} bytes, which exceeds the browser "
+            "cookie size limit; reduce the claims stored in the session (e.g. fewer "
+            "custom access-token claims)."
+        )
+    return encoded
 
 
 def decrypt_session(token: str, secret: str) -> Dict[str, Any]:

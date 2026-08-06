@@ -71,6 +71,16 @@ class TestSessionCrypto(unittest.TestCase):
         with self.assertRaises(InvalidSessionError):
             decrypt_session(token_a, "secret-b")
 
+    def test_oversized_payload_raises_instead_of_silently_dropping(self):
+        # Browsers silently drop cookies over ~4096 bytes -- a customer with
+        # many custom access-token claims could hit this. Must fail loudly at
+        # encrypt time instead of producing a cookie the browser discards.
+        oversized_payload = dict(self.payload)
+        oversized_payload["user"] = {"claim": "x" * 4000}
+
+        with self.assertRaises(ValueError):
+            encrypt_session(oversized_payload, self.secret)
+
 
 if __name__ == "__main__":
     unittest.main()
