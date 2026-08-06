@@ -138,9 +138,72 @@ Explore fully functional sample applications built with popular Python framework
 |-----------|------------|-------------|
 | **FastAPI** | [scalekit-fastapi-example](https://github.com/scalekit-developers/scalekit-fastapi-example) | Modern async Python API framework |
 
-### Encrypted-session middleware examples (in this repo)
+### Full Stack Auth — encrypted-session middleware for Flask, FastAPI, and Django
 
-`scalekit-sdk-python` ships optional Flask, FastAPI, and Django extras (`pip install scalekit-sdk-python[flask|fastapi|django]`) that handle encrypted session cookies, transparent token refresh, and secure login/callback/logout routes for you — see [`examples/flask`](./examples/flask), [`examples/fastapi`](./examples/fastapi), and [`examples/django`](./examples/django) for minimal, runnable versions of the middleware itself. For complete production-oriented sample apps, see the framework repos above.
+The example above is for **Modular SSO**: Scalekit brokers the OAuth exchange with your customer's own IdP via a `connection_id`, and your app owns its own session however it likes.
+
+If instead Scalekit hosts your login UI and you want it to also manage the session lifecycle for you (**Full Stack Auth**), `scalekit-sdk-python` ships optional Flask, FastAPI, and Django extras that handle the encrypted session cookie, transparent token refresh, CSRF-safe login/callback, and full logout for you — no hand-rolled cookies, no manual refresh timing.
+
+```bash
+pip install scalekit-sdk-python[flask]    # or [fastapi], or [django]
+```
+
+```python
+# Flask
+from flask import Flask
+from scalekit.frameworks.flask import ScalekitAuth
+
+app = Flask(__name__)
+auth = ScalekitAuth(
+    app,
+    env_url=env_url, client_id=client_id, client_secret=client_secret,
+    redirect_uri="https://myapp.com/callback",
+    cookie_encryption_secret=cookie_encryption_secret,  # openssl rand -base64 32
+)  # registers /login, /callback, /logout
+
+@app.route("/account")
+@auth.requires_auth
+def account():
+    return {"email": auth.current_user["email"]}
+```
+
+```python
+# FastAPI -- protect routes with Depends(), FastAPI's idiomatic mechanism
+from fastapi import Depends, FastAPI
+from scalekit.frameworks.fastapi import ScalekitAuth
+
+app = FastAPI()
+auth = ScalekitAuth(env_url=env_url, client_id=client_id, client_secret=client_secret,
+                     redirect_uri="https://myapp.com/callback",
+                     cookie_encryption_secret=cookie_encryption_secret)
+auth.install(app)  # registers /login, /callback, /logout
+
+@app.get("/account")
+async def account(user: dict = Depends(auth.requires_auth)):
+    return {"email": user["email"]}
+```
+
+```python
+# Django -- settings.py
+MIDDLEWARE = [..., "scalekit.frameworks.django.ScalekitAuthMiddleware"]
+SCALEKIT_ENV_URL = env_url
+SCALEKIT_CLIENT_ID = client_id
+SCALEKIT_CLIENT_SECRET = client_secret
+SCALEKIT_REDIRECT_URI = "https://myapp.com/callback"
+SCALEKIT_COOKIE_ENCRYPTION_SECRET = cookie_encryption_secret
+
+# urls.py
+urlpatterns = [path("", include("scalekit.frameworks.django")), ...]  # /login, /callback, /logout
+
+# views.py
+from scalekit.frameworks.django import login_required
+
+@login_required
+def account(request):
+    return JsonResponse(request.scalekit_user)
+```
+
+See [`examples/flask`](./examples/flask), [`examples/fastapi`](./examples/fastapi), and [`examples/django`](./examples/django) for complete, runnable versions. For a fuller production-oriented sample app, see the framework repos above.
 
 ## 🔗 Helpful Links
 
