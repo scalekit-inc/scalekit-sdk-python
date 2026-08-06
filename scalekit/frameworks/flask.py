@@ -165,6 +165,27 @@ class ScalekitAuth:
         # offline_access added automatically -- that auto-add only applies to
         # MCP/agent clients on the backend).
         options.scopes = ["openid", "profile", "email", "offline_access"]
+
+        # This view doubles as the dashboard-registered "Initiate Login URL":
+        # Scalekit lands users here (not /callback) for a bookmarked/direct
+        # login-page hit, an IdP portal tile, or an invite/magic link. If
+        # there's an active session at that moment, Scalekit attaches an
+        # idp_initiated_login JWT so the flow can jump straight to the
+        # right connection/org instead of a generic login. relay_state is
+        # intentionally not forwarded as our OAuth `state` -- we use our own
+        # random value for CSRF cookie-binding instead (see below).
+        idp_initiated_login = flask_request.args.get("idp_initiated_login")
+        if idp_initiated_login:
+            try:
+                claims = self.client.get_idp_initiated_login_claims(idp_initiated_login)
+                options.connection_id = claims.get("connection_id")
+                options.organization_id = claims.get("organization_id")
+                options.login_hint = claims.get("login_hint")
+            except Exception:
+                logger.exception(
+                    "idp_initiated_login claim validation failed; falling back to normal login"
+                )
+
         # Bind this authorization request to the browser that started it, so
         # /callback can reject a forged callback carrying an attacker's own
         # authorization code (CSRF).

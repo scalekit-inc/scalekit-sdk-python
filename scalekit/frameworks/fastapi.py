@@ -178,12 +178,29 @@ class ScalekitAuth:
             _FastAPIResponseAdapter(response).delete_cookie(exc.cookie_name)
         return response
 
-    async def _login_view(self):
+    async def _login_view(self, request: Request):
         options = AuthorizationUrlOptions()
         # offline_access is required to get a refresh_token back at all -- see
         # scalekit.frameworks.flask for the full explanation (same reasoning
         # applies here; the backend behavior isn't framework-specific).
         options.scopes = ["openid", "profile", "email", "offline_access"]
+
+        # This view doubles as the dashboard-registered "Initiate Login URL"
+        # -- see scalekit.frameworks.flask for the full reasoning.
+        idp_initiated_login = request.query_params.get("idp_initiated_login")
+        if idp_initiated_login:
+            try:
+                claims = await run_in_threadpool(
+                    self.client.get_idp_initiated_login_claims, idp_initiated_login
+                )
+                options.connection_id = claims.get("connection_id")
+                options.organization_id = claims.get("organization_id")
+                options.login_hint = claims.get("login_hint")
+            except Exception:
+                logger.exception(
+                    "idp_initiated_login claim validation failed; falling back to normal login"
+                )
+
         # Bind this authorization request to the browser that started it, so
         # /callback can reject a forged callback carrying an attacker's own
         # authorization code (CSRF) -- see scalekit.frameworks.flask.

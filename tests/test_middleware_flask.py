@@ -66,6 +66,42 @@ class TestScalekitAuthFlask(unittest.TestCase):
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp.headers["Location"], "https://auth.example.com/oauth/authorize?client_id=x")
 
+    def test_login_with_idp_initiated_login_uses_claims_for_authorization_url(self):
+        # /login doubles as the dashboard-registered "Initiate Login URL" --
+        # Scalekit can land users here with an idp_initiated_login JWT (e.g.
+        # an IdP portal tile click with an active session) instead of the
+        # plain no-params hit.
+        app, auth, client = _build_app()
+        client.get_idp_initiated_login_claims.return_value = {
+            "connection_id": "conn_123",
+            "organization_id": "org_456",
+            "login_hint": "user@example.com",
+        }
+        client.get_authorization_url.return_value = "https://auth.example.com/oauth/authorize?client_id=x"
+
+        with app.test_client() as tc:
+            resp = tc.get("/login?idp_initiated_login=some.jwt.token", follow_redirects=False)
+
+        self.assertEqual(resp.status_code, 302)
+        client.get_idp_initiated_login_claims.assert_called_once_with("some.jwt.token")
+        call_options = client.get_authorization_url.call_args[0][1]
+        self.assertEqual(call_options.connection_id, "conn_123")
+        self.assertEqual(call_options.organization_id, "org_456")
+        self.assertEqual(call_options.login_hint, "user@example.com")
+
+    def test_login_with_invalid_idp_initiated_login_falls_back_to_normal_login(self):
+        app, auth, client = _build_app()
+        client.get_idp_initiated_login_claims.side_effect = Exception("invalid token")
+        client.get_authorization_url.return_value = "https://auth.example.com/oauth/authorize?client_id=x"
+
+        with app.test_client() as tc:
+            resp = tc.get("/login?idp_initiated_login=garbage", follow_redirects=False)
+
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.headers["Location"], "https://auth.example.com/oauth/authorize?client_id=x")
+        call_options = client.get_authorization_url.call_args[0][1]
+        self.assertIsNone(call_options.connection_id)
+
     def test_callback_sets_encrypted_cookie_and_redirects(self):
         app, auth, client = _build_app(secret="callback-secret")
         client.get_authorization_url.return_value = "https://auth.example.com/oauth/authorize"
