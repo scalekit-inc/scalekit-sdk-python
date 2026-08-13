@@ -160,7 +160,7 @@ from scalekit.frameworks.flask import ScalekitAuth
 app = Flask(__name__)
 auth = ScalekitAuth(
     app,
-    env_url=os.environ["SCALEKIT_ENV_URL"],
+    env_url=os.environ["SCALEKIT_ENVIRONMENT_URL"],
     client_id=os.environ["SCALEKIT_CLIENT_ID"],
     client_secret=os.environ["SCALEKIT_CLIENT_SECRET"],
     redirect_uri="https://myapp.com/callback",
@@ -181,7 +181,7 @@ from scalekit.frameworks.fastapi import ScalekitAuth
 
 app = FastAPI()
 auth = ScalekitAuth(
-    env_url=os.environ["SCALEKIT_ENV_URL"],
+    env_url=os.environ["SCALEKIT_ENVIRONMENT_URL"],
     client_id=os.environ["SCALEKIT_CLIENT_ID"],
     client_secret=os.environ["SCALEKIT_CLIENT_SECRET"],
     redirect_uri="https://myapp.com/callback",
@@ -199,7 +199,7 @@ async def account(user: dict = Depends(auth.requires_auth)):
 import os
 
 MIDDLEWARE = [..., "scalekit.frameworks.django.ScalekitAuthMiddleware"]
-SCALEKIT_ENV_URL = os.environ["SCALEKIT_ENV_URL"]
+SCALEKIT_ENV_URL = os.environ["SCALEKIT_ENVIRONMENT_URL"]
 SCALEKIT_CLIENT_ID = os.environ["SCALEKIT_CLIENT_ID"]
 SCALEKIT_CLIENT_SECRET = os.environ["SCALEKIT_CLIENT_SECRET"]
 SCALEKIT_REDIRECT_URI = "https://myapp.com/callback"
