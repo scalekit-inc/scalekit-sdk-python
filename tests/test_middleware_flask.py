@@ -184,7 +184,7 @@ class TestScalekitAuthFlask(unittest.TestCase):
             resp = tc.get("/account", follow_redirects=False)
 
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(resp.headers["Location"], "/login")
+        self.assertEqual(resp.headers["Location"], "/login?returnTo=%2Faccount")
         self.assertNotEqual(resp.content_type, "application/json")
 
     def test_protected_route_with_valid_session_succeeds(self):
@@ -255,7 +255,7 @@ class TestScalekitAuthFlask(unittest.TestCase):
             resp = tc.get("/account", follow_redirects=False)
 
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(resp.headers["Location"], "/login")
+        self.assertEqual(resp.headers["Location"], "/login?returnTo=%2Faccount")
 
     def test_logout_with_invalid_cookie_falls_back_to_local_redirect(self):
         app, auth, client = _build_app()
@@ -420,6 +420,137 @@ class TestScalekitAuthConstruction(unittest.TestCase):
                 redirect_uri="https://app.example.com/callback",
                 cookie_encryption_secret="",
             )
+
+    def test_missing_redirect_uri_raises_immediately(self):
+        app = Flask(__name__)
+        with self.assertRaises(ValueError):
+            ScalekitAuth(
+                app,
+                client=MagicMock(),
+                cookie_encryption_secret="some-secret",
+            )
+
+
+class TestScalekitAuthReturnTo(unittest.TestCase):
+    def test_login_redirect_round_trips_back_to_originally_requested_page(self):
+        app, auth, client = _build_app(secret="return-to-secret")
+        client.get_authorization_url.return_value = "https://auth.example.com/oauth/authorize"
+        client.authenticate_with_code.return_value = {
+            "user": {"email": "test.user@example.com"},
+            "access_token": "at_1",
+            "refresh_token": "rt_1",
+            "id_token": "idt_1",
+            "expires_in": 300,
+        }
+        client.validate_access_token_and_get_claims.return_value = {
+            "email": "test.user@example.com",
+            "exp": time.time() + 300,
+        }
+
+        with app.test_client() as tc:
+            gate_resp = tc.get("/account", follow_redirects=False)
+            self.assertEqual(gate_resp.headers["Location"], "/login?returnTo=%2Faccount")
+
+            login_resp = tc.get(gate_resp.headers["Location"], follow_redirects=False)
+            state = tc.get_cookie("sk_oauth_state").value
+            self.assertEqual(tc.get_cookie("sk_return_to").value, "/account")
+
+            callback_resp = tc.get(f"/callback?code=abc123&state={state}", follow_redirects=False)
+
+        self.assertEqual(callback_resp.status_code, 302)
+        self.assertEqual(callback_resp.headers["Location"], "/account")
+        # one-time-use: cleared after the round trip completes
+        self.assertIsNone(tc.get_cookie("sk_return_to"))
+
+    def test_login_rejects_absolute_url_return_to_falls_back_to_default(self):
+        app, auth, client = _build_app(secret="open-redirect-secret")
+        client.get_authorization_url.return_value = "https://auth.example.com/oauth/authorize"
+        client.authenticate_with_code.return_value = {
+            "user": {"email": "test.user@example.com"},
+            "access_token": "at_1",
+            "expires_in": 300,
+        }
+        client.validate_access_token_and_get_claims.return_value = {
+            "email": "test.user@example.com",
+            "exp": time.time() + 300,
+        }
+
+        with app.test_client() as tc:
+            tc.get("/login?returnTo=https://evil.com", follow_redirects=False)
+            self.assertIsNone(tc.get_cookie("sk_return_to"))
+            state = tc.get_cookie("sk_oauth_state").value
+            resp = tc.get(f"/callback?code=abc123&state={state}", follow_redirects=False)
+
+        self.assertEqual(resp.headers["Location"], "/")
+
+
+class TestScalekitAuthGetSession(unittest.TestCase):
+    def test_get_session_returns_curated_user_and_expiry_for_valid_cookie(self):
+        app, auth, client = _build_app(secret="get-session-secret")
+        expires_at = time.time() + 3600
+        cookie_value = auth.manager.create_session_cookie(
+            {
+                "user": {"email": "test.user@example.com"},
+                "access_token": "at_1",
+                "refresh_token": "rt_1",
+                "id_token": "idt_1",
+                "expires_at": expires_at,
+            }
+        )
+
+        with app.test_client() as tc:
+            tc.set_cookie("sk_session", cookie_value)
+
+            @app.route("/whoami")
+            def whoami():
+                session = auth.get_session()
+                return {"session": session}
+
+            resp = tc.get("/whoami")
+
+        self.assertEqual(
+            resp.json["session"],
+            {"user": {"email": "test.user@example.com"}, "expires_at": expires_at},
+        )
+
+    def test_get_session_returns_none_for_missing_cookie(self):
+        app, auth, client = _build_app(secret="get-session-secret-2")
+
+        with app.test_client() as tc:
+
+            @app.route("/whoami")
+            def whoami():
+                return {"session": auth.get_session()}
+
+            resp = tc.get("/whoami")
+
+        self.assertIsNone(resp.json["session"])
+
+    def test_get_session_returns_none_for_tampered_cookie(self):
+        app, auth, client = _build_app(secret="get-session-secret-3")
+
+        with app.test_client() as tc:
+            tc.set_cookie("sk_session", "garbage-not-a-real-cookie")
+
+            @app.route("/whoami")
+            def whoami():
+                return {"session": auth.get_session()}
+
+            resp = tc.get("/whoami")
+
+        self.assertIsNone(resp.json["session"])
+
+
+class TestScalekitAuthCookieSecure(unittest.TestCase):
+    def test_cookie_secure_false_omits_secure_attribute_for_local_http_dev(self):
+        app, auth, client = _build_app(secret="cookie-secure-secret", cookie_secure=False)
+        client.get_authorization_url.return_value = "https://auth.example.com/oauth/authorize"
+
+        with app.test_client() as tc:
+            resp = tc.get("/login", follow_redirects=False)
+
+        set_cookie_header = resp.headers.get("Set-Cookie", "")
+        self.assertNotIn("Secure", set_cookie_header)
 
 
 if __name__ == "__main__":

@@ -4,6 +4,7 @@ import logging
 import time
 from functools import wraps
 from typing import Any, Callable, Dict, Optional
+from urllib.parse import quote
 
 try:
     from flask import Flask, Response, g, make_response
@@ -22,9 +23,11 @@ from scalekit.common.scalekit import (
     LogoutUrlOptions,
 )
 from scalekit.middleware.csrf_state import (
+    RETURN_TO_COOKIE_NAME,
     STATE_COOKIE_MAX_AGE,
     STATE_COOKIE_NAME,
     generate_state,
+    sanitize_return_to,
     verify_state,
 )
 from scalekit.middleware.protocol import RequestAdapter, ResponseAdapter
@@ -46,8 +49,13 @@ class _FlaskRequestAdapter:
 class _FlaskResponseAdapter:
     """ResponseAdapter implementation that mutates a Flask Response in place."""
 
-    def __init__(self, response: Response):
+    def __init__(self, response: Response, *, secure: bool = True):
         self.response = response
+        # Default for callers that don't pass `secure` explicitly (e.g.
+        # SessionRefreshManager.apply(), which only knows the ResponseAdapter
+        # interface, not this app's cookie_secure setting) -- every
+        # ScalekitAuth call site now constructs this with secure=self.cookie_secure.
+        self._default_secure = secure
 
     def set_cookie(
         self,
@@ -55,7 +63,7 @@ class _FlaskResponseAdapter:
         value: str,
         *,
         max_age: Optional[int] = None,
-        secure: bool = True,
+        secure: Optional[bool] = None,
         http_only: bool = True,
         same_site: str = "Lax",
         domain: Optional[str] = None,
@@ -65,7 +73,7 @@ class _FlaskResponseAdapter:
             name,
             value,
             max_age=max_age,
-            secure=secure,
+            secure=self._default_secure if secure is None else secure,
             httponly=http_only,
             samesite=same_site,
             domain=domain,
@@ -97,7 +105,10 @@ class ScalekitAuth:
         @app.route("/account")
         @auth.requires_auth
         def account():
-            return f"Hello {auth.current_user['email']}"
+            # `current_user` is access-token claims, not a full id_token profile --
+            # `sub` is always present; `email` only shows up if it's configured as
+            # a custom access-token claim in the Scalekit dashboard.
+            return f"Hello {auth.current_user['sub']}"
     """
 
     def __init__(
@@ -111,6 +122,7 @@ class ScalekitAuth:
         redirect_uri: Optional[str] = None,
         cookie_encryption_secret: Optional[str] = None,
         cookie_name: str = DEFAULT_COOKIE_NAME,
+        cookie_secure: bool = True,
         login_path: str = "/login",
         callback_path: str = "/callback",
         logout_path: str = "/logout",
@@ -118,10 +130,20 @@ class ScalekitAuth:
         post_logout_redirect_uri: Optional[str] = None,
         full_logout: bool = True,
     ):
+        if not redirect_uri:
+            raise ValueError(
+                "redirect_uri is required. Pass the exact Redirect URI registered "
+                "for this app in the Scalekit dashboard (Authentication > Redirects), "
+                "e.g. redirect_uri=\"https://yourapp.com/callback\"."
+            )
         if client is None:
             client = ScalekitClient(env_url=env_url, client_id=client_id, client_secret=client_secret)
         self.client = client
         self.redirect_uri = redirect_uri
+        # Right default for production. Chrome (and some other browsers) silently
+        # drop a Secure cookie set over plain http://localhost, which looks like a
+        # session that never sticks -- set cookie_secure=False for local HTTP dev.
+        self.cookie_secure = cookie_secure
         self.login_path = login_path
         self.callback_path = callback_path
         self.logout_path = logout_path
@@ -156,6 +178,26 @@ class ScalekitAuth:
     @property
     def current_user(self) -> Optional[Dict[str, Any]]:
         return getattr(g, "scalekit_user", None)
+
+    def get_session(self) -> Optional[Dict[str, Any]]:
+        """
+        Read-only session lookup -- for use outside a `requires_auth`-wrapped
+        view (e.g. a homepage that wants to show a logged-in/logged-out
+        state without gating the whole route). Never refreshes or writes a
+        new cookie -- only `requires_auth` does that.
+
+        Returns `{"user": ..., "expires_at": ...}`, or `None` if there's no
+        valid session. `user` is the access-token claims (not tokens
+        themselves) -- this method never returns `access_token`,
+        `refresh_token`, or `id_token`.
+        """
+        cookie_value = flask_request.cookies.get(self.manager.cookie_name)
+        if not cookie_value:
+            return None
+        payload = self.manager.read_session(cookie_value)
+        if payload is None:
+            return None
+        return {"user": payload.get("user"), "expires_at": payload.get("expires_at")}
 
     def _login_view(self):
         options = AuthorizationUrlOptions()
@@ -193,15 +235,26 @@ class ScalekitAuth:
         options.state = state
         url = self.client.get_authorization_url(self.redirect_uri, options)
         response = Response(status=302, headers={"Location": url})
-        _FlaskResponseAdapter(response).set_cookie(
-            STATE_COOKIE_NAME, state, max_age=STATE_COOKIE_MAX_AGE
-        )
+        adapter = _FlaskResponseAdapter(response, secure=self.cookie_secure)
+        adapter.set_cookie(STATE_COOKIE_NAME, state, max_age=STATE_COOKIE_MAX_AGE)
+
+        # Preserve the page the caller was trying to reach (set by
+        # requires_auth's redirect below) so _callback_view can send them
+        # back there instead of the fixed post_login_redirect -- re-validated
+        # here since query strings are always attacker-influenceable, even if
+        # requires_auth's own value was somehow bypassed by a direct
+        # /login?returnTo= hit.
+        return_to = sanitize_return_to(flask_request.args.get("returnTo"))
+        if return_to:
+            adapter.set_cookie(RETURN_TO_COOKIE_NAME, return_to, max_age=STATE_COOKIE_MAX_AGE)
         return response
 
     def _callback_view(self):
         def _redirect_to_login():
             resp = Response(status=302, headers={"Location": self.login_path})
-            _FlaskResponseAdapter(resp).delete_cookie(STATE_COOKIE_NAME)
+            adapter = _FlaskResponseAdapter(resp, secure=self.cookie_secure)
+            adapter.delete_cookie(STATE_COOKIE_NAME)
+            adapter.delete_cookie(RETURN_TO_COOKIE_NAME)
             return resp
 
         # The provider redirects here with `error` (no `code`) if the user
@@ -246,10 +299,14 @@ class ScalekitAuth:
             logger.exception("login callback failed; redirecting to login")
             return _redirect_to_login()
 
-        response = Response(status=302, headers={"Location": self.post_login_redirect})
-        adapter = _FlaskResponseAdapter(response)
+        return_to = sanitize_return_to(flask_request.cookies.get(RETURN_TO_COOKIE_NAME))
+        response = Response(
+            status=302, headers={"Location": return_to or self.post_login_redirect}
+        )
+        adapter = _FlaskResponseAdapter(response, secure=self.cookie_secure)
         adapter.set_cookie(self.manager.cookie_name, cookie_value)
         adapter.delete_cookie(STATE_COOKIE_NAME)
+        adapter.delete_cookie(RETURN_TO_COOKIE_NAME)
         return response
 
     def _logout_view(self):
@@ -287,7 +344,14 @@ class ScalekitAuth:
             result = self.manager.check(_FlaskRequestAdapter())
 
             if not result.authenticated:
-                response = Response(status=302, headers={"Location": self.login_path})
+                # Send the caller back to where they were trying to go once
+                # login completes, instead of always landing on
+                # post_login_redirect -- full_path includes the query string
+                # (e.g. "/account?tab=billing"), matching what sanitize_return_to
+                # validates on the receiving end (_login_view/_callback_view).
+                current_path = flask_request.full_path.rstrip("?")
+                location = f"{self.login_path}?returnTo={quote(current_path, safe='')}"
+                response = Response(status=302, headers={"Location": location})
                 if result.should_clear_cookie:
                     _FlaskResponseAdapter(response).delete_cookie(self.manager.cookie_name)
                 return response
@@ -298,7 +362,7 @@ class ScalekitAuth:
             # unchanged, ...) -- a bare Response(response=...) bypasses all of
             # that and silently mangles anything but a plain string return.
             response = make_response(view_func(*args, **kwargs))
-            self.manager.apply(result, _FlaskResponseAdapter(response))
+            self.manager.apply(result, _FlaskResponseAdapter(response, secure=self.cookie_secure))
             return response
 
         return wrapped

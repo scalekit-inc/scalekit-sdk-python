@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import time
 from typing import Any, Dict, Optional
+from urllib.parse import quote
 
 try:
     from fastapi import APIRouter, FastAPI, Request, Response
@@ -21,9 +22,11 @@ from scalekit.common.scalekit import (
     LogoutUrlOptions,
 )
 from scalekit.middleware.csrf_state import (
+    RETURN_TO_COOKIE_NAME,
     STATE_COOKIE_MAX_AGE,
     STATE_COOKIE_NAME,
     generate_state,
+    sanitize_return_to,
     verify_state,
 )
 from scalekit.middleware.protocol import RequestAdapter, ResponseAdapter
@@ -48,8 +51,13 @@ class _FastAPIRequestAdapter:
 class _FastAPIResponseAdapter:
     """ResponseAdapter implementation that mutates a Starlette/FastAPI Response in place."""
 
-    def __init__(self, response: Response):
+    def __init__(self, response: Response, *, secure: bool = True):
         self.response = response
+        # Default for callers that don't pass `secure` explicitly (e.g.
+        # SessionRefreshManager.apply(), which only knows the ResponseAdapter
+        # interface, not this app's cookie_secure setting) -- every
+        # ScalekitAuth call site now constructs this with secure=self.cookie_secure.
+        self._default_secure = secure
 
     def set_cookie(
         self,
@@ -57,7 +65,7 @@ class _FastAPIResponseAdapter:
         value: str,
         *,
         max_age: Optional[int] = None,
-        secure: bool = True,
+        secure: Optional[bool] = None,
         http_only: bool = True,
         same_site: str = "lax",
         domain: Optional[str] = None,
@@ -67,7 +75,7 @@ class _FastAPIResponseAdapter:
             key=name,
             value=value,
             max_age=max_age,
-            secure=secure,
+            secure=self._default_secure if secure is None else secure,
             httponly=http_only,
             samesite=same_site,
             domain=domain,
@@ -93,10 +101,18 @@ class _RequiresLoginRedirect(Exception):
     swallow -- the property this whole design exists to avoid.
     """
 
-    def __init__(self, location: str, clear_cookie: bool, cookie_name: str):
+    def __init__(
+        self,
+        location: str,
+        clear_cookie: bool,
+        cookie_name: str,
+        *,
+        return_to: Optional[str] = None,
+    ):
         self.location = location
         self.clear_cookie = clear_cookie
         self.cookie_name = cookie_name
+        self.return_to = return_to
 
 
 class ScalekitAuth:
@@ -116,7 +132,10 @@ class ScalekitAuth:
 
         @app.get("/account")
         async def account(user: dict = Depends(auth.requires_auth)):
-            return {"email": user["email"]}
+            # `user` is access-token claims, not a full id_token profile -- `sub`
+            # is always present; `email` only shows up if it's configured as a
+            # custom access-token claim in the Scalekit dashboard.
+            return {"sub": user["sub"]}
 
     Note: `requires_auth` sets the refreshed session cookie on the injected
     `response` parameter. If a protected endpoint returns a `Response`
@@ -137,6 +156,7 @@ class ScalekitAuth:
         redirect_uri: Optional[str] = None,
         cookie_encryption_secret: Optional[str] = None,
         cookie_name: str = DEFAULT_COOKIE_NAME,
+        cookie_secure: bool = True,
         login_path: str = "/login",
         callback_path: str = "/callback",
         logout_path: str = "/logout",
@@ -144,10 +164,20 @@ class ScalekitAuth:
         post_logout_redirect_uri: Optional[str] = None,
         full_logout: bool = True,
     ):
+        if not redirect_uri:
+            raise ValueError(
+                "redirect_uri is required. Pass the exact Redirect URI registered "
+                "for this app in the Scalekit dashboard (Authentication > Redirects), "
+                "e.g. redirect_uri=\"https://yourapp.com/callback\"."
+            )
         if client is None:
             client = ScalekitClient(env_url=env_url, client_id=client_id, client_secret=client_secret)
         self.client = client
         self.redirect_uri = redirect_uri
+        # Right default for production. Chrome (and some other browsers) silently
+        # drop a Secure cookie set over plain http://localhost, which looks like a
+        # session that never sticks -- set cookie_secure=False for local HTTP dev.
+        self.cookie_secure = cookie_secure
         self.login_path = login_path
         self.callback_path = callback_path
         self.logout_path = logout_path
@@ -173,10 +203,33 @@ class ScalekitAuth:
         app.add_exception_handler(_RequiresLoginRedirect, self._redirect_exception_handler)
 
     async def _redirect_exception_handler(self, request: Request, exc: _RequiresLoginRedirect):
-        response = RedirectResponse(exc.location, status_code=302)
+        location = exc.location
+        if exc.return_to:
+            location = f"{location}?returnTo={quote(exc.return_to, safe='')}"
+        response = RedirectResponse(location, status_code=302)
         if exc.clear_cookie:
-            _FastAPIResponseAdapter(response).delete_cookie(exc.cookie_name)
+            _FastAPIResponseAdapter(response, secure=self.cookie_secure).delete_cookie(exc.cookie_name)
         return response
+
+    def get_session(self, request: Request) -> Optional[Dict[str, Any]]:
+        """
+        Read-only session lookup -- for use outside a `requires_auth`-gated
+        endpoint (e.g. a homepage that wants to show a logged-in/logged-out
+        state without gating the whole route). Never refreshes or writes a
+        new cookie -- only `requires_auth` does that.
+
+        Returns `{"user": ..., "expires_at": ...}`, or `None` if there's no
+        valid session. `user` is the access-token claims (not tokens
+        themselves) -- this method never returns `access_token`,
+        `refresh_token`, or `id_token`.
+        """
+        cookie_value = request.cookies.get(self.manager.cookie_name)
+        if not cookie_value:
+            return None
+        payload = self.manager.read_session(cookie_value)
+        if payload is None:
+            return None
+        return {"user": payload.get("user"), "expires_at": payload.get("expires_at")}
 
     async def _login_view(self, request: Request):
         options = AuthorizationUrlOptions()
@@ -208,15 +261,24 @@ class ScalekitAuth:
         options.state = state
         url = await run_in_threadpool(self.client.get_authorization_url, self.redirect_uri, options)
         response = RedirectResponse(url, status_code=302)
-        _FastAPIResponseAdapter(response).set_cookie(
-            STATE_COOKIE_NAME, state, max_age=STATE_COOKIE_MAX_AGE
-        )
+        adapter = _FastAPIResponseAdapter(response, secure=self.cookie_secure)
+        adapter.set_cookie(STATE_COOKIE_NAME, state, max_age=STATE_COOKIE_MAX_AGE)
+
+        # Preserve the page the caller was trying to reach (set by
+        # requires_auth's redirect) so _callback_view can send them back there
+        # instead of the fixed post_login_redirect -- re-validated here since
+        # query strings are always attacker-influenceable.
+        return_to = sanitize_return_to(request.query_params.get("returnTo"))
+        if return_to:
+            adapter.set_cookie(RETURN_TO_COOKIE_NAME, return_to, max_age=STATE_COOKIE_MAX_AGE)
         return response
 
     async def _callback_view(self, request: Request):
         def _redirect_to_login():
             resp = RedirectResponse(self.login_path, status_code=302)
-            _FastAPIResponseAdapter(resp).delete_cookie(STATE_COOKIE_NAME)
+            adapter = _FastAPIResponseAdapter(resp, secure=self.cookie_secure)
+            adapter.delete_cookie(STATE_COOKIE_NAME)
+            adapter.delete_cookie(RETURN_TO_COOKIE_NAME)
             return resp
 
         # The provider redirects here with `error` (no `code`) if the user
@@ -259,10 +321,12 @@ class ScalekitAuth:
             logger.exception("login callback failed; redirecting to login")
             return _redirect_to_login()
 
-        response = RedirectResponse(self.post_login_redirect, status_code=302)
-        adapter = _FastAPIResponseAdapter(response)
+        return_to = sanitize_return_to(request.cookies.get(RETURN_TO_COOKIE_NAME))
+        response = RedirectResponse(return_to or self.post_login_redirect, status_code=302)
+        adapter = _FastAPIResponseAdapter(response, secure=self.cookie_secure)
         adapter.set_cookie(self.manager.cookie_name, cookie_value)
         adapter.delete_cookie(STATE_COOKIE_NAME)
+        adapter.delete_cookie(RETURN_TO_COOKIE_NAME)
         return response
 
     async def _logout_view(self, request: Request):
@@ -301,13 +365,22 @@ class ScalekitAuth:
         result = await run_in_threadpool(self.manager.check, _FastAPIRequestAdapter(request))
 
         if not result.authenticated:
+            # request.url.path + query preserves the page the caller was
+            # trying to reach so _login_view/_callback_view can send them
+            # back there instead of always landing on post_login_redirect.
+            current_path = request.url.path
+            if request.url.query:
+                current_path = f"{current_path}?{request.url.query}"
             raise _RequiresLoginRedirect(
                 location=self.login_path,
                 clear_cookie=result.should_clear_cookie,
                 cookie_name=self.manager.cookie_name,
+                return_to=current_path,
             )
 
         if result.new_cookie_value:
-            _FastAPIResponseAdapter(response).set_cookie(self.manager.cookie_name, result.new_cookie_value)
+            _FastAPIResponseAdapter(response, secure=self.cookie_secure).set_cookie(
+                self.manager.cookie_name, result.new_cookie_value
+            )
 
         return result.user

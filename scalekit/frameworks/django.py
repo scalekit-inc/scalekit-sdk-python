@@ -4,6 +4,7 @@ import logging
 import time
 from functools import lru_cache, wraps
 from typing import Any, Callable, Optional
+from urllib.parse import quote
 
 try:
     from django.conf import settings as django_settings
@@ -22,9 +23,11 @@ from scalekit.common.scalekit import (
     LogoutUrlOptions,
 )
 from scalekit.middleware.csrf_state import (
+    RETURN_TO_COOKIE_NAME,
     STATE_COOKIE_MAX_AGE,
     STATE_COOKIE_NAME,
     generate_state,
+    sanitize_return_to,
     verify_state,
 )
 from scalekit.middleware.protocol import RequestAdapter, ResponseAdapter
@@ -49,8 +52,13 @@ class _DjangoRequestAdapter:
 class _DjangoResponseAdapter:
     """ResponseAdapter implementation that mutates a Django HttpResponse in place."""
 
-    def __init__(self, response: HttpResponse):
+    def __init__(self, response: HttpResponse, *, secure: bool = True):
         self.response = response
+        # Default for callers that don't pass `secure` explicitly (e.g.
+        # SessionRefreshManager.apply()-style callers that only know the
+        # ResponseAdapter interface, not SCALEKIT_COOKIE_SECURE) -- every
+        # call site below now constructs this with secure=config.cookie_secure.
+        self._default_secure = secure
 
     def set_cookie(
         self,
@@ -58,7 +66,7 @@ class _DjangoResponseAdapter:
         value: str,
         *,
         max_age: Optional[int] = None,
-        secure: bool = True,
+        secure: Optional[bool] = None,
         http_only: bool = True,
         same_site: str = "Lax",
         domain: Optional[str] = None,
@@ -68,7 +76,7 @@ class _DjangoResponseAdapter:
             name,
             value,
             max_age=max_age,
-            secure=secure,
+            secure=self._default_secure if secure is None else secure,
             httponly=http_only,
             samesite=same_site,
             domain=domain,
@@ -126,6 +134,11 @@ class ScalekitAuthConfig:
             _setting("SCALEKIT_POST_LOGOUT_REDIRECT_URI") or self.post_login_redirect
         )
         self.full_logout = _setting("SCALEKIT_FULL_LOGOUT", True)
+        # Right default for production. Chrome (and some other browsers) silently
+        # drop a Secure cookie set over plain http://localhost, which looks like a
+        # session that never sticks -- set SCALEKIT_COOKIE_SECURE=False for local
+        # HTTP dev.
+        self.cookie_secure = _setting("SCALEKIT_COOKIE_SECURE", True)
 
         # Raises immediately if the secret is missing.
         self.manager = SessionRefreshManager(
@@ -162,13 +175,39 @@ class ScalekitAuthMiddleware:
         response = self.get_response(request)
 
         if result.new_cookie_value:
-            _DjangoResponseAdapter(response).set_cookie(
+            _DjangoResponseAdapter(response, secure=config.cookie_secure).set_cookie(
                 config.manager.cookie_name, result.new_cookie_value
             )
         elif result.should_clear_cookie:
             _DjangoResponseAdapter(response).delete_cookie(config.manager.cookie_name)
 
         return response
+
+
+def get_session(request: HttpRequest) -> Optional[dict]:
+    """
+    Read-only session lookup -- for use outside a `login_required`-gated view
+    (e.g. a homepage that wants to show a logged-in/logged-out state without
+    gating the whole route). Never refreshes or writes a new cookie.
+
+    Returns `{"user": ..., "expires_at": ...}`, or `None` if there's no valid
+    session. `user` is the access-token claims (not tokens themselves) --
+    this function never returns `access_token`, `refresh_token`, or
+    `id_token`.
+
+    Note: ScalekitAuthMiddleware already sets `request.scalekit_user` on
+    every request (`None` if unauthenticated), so most views can just read
+    that directly. Use `get_session()` instead when you also need
+    `expires_at`.
+    """
+    config = get_config()
+    cookie_value = request.COOKIES.get(config.manager.cookie_name)
+    if not cookie_value:
+        return None
+    payload = config.manager.read_session(cookie_value)
+    if payload is None:
+        return None
+    return {"user": payload.get("user"), "expires_at": payload.get("expires_at")}
 
 
 def login_required(view_func: Callable) -> Callable:
@@ -184,7 +223,11 @@ def login_required(view_func: Callable) -> Callable:
     @wraps(view_func)
     def wrapped(request: HttpRequest, *args, **kwargs):
         if getattr(request, "scalekit_user", None) is None:
-            return HttpResponseRedirect(get_config().login_path)
+            # Preserve the page the caller was trying to reach so callback_view
+            # can send them back there instead of the fixed post_login_redirect.
+            current_path = request.get_full_path()
+            location = f"{get_config().login_path}?returnTo={quote(current_path, safe='')}"
+            return HttpResponseRedirect(location)
         return view_func(request, *args, **kwargs)
 
     return wrapped
@@ -218,9 +261,16 @@ def login_view(request: HttpRequest) -> HttpResponse:
     options.state = state
     url = config.client.get_authorization_url(config.redirect_uri, options)
     response = HttpResponseRedirect(url)
-    _DjangoResponseAdapter(response).set_cookie(
-        STATE_COOKIE_NAME, state, max_age=STATE_COOKIE_MAX_AGE
-    )
+    adapter = _DjangoResponseAdapter(response, secure=config.cookie_secure)
+    adapter.set_cookie(STATE_COOKIE_NAME, state, max_age=STATE_COOKIE_MAX_AGE)
+
+    # Preserve the page the caller was trying to reach (set by
+    # login_required's redirect) so callback_view can send them back there
+    # instead of the fixed post_login_redirect -- re-validated here since
+    # query strings are always attacker-influenceable.
+    return_to = sanitize_return_to(request.GET.get("returnTo"))
+    if return_to:
+        adapter.set_cookie(RETURN_TO_COOKIE_NAME, return_to, max_age=STATE_COOKIE_MAX_AGE)
     return response
 
 
@@ -229,7 +279,9 @@ def callback_view(request: HttpRequest) -> HttpResponse:
 
     def _redirect_to_login():
         resp = HttpResponseRedirect(config.login_path)
-        _DjangoResponseAdapter(resp).delete_cookie(STATE_COOKIE_NAME)
+        adapter = _DjangoResponseAdapter(resp, secure=config.cookie_secure)
+        adapter.delete_cookie(STATE_COOKIE_NAME)
+        adapter.delete_cookie(RETURN_TO_COOKIE_NAME)
         return resp
 
     # The provider redirects here with `error` (no `code`) if the user
@@ -270,10 +322,12 @@ def callback_view(request: HttpRequest) -> HttpResponse:
         logger.exception("login callback failed; redirecting to login")
         return _redirect_to_login()
 
-    response = HttpResponseRedirect(config.post_login_redirect)
-    adapter = _DjangoResponseAdapter(response)
+    return_to = sanitize_return_to(request.COOKIES.get(RETURN_TO_COOKIE_NAME))
+    response = HttpResponseRedirect(return_to or config.post_login_redirect)
+    adapter = _DjangoResponseAdapter(response, secure=config.cookie_secure)
     adapter.set_cookie(config.manager.cookie_name, cookie_value)
     adapter.delete_cookie(STATE_COOKIE_NAME)
+    adapter.delete_cookie(RETURN_TO_COOKIE_NAME)
     return response
 
 

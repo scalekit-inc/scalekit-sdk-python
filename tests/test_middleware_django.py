@@ -22,7 +22,7 @@ from django.http import HttpResponse
 from django.test import Client
 from django.urls import include, path
 
-from scalekit.frameworks.django import get_config, login_required
+from scalekit.frameworks.django import get_config, get_session, login_required
 from scalekit.middleware.session_crypto import decrypt_session
 
 
@@ -32,8 +32,16 @@ def account_view(request):
 
 account_view = login_required(account_view)
 
+
+def whoami_view(request):
+    import json
+
+    return HttpResponse(json.dumps({"session": get_session(request)}), content_type="application/json")
+
+
 urlpatterns = [
     path("account", account_view),
+    path("whoami", whoami_view),
     path("", include("scalekit.frameworks.django")),
 ]
 
@@ -169,7 +177,7 @@ class TestScalekitAuthDjango(unittest.TestCase):
         resp = Client().get("/account")
 
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(resp.headers["Location"], "/login")
+        self.assertEqual(resp.headers["Location"], "/login?returnTo=%2Faccount")
         self.assertNotEqual(resp.headers.get("Content-Type"), "application/json")
 
     def test_protected_route_with_valid_session_succeeds(self):
@@ -235,7 +243,7 @@ class TestScalekitAuthDjango(unittest.TestCase):
         resp = tc.get("/account")
 
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(resp.headers["Location"], "/login")
+        self.assertEqual(resp.headers["Location"], "/login?returnTo=%2Faccount")
 
     def test_logout_without_any_cookie_falls_back_to_local_redirect(self):
         resp = Client().get("/logout")
@@ -307,6 +315,113 @@ class TestScalekitAuthDjangoConstruction(unittest.TestCase):
         django_settings.SCALEKIT_CLIENT = MagicMock()
         with self.assertRaises(ValueError):
             get_config()
+
+
+class TestScalekitAuthDjangoReturnTo(unittest.TestCase):
+    def setUp(self):
+        self.config = _reconfigure(secret="django-test-cookie-secret")
+        self.client_mock = self.config.client
+
+    def tearDown(self):
+        get_config.cache_clear()
+
+    def test_login_redirect_round_trips_back_to_originally_requested_page(self):
+        self.client_mock.get_authorization_url.return_value = "https://auth.example.com/oauth/authorize"
+        self.client_mock.authenticate_with_code.return_value = {
+            "user": {"email": "test.user@example.com"},
+            "access_token": "at_1",
+            "refresh_token": "rt_1",
+            "id_token": "idt_1",
+            "expires_in": 300,
+        }
+        self.client_mock.validate_access_token_and_get_claims.return_value = {
+            "email": "test.user@example.com",
+            "exp": time.time() + 300,
+        }
+
+        tc = Client()
+        gate_resp = tc.get("/account")
+        self.assertEqual(gate_resp.headers["Location"], "/login?returnTo=%2Faccount")
+
+        tc.get(gate_resp.headers["Location"])
+        state = tc.cookies["sk_oauth_state"].value
+        self.assertEqual(tc.cookies["sk_return_to"].value, "/account")
+
+        callback_resp = tc.get(f"/callback?code=abc123&state={state}")
+
+        self.assertEqual(callback_resp.status_code, 302)
+        self.assertEqual(callback_resp.headers["Location"], "/account")
+
+    def test_login_rejects_absolute_url_return_to_falls_back_to_default(self):
+        self.client_mock.get_authorization_url.return_value = "https://auth.example.com/oauth/authorize"
+        self.client_mock.authenticate_with_code.return_value = {
+            "user": {"email": "test.user@example.com"},
+            "access_token": "at_1",
+            "expires_in": 300,
+        }
+        self.client_mock.validate_access_token_and_get_claims.return_value = {
+            "email": "test.user@example.com",
+            "exp": time.time() + 300,
+        }
+
+        tc = Client()
+        tc.get("/login?returnTo=https://evil.com")
+        self.assertNotIn("sk_return_to", tc.cookies)
+        state = tc.cookies["sk_oauth_state"].value
+        resp = tc.get(f"/callback?code=abc123&state={state}")
+
+        self.assertEqual(resp.headers["Location"], "/")
+
+
+class TestScalekitAuthDjangoGetSession(unittest.TestCase):
+    def setUp(self):
+        self.config = _reconfigure(secret="django-test-cookie-secret")
+
+    def tearDown(self):
+        get_config.cache_clear()
+
+    def test_get_session_returns_curated_user_and_expiry_for_valid_cookie(self):
+        expires_at = time.time() + 3600
+        cookie_value = self.config.manager.create_session_cookie(
+            {
+                "user": {"email": "test.user@example.com"},
+                "access_token": "at_1",
+                "refresh_token": "rt_1",
+                "id_token": "idt_1",
+                "expires_at": expires_at,
+            }
+        )
+        tc = Client()
+        tc.cookies["sk_session"] = cookie_value
+
+        resp = tc.get("/whoami")
+
+        self.assertEqual(
+            resp.json()["session"],
+            {"user": {"email": "test.user@example.com"}, "expires_at": expires_at},
+        )
+
+    def test_get_session_returns_none_for_missing_cookie(self):
+        resp = Client().get("/whoami")
+
+        self.assertIsNone(resp.json()["session"])
+
+
+class TestScalekitAuthDjangoCookieSecure(unittest.TestCase):
+    def tearDown(self):
+        get_config.cache_clear()
+
+    def test_cookie_secure_false_omits_secure_attribute_for_local_http_dev(self):
+        get_config.cache_clear()
+        django_settings.SCALEKIT_COOKIE_SECURE = False
+        self.addCleanup(setattr, django_settings, "SCALEKIT_COOKIE_SECURE", True)
+        config = get_config()
+        config.client.get_authorization_url.return_value = "https://auth.example.com/oauth/authorize"
+
+        resp = Client().get("/login")
+
+        set_cookie_header = str(resp.cookies.get("sk_oauth_state", ""))
+        self.assertNotIn("Secure", set_cookie_header)
 
 
 if __name__ == "__main__":
