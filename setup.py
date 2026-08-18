@@ -16,7 +16,7 @@ setup(
         "requests>=2.34.0",
         "PyJWT>=2.13.0",
         "cffi>=1.15.1",
-        "cryptography>=46.0.6,<49",
+        "cryptography>=50.0.0",
         "setuptools>=82.0.1,<83.0",
         "grpcio-status>=1.81.0,<2.0",
         "protoc-gen-openapiv2>=0.0.1",
@@ -27,6 +27,14 @@ setup(
         "pydantic>=2.13.4",
         "mcp>=1.27.2",
     ],
+    extras_require={
+        # Framework-specific extras for scalekit.frameworks.* -- kept out of
+        # install_requires so installing the core SDK never pulls in a web
+        # framework the customer isn't using.
+        "flask": ["flask>=2.0"],
+        "fastapi": ["fastapi>=0.100"],
+        "django": ["django>=4.2"],
+    },
     url="https://github.com/scalekit-inc/scalekit-sdk-python",
     license="MIT",
     author="Team Scalekit",

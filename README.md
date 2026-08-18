@@ -138,6 +138,88 @@ Explore fully functional sample applications built with popular Python framework
 |-----------|------------|-------------|
 | **FastAPI** | [scalekit-fastapi-example](https://github.com/scalekit-developers/scalekit-fastapi-example) | Modern async Python API framework |
 
+### Full Stack Auth — encrypted-session middleware for Flask, FastAPI, and Django
+
+The example above is for **Modular SSO**: Scalekit brokers the OAuth exchange with your customer's own IdP via a `connection_id`, and your app owns its own session however it likes.
+
+If instead Scalekit hosts your login UI and you want it to also manage the session lifecycle for you (**Full Stack Auth**), `scalekit-sdk-python` ships optional Flask, FastAPI, and Django extras that handle the encrypted session cookie, transparent token refresh, CSRF-safe login/callback, and full logout for you — no hand-rolled cookies, no manual refresh timing.
+
+Register these under **Dashboard → Authentication → Redirects** before testing:
+- **Redirect URI** — your `redirect_uri` (the `/callback` path). Scalekit rejects the exchange if this doesn't match exactly.
+- **Post Logout Redirect URI** — where users land after full logout. A relative path gets auto-absolutized against the request host, but the resulting absolute URL must still be registered.
+- **Initiate Login URL** — your `/login` path. Scalekit redirects here (not `/callback`) for a bookmarked login page, an IdP portal tile, or an invite/magic link — the login view already handles this correctly, including the `idp_initiated_login` case, with no extra code required.
+
+pip install "scalekit-sdk-python[flask]"  # or "scalekit-sdk-python[fastapi]" or "scalekit-sdk-python[django]"
+
+```python
+# Flask
+import os
+from flask import Flask
+from scalekit.frameworks.flask import ScalekitAuth
+
+app = Flask(__name__)
+auth = ScalekitAuth(
+    app,
+    env_url=os.environ["SCALEKIT_ENV_URL"],
+    client_id=os.environ["SCALEKIT_CLIENT_ID"],
+    client_secret=os.environ["SCALEKIT_CLIENT_SECRET"],
+    redirect_uri="https://myapp.com/callback",
+    cookie_encryption_secret=os.environ["COOKIE_ENCRYPTION_SECRET"],  # openssl rand -base64 32
+)  # registers /login, /callback, /logout
+
+@app.route("/account")
+@auth.requires_auth
+def account():
+    return {"email": auth.current_user["email"]}
+```
+
+```python
+# FastAPI -- protect routes with Depends(), FastAPI's idiomatic mechanism
+import os
+from fastapi import Depends, FastAPI
+from scalekit.frameworks.fastapi import ScalekitAuth
+
+app = FastAPI()
+auth = ScalekitAuth(
+    env_url=os.environ["SCALEKIT_ENV_URL"],
+    client_id=os.environ["SCALEKIT_CLIENT_ID"],
+    client_secret=os.environ["SCALEKIT_CLIENT_SECRET"],
+    redirect_uri="https://myapp.com/callback",
+    cookie_encryption_secret=os.environ["COOKIE_ENCRYPTION_SECRET"],
+)
+auth.install(app)  # registers /login, /callback, /logout
+
+@app.get("/account")
+async def account(user: dict = Depends(auth.requires_auth)):
+    return {"email": user["email"]}
+```
+
+```python
+# Django -- settings.py
+import os
+
+MIDDLEWARE = [..., "scalekit.frameworks.django.ScalekitAuthMiddleware"]
+SCALEKIT_ENV_URL = os.environ["SCALEKIT_ENV_URL"]
+SCALEKIT_CLIENT_ID = os.environ["SCALEKIT_CLIENT_ID"]
+SCALEKIT_CLIENT_SECRET = os.environ["SCALEKIT_CLIENT_SECRET"]
+SCALEKIT_REDIRECT_URI = "https://myapp.com/callback"
+SCALEKIT_COOKIE_ENCRYPTION_SECRET = os.environ["COOKIE_ENCRYPTION_SECRET"]
+
+# urls.py
+from django.urls import include, path
+urlpatterns = [path("", include("scalekit.frameworks.django")), ...]  # /login, /callback, /logout
+
+# views.py
+from django.http import JsonResponse
+from scalekit.frameworks.django import login_required
+
+@login_required
+def account(request):
+    return JsonResponse(request.scalekit_user)
+```
+
+See [`examples/flask`](./examples/flask), [`examples/fastapi`](./examples/fastapi), and [`examples/django`](./examples/django) for complete, runnable versions. For a fuller production-oriented sample app, see the framework repos above.
+
 ## 🔗 Helpful Links
 
 ### 📖 Quickstart Guides
