@@ -70,7 +70,20 @@ class CoreClient:
             channel_credentials,
             call_credentials,
         )
-        self.grpc_secure_channel = grpc.secure_channel(self.host, composite_credentials)
+        # keepalive_permit_without_calls=1 so an idle channel is still
+        # periodically verified: without it, grpc-core only sends HTTP/2
+        # keepalive PINGs while there are active calls, so a connection
+        # silently dropped by a network intermediary while idle isn't
+        # detected until the next real call is written to it.
+        channel_options = [
+            ('grpc.keepalive_time_ms', 30000),
+            ('grpc.keepalive_timeout_ms', 10000),
+            ('grpc.keepalive_permit_without_calls', 1),
+            ('grpc.http2.max_pings_without_data', 0),
+        ]
+        self.grpc_secure_channel = grpc.secure_channel(
+            self.host, composite_credentials, options=channel_options
+        )
 
     def __authenticate_client(self):
         """
