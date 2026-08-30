@@ -9,7 +9,7 @@ import hmac
 import hashlib
 import base64
 from datetime import datetime, timedelta, timezone
-from scalekit.core import CoreClient
+from scalekit.core import CoreClient, DEFAULT_KEEPALIVE_TIME_MS, DEFAULT_KEEPALIVE_TIMEOUT_MS
 from scalekit.domain import DomainClient
 from scalekit.connection import ConnectionClient
 from scalekit.m2m_client import M2MClient
@@ -50,23 +50,45 @@ webhook_signature_version = "v1"
 class ScalekitClient:
     """ Class definition for scalekit client """
 
-    def __init__(self, env_url: str, client_id: str, client_secret: str):
+    def __init__(
+        self,
+        env_url: str,
+        client_id: str,
+        client_secret: str,
+        keepalive_time_ms: int = DEFAULT_KEEPALIVE_TIME_MS,
+        keepalive_timeout_ms: int = DEFAULT_KEEPALIVE_TIMEOUT_MS,
+    ):
         """
         Initializer for Scalekit base class
 
-        :param env_url        : Environment URL
-        :type                 : ``` str ```
-        :param client_id      : Client ID
-        :type                 : ``` str ```
-        :param client_secret  : Client Secret
-        :type                 : ``` str ```
+        :param env_url               : Environment URL
+        :type                        : ``` str ```
+        :param client_id             : Client ID
+        :type                        : ``` str ```
+        :param client_secret         : Client Secret
+        :type                        : ``` str ```
+        :param keepalive_time_ms     : How often, in milliseconds, an idle gRPC
+                                        connection is verified before reuse.
+                                        Defaults to 30000; most callers never
+                                        need to set this.
+        :type                        : ``` int ```
+        :param keepalive_timeout_ms  : How long, in milliseconds, to wait for a
+                                        keepalive response before treating an
+                                        idle connection as dead. Defaults to
+                                        10000.
+        :type                        : ``` int ```
 
         :returns:
             None
         """
         try:
             self.core_client = CoreClient(
-                env_url=env_url, client_id=client_id, client_secret=client_secret)
+                env_url=env_url,
+                client_id=client_id,
+                client_secret=client_secret,
+                keepalive_time_ms=keepalive_time_ms,
+                keepalive_timeout_ms=keepalive_timeout_ms,
+            )
             self.domain = DomainClient(self.core_client)
             self.connection = ConnectionClient(self.core_client)
             self.organization = OrganizationClient(self.core_client)

@@ -19,6 +19,9 @@ TMetadata = TypeVar("TMetadata")
 TOKEN_ENDPOINT = "/oauth/token"
 JWKS_ENDPOINT = "/keys"
 
+DEFAULT_KEEPALIVE_TIME_MS = 30_000
+DEFAULT_KEEPALIVE_TIMEOUT_MS = 10_000
+
 
 class WithCall(Protocol):
     def __call__(self, request: TRequest, metadata: TMetadata) -> TResponse: ...
@@ -32,16 +35,34 @@ class CoreClient:
     api_version = "20260727"
     user_agent = f"{sdk_version} Python/{platform.python_version()} ({platform.system()}; {platform.architecture()}"
 
-    def __init__(self, env_url, client_id, client_secret):
+    def __init__(
+        self,
+        env_url,
+        client_id,
+        client_secret,
+        keepalive_time_ms: int = DEFAULT_KEEPALIVE_TIME_MS,
+        keepalive_timeout_ms: int = DEFAULT_KEEPALIVE_TIMEOUT_MS,
+    ):
         """
         Initializer for Core client
 
-        :param env_url        : Environment URL
-        :type                 : ``` str ```
-        :param client_id      : Client ID
-        :type                 : ``` str ```
-        :param client_secret  : Client Secret
-        :type                 : ``` str ```
+        :param env_url               : Environment URL
+        :type                        : ``` str ```
+        :param client_id             : Client ID
+        :type                        : ``` str ```
+        :param client_secret         : Client Secret
+        :type                        : ``` str ```
+        :param keepalive_time_ms     : How often, in milliseconds, an idle gRPC
+                                        connection is verified before reuse.
+                                        Lower this if your network path drops
+                                        idle connections faster than the
+                                        default window. Defaults to 30000.
+        :type                        : ``` int ```
+        :param keepalive_timeout_ms  : How long, in milliseconds, to wait for a
+                                        keepalive response before treating an
+                                        idle connection as dead. Defaults to
+                                        10000.
+        :type                        : ``` int ```
         :returns
             None
         """
@@ -50,6 +71,8 @@ class CoreClient:
         self.env_url = env_url
         self.client_id = client_id
         self.client_secret = client_secret
+        self.keepalive_time_ms = keepalive_time_ms
+        self.keepalive_timeout_ms = keepalive_timeout_ms
         self.keys = {}
         self.access_token = None
         self.grpc_secure_channel = None
@@ -76,8 +99,8 @@ class CoreClient:
         # silently dropped by a network intermediary while idle isn't
         # detected until the next real call is written to it.
         channel_options = [
-            ('grpc.keepalive_time_ms', 30000),
-            ('grpc.keepalive_timeout_ms', 10000),
+            ('grpc.keepalive_time_ms', self.keepalive_time_ms),
+            ('grpc.keepalive_timeout_ms', self.keepalive_timeout_ms),
             ('grpc.keepalive_permit_without_calls', 1),
             ('grpc.http2.max_pings_without_data', 0),
         ]
