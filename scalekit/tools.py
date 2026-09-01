@@ -1,9 +1,22 @@
 from typing import Optional
 
 from scalekit.core import CoreClient
+from scalekit.util import struct_to_dict
 from scalekit.v1.tools.tools_pb2 import *
 from scalekit.v1.tools.tools_pb2_grpc import ToolServiceStub
 from google.protobuf import empty_pb2
+
+# Purely additive convenience properties -- see struct_to_dict's docstring
+# for why `dict(response.data)` / `dict(tool.definition)` are not enough
+# for any tool response/definition with nested objects or lists. This does
+# not change what `.data`/`.definition` return or their type in any way
+# (both are still the exact same google.protobuf.Struct as before), so
+# every existing call site keeps working unmodified -- these are new
+# attributes, not replacements. Registered here (rather than as a method on
+# ToolsClient) so they're available directly on any Tool/ExecuteToolResponse
+# instance, including ones nested inside list/search responses.
+ExecuteToolResponse.data_dict = property(lambda self: struct_to_dict(self.data))
+Tool.definition_dict = property(lambda self: struct_to_dict(self.definition))
 
 
 class ToolsClient:
@@ -78,6 +91,12 @@ class ToolsClient:
 
         :returns:
             List Scoped Tools Response
+
+        Each returned tool's `.tool.definition` is a google.protobuf.Struct.
+        Use `.tool.definition_dict` to get a fully-converted native dict
+        (handles nested objects like `input_schema.properties` correctly) --
+        `dict(.tool.definition)` only shallow-converts and leaves nested
+        fields as raw protobuf objects.
         """
         return self.core_client.grpc_exec(
             self.tool_service.ListScopedTools.with_call,
@@ -113,6 +132,13 @@ class ToolsClient:
 
         :returns:
             Execute Tool Response
+
+        The response's `.data` is a google.protobuf.Struct. Use
+        `.data_dict` to get a fully-converted native dict/list -- a real
+        tool response often has nested objects or lists (e.g. a GitHub
+        repo's `owner`/`permissions`/`topics`), and `dict(response.data)`
+        only shallow-converts, leaving those nested fields as raw protobuf
+        objects instead of plain dict/list.
         """
         from google.protobuf import struct_pb2
 
