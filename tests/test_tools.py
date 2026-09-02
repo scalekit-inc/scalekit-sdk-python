@@ -4,7 +4,16 @@ from basetest import BaseTest
 from scalekit.v1.tools.tools_pb2 import (
     Tool,
     Filter,
-    ScopedToolFilter
+    ScopedToolFilter,
+    TOOL_READINESS_STATE_UNSPECIFIED,
+    TOOL_READINESS_STATE_READY,
+    TOOL_READINESS_STATE_NEEDS_CONNECTION,
+    TOOL_READINESS_STATE_NEEDS_REAUTH,
+)
+from scalekit.v1.connected_accounts.connected_accounts_pb2 import (
+    CreateConnectedAccount,
+    AuthorizationDetails,
+    OauthToken,
 )
 from google.protobuf import struct_pb2, wrappers_pb2
 
@@ -96,24 +105,70 @@ class TestTools(BaseTest):
         )
         self.assertEqual(response[1].code().name, "OK")
         self.assertTrue(response[0] is not None)
-        self.assertTrue(hasattr(response[0], 'tools'))
+        tools = response[0].tools
+        self.assertGreater(len(tools), 0)
+        self.assertLessEqual(len(tools), 5)
+        self.assertTrue(
+            any("slack" in tool.name.lower() or "slack" in tool.provider.lower() for tool in tools),
+            f"expected a Slack-relevant tool in results, got: {[tool.name for tool in tools]}"
+        )
+        scores = [tool.score for tool in tools]
+        self.assertEqual(scores, sorted(scores, reverse=True))
 
     def test_search_tools_with_identifier(self):
         """ Method to test search tools annotates readiness when identifier is passed """
-        response = self.scalekit_client.tools.search_tools(
-            query="fetch apify docs",
-            identifier="akshay.parihar",
-            top_k=5
+        identifier = f"search_tools_test_{self.faker.uuid4()}"
+        oauth_token = OauthToken(
+            access_token="test_access_token",
+            refresh_token="test_refresh_token",
+            scopes=["read", "write"]
         )
-        self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
-        for tool in response[0].tools:
-            self.assertTrue(hasattr(tool, 'connections'))
-            for connection in tool.connections:
-                self.assertIn(
-                    connection.readiness_state,
-                    (0, 1, 2, 3)  # UNSPECIFIED, READY, NEEDS_CONNECTION, NEEDS_REAUTH
-                )
+        connected_account = CreateConnectedAccount(
+            authorization_details=AuthorizationDetails(oauth_token=oauth_token)
+        )
+        create_response = self.scalekit_client.connected_accounts.create_connected_account(
+            connector="GMAIL",
+            identifier=identifier,
+            connected_account=connected_account
+        )
+        self.assertEqual(create_response[1].code().name, "OK")
+
+        try:
+            response = self.scalekit_client.tools.search_tools(
+                query="send an email with gmail",
+                identifier=identifier,
+                top_k=5
+            )
+            self.assertEqual(response[1].code().name, "OK")
+            tools = response[0].tools
+            self.assertGreater(len(tools), 0)
+
+            tools_with_connections = [tool for tool in tools if len(tool.connections) > 0]
+            self.assertGreater(
+                len(tools_with_connections), 0,
+                "expected at least one result annotated with connection readiness "
+                "for the identifier's freshly created GMAIL connected account"
+            )
+            for tool in tools_with_connections:
+                for connection in tool.connections:
+                    self.assertNotEqual(
+                        connection.readiness_state, TOOL_READINESS_STATE_UNSPECIFIED,
+                        "a connection tied to a real connected account must never report "
+                        "UNSPECIFIED readiness"
+                    )
+                    self.assertIn(
+                        connection.readiness_state,
+                        (
+                            TOOL_READINESS_STATE_READY,
+                            TOOL_READINESS_STATE_NEEDS_CONNECTION,
+                            TOOL_READINESS_STATE_NEEDS_REAUTH,
+                        )
+                    )
+        finally:
+            self.scalekit_client.connected_accounts.delete_connected_account(
+                connector="GMAIL",
+                identifier=identifier
+            )
 
     def test_execute_tool_with_identifier(self):
         """ Method to test execute tool with identifier (backward compatibility) """

@@ -117,7 +117,7 @@ needs a new connection, or needs re-auth) so you can gate execution on the right
 ### 🔌 Usage
 
 ```python
-response = scalekit_client.tools.search_tools(
+response, call = scalekit_client.tools.search_tools(
     query="send a message to a slack channel",
     identifier="user@example.com",
     top_k=10,
