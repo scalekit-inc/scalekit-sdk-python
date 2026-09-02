@@ -89,6 +89,35 @@ class ToolsClient:
             ),
         )
 
+    def search_tools(
+        self,
+        query: str,
+        identifier: Optional[str] = None,
+        top_k: Optional[int] = None
+    ) -> SearchToolsResponse:
+        """
+        Method to search tools ranked by relevance to a natural-language query
+
+        :param query            : Natural-language query or keywords describing the job to be done
+        :type                   : ``` str ```
+        :param identifier       : Optional connected-account identifier; when set, each result is
+                                  annotated with readiness for this identifier's connections
+        :type                   : ``` str ```
+        :param top_k            : Maximum number of ranked results to return (default 10, capped at 50)
+        :type                   : ``` int ```
+
+        :returns:
+            Search Tools Response
+        """
+        return self.core_client.grpc_exec(
+            self.tool_service.SearchTools.with_call,
+            SearchToolsRequest(
+                query=query,
+                identifier=identifier,
+                top_k=top_k
+            ),
+        )
+
     def execute_tool(
         self,
         tool_name: str,

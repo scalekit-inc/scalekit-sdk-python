@@ -88,6 +88,33 @@ class TestTools(BaseTest):
         tool_names = [scoped_tool.tool.definition["name"] for scoped_tool in response[0].tools]
         self.assertIn("c-myapifymcp_fetch-apify-docs", tool_names)
 
+    def test_search_tools(self):
+        """ Method to test search tools ranked by relevance to a natural-language query """
+        response = self.scalekit_client.tools.search_tools(
+            query="send a message to a slack channel",
+            top_k=5
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertTrue(response[0] is not None)
+        self.assertTrue(hasattr(response[0], 'tools'))
+
+    def test_search_tools_with_identifier(self):
+        """ Method to test search tools annotates readiness when identifier is passed """
+        response = self.scalekit_client.tools.search_tools(
+            query="fetch apify docs",
+            identifier="akshay.parihar",
+            top_k=5
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertTrue(response[0] is not None)
+        for tool in response[0].tools:
+            self.assertTrue(hasattr(tool, 'connections'))
+            for connection in tool.connections:
+                self.assertIn(
+                    connection.readiness_state,
+                    (0, 1, 2, 3)  # UNSPECIFIED, READY, NEEDS_CONNECTION, NEEDS_REAUTH
+                )
+
     def test_execute_tool_with_identifier(self):
         """ Method to test execute tool with identifier (backward compatibility) """
         test_params = {"test_param": "test_value"}
