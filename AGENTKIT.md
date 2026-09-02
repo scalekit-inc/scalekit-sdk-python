@@ -104,6 +104,44 @@ response = scalekit_client.tools.list_scoped_tools(
 </dl>
 </details>
 
+<details><summary><code>client.tools.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/tools.py">search_tools</a>(query, identifier?, top_k?) -> SearchToolsResponse</code></summary>
+<dl>
+<dd>
+
+### 📝 Description
+
+Searches tools ranked by relevance to a natural-language query — the job to be done, not an
+exact tool name. Pass `identifier` to also get per-connection readiness (usable now,
+needs a new connection, or needs re-auth) so you can gate execution on the right auth step.
+
+### 🔌 Usage
+
+```python
+response, call = scalekit_client.tools.search_tools(
+    query="send a message to a slack channel",
+    identifier="user@example.com",
+    top_k=10,
+)
+
+for tool in response.tools:
+    print(tool.name, tool.score)
+    for connection in tool.connections:
+        print(" ", connection.connection_name, connection.readiness_state, connection.connected_account_id)
+```
+
+### ⚙️ Parameters
+
+**query:** `str` — Natural-language query or keywords describing the job to be done. 1-256 characters.
+
+**identifier:** `Optional[str]` — Connected-account identifier (e.g. the end user's email or ID).
+When set, each result is annotated with readiness for this identifier's connections.
+
+**top_k:** `Optional[int]` — Maximum number of ranked results to return. Defaults to 10, capped at 50.
+
+</dd>
+</dl>
+</details>
+
 <details><summary><code>client.tools.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/tools.py">execute_tool</a>(tool_name, identifier, params?, connected_account_id?) -> ExecuteToolResponse</code></summary>
 <dl>
 <dd>

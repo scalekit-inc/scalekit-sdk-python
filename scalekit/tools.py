@@ -89,6 +89,46 @@ class ToolsClient:
             ),
         )
 
+    def search_tools(
+        self,
+        query: str,
+        identifier: Optional[str] = None,
+        top_k: Optional[int] = None
+    ) -> SearchToolsResponse:
+        """
+        Method to search tools ranked by relevance to a natural-language query
+
+        Each result's ``score`` is a relevance score where higher is better; it is only
+        comparable within the results of a single response, not across separate calls.
+
+        ``connections`` on each result is populated only when ``identifier`` is set: an
+        empty list means the identifier has no connection at all for that tool's provider
+        (not an error, and different from ``NEEDS_CONNECTION``, which means a connected
+        account row exists but is inactive); more than one entry means the identifier has
+        accounts on multiple connections for that provider (for example, two Slack
+        workspaces) -- inspect each entry's own ``readiness_state`` rather than assuming
+        one answer for the whole tool.
+
+        :param query            : Natural-language query or keywords describing the job to be done
+        :type                   : ``` str ```
+        :param identifier       : Optional connected-account identifier; when set, each result is
+                                  annotated with readiness for this identifier's connections
+        :type                   : ``` str ```
+        :param top_k            : Maximum number of ranked results to return (default 10, capped at 50)
+        :type                   : ``` int ```
+
+        :returns:
+            Search Tools Response
+        """
+        return self.core_client.grpc_exec(
+            self.tool_service.SearchTools.with_call,
+            SearchToolsRequest(
+                query=query,
+                identifier=identifier,
+                top_k=top_k
+            ),
+        )
+
     def execute_tool(
         self,
         tool_name: str,
