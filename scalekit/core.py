@@ -29,6 +29,13 @@ JWKS_ENDPOINT = "/keys"
 DEFAULT_KEEPALIVE_TIME_MS = 60_000
 DEFAULT_KEEPALIVE_TIMEOUT_MS = 10_000
 
+# requests defaults to no timeout, so a black-holed connection blocks the
+# calling thread until the OS abandons the socket. Bound the connect and read
+# phases separately with a (connect, read) tuple.
+DEFAULT_HTTP_CONNECT_TIMEOUT_S = 10
+DEFAULT_HTTP_READ_TIMEOUT_S = 30
+DEFAULT_HTTP_TIMEOUT = (DEFAULT_HTTP_CONNECT_TIMEOUT_S, DEFAULT_HTTP_READ_TIMEOUT_S)
+
 
 class WithCall(Protocol):
     def __call__(self, request: TRequest, metadata: TMetadata) -> TResponse: ...
@@ -148,6 +155,7 @@ class CoreClient:
             headers=self.get_headers(headers=headers),
             data=data,
             verify=True,
+            timeout=DEFAULT_HTTP_TIMEOUT,
         )
         if response.status_code != 200:
             raise ScalekitServerException.promote(response)
@@ -158,7 +166,9 @@ class CoreClient:
         if self.keys and len(self.keys) > 0:
             return
         response = requests.get(
-            self.env_url + JWKS_ENDPOINT, headers=self.get_headers()
+            self.env_url + JWKS_ENDPOINT,
+            headers=self.get_headers(),
+            timeout=DEFAULT_HTTP_TIMEOUT,
         )
         response = json.loads(response.content)
         keys = response["keys"]
