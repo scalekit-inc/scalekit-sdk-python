@@ -67,15 +67,20 @@ class TestKeepaliveChannelOptions(unittest.TestCase):
         self.assertIn(('grpc.keepalive_time_ms', 60000), options)
 
     def test_below_minimum_raises_value_error(self):
-        """keepalive_time_ms below the 30s minimum must raise ValueError."""
+        """keepalive_time_ms below the 60s minimum must raise ValueError."""
         with self.assertRaises(ValueError):
             _build_client(keepalive_time_ms=5000)
 
-    def test_thirty_seconds_boundary_accepted(self):
-        """keepalive_time_ms=30000 is the boundary and must be accepted."""
-        _, mock_secure_channel = _build_client(keepalive_time_ms=30000)
+    def test_thirty_seconds_now_raises_value_error(self):
+        """keepalive_time_ms=30000 is below the 60s minimum and must raise ValueError."""
+        with self.assertRaises(ValueError):
+            _build_client(keepalive_time_ms=30000)
+
+    def test_sixty_seconds_boundary_accepted(self):
+        """keepalive_time_ms=60000 is the boundary and must be accepted."""
+        _, mock_secure_channel = _build_client(keepalive_time_ms=60000)
         options = self._options_from(mock_secure_channel)
-        self.assertIn(('grpc.keepalive_time_ms', 30000), options)
+        self.assertIn(('grpc.keepalive_time_ms', 60000), options)
 
 
 if __name__ == "__main__":

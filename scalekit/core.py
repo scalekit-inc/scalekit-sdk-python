@@ -29,11 +29,15 @@ JWKS_ENDPOINT = "/keys"
 DEFAULT_KEEPALIVE_TIME_MS = 60_000
 DEFAULT_KEEPALIVE_TIMEOUT_MS = 10_000
 
-# The Scalekit backend's EnforcementPolicy.MinTime is 30s, so any keepalive
-# below 30s is treated as abuse and the server GOAWAYs the connection. (gRPC
-# also silently clamps sub-10s values up to 10s per grpc/proposal A8, so a
-# small value never even reaches the wire as requested.) Reject 1..29999.
-MIN_KEEPALIVE_TIME_MS = 30_000
+# The floor tracks DEFAULT_KEEPALIVE_TIME_MS for the reason spelled out above:
+# the backend's EnforcementPolicy.MinTime is 30s, and a value at exactly 30s has
+# zero jitter headroom — grpc's ping timer drifts slightly early, so an early
+# ping counts as a strike and enough strikes make the server GOAWAY. 60s gives
+# 2x margin over the 30s MinTime. Since there is no legitimate reason to go below
+# the default, the only sensible choices are 0 (disabled) or >= 60s. (gRPC also
+# silently clamps sub-10s values up to 10s per grpc/proposal A8, so a small value
+# never even reaches the wire as requested.) Reject 1..59999.
+MIN_KEEPALIVE_TIME_MS = 60_000
 
 # requests defaults to no timeout, so a black-holed connection blocks the
 # calling thread until the OS abandons the socket. Bound the connect and read
@@ -93,15 +97,17 @@ class CoreClient:
         self.env_url = env_url
         self.client_id = client_id
         self.client_secret = client_secret
-        # 0 means "disabled" and is allowed through deliberately; only 1..29999
-        # is rejected, because the Scalekit server rejects keepalive below its
-        # 30s MinTime as abusive (and gRPC silently raises sub-10s values to
-        # 10s, so a small value is never what the caller asked for anyway).
+        # 0 means "disabled" and is allowed through deliberately; only 1..59999
+        # is rejected. A value below the 60s default leaves too little margin
+        # over the Scalekit server's 30s MinTime — an early ping gets struck as
+        # abusive and the server GOAWAYs — and gRPC silently raises sub-10s
+        # values to 10s, so a small value is never what the caller asked for.
         if keepalive_time_ms and keepalive_time_ms < MIN_KEEPALIVE_TIME_MS:
             raise ValueError(
                 f"keepalive_time_ms must be 0 (disabled) or >= {MIN_KEEPALIVE_TIME_MS}; "
-                f"got {keepalive_time_ms}. The Scalekit server rejects keepalive below "
-                "its 30s MinTime as abusive, and gRPC silently raises sub-10s values to 10s."
+                f"got {keepalive_time_ms}. A value below the default leaves too little "
+                "margin over the Scalekit server's 30s MinTime (early pings are struck "
+                "as abusive), and gRPC silently raises sub-10s values to 10s."
             )
         self.keepalive_time_ms = keepalive_time_ms
         self.keepalive_timeout_ms = keepalive_timeout_ms
