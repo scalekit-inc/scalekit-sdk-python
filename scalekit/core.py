@@ -19,7 +19,14 @@ TMetadata = TypeVar("TMetadata")
 TOKEN_ENDPOINT = "/oauth/token"
 JWKS_ENDPOINT = "/keys"
 
-DEFAULT_KEEPALIVE_TIME_MS = 30_000
+# Must clear the backend's EnforcementPolicy.MinTime (30s, scalekit's
+# cmd/grpc.go) with real margin, not just match it: grpc-core pings on this
+# exact interval for as long as the channel is open (keepalive_permit_without_calls
+# below), so a value equal to MinTime leaves zero room for jitter between the
+# client's timer and the server's strike window — one early ping is a strike,
+# three and the server GOAWAYs the connection, recreating the bug this fixes.
+# 60s matches the Java SDK's default for the same reason.
+DEFAULT_KEEPALIVE_TIME_MS = 60_000
 DEFAULT_KEEPALIVE_TIMEOUT_MS = 10_000
 
 
@@ -54,9 +61,10 @@ class CoreClient:
         :type                        : ``` str ```
         :param keepalive_time_ms     : How often, in milliseconds, an idle gRPC
                                         connection is verified before reuse.
-                                        Lower this if your network path drops
-                                        idle connections faster than the
-                                        default window. Defaults to 30000.
+                                        Must stay above the backend's keepalive
+                                        MinTime (30s) with real margin, or the
+                                        server treats this ping as abuse. Defaults
+                                        to 60000.
         :type                        : ``` int ```
         :param keepalive_timeout_ms  : How long, in milliseconds, to wait for a
                                         keepalive response before treating an
