@@ -70,7 +70,8 @@ class ScalekitClient:
         :param keepalive_time_ms     : How often, in milliseconds, an idle gRPC
                                         connection is verified before reuse.
                                         Defaults to 60000; most callers never
-                                        need to set this.
+                                        need to set this. Set to 0 to disable
+                                        keepalive entirely.
         :type                        : ``` int ```
         :param keepalive_timeout_ms  : How long, in milliseconds, to wait for a
                                         keepalive response before treating an

@@ -29,6 +29,12 @@ JWKS_ENDPOINT = "/keys"
 DEFAULT_KEEPALIVE_TIME_MS = 60_000
 DEFAULT_KEEPALIVE_TIMEOUT_MS = 10_000
 
+# The Scalekit backend's EnforcementPolicy.MinTime is 30s, so any keepalive
+# below 30s is treated as abuse and the server GOAWAYs the connection. (gRPC
+# also silently clamps sub-10s values up to 10s per grpc/proposal A8, so a
+# small value never even reaches the wire as requested.) Reject 1..29999.
+MIN_KEEPALIVE_TIME_MS = 30_000
+
 # requests defaults to no timeout, so a black-holed connection blocks the
 # calling thread until the OS abandons the socket. Bound the connect and read
 # phases separately with a (connect, read) tuple.
@@ -71,7 +77,8 @@ class CoreClient:
                                         Must stay above the backend's keepalive
                                         MinTime (30s) with real margin, or the
                                         server treats this ping as abuse. Defaults
-                                        to 60000.
+                                        to 60000. Set to 0 to disable keepalive
+                                        entirely.
         :type                        : ``` int ```
         :param keepalive_timeout_ms  : How long, in milliseconds, to wait for a
                                         keepalive response before treating an
@@ -86,6 +93,16 @@ class CoreClient:
         self.env_url = env_url
         self.client_id = client_id
         self.client_secret = client_secret
+        # 0 means "disabled" and is allowed through deliberately; only 1..29999
+        # is rejected, because the Scalekit server rejects keepalive below its
+        # 30s MinTime as abusive (and gRPC silently raises sub-10s values to
+        # 10s, so a small value is never what the caller asked for anyway).
+        if keepalive_time_ms and keepalive_time_ms < MIN_KEEPALIVE_TIME_MS:
+            raise ValueError(
+                f"keepalive_time_ms must be 0 (disabled) or >= {MIN_KEEPALIVE_TIME_MS}; "
+                f"got {keepalive_time_ms}. The Scalekit server rejects keepalive below "
+                "its 30s MinTime as abusive, and gRPC silently raises sub-10s values to 10s."
+            )
         self.keepalive_time_ms = keepalive_time_ms
         self.keepalive_timeout_ms = keepalive_timeout_ms
         self.keys = {}
@@ -108,17 +125,21 @@ class CoreClient:
             channel_credentials,
             call_credentials,
         )
-        # keepalive_permit_without_calls=1 so an idle channel is still
-        # periodically verified: without it, grpc-core only sends HTTP/2
-        # keepalive PINGs while there are active calls, so a connection
-        # silently dropped by a network intermediary while idle isn't
-        # detected until the next real call is written to it.
-        channel_options = [
-            ('grpc.keepalive_time_ms', self.keepalive_time_ms),
-            ('grpc.keepalive_timeout_ms', self.keepalive_timeout_ms),
-            ('grpc.keepalive_permit_without_calls', 1),
-            ('grpc.http2.max_pings_without_data', 0),
-        ]
+        # keepalive_time_ms == 0 disables keepalive entirely: no options are
+        # passed, so grpc-core falls back to its own defaults (no idle pings).
+        channel_options = []
+        if self.keepalive_time_ms:
+            # keepalive_permit_without_calls=1 so an idle channel is still
+            # periodically verified: without it, grpc-core only sends HTTP/2
+            # keepalive PINGs while there are active calls, so a connection
+            # silently dropped by a network intermediary while idle isn't
+            # detected until the next real call is written to it.
+            channel_options = [
+                ('grpc.keepalive_time_ms', self.keepalive_time_ms),
+                ('grpc.keepalive_timeout_ms', self.keepalive_timeout_ms),
+                ('grpc.keepalive_permit_without_calls', 1),
+                ('grpc.http2.max_pings_without_data', 0),
+            ]
         self.grpc_secure_channel = grpc.secure_channel(
             self.host, composite_credentials, options=channel_options
         )
