@@ -91,7 +91,7 @@ class ScalekitClient:
                                         tool_call_timeout_s). Without this, a call
                                         can block forever on a connection that
                                         looks fine to the client but is silently
-                                        dead. Defaults to 30.
+                                        dead. Defaults to 60.
         :type                        : ``` float ```
         :param tool_call_timeout_s   : Deadline, in seconds, for tool-execution
                                         calls, which proxy to third-party APIs and

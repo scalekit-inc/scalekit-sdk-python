@@ -49,14 +49,14 @@ DEFAULT_HTTP_TIMEOUT = (DEFAULT_HTTP_CONNECT_TIMEOUT_S, DEFAULT_HTTP_READ_TIMEOU
 # grpc-python stub calls default timeout=None (no deadline) when the caller
 # doesn't pass one — grpc_exec never did, so a call could block forever on a
 # connection the keepalive check above hasn't (yet) noticed is dead, exactly
-# the same class of bug the HTTP timeout above exists to prevent. 30s matches
-# DEFAULT_HTTP_READ_TIMEOUT_S for consistency within this file.
-DEFAULT_CALL_TIMEOUT_S = 30
+# the same class of bug the HTTP timeout above exists to prevent.
+DEFAULT_CALL_TIMEOUT_S = 60
 
 # Tool execution (ToolsClient) proxies to third-party APIs (Gmail, Slack, ...)
-# whose own latency this SDK doesn't control, so it gets a longer default than
-# ordinary control-plane calls (list/get/create/update) — mirrors the Node
-# SDK's toolTimeoutMs/timeoutMs split.
+# whose own latency this SDK doesn't control. Kept as a separate constant from
+# DEFAULT_CALL_TIMEOUT_S — both currently resolve to 60s, but control-plane
+# and tool-execution calls have different latency profiles and may need to
+# diverge again later — mirrors the Node SDK's toolTimeoutMs/timeoutMs split.
 DEFAULT_TOOL_CALL_TIMEOUT_S = 60
 
 
@@ -109,7 +109,7 @@ class CoreClient:
                                         tool execution — see tool_call_timeout_s).
                                         Without this, a call can block forever on
                                         a connection that looks fine to the client
-                                        but is silently dead. Defaults to 30.
+                                        but is silently dead. Defaults to 60.
         :type                        : ``` float ```
         :param tool_call_timeout_s   : Deadline, in seconds, for tool-execution
                                         calls (ToolsClient), which proxy to

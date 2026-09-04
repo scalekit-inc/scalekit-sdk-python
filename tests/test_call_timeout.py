@@ -43,7 +43,7 @@ class TestCallTimeoutConfiguration(unittest.TestCase):
         client = _build_client()
         self.assertEqual(client.call_timeout_s, DEFAULT_CALL_TIMEOUT_S)
         self.assertEqual(client.tool_call_timeout_s, DEFAULT_TOOL_CALL_TIMEOUT_S)
-        self.assertEqual(DEFAULT_CALL_TIMEOUT_S, 30)
+        self.assertEqual(DEFAULT_CALL_TIMEOUT_S, 60)
         self.assertEqual(DEFAULT_TOOL_CALL_TIMEOUT_S, 60)
 
     def test_custom_values_applied(self):
