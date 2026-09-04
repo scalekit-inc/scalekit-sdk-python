@@ -92,8 +92,9 @@ class ScalekitServerException(ScalekitException):
         elif isinstance(error, grpc.RpcError):
             self._grpc_status = error.code()
             self._http_status = GRPC_TO_HTTP.get(self._grpc_status)
-            self._message = rpc_status.from_call(error).message
-            self._err_details = rpc_status.from_call(error).details
+            status = rpc_status.from_call(error)
+            self._message = status.message if status else str(error)
+            self._err_details = status.details if status else []
             self._error_code = None
 
             for detail in self._err_details:
