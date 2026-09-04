@@ -1,5 +1,7 @@
 from typing import TypeVar, Optional, Protocol
 
+import math
+
 import grpc
 import jwt
 import json
@@ -146,9 +148,14 @@ class CoreClient:
             ("call_timeout_s", call_timeout_s),
             ("tool_call_timeout_s", tool_call_timeout_s),
         ):
-            if not isinstance(value, (int, float)) or isinstance(value, bool) or value <= 0:
+            if (
+                not isinstance(value, (int, float))
+                or isinstance(value, bool)
+                or not math.isfinite(value)
+                or value <= 0
+            ):
                 raise ValueError(
-                    f"{name} must be a positive number of seconds; got {value!r}."
+                    f"{name} must be a positive, finite number of seconds; got {value!r}."
                 )
         self.keepalive_time_ms = keepalive_time_ms
         self.keepalive_timeout_ms = keepalive_timeout_ms

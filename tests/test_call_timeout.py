@@ -67,6 +67,27 @@ class TestCallTimeoutConfiguration(unittest.TestCase):
         with self.assertRaises(ValueError):
             _build_client(tool_call_timeout_s=0)
 
+    def test_infinite_call_timeout_rejected(self):
+        """inf passes a bare `value <= 0` check (inf > 0), silently reintroducing
+        the unbounded-block bug this parameter exists to prevent — must be
+        rejected explicitly, not just non-positive values."""
+        with self.assertRaises(ValueError):
+            _build_client(call_timeout_s=float("inf"))
+
+    def test_infinite_tool_call_timeout_rejected(self):
+        with self.assertRaises(ValueError):
+            _build_client(tool_call_timeout_s=float("inf"))
+
+    def test_nan_call_timeout_rejected(self):
+        """nan <= 0 is always False for any comparison, so a bare non-positive
+        check silently accepts it too — must be rejected explicitly."""
+        with self.assertRaises(ValueError):
+            _build_client(call_timeout_s=float("nan"))
+
+    def test_negative_infinite_call_timeout_rejected(self):
+        with self.assertRaises(ValueError):
+            _build_client(call_timeout_s=float("-inf"))
+
     def test_non_numeric_call_timeout_rejected(self):
         with self.assertRaises(ValueError):
             _build_client(call_timeout_s="30")
