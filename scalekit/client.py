@@ -9,7 +9,13 @@ import hmac
 import hashlib
 import base64
 from datetime import datetime, timedelta, timezone
-from scalekit.core import CoreClient, DEFAULT_KEEPALIVE_TIME_MS, DEFAULT_KEEPALIVE_TIMEOUT_MS
+from scalekit.core import (
+    CoreClient,
+    DEFAULT_KEEPALIVE_TIME_MS,
+    DEFAULT_KEEPALIVE_TIMEOUT_MS,
+    DEFAULT_CALL_TIMEOUT_S,
+    DEFAULT_TOOL_CALL_TIMEOUT_S,
+)
 from scalekit.domain import DomainClient
 from scalekit.connection import ConnectionClient
 from scalekit.m2m_client import M2MClient
@@ -57,6 +63,8 @@ class ScalekitClient:
         client_secret: str,
         keepalive_time_ms: int = DEFAULT_KEEPALIVE_TIME_MS,
         keepalive_timeout_ms: int = DEFAULT_KEEPALIVE_TIMEOUT_MS,
+        call_timeout_s: float = DEFAULT_CALL_TIMEOUT_S,
+        tool_call_timeout_s: float = DEFAULT_TOOL_CALL_TIMEOUT_S,
     ):
         """
         Initializer for Scalekit base class
@@ -78,6 +86,18 @@ class ScalekitClient:
                                         idle connection as dead. Defaults to
                                         10000.
         :type                        : ``` int ```
+        :param call_timeout_s        : Deadline, in seconds, applied to every gRPC
+                                        call except tool execution (see
+                                        tool_call_timeout_s). Without this, a call
+                                        can block forever on a connection that
+                                        looks fine to the client but is silently
+                                        dead. Defaults to 30.
+        :type                        : ``` float ```
+        :param tool_call_timeout_s   : Deadline, in seconds, for tool-execution
+                                        calls, which proxy to third-party APIs and
+                                        can legitimately run longer than ordinary
+                                        control-plane calls. Defaults to 60.
+        :type                        : ``` float ```
 
         :returns:
             None
@@ -89,6 +109,8 @@ class ScalekitClient:
                 client_secret=client_secret,
                 keepalive_time_ms=keepalive_time_ms,
                 keepalive_timeout_ms=keepalive_timeout_ms,
+                call_timeout_s=call_timeout_s,
+                tool_call_timeout_s=tool_call_timeout_s,
             )
             self.domain = DomainClient(self.core_client)
             self.connection = ConnectionClient(self.core_client)

@@ -51,6 +51,7 @@ class ToolsClient:
                 page_size=page_size,
                 page_token=page_token
             ),
+            timeout=self.core_client.tool_call_timeout_s,
         )
 
 
@@ -87,6 +88,7 @@ class ToolsClient:
                 page_size=page_size,
                 page_token=page_token
             ),
+            timeout=self.core_client.tool_call_timeout_s,
         )
 
     def execute_tool(
@@ -130,4 +132,5 @@ class ToolsClient:
                 connected_account_id=connected_account_id,
                 connector=connection_name
             ),
+            timeout=self.core_client.tool_call_timeout_s,
         )
