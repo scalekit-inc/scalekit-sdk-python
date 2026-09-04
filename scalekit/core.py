@@ -1,6 +1,8 @@
 from typing import TypeVar, Optional, Protocol
 
 import math
+import random
+import time
 
 import grpc
 import jwt
@@ -60,6 +62,15 @@ DEFAULT_CALL_TIMEOUT_S = 60
 # and tool-execution calls have different latency profiles and may need to
 # diverge again later — mirrors the Node SDK's toolTimeoutMs/timeoutMs split.
 DEFAULT_TOOL_CALL_TIMEOUT_S = 60
+
+# Backoff for retrying UNAVAILABLE (transient infra failure — dead/refused
+# connection, always pre-send in this SDK's current transport config; see
+# the Node SDK's equivalent in core.ts for the fuller derivation). Full
+# jitter (0.5x-1.0x of the exponential base) so a burst of clients recovering
+# from the same outage doesn't thundering-herd the backend the moment it's
+# back. Capped at 30s to mirror the Node SDK exactly.
+RETRY_BACKOFF_BASE_S = 1
+RETRY_BACKOFF_MAX_S = 30
 
 
 class WithCall(Protocol):
@@ -286,6 +297,7 @@ class CoreClient:
         func: WithCall,
         data: TRequest,
         retry=2,
+        attempt=0,
         timeout: Optional[float] = None,
     ) -> TResponse:
         """
@@ -316,15 +328,24 @@ class CoreClient:
                     raise ScalekitServerException.promote(exp)
                 try:
                     self.__authenticate_client()
-                    return self.grpc_exec(func, data, retry=retry-1, timeout=timeout)
+                    return self.grpc_exec(func, data, retry=retry - 1, attempt=attempt + 1, timeout=timeout)
                 except Exception as refresh_exp:
                     raise ScalekitServerException.promote(exp)
             elif exp.code() == grpc.StatusCode.RESOURCE_EXHAUSTED:
                 # Surface Scalekit rate-limits immediately — retrying triples the damage
                 raise ScalekitServerException.promote(exp)
-            elif retry > 0:
-                return self.grpc_exec(func, data, retry=retry - 1, timeout=timeout)
+            elif exp.code() == grpc.StatusCode.UNAVAILABLE and retry > 0:
+                base_backoff = min(RETRY_BACKOFF_BASE_S * 2 ** attempt, RETRY_BACKOFF_MAX_S)
+                time.sleep(base_backoff * (0.5 + random.random() * 0.5))
+                return self.grpc_exec(func, data, retry=retry - 1, attempt=attempt + 1, timeout=timeout)
             else:
+                # Every other code (ABORTED, DEADLINE_EXCEEDED, INTERNAL, CANCELLED,
+                # ...) can mean the request already reached and was processed by the
+                # server — the stream was torn down mid-flight, not refused before
+                # it started. Blindly retrying risks double-executing a
+                # non-idempotent call (e.g. create_organization, execute_tool), so
+                # surface immediately instead, mirroring the Node SDK's retry
+                # policy, until per-RPC idempotency classification exists.
                 raise ScalekitServerException.promote(exp)
         except Exception as exp:
             raise ScalekitException(exp)
