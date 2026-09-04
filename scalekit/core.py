@@ -1,5 +1,9 @@
 from typing import TypeVar, Optional, Protocol
 
+import math
+import random
+import time
+
 import grpc
 import jwt
 import json
@@ -46,9 +50,31 @@ DEFAULT_HTTP_CONNECT_TIMEOUT_S = 10
 DEFAULT_HTTP_READ_TIMEOUT_S = 30
 DEFAULT_HTTP_TIMEOUT = (DEFAULT_HTTP_CONNECT_TIMEOUT_S, DEFAULT_HTTP_READ_TIMEOUT_S)
 
+# grpc-python stub calls default timeout=None (no deadline) when the caller
+# doesn't pass one — grpc_exec never did, so a call could block forever on a
+# connection the keepalive check above hasn't (yet) noticed is dead, exactly
+# the same class of bug the HTTP timeout above exists to prevent.
+DEFAULT_CALL_TIMEOUT_S = 60
+
+# Tool execution (ToolsClient) proxies to third-party APIs (Gmail, Slack, ...)
+# whose own latency this SDK doesn't control. Kept as a separate constant from
+# DEFAULT_CALL_TIMEOUT_S — both currently resolve to 60s, but control-plane
+# and tool-execution calls have different latency profiles and may need to
+# diverge again later — mirrors the Node SDK's toolTimeoutMs/timeoutMs split.
+DEFAULT_TOOL_CALL_TIMEOUT_S = 60
+
+# Backoff for retrying UNAVAILABLE (transient infra failure — dead/refused
+# connection, always pre-send in this SDK's current transport config; see
+# the Node SDK's equivalent in core.ts for the fuller derivation). Full
+# jitter (0.5x-1.0x of the exponential base) so a burst of clients recovering
+# from the same outage doesn't thundering-herd the backend the moment it's
+# back. Capped at 30s to mirror the Node SDK exactly.
+RETRY_BACKOFF_BASE_S = 1
+RETRY_BACKOFF_MAX_S = 30
+
 
 class WithCall(Protocol):
-    def __call__(self, request: TRequest, metadata: TMetadata) -> TResponse: ...
+    def __call__(self, request: TRequest, timeout: float, metadata: TMetadata) -> TResponse: ...
 
 
 class CoreClient:
@@ -66,6 +92,8 @@ class CoreClient:
         client_secret,
         keepalive_time_ms: int = DEFAULT_KEEPALIVE_TIME_MS,
         keepalive_timeout_ms: int = DEFAULT_KEEPALIVE_TIMEOUT_MS,
+        call_timeout_s: float = DEFAULT_CALL_TIMEOUT_S,
+        tool_call_timeout_s: float = DEFAULT_TOOL_CALL_TIMEOUT_S,
     ):
         """
         Initializer for Core client
@@ -89,6 +117,19 @@ class CoreClient:
                                         idle connection as dead. Defaults to
                                         10000.
         :type                        : ``` int ```
+        :param call_timeout_s        : Deadline, in seconds, applied to every gRPC
+                                        call unless a call site overrides it (e.g.
+                                        tool execution — see tool_call_timeout_s).
+                                        Without this, a call can block forever on
+                                        a connection that looks fine to the client
+                                        but is silently dead. Defaults to 60.
+        :type                        : ``` float ```
+        :param tool_call_timeout_s   : Deadline, in seconds, for tool-execution
+                                        calls (ToolsClient), which proxy to
+                                        third-party APIs and can legitimately run
+                                        longer than ordinary control-plane calls.
+                                        Defaults to 60.
+        :type                        : ``` float ```
         :returns
             None
         """
@@ -109,8 +150,28 @@ class CoreClient:
                 "margin over the Scalekit server's 30s MinTime (early pings are struck "
                 "as abusive), and gRPC silently raises sub-10s values to 10s."
             )
+        # A non-positive or non-finite timeout is never what the caller wants:
+        # grpc-python treats timeout=0/negative as "already expired" (the call
+        # fails immediately) and this SDK has no "no deadline" escape hatch —
+        # unlike keepalive_time_ms=0, silently reintroducing the unbounded-block
+        # bug this parameter exists to fix is not an option worth offering.
+        for name, value in (
+            ("call_timeout_s", call_timeout_s),
+            ("tool_call_timeout_s", tool_call_timeout_s),
+        ):
+            if (
+                not isinstance(value, (int, float))
+                or isinstance(value, bool)
+                or not math.isfinite(value)
+                or value <= 0
+            ):
+                raise ValueError(
+                    f"{name} must be a positive, finite number of seconds; got {value!r}."
+                )
         self.keepalive_time_ms = keepalive_time_ms
         self.keepalive_timeout_ms = keepalive_timeout_ms
+        self.call_timeout_s = call_timeout_s
+        self.tool_call_timeout_s = tool_call_timeout_s
         self.keys = {}
         self.access_token = None
         self.grpc_secure_channel = None
@@ -236,10 +297,23 @@ class CoreClient:
         func: WithCall,
         data: TRequest,
         retry=2,
+        attempt=0,
+        timeout: Optional[float] = None,
     ) -> TResponse:
+        """
+        :param timeout : Per-call deadline override, in seconds. Defaults to
+                          ``self.call_timeout_s`` when omitted — pass this
+                          explicitly only when a specific call needs a
+                          different bound (see ToolsClient's use of
+                          ``self.core_client.tool_call_timeout_s``).
+        :type           : ``` Optional[float] ```
+        """
+        if timeout is None:
+            timeout = self.call_timeout_s
         try:
             resp = func(
                 data,
+                timeout=timeout,
                 metadata=tuple(self.get_headers().items()),
             )
             return resp
@@ -254,15 +328,24 @@ class CoreClient:
                     raise ScalekitServerException.promote(exp)
                 try:
                     self.__authenticate_client()
-                    return self.grpc_exec(func, data, retry=retry-1)
+                    return self.grpc_exec(func, data, retry=retry - 1, attempt=attempt + 1, timeout=timeout)
                 except Exception as refresh_exp:
                     raise ScalekitServerException.promote(exp)
             elif exp.code() == grpc.StatusCode.RESOURCE_EXHAUSTED:
                 # Surface Scalekit rate-limits immediately — retrying triples the damage
                 raise ScalekitServerException.promote(exp)
-            elif retry > 0:
-                return self.grpc_exec(func, data, retry=retry - 1)
+            elif exp.code() == grpc.StatusCode.UNAVAILABLE and retry > 0:
+                base_backoff = min(RETRY_BACKOFF_BASE_S * 2 ** attempt, RETRY_BACKOFF_MAX_S)
+                time.sleep(base_backoff * (0.5 + random.random() * 0.5))
+                return self.grpc_exec(func, data, retry=retry - 1, attempt=attempt + 1, timeout=timeout)
             else:
+                # Every other code (ABORTED, DEADLINE_EXCEEDED, INTERNAL, CANCELLED,
+                # ...) can mean the request already reached and was processed by the
+                # server — the stream was torn down mid-flight, not refused before
+                # it started. Blindly retrying risks double-executing a
+                # non-idempotent call (e.g. create_organization, execute_tool), so
+                # surface immediately instead, mirroring the Node SDK's retry
+                # policy, until per-RPC idempotency classification exists.
                 raise ScalekitServerException.promote(exp)
         except Exception as exp:
             raise ScalekitException(exp)
