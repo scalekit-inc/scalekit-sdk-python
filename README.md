@@ -232,7 +232,7 @@ See [`examples/flask`](./examples/flask), [`examples/fastapi`](./examples/fastap
 ### 📚 Documentation & Reference
 - [**API Reference**](https://docs.scalekit.com/apis) - Complete API documentation
 - [**Developer Kit**](https://docs.scalekit.com/dev-kit/) - Tools and utilities
-- [**API Authentication Guide**](https://docs.scalekit.com/guides/authenticate-scalekit-api/) - Secure API access
+- [**API Authentication Guide**](https://docs.scalekit.com/guides/authenticate-scalekit-api/) - Secure API access 
 
 ### 🛠️ Additional Resources
 - [**Setup Guide**](https://docs.scalekit.com/guides/setup-scalekit/) - Initial platform configuration
