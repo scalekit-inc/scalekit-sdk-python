@@ -218,6 +218,21 @@ class TestExceptionNoneStatusGuard(unittest.TestCase):
         self.assertIn("CLIENT_CLOSED_REQUEST", rendered)
         self.assertIn("499", rendered)
 
+    @patch("scalekit.common.exceptions.rpc_status.from_call", side_effect=ValueError("inconsistent status"))
+    def test_malformed_status_value_error_falls_back_without_crashing(self, _mock_from_call):
+        """rpc_status.from_call raises ValueError (not just returning None) when
+        grpc-status-details-bin is present but internally inconsistent with the
+        call's own code/message — constructing the exception meant to describe
+        that failure must not itself crash."""
+        from scalekit.common.exceptions import ScalekitServerException
+        rpc_err = _make_rpc_error(StatusCode.UNAVAILABLE)  # .details() -> "error"
+
+        exc = ScalekitServerException(rpc_err)
+
+        self.assertEqual(exc._err_details, [])
+        self.assertEqual(exc._message, "error")
+        self.assertIn("error", str(exc))
+
 
 if __name__ == "__main__":
     unittest.main()

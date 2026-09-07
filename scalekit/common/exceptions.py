@@ -101,7 +101,14 @@ class ScalekitServerException(ScalekitException):
         elif isinstance(error, grpc.RpcError):
             self._grpc_status = error.code()
             self._http_status = GRPC_TO_HTTP.get(self._grpc_status)
-            status = rpc_status.from_call(error)
+            try:
+                # rpc_status.from_call raises ValueError (not just returning None)
+                # when grpc-status-details-bin is present but internally
+                # inconsistent with the call's own code/message — a malformed or
+                # tampered status must not crash the exception meant to describe it.
+                status = rpc_status.from_call(error)
+            except ValueError:
+                status = None
             if status:
                 self._message = status.message
             else:

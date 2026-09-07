@@ -152,6 +152,52 @@ class TestGrpcExecPassesTimeout(unittest.TestCase):
         self.assertEqual(result, "ok")
         self.assertEqual(attempts, [45, 45])
 
+    def test_zero_override_rejected(self):
+        """grpc_exec must apply the same validation to an explicit override as
+        the constructor applies to call_timeout_s/tool_call_timeout_s — a
+        caller invoking grpc_exec directly (it's a public method) must not be
+        able to bypass it with timeout=0/-5/nan/inf/a bool/a non-numeric."""
+        def func(data, metadata, timeout=None):
+            return "ok"
+
+        with self.assertRaises(ValueError):
+            self.client.grpc_exec(func, data=None, timeout=0)
+
+    def test_negative_override_rejected(self):
+        def func(data, metadata, timeout=None):
+            return "ok"
+
+        with self.assertRaises(ValueError):
+            self.client.grpc_exec(func, data=None, timeout=-5)
+
+    def test_nan_override_rejected(self):
+        def func(data, metadata, timeout=None):
+            return "ok"
+
+        with self.assertRaises(ValueError):
+            self.client.grpc_exec(func, data=None, timeout=float("nan"))
+
+    def test_infinite_override_rejected(self):
+        def func(data, metadata, timeout=None):
+            return "ok"
+
+        with self.assertRaises(ValueError):
+            self.client.grpc_exec(func, data=None, timeout=float("inf"))
+
+    def test_bool_override_rejected(self):
+        def func(data, metadata, timeout=None):
+            return "ok"
+
+        with self.assertRaises(ValueError):
+            self.client.grpc_exec(func, data=None, timeout=True)
+
+    def test_non_numeric_override_rejected(self):
+        def func(data, metadata, timeout=None):
+            return "ok"
+
+        with self.assertRaises(ValueError):
+            self.client.grpc_exec(func, data=None, timeout="30")
+
 
 if __name__ == "__main__":
     unittest.main()

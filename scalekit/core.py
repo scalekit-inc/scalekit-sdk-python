@@ -64,6 +64,25 @@ DEFAULT_CALL_TIMEOUT_S = 20
 DEFAULT_TOOL_CALL_TIMEOUT_S = 60
 
 
+def _assert_valid_timeout(name: str, value) -> None:
+    """A non-positive or non-finite timeout is never what the caller wants:
+    grpc-python treats timeout=0/negative as "already expired" (the call fails
+    immediately) and this SDK has no "no deadline" escape hatch — silently
+    reintroducing the unbounded-block bug this parameter exists to fix is not
+    an option worth offering. Shared by the constructor (call_timeout_s/
+    tool_call_timeout_s) and grpc_exec's per-call override, so an override
+    can't bypass the same rule."""
+    if (
+        not isinstance(value, (int, float))
+        or isinstance(value, bool)
+        or not math.isfinite(value)
+        or value <= 0
+    ):
+        raise ValueError(
+            f"{name} must be a positive, finite number of seconds; got {value!r}."
+        )
+
+
 def _as_gateway_timeout_response(exp: Exception) -> Response:
     """Wrap a requests timeout as a synthetic 504 Response so it flows through
     ScalekitServerException.promote() like any other HTTP error, instead of
@@ -154,24 +173,8 @@ class CoreClient:
                 "margin over the Scalekit server's 30s MinTime (early pings are struck "
                 "as abusive), and gRPC silently raises sub-10s values to 10s."
             )
-        # A non-positive or non-finite timeout is never what the caller wants:
-        # grpc-python treats timeout=0/negative as "already expired" (the call
-        # fails immediately) and this SDK has no "no deadline" escape hatch —
-        # unlike keepalive_time_ms=0, silently reintroducing the unbounded-block
-        # bug this parameter exists to fix is not an option worth offering.
-        for name, value in (
-            ("call_timeout_s", call_timeout_s),
-            ("tool_call_timeout_s", tool_call_timeout_s),
-        ):
-            if (
-                not isinstance(value, (int, float))
-                or isinstance(value, bool)
-                or not math.isfinite(value)
-                or value <= 0
-            ):
-                raise ValueError(
-                    f"{name} must be a positive, finite number of seconds; got {value!r}."
-                )
+        _assert_valid_timeout("call_timeout_s", call_timeout_s)
+        _assert_valid_timeout("tool_call_timeout_s", tool_call_timeout_s)
         self.keepalive_time_ms = keepalive_time_ms
         self.keepalive_timeout_ms = keepalive_timeout_ms
         self.call_timeout_s = call_timeout_s
@@ -318,11 +321,17 @@ class CoreClient:
                           ``self.call_timeout_s`` when omitted — pass this
                           explicitly only when a specific call needs a
                           different bound (see ToolsClient's use of
-                          ``self.core_client.tool_call_timeout_s``).
+                          ``self.core_client.tool_call_timeout_s``). Validated
+                          against the same rule as the constructor's
+                          call_timeout_s/tool_call_timeout_s, since grpc_exec
+                          is a public method a caller could invoke directly
+                          with an unvalidated override.
         :type           : ``` Optional[float] ```
         """
         if timeout is None:
             timeout = self.call_timeout_s
+        else:
+            _assert_valid_timeout("timeout", timeout)
         try:
             resp = func(
                 data,
