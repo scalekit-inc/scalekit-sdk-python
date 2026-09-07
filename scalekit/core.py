@@ -314,11 +314,16 @@ class CoreClient:
             if exp.code() == grpc.StatusCode.UNAUTHENTICATED:
                 if retry <= 0:
                     raise ScalekitServerException.promote(exp)
+                # Only a failure of the refresh itself falls back to the original
+                # 401 — the retried call's own outcome (success or a different
+                # error entirely, e.g. DEADLINE_EXCEEDED) must propagate as-is,
+                # not get reported as "unauthorized" just because that's what
+                # triggered the first attempt.
                 try:
                     self.__authenticate_client()
-                    return self.grpc_exec(func, data, retry=retry - 1, timeout=timeout)
-                except Exception as refresh_exp:
+                except Exception:
                     raise ScalekitServerException.promote(exp)
+                return self.grpc_exec(func, data, retry=retry - 1, timeout=timeout)
             elif exp.code() == grpc.StatusCode.RESOURCE_EXHAUSTED:
                 # Surface Scalekit rate-limits immediately — retrying triples the damage
                 raise ScalekitServerException.promote(exp)

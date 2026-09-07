@@ -126,6 +126,29 @@ class TestNoRetryOnTransientErrors(unittest.TestCase):
     def test_resource_exhausted_surfaces_immediately_no_retry(self):
         self._assert_surfaces_immediately(StatusCode.RESOURCE_EXHAUSTED)
 
+    def test_reauth_success_then_different_failure_surfaces_that_failure(self):
+        """A successful token refresh must not mask what the retried call
+        itself failed with. Regression test: the retry used to be wrapped in
+        the same try/except as the refresh call, so a retry that failed for
+        an unrelated reason (e.g. DEADLINE_EXCEEDED) was reported as the
+        original UNAUTHENTICATED/401 instead — actively misleading, since the
+        credentials were never the problem."""
+        from scalekit.common.exceptions import ScalekitServerException
+        call_count = [0]
+
+        def func(data, metadata, timeout=None):
+            call_count[0] += 1
+            if call_count[0] == 1:
+                raise _make_rpc_error(StatusCode.UNAUTHENTICATED)
+            raise _make_rpc_error(StatusCode.DEADLINE_EXCEEDED)
+
+        with patch.object(self.client, "_CoreClient__authenticate_client"):
+            with self.assertRaises(ScalekitServerException) as ctx:
+                self.client.grpc_exec(func, data=None, retry=2)
+
+        self.assertEqual(call_count[0], 2)
+        self.assertEqual(ctx.exception.grpc_status, StatusCode.DEADLINE_EXCEEDED)
+
 
 class TestExecuteToolNoLongerNeedsSpecialCasing(unittest.TestCase):
     """execute_tool used to opt out of UNAVAILABLE retry explicitly. Now that
@@ -145,6 +168,21 @@ class TestExecuteToolNoLongerNeedsSpecialCasing(unittest.TestCase):
         _, kwargs = mock_exec.call_args
         self.assertNotIn("retry_on_unavailable", kwargs)
         self.assertNotIn("retry", kwargs)
+        self.assertEqual(kwargs["timeout"], self.core_client.tool_call_timeout_s)
+
+    def test_list_tools_uses_tool_call_timeout(self):
+        with patch.object(self.core_client, "grpc_exec", return_value="ok") as mock_exec:
+            self.tools.list_tools()
+
+        _, kwargs = mock_exec.call_args
+        self.assertEqual(kwargs["timeout"], self.core_client.tool_call_timeout_s)
+
+    def test_list_scoped_tools_uses_tool_call_timeout(self):
+        with patch.object(self.core_client, "grpc_exec", return_value="ok") as mock_exec:
+            self.tools.list_scoped_tools(identifier="user@example.com")
+
+        _, kwargs = mock_exec.call_args
+        self.assertEqual(kwargs["timeout"], self.core_client.tool_call_timeout_s)
 
 
 class TestExceptionNoneStatusGuard(unittest.TestCase):
@@ -154,14 +192,31 @@ class TestExceptionNoneStatusGuard(unittest.TestCase):
     meant to describe that failure must not itself crash."""
 
     @patch("scalekit.common.exceptions.rpc_status.from_call", return_value=None)
-    def test_none_status_falls_back_to_str_error_without_crashing(self, _mock_from_call):
+    def test_none_status_falls_back_to_error_details_without_crashing(self, _mock_from_call):
         from scalekit.common.exceptions import ScalekitServerException
-        rpc_err = _make_rpc_error(StatusCode.UNAVAILABLE)
+        rpc_err = _make_rpc_error(StatusCode.UNAVAILABLE)  # .details() -> "error"
 
         exc = ScalekitServerException(rpc_err)
 
         self.assertEqual(exc._err_details, [])
-        self.assertIsInstance(exc._message, str)
+        # The real error text must actually be captured, not just "some string" —
+        # and it must survive into str(exc), which is what a caller actually
+        # sees in logs/tracebacks, not just the internal _message attribute.
+        self.assertEqual(exc._message, "error")
+        self.assertIn("error", str(exc))
+
+    @patch("scalekit.common.exceptions.rpc_status.from_call", return_value=None)
+    def test_cancelled_str_does_not_crash(self, _mock_from_call):
+        """GRPC_TO_HTTP[CANCELLED] must be renderable via .name/.value like every
+        other entry — regression test for the 499-as-a-bare-int crash."""
+        from scalekit.common.exceptions import ScalekitServerException
+        rpc_err = _make_rpc_error(StatusCode.CANCELLED)
+
+        exc = ScalekitServerException(rpc_err)
+
+        rendered = str(exc)
+        self.assertIn("CLIENT_CLOSED_REQUEST", rendered)
+        self.assertIn("499", rendered)
 
 
 if __name__ == "__main__":
