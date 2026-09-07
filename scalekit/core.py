@@ -1,6 +1,7 @@
 from typing import TypeVar, Optional, Protocol
 
 import math
+from http import HTTPStatus
 
 import grpc
 import jwt
@@ -8,6 +9,7 @@ import json
 import requests
 import platform
 from urllib.parse import urlparse
+from requests.models import Response
 
 from cryptography.hazmat.primitives import serialization
 from scalekit._version import __version__ as _sdk_version
@@ -51,15 +53,28 @@ DEFAULT_HTTP_TIMEOUT = (DEFAULT_HTTP_CONNECT_TIMEOUT_S, DEFAULT_HTTP_READ_TIMEOU
 # grpc-python stub calls default timeout=None (no deadline) when the caller
 # doesn't pass one — grpc_exec never did, so a call could block forever on a
 # connection the keepalive check above hasn't (yet) noticed is dead, exactly
-# the same class of bug the HTTP timeout above exists to prevent.
-DEFAULT_CALL_TIMEOUT_S = 60
+# the same class of bug the HTTP timeout above exists to prevent. Matches the
+# Node SDK's timeoutMs default (20s) for the same control-plane calls.
+DEFAULT_CALL_TIMEOUT_S = 20
 
 # Tool execution (ToolsClient) proxies to third-party APIs (Gmail, Slack, ...)
-# whose own latency this SDK doesn't control. Kept as a separate constant from
-# DEFAULT_CALL_TIMEOUT_S — both currently resolve to 60s, but control-plane
-# and tool-execution calls have different latency profiles and may need to
-# diverge again later — mirrors the Node SDK's toolTimeoutMs/timeoutMs split.
+# whose own latency this SDK doesn't control, so it gets a longer deadline
+# than ordinary control-plane calls — mirrors the Node SDK's toolTimeoutMs,
+# which is also 60s against the same 20s timeoutMs control-plane default.
 DEFAULT_TOOL_CALL_TIMEOUT_S = 60
+
+
+def _as_gateway_timeout_response(exp: Exception) -> Response:
+    """Wrap a requests timeout as a synthetic 504 Response so it flows through
+    ScalekitServerException.promote() like any other HTTP error, instead of
+    leaking a raw requests exception past the SDK's exception boundary —
+    matches the Node SDK's ScalekitGatewayTimeoutException.fromAxiosTimeout."""
+    response = Response()
+    response.status_code = HTTPStatus.GATEWAY_TIMEOUT
+    response.reason = "GATEWAY_TIMEOUT"
+    response.encoding = "utf-8"
+    response._content = str(exp).encode("utf-8")
+    return response
 
 
 class WithCall(Protocol):
@@ -111,7 +126,7 @@ class CoreClient:
                                         tool execution — see tool_call_timeout_s).
                                         Without this, a call can block forever on
                                         a connection that looks fine to the client
-                                        but is silently dead. Defaults to 60.
+                                        but is silently dead. Defaults to 20.
         :type                        : ``` float ```
         :param tool_call_timeout_s   : Deadline, in seconds, for tool-execution
                                         calls (ToolsClient), which proxy to
@@ -227,13 +242,18 @@ class CoreClient:
         :type       : ``` str ```
         """
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        response = requests.post(
-            self.env_url + TOKEN_ENDPOINT,
-            headers=self.get_headers(headers=headers),
-            data=data,
-            verify=True,
-            timeout=DEFAULT_HTTP_TIMEOUT,
-        )
+        try:
+            response = requests.post(
+                self.env_url + TOKEN_ENDPOINT,
+                headers=self.get_headers(headers=headers),
+                data=data,
+                verify=True,
+                timeout=DEFAULT_HTTP_TIMEOUT,
+            )
+        except requests.exceptions.Timeout as exp:
+            raise ScalekitServerException.promote(_as_gateway_timeout_response(exp))
+        except requests.exceptions.RequestException as exp:
+            raise ScalekitException(exp)
         if response.status_code != 200:
             raise ScalekitServerException.promote(response)
         return response
@@ -242,11 +262,16 @@ class CoreClient:
         """Method to get JWT Keys"""
         if self.keys and len(self.keys) > 0:
             return
-        response = requests.get(
-            self.env_url + JWKS_ENDPOINT,
-            headers=self.get_headers(),
-            timeout=DEFAULT_HTTP_TIMEOUT,
-        )
+        try:
+            response = requests.get(
+                self.env_url + JWKS_ENDPOINT,
+                headers=self.get_headers(),
+                timeout=DEFAULT_HTTP_TIMEOUT,
+            )
+        except requests.exceptions.Timeout as exp:
+            raise ScalekitServerException.promote(_as_gateway_timeout_response(exp))
+        except requests.exceptions.RequestException as exp:
+            raise ScalekitException(exp)
         response = json.loads(response.content)
         keys = response["keys"]
 
