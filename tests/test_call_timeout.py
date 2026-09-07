@@ -123,28 +123,32 @@ class TestGrpcExecPassesTimeout(unittest.TestCase):
 
     def test_timeout_preserved_across_retries(self):
         """A retried call must keep using the same timeout as the original attempt,
-        not silently fall back to call_timeout_s."""
+        not silently fall back to call_timeout_s. UNAUTHENTICATED is the only
+        code that retries (see tests/test_transient_error_no_retry.py for why
+        UNAVAILABLE and everything else surface immediately instead)."""
         import grpc
+        from unittest.mock import patch
 
         attempts = []
 
-        class _Unavailable(grpc.RpcError):
+        class _Unauthenticated(grpc.RpcError):
             def code(self):
-                return grpc.StatusCode.UNAVAILABLE
+                return grpc.StatusCode.UNAUTHENTICATED
 
             def trailing_metadata(self):
                 return ()
 
             def details(self):
-                return "unavailable"
+                return "unauthenticated"
 
         def func(data, metadata, timeout=None):
             attempts.append(timeout)
             if len(attempts) < 2:
-                raise _Unavailable()
+                raise _Unauthenticated()
             return "ok"
 
-        result = self.client.grpc_exec(func, data=None, retry=2, timeout=45)
+        with patch.object(self.client, "_CoreClient__authenticate_client"):
+            result = self.client.grpc_exec(func, data=None, retry=2, timeout=45)
         self.assertEqual(result, "ok")
         self.assertEqual(attempts, [45, 45])
 
