@@ -1,15 +1,21 @@
 """
 Tests for CoreClient.grpc_exec's retry policy.
 
-UNAUTHENTICATED and every other code not otherwise special-cased (TOOL_ERROR,
-RESOURCE_EXHAUSTED) retry immediately with zero backoff by default — this
-matches the SDK's currently-released production behavior. A call site can opt
-out of the transient-code retry specifically (UNAVAILABLE/ABORTED/
-DEADLINE_EXCEEDED/INTERNAL/CANCELLED) via retry_on_transient=False, e.g.
+UNAUTHENTICATED retries immediately (no backoff — a 401 isn't a signal the
+backend is under load). UNAVAILABLE/ABORTED/INTERNAL/CANCELLED retry with
+jittered exponential backoff by default (retry_on_transient=True, matching
+the Node SDK's approach) — this restores this SDK's currently-released
+production resilience for these codes. A call site can opt out of the
+transient-code retry specifically via retry_on_transient=False, e.g.
 ToolsClient.execute_tool, where a retry risks double-executing a
-non-idempotent call (sending an email twice). UNAUTHENTICATED's own retry is
-unaffected by this flag — a 401 is rejected before touching business logic,
-so there's nothing to double-execute.
+non-idempotent call (sending an email twice); UNAUTHENTICATED's own retry is
+unaffected by this flag. DEADLINE_EXCEEDED never retries under either value
+(see TestDeadlineExceededNeverRetries) — grpc_exec bounds each attempt, not
+the total call, so retrying an expired deadline multiplies worst-case
+latency instead of bounding it.
+
+These tests mock time.sleep to keep them fast/deterministic — the backoff
+delay itself is exercised separately in TestTransientRetryBackoff.
 
 These tests never touch the network — grpc.RpcError is faked directly.
 """
@@ -51,10 +57,14 @@ def _make_core_client():
 
 class TestTransientRetryDefaultOn(unittest.TestCase):
     """Default (retry_on_transient=True, matching production): transient
-    codes retry until exhausted, zero backoff."""
+    codes retry until exhausted, with backoff (mocked here for speed — see
+    TestTransientRetryBackoff for the actual delay behavior)."""
 
     def setUp(self):
         self.client = _make_core_client()
+        sleep_patcher = patch("scalekit.core.time.sleep")
+        self.mock_sleep = sleep_patcher.start()
+        self.addCleanup(sleep_patcher.stop)
 
     def _always_raise(self, status_code):
         call_count = [0]
@@ -86,15 +96,16 @@ class TestTransientRetryDefaultOn(unittest.TestCase):
     def test_cancelled_retries_until_exhausted(self):
         self._assert_retries_until_exhausted(StatusCode.CANCELLED)
 
-    def test_retry_has_no_backoff_delay(self):
-        with patch("time.sleep") as mock_sleep:
-            from scalekit.common.exceptions import ScalekitServerException
-            func, _ = self._always_raise(StatusCode.UNAUTHENTICATED)
-            with patch.object(self.client, "_CoreClient__authenticate_client"):
-                with self.assertRaises(ScalekitServerException):
-                    self.client.grpc_exec(func, data=None, retry=2)
+    def test_unauthenticated_retry_has_no_backoff_delay(self):
+        """UNAUTHENTICATED's own retry is immediate — a 401 isn't a signal
+        the backend is under load, unlike the transient-code path."""
+        from scalekit.common.exceptions import ScalekitServerException
+        func, _ = self._always_raise(StatusCode.UNAUTHENTICATED)
+        with patch.object(self.client, "_CoreClient__authenticate_client"):
+            with self.assertRaises(ScalekitServerException):
+                self.client.grpc_exec(func, data=None, retry=2)
 
-        mock_sleep.assert_not_called()
+        self.mock_sleep.assert_not_called()
 
     def test_unauthenticated_still_triggers_reauth_and_retry(self):
         """UNAUTHENTICATED is the one exception: rejected before touching
@@ -159,6 +170,64 @@ class TestTransientRetryDefaultOn(unittest.TestCase):
 
         self.assertEqual(call_count[0], 2)
         self.assertEqual(ctx.exception.grpc_status, StatusCode.DEADLINE_EXCEEDED)
+
+
+class TestTransientRetryBackoff(unittest.TestCase):
+    """The retry_on_transient path backs off (jittered exponential, matching
+    the Node SDK's formula) rather than retrying instantly — on a backend
+    returning UNAVAILABLE because it's overloaded, every client retrying at
+    once just triples the load. random.random() is mocked to remove the
+    jitter's randomness so the base backoff value is checkable exactly."""
+
+    def setUp(self):
+        self.client = _make_core_client()
+
+    def test_backoff_doubles_each_attempt_up_to_the_cap(self):
+        from scalekit.core import RETRY_BACKOFF_BASE_S, RETRY_BACKOFF_MAX_S
+
+        def func(data, metadata, timeout=None):
+            raise _make_rpc_error(StatusCode.UNAVAILABLE)
+
+        with patch("scalekit.core.random.random", return_value=0.0), \
+                patch("scalekit.core.time.sleep") as mock_sleep:
+            from scalekit.common.exceptions import ScalekitServerException
+            with self.assertRaises(ScalekitServerException):
+                self.client.grpc_exec(func, data=None, retry=3)
+
+        # random.random()=0.0 -> jitter factor is always the floor, 0.5x.
+        expected = [
+            min(RETRY_BACKOFF_BASE_S * (2 ** i), RETRY_BACKOFF_MAX_S) * 0.5
+            for i in range(3)
+        ]
+        self.assertEqual([call.args[0] for call in mock_sleep.call_args_list], expected)
+
+    def test_backoff_capped_at_max(self):
+        """A high attempt count must not blow past RETRY_BACKOFF_MAX_S."""
+        from scalekit.core import RETRY_BACKOFF_MAX_S
+
+        def func(data, metadata, timeout=None):
+            raise _make_rpc_error(StatusCode.UNAVAILABLE)
+
+        with patch("scalekit.core.random.random", return_value=1.0), \
+                patch("scalekit.core.time.sleep") as mock_sleep:
+            from scalekit.common.exceptions import ScalekitServerException
+            with self.assertRaises(ScalekitServerException):
+                self.client.grpc_exec(func, data=None, retry=1, attempt=20)
+
+        # random.random()=1.0 -> jitter factor is always the ceiling, 1.0x,
+        # so this asserts the cap directly with no jitter ambiguity.
+        mock_sleep.assert_called_once_with(RETRY_BACKOFF_MAX_S)
+
+    def test_backoff_not_applied_when_opted_out(self):
+        def func(data, metadata, timeout=None):
+            raise _make_rpc_error(StatusCode.UNAVAILABLE)
+
+        with patch("scalekit.core.time.sleep") as mock_sleep:
+            from scalekit.common.exceptions import ScalekitServerException
+            with self.assertRaises(ScalekitServerException):
+                self.client.grpc_exec(func, data=None, retry=2, retry_on_transient=False)
+
+        mock_sleep.assert_not_called()
 
 
 class TestTransientRetryOptOut(unittest.TestCase):

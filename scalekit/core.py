@@ -1,6 +1,8 @@
 from typing import TypeVar, Optional, Protocol
 
 import math
+import random
+import time
 from http import HTTPStatus
 
 import grpc
@@ -69,6 +71,17 @@ DEFAULT_CALL_TIMEOUT_S = 20
 # bound makes the SDK's own deadline the deterministic, always-first
 # timeout, so callers always get the same, well-formed exception.
 DEFAULT_TOOL_CALL_TIMEOUT_S = 60
+
+# Backoff for the retry_on_transient path (UNAVAILABLE/ABORTED/INTERNAL/
+# CANCELLED) — matches the Node SDK's formula exactly: base doubles each
+# attempt up to a 30s ceiling, then half-jittered (0.5-1.0x) so a fleet of
+# clients retrying the same overloaded backend doesn't retry in lockstep.
+# A backend returning UNAVAILABLE because it's overloaded should see retry
+# traffic spread out and back off, not every client tripling its request
+# rate instantly. Does not apply to the UNAUTHENTICATED retry (immediate —
+# a 401 isn't a signal the backend is under load).
+RETRY_BACKOFF_BASE_S = 1.0
+RETRY_BACKOFF_MAX_S = 30.0
 
 
 def _assert_valid_timeout(name: str, value) -> None:
@@ -338,6 +351,7 @@ class CoreClient:
         retry=2,
         timeout: Optional[float] = None,
         retry_on_transient: bool = True,
+        attempt: int = 0,
     ) -> TResponse:
         """
         :param timeout : Per-call deadline override, in seconds. Defaults to
@@ -362,6 +376,14 @@ class CoreClient:
                           affect DEADLINE_EXCEEDED, which never retries under
                           either value — see the DEADLINE_EXCEEDED branch below.
         :type           : ``` bool ```
+        :param attempt : Internal — how many transient-code retries have
+                          already happened, used to compute the backoff
+                          delay before the next one (see
+                          RETRY_BACKOFF_BASE_S/RETRY_BACKOFF_MAX_S). Not
+                          meant to be passed by callers directly. Does not
+                          increment on the UNAUTHENTICATED retry, which has
+                          no backoff.
+        :type           : ``` int ```
         """
         if timeout is None:
             timeout = self.call_timeout_s
@@ -394,7 +416,7 @@ class CoreClient:
                     raise ScalekitServerException.promote(exp)
                 return self.grpc_exec(
                     func, data, retry=retry - 1, timeout=timeout,
-                    retry_on_transient=retry_on_transient,
+                    retry_on_transient=retry_on_transient, attempt=attempt,
                 )
             elif exp.code() == grpc.StatusCode.RESOURCE_EXHAUSTED:
                 # Surface Scalekit rate-limits immediately — retrying triples the damage
@@ -426,9 +448,16 @@ class CoreClient:
                 # fix and the new per-call deadline), but individual call sites can
                 # opt out via retry_on_transient=False where double-execution is a
                 # real concern — see ToolsClient.execute_tool for the first one.
+                #
+                # Backed off (jittered exponential, matching the Node SDK) rather
+                # than retried immediately: on a backend returning UNAVAILABLE
+                # because it's overloaded, every client retrying instantly just
+                # triples the load it's already struggling with.
+                base_backoff = min(RETRY_BACKOFF_BASE_S * (2 ** attempt), RETRY_BACKOFF_MAX_S)
+                time.sleep(base_backoff * (0.5 + random.random() * 0.5))
                 return self.grpc_exec(
                     func, data, retry=retry - 1, timeout=timeout,
-                    retry_on_transient=retry_on_transient,
+                    retry_on_transient=retry_on_transient, attempt=attempt + 1,
                 )
             else:
                 # Either retry_on_transient=False (this call site opted out — see
