@@ -1,5 +1,8 @@
+import time
+
 from faker import Faker
 from basetest import BaseTest
+from scalekit.common.exceptions import ScalekitNotFoundException
 
 from scalekit.v1.tools.tools_pb2 import (
     Tool,
@@ -14,6 +17,12 @@ from scalekit.v1.connected_accounts.connected_accounts_pb2 import (
     CreateConnectedAccount,
     AuthorizationDetails,
     OauthToken,
+)
+from scalekit.v1.connections.connections_pb2 import (
+    CreateConnection,
+    ConnectionType,
+    Flags,
+    DeleteEnvironmentConnectionRequest,
 )
 from google.protobuf import struct_pb2, wrappers_pb2
 
@@ -99,21 +108,51 @@ class TestTools(BaseTest):
 
     def test_search_tools(self):
         """ Method to test search tools ranked by relevance to a natural-language query """
-        response = self.scalekit_client.tools.search_tools(
-            query="send a message to a slack channel",
-            top_k=5
+        # SearchTools scopes its candidate pool to the environment's *enabled
+        # connections* (backend internal/toolsearch.ResolveEnabledProviders) --
+        # independent of `identifier`, which only annotates readiness on results
+        # already found. Without a Slack connection enabled on this environment,
+        # every Slack tool is filtered out before ranking even runs, so create one
+        # here rather than assuming staging already has it configured.
+        create_resp = self.scalekit_client.connection.create_environment_connection(
+            connection=CreateConnection(provider_key="SLACK", type=ConnectionType.OAUTH),
+            flags=Flags(is_app=True)
         )
-        self.assertEqual(response[1].code().name, "OK")
-        self.assertTrue(response[0] is not None)
-        tools = response[0].tools
-        self.assertGreater(len(tools), 0)
-        self.assertLessEqual(len(tools), 5)
-        self.assertTrue(
-            any("slack" in tool.name.lower() or "slack" in tool.provider.lower() for tool in tools),
-            f"expected a Slack-relevant tool in results, got: {[tool.name for tool in tools]}"
-        )
-        scores = [tool.score for tool in tools]
-        self.assertEqual(scores, sorted(scores, reverse=True))
+        self.assertEqual(create_resp[1].code().name, "OK")
+        app_conn_id = create_resp[0].connection.id
+
+        try:
+            # The enabled-providers set is cached for up to 30s per environment
+            # (backend providerCacheTTL), so poll instead of racing that cache.
+            tools = []
+            deadline = time.time() + 35
+            while time.time() < deadline:
+                response = self.scalekit_client.tools.search_tools(
+                    query="send a message to a slack channel",
+                    top_k=5
+                )
+                self.assertEqual(response[1].code().name, "OK")
+                tools = response[0].tools
+                if tools:
+                    break
+                time.sleep(2)
+
+            self.assertGreater(len(tools), 0)
+            self.assertLessEqual(len(tools), 5)
+            self.assertTrue(
+                any("slack" in tool.name.lower() or "slack" in tool.provider.lower() for tool in tools),
+                f"expected a Slack-relevant tool in results, got: {[tool.name for tool in tools]}"
+            )
+            scores = [tool.score for tool in tools]
+            self.assertEqual(scores, sorted(scores, reverse=True))
+        finally:
+            try:
+                self.scalekit_client.connection.core_client.grpc_exec(
+                    self.scalekit_client.connection.connection_service.DeleteEnvironmentConnection.with_call,
+                    DeleteEnvironmentConnectionRequest(connection_id=app_conn_id),
+                )
+            except ScalekitNotFoundException:
+                pass
 
     def test_search_tools_with_identifier(self):
         """ Method to test search tools annotates readiness when identifier is passed """
