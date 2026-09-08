@@ -87,7 +87,8 @@ class ScalekitClient:
                                         10000.
         :type                        : ``` int ```
         :param call_timeout_s        : Deadline, in seconds, applied to every gRPC
-                                        call except tool execution (see
+                                        call except ToolsClient calls (list_tools,
+                                        list_scoped_tools, execute_tool — see
                                         tool_call_timeout_s). Without this, a call
                                         can block forever on a connection that
                                         looks fine to the client but is silently

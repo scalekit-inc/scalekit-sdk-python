@@ -350,15 +350,17 @@ class CoreClient:
                           is a public method a caller could invoke directly
                           with an unvalidated override.
         :type           : ``` Optional[float] ```
-        :param retry_on_transient : Whether UNAVAILABLE/ABORTED/DEADLINE_EXCEEDED/
-                          INTERNAL/CANCELLED are retried (matching this SDK's
-                          currently-released behavior) or surface immediately.
-                          Defaults to True; set False at a call site where a
-                          retry risks double-executing a non-idempotent
-                          operation (see ToolsClient.execute_tool). Does not
-                          affect the separate UNAUTHENTICATED retry below,
-                          which is always safe — rejected before touching
-                          business logic — regardless of this flag.
+        :param retry_on_transient : Whether UNAVAILABLE/ABORTED/INTERNAL/CANCELLED
+                          are retried (matching this SDK's currently-released
+                          behavior) or surface immediately. Defaults to True;
+                          set False at a call site where a retry risks
+                          double-executing a non-idempotent operation (see
+                          ToolsClient.execute_tool). Does not affect the
+                          separate UNAUTHENTICATED retry below, which is
+                          always safe — rejected before touching business
+                          logic — regardless of this flag. Also does not
+                          affect DEADLINE_EXCEEDED, which never retries under
+                          either value — see the DEADLINE_EXCEEDED branch below.
         :type           : ``` bool ```
         """
         if timeout is None:
@@ -397,15 +399,28 @@ class CoreClient:
             elif exp.code() == grpc.StatusCode.RESOURCE_EXHAUSTED:
                 # Surface Scalekit rate-limits immediately — retrying triples the damage
                 raise ScalekitServerException.promote(exp)
+            elif exp.code() == grpc.StatusCode.DEADLINE_EXCEEDED:
+                # grpc_exec passes the same `timeout` value into every retry
+                # recursion — it bounds each individual attempt, not the total
+                # call. Retrying a DEADLINE_EXCEEDED with a fresh full-length
+                # window multiplies the worst-case wall-clock time by
+                # (retry + 1) instead of bounding it, defeating the point of
+                # having a deadline at all (e.g. retry=2 at the 20s
+                # call_timeout_s default: 3 x 20s = 60s worst case). Unlike
+                # UNAVAILABLE/ABORTED/INTERNAL/CANCELLED, a deadline that
+                # already expired once retrying it unconditionally makes
+                # things worse, not more resilient — so it never retries,
+                # regardless of retry_on_transient.
+                raise ScalekitServerException.promote(exp)
             elif retry_on_transient and retry > 0:
-                # Every other code (UNAVAILABLE, ABORTED, DEADLINE_EXCEEDED, INTERNAL,
-                # CANCELLED, ...) can mean the request already reached and was
-                # processed by the server — a dead/refused connection, a stream torn
-                # down mid-flight, or a keepalive ping timeout on a still-in-progress
-                # call are all indistinguishable to the caller from "the server did
-                # the work but the response never made it back." Retrying any of
-                # these risks double-executing a non-idempotent call (e.g. execute_tool
-                # sending an email) — kept on by default (matching this SDK's
+                # Every other code (UNAVAILABLE, ABORTED, INTERNAL, CANCELLED, ...)
+                # can mean the request already reached and was processed by the
+                # server — a dead/refused connection, a stream torn down mid-flight,
+                # or a keepalive ping timeout on a still-in-progress call are all
+                # indistinguishable to the caller from "the server did the work but
+                # the response never made it back." Retrying any of these risks
+                # double-executing a non-idempotent call (e.g. execute_tool sending
+                # an email) — kept on by default (matching this SDK's
                 # currently-released behavior, and avoiding compounding this
                 # release's other changes to the same failure mode: the keepalive
                 # fix and the new per-call deadline), but individual call sites can

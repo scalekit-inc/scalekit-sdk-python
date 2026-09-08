@@ -80,9 +80,6 @@ class TestTransientRetryDefaultOn(unittest.TestCase):
     def test_aborted_retries_until_exhausted(self):
         self._assert_retries_until_exhausted(StatusCode.ABORTED)
 
-    def test_deadline_exceeded_retries_until_exhausted(self):
-        self._assert_retries_until_exhausted(StatusCode.DEADLINE_EXCEEDED)
-
     def test_internal_retries_until_exhausted(self):
         self._assert_retries_until_exhausted(StatusCode.INTERNAL)
 
@@ -144,7 +141,9 @@ class TestTransientRetryDefaultOn(unittest.TestCase):
         the same try/except as the refresh call, so a retry that failed for
         an unrelated reason (e.g. DEADLINE_EXCEEDED) was reported as the
         original UNAUTHENTICATED/401 instead — actively misleading, since the
-        credentials were never the problem."""
+        credentials were never the problem. DEADLINE_EXCEEDED never retries
+        (see TestDeadlineExceededNeverRetries), so this also covers that the
+        surfaced failure isn't itself silently retried away."""
         from scalekit.common.exceptions import ScalekitServerException
         call_count = [0]
 
@@ -156,11 +155,8 @@ class TestTransientRetryDefaultOn(unittest.TestCase):
 
         with patch.object(self.client, "_CoreClient__authenticate_client"):
             with self.assertRaises(ScalekitServerException) as ctx:
-                self.client.grpc_exec(func, data=None, retry=1)
+                self.client.grpc_exec(func, data=None, retry=2)
 
-        # retry=1: attempt 1 -> UNAUTHENTICATED -> reauth -> attempt 2 (retry=0)
-        # -> DEADLINE_EXCEEDED, retry_on_transient default True but retry<=0 so
-        # it surfaces immediately as DEADLINE_EXCEEDED, not the original 401.
         self.assertEqual(call_count[0], 2)
         self.assertEqual(ctx.exception.grpc_status, StatusCode.DEADLINE_EXCEEDED)
 
@@ -195,9 +191,6 @@ class TestTransientRetryOptOut(unittest.TestCase):
     def test_aborted_surfaces_immediately_when_opted_out(self):
         self._assert_surfaces_immediately(StatusCode.ABORTED)
 
-    def test_deadline_exceeded_surfaces_immediately_when_opted_out(self):
-        self._assert_surfaces_immediately(StatusCode.DEADLINE_EXCEEDED)
-
     def test_unauthenticated_still_retries_when_opted_out(self):
         """retry_on_transient=False must not affect UNAUTHENTICATED's own
         retry — a 401 is rejected before touching business logic, so there's
@@ -216,6 +209,38 @@ class TestTransientRetryOptOut(unittest.TestCase):
 
         self.assertIs(result, success_response)
         self.assertEqual(call_count[0], 2)
+
+
+class TestDeadlineExceededNeverRetries(unittest.TestCase):
+    """DEADLINE_EXCEEDED never retries, regardless of retry_on_transient:
+    grpc_exec passes the same `timeout` into every retry recursion, so it
+    bounds each attempt, not the total call. Retrying an already-expired
+    deadline with a fresh full-length window multiplies worst-case
+    wall-clock time by (retry + 1) instead of bounding it — defeating the
+    point of having a deadline. See the DEADLINE_EXCEEDED branch in
+    grpc_exec for the full rationale."""
+
+    def setUp(self):
+        self.client = _make_core_client()
+
+    def _assert_surfaces_immediately(self, **kwargs):
+        from scalekit.common.exceptions import ScalekitServerException
+        call_count = [0]
+
+        def func(data, metadata, timeout=None):
+            call_count[0] += 1
+            raise _make_rpc_error(StatusCode.DEADLINE_EXCEEDED)
+
+        with self.assertRaises(ScalekitServerException):
+            self.client.grpc_exec(func, data=None, retry=2, **kwargs)
+
+        self.assertEqual(call_count[0], 1)
+
+    def test_deadline_exceeded_surfaces_immediately_with_retry_on_transient_true(self):
+        self._assert_surfaces_immediately(retry_on_transient=True)
+
+    def test_deadline_exceeded_surfaces_immediately_with_retry_on_transient_false(self):
+        self._assert_surfaces_immediately(retry_on_transient=False)
 
 
 class TestExecuteToolOptsOutOfTransientRetryKwarg(unittest.TestCase):
