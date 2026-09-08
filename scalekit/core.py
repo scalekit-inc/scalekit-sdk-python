@@ -57,6 +57,14 @@ DEFAULT_HTTP_TIMEOUT = (DEFAULT_HTTP_CONNECT_TIMEOUT_S, DEFAULT_HTTP_READ_TIMEOU
 # connection the keepalive check above hasn't (yet) noticed is dead, exactly
 # the same class of bug the HTTP timeout above exists to prevent. Matches the
 # Node SDK's timeoutMs default (20s) for the same control-plane calls.
+#
+# This bounds each individual attempt, not the total call: grpc_exec passes
+# the same value into every retry recursion (see UNAVAILABLE's backoff retry
+# below), so a call that retries takes up to (retries + 1) x this value in
+# the worst case, not this value total. A monotonic total-budget deadline
+# (compute once, pass the remaining time per attempt) would close that gap
+# but isn't implemented — left as a known, documented gap rather than a
+# silent one.
 DEFAULT_CALL_TIMEOUT_S = 20
 
 # Tool execution (ToolsClient) proxies to third-party APIs (Gmail, Slack, ...)
@@ -72,14 +80,15 @@ DEFAULT_CALL_TIMEOUT_S = 20
 # timeout, so callers always get the same, well-formed exception.
 DEFAULT_TOOL_CALL_TIMEOUT_S = 60
 
-# Backoff for the retry_on_transient path (UNAVAILABLE/ABORTED/INTERNAL/
-# CANCELLED) — matches the Node SDK's formula exactly: base doubles each
+# Backoff for the retry_on_transient path (UNAVAILABLE only — see grpc_exec).
+# The backoff FORMULA matches the Node SDK's exactly: base doubles each
 # attempt up to a 30s ceiling, then half-jittered (0.5-1.0x) so a fleet of
 # clients retrying the same overloaded backend doesn't retry in lockstep.
-# A backend returning UNAVAILABLE because it's overloaded should see retry
-# traffic spread out and back off, not every client tripling its request
-# rate instantly. Does not apply to the UNAUTHENTICATED retry (immediate —
-# a 401 isn't a signal the backend is under load).
+# This is only agreement on the formula, not a claim the two SDKs' retry
+# policies match in general — Node retries only Unavailable, and this SDK's
+# retryable set is scoped to match that (ABORTED/INTERNAL/CANCELLED do not
+# retry here either, as of this fix). Does not apply to the UNAUTHENTICATED
+# retry (immediate — a 401 isn't a signal the backend is under load).
 RETRY_BACKOFF_BASE_S = 1.0
 RETRY_BACKOFF_MAX_S = 30.0
 
@@ -351,7 +360,7 @@ class CoreClient:
         retry=2,
         timeout: Optional[float] = None,
         retry_on_transient: bool = True,
-        attempt: int = 0,
+        _attempt: int = 0,
     ) -> TResponse:
         """
         :param timeout : Per-call deadline override, in seconds. Defaults to
@@ -362,27 +371,33 @@ class CoreClient:
                           against the same rule as the constructor's
                           call_timeout_s/tool_call_timeout_s, since grpc_exec
                           is a public method a caller could invoke directly
-                          with an unvalidated override.
+                          with an unvalidated override. Bounds each attempt
+                          individually, not the total call across retries —
+                          see DEFAULT_CALL_TIMEOUT_S's comment.
         :type           : ``` Optional[float] ```
-        :param retry_on_transient : Whether UNAVAILABLE/ABORTED/INTERNAL/CANCELLED
-                          are retried (matching this SDK's currently-released
-                          behavior) or surface immediately. Defaults to True;
-                          set False at a call site where a retry risks
-                          double-executing a non-idempotent operation (see
+        :param retry_on_transient : Whether UNAVAILABLE is retried (matching
+                          this SDK's currently-released behavior) or surfaces
+                          immediately. Defaults to True; set False at a call
+                          site where a retry risks double-executing a
+                          non-idempotent operation (see
                           ToolsClient.execute_tool). Does not affect the
                           separate UNAUTHENTICATED retry below, which is
                           always safe — rejected before touching business
                           logic — regardless of this flag. Also does not
-                          affect DEADLINE_EXCEEDED, which never retries under
-                          either value — see the DEADLINE_EXCEEDED branch below.
+                          affect DEADLINE_EXCEEDED, ABORTED, or INTERNAL/
+                          CANCELLED, none of which retry under either value
+                          — see the branches below for why each is excluded.
+                          When True, a retry sleeps (blocking) for the
+                          backoff delay before re-attempting — see
+                          RETRY_BACKOFF_BASE_S/RETRY_BACKOFF_MAX_S. Callers
+                          holding a lock or a request-handling thread across
+                          this call should account for that.
         :type           : ``` bool ```
-        :param attempt : Internal — how many transient-code retries have
+        :param _attempt : Internal — how many UNAVAILABLE retries have
                           already happened, used to compute the backoff
-                          delay before the next one (see
-                          RETRY_BACKOFF_BASE_S/RETRY_BACKOFF_MAX_S). Not
-                          meant to be passed by callers directly. Does not
-                          increment on the UNAUTHENTICATED retry, which has
-                          no backoff.
+                          delay before the next one. Not meant to be passed
+                          by callers directly. Does not increment on the
+                          UNAUTHENTICATED retry, which has no backoff.
         :type           : ``` int ```
         """
         if timeout is None:
@@ -416,7 +431,7 @@ class CoreClient:
                     raise ScalekitServerException.promote(exp)
                 return self.grpc_exec(
                     func, data, retry=retry - 1, timeout=timeout,
-                    retry_on_transient=retry_on_transient, attempt=attempt,
+                    retry_on_transient=retry_on_transient, _attempt=_attempt,
                 )
             elif exp.code() == grpc.StatusCode.RESOURCE_EXHAUSTED:
                 # Surface Scalekit rate-limits immediately — retrying triples the damage
@@ -428,40 +443,45 @@ class CoreClient:
                 # window multiplies the worst-case wall-clock time by
                 # (retry + 1) instead of bounding it, defeating the point of
                 # having a deadline at all (e.g. retry=2 at the 20s
-                # call_timeout_s default: 3 x 20s = 60s worst case). Unlike
-                # UNAVAILABLE/ABORTED/INTERNAL/CANCELLED, a deadline that
-                # already expired once retrying it unconditionally makes
+                # call_timeout_s default: 3 x 20s = 60s worst case). A deadline
+                # that already expired once retrying it unconditionally makes
                 # things worse, not more resilient — so it never retries,
                 # regardless of retry_on_transient.
                 raise ScalekitServerException.promote(exp)
-            elif retry_on_transient and retry > 0:
-                # Every other code (UNAVAILABLE, ABORTED, INTERNAL, CANCELLED, ...)
-                # can mean the request already reached and was processed by the
-                # server — a dead/refused connection, a stream torn down mid-flight,
-                # or a keepalive ping timeout on a still-in-progress call are all
-                # indistinguishable to the caller from "the server did the work but
-                # the response never made it back." Retrying any of these risks
-                # double-executing a non-idempotent call (e.g. execute_tool sending
-                # an email) — kept on by default (matching this SDK's
-                # currently-released behavior, and avoiding compounding this
-                # release's other changes to the same failure mode: the keepalive
-                # fix and the new per-call deadline), but individual call sites can
-                # opt out via retry_on_transient=False where double-execution is a
-                # real concern — see ToolsClient.execute_tool for the first one.
+            elif exp.code() == grpc.StatusCode.UNAVAILABLE and retry_on_transient and retry > 0:
+                # UNAVAILABLE can mean the request already reached and was
+                # processed by the server — a dead/refused connection, a stream
+                # torn down mid-flight, or a keepalive ping timeout on a
+                # still-in-progress call are all indistinguishable to the caller
+                # from "the server did the work but the response never made it
+                # back." Retrying risks double-executing a non-idempotent call
+                # (e.g. execute_tool sending an email) — kept on by default
+                # (matching this SDK's currently-released behavior), but
+                # individual call sites can opt out via retry_on_transient=False
+                # where double-execution is a real concern — see
+                # ToolsClient.execute_tool for the first one.
                 #
-                # Backed off (jittered exponential, matching the Node SDK) rather
-                # than retried immediately: on a backend returning UNAVAILABLE
-                # because it's overloaded, every client retrying instantly just
-                # triples the load it's already struggling with.
-                base_backoff = min(RETRY_BACKOFF_BASE_S * (2 ** attempt), RETRY_BACKOFF_MAX_S)
+                # Scoped to UNAVAILABLE specifically, matching the Node SDK's
+                # retry scope exactly (Node retries only Code.Unavailable) —
+                # ABORTED/INTERNAL/CANCELLED fall through to the branch below
+                # and never retry, on the same "might have already executed"
+                # reasoning, deliberately not just for UNAVAILABLE.
+                #
+                # Backed off (jittered exponential, matching the Node SDK's
+                # formula) rather than retried immediately: on a backend
+                # returning UNAVAILABLE because it's overloaded, every client
+                # retrying instantly just triples the load it's already
+                # struggling with.
+                base_backoff = min(RETRY_BACKOFF_BASE_S * (2 ** _attempt), RETRY_BACKOFF_MAX_S)
                 time.sleep(base_backoff * (0.5 + random.random() * 0.5))
                 return self.grpc_exec(
                     func, data, retry=retry - 1, timeout=timeout,
-                    retry_on_transient=retry_on_transient, attempt=attempt + 1,
+                    retry_on_transient=retry_on_transient, _attempt=_attempt + 1,
                 )
             else:
-                # Either retry_on_transient=False (this call site opted out — see
-                # ToolsClient.execute_tool) or retry is exhausted.
+                # ABORTED, INTERNAL, CANCELLED (never retried, any value of
+                # retry_on_transient) — or UNAVAILABLE when retry_on_transient=
+                # False (see ToolsClient.execute_tool) or retry is exhausted.
                 raise ScalekitServerException.promote(exp)
         except Exception as exp:
             raise ScalekitException(exp)

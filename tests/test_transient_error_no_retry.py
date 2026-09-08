@@ -2,17 +2,21 @@
 Tests for CoreClient.grpc_exec's retry policy.
 
 UNAUTHENTICATED retries immediately (no backoff — a 401 isn't a signal the
-backend is under load). UNAVAILABLE/ABORTED/INTERNAL/CANCELLED retry with
-jittered exponential backoff by default (retry_on_transient=True, matching
-the Node SDK's approach) — this restores this SDK's currently-released
-production resilience for these codes. A call site can opt out of the
-transient-code retry specifically via retry_on_transient=False, e.g.
-ToolsClient.execute_tool, where a retry risks double-executing a
-non-idempotent call (sending an email twice); UNAUTHENTICATED's own retry is
-unaffected by this flag. DEADLINE_EXCEEDED never retries under either value
-(see TestDeadlineExceededNeverRetries) — grpc_exec bounds each attempt, not
-the total call, so retrying an expired deadline multiplies worst-case
-latency instead of bounding it.
+backend is under load). UNAVAILABLE retries with jittered exponential
+backoff by default (retry_on_transient=True) — matching the Node SDK's
+retry scope exactly (Node also retries only Code.Unavailable) as well as its
+backoff formula. A call site can opt out of the UNAVAILABLE retry via
+retry_on_transient=False, e.g. ToolsClient.execute_tool, where a retry risks
+double-executing a non-idempotent call (sending an email twice);
+UNAUTHENTICATED's own retry is unaffected by this flag.
+
+ABORTED, INTERNAL, CANCELLED, and DEADLINE_EXCEEDED never retry, regardless
+of retry_on_transient (see TestNeverRetriedTransientCodes and
+TestDeadlineExceededNeverRetries) — grpc_exec bounds each attempt, not the
+total call across retries, so retrying an already-expired DEADLINE_EXCEEDED
+multiplies worst-case latency instead of bounding it; ABORTED/INTERNAL/
+CANCELLED are excluded on the same "might have already executed" reasoning
+that scopes the retried set to UNAVAILABLE specifically.
 
 These tests mock time.sleep to keep them fast/deterministic — the backoff
 delay itself is exercised separately in TestTransientRetryBackoff.
@@ -56,8 +60,8 @@ def _make_core_client():
 
 
 class TestTransientRetryDefaultOn(unittest.TestCase):
-    """Default (retry_on_transient=True, matching production): transient
-    codes retry until exhausted, with backoff (mocked here for speed — see
+    """Default (retry_on_transient=True, matching production): UNAVAILABLE
+    retries until exhausted, with backoff (mocked here for speed — see
     TestTransientRetryBackoff for the actual delay behavior)."""
 
     def setUp(self):
@@ -86,15 +90,6 @@ class TestTransientRetryDefaultOn(unittest.TestCase):
 
     def test_unavailable_retries_until_exhausted(self):
         self._assert_retries_until_exhausted(StatusCode.UNAVAILABLE)
-
-    def test_aborted_retries_until_exhausted(self):
-        self._assert_retries_until_exhausted(StatusCode.ABORTED)
-
-    def test_internal_retries_until_exhausted(self):
-        self._assert_retries_until_exhausted(StatusCode.INTERNAL)
-
-    def test_cancelled_retries_until_exhausted(self):
-        self._assert_retries_until_exhausted(StatusCode.CANCELLED)
 
     def test_unauthenticated_retry_has_no_backoff_delay(self):
         """UNAUTHENTICATED's own retry is immediate — a 401 isn't a signal
@@ -212,7 +207,7 @@ class TestTransientRetryBackoff(unittest.TestCase):
                 patch("scalekit.core.time.sleep") as mock_sleep:
             from scalekit.common.exceptions import ScalekitServerException
             with self.assertRaises(ScalekitServerException):
-                self.client.grpc_exec(func, data=None, retry=1, attempt=20)
+                self.client.grpc_exec(func, data=None, retry=1, _attempt=20)
 
         # random.random()=1.0 -> jitter factor is always the ceiling, 1.0x,
         # so this asserts the cap directly with no jitter ambiguity.
@@ -231,34 +226,29 @@ class TestTransientRetryBackoff(unittest.TestCase):
 
 
 class TestTransientRetryOptOut(unittest.TestCase):
-    """retry_on_transient=False (see ToolsClient.execute_tool): transient
-    codes surface immediately, but UNAUTHENTICATED still retries."""
+    """retry_on_transient=False (see ToolsClient.execute_tool): UNAVAILABLE
+    surfaces immediately instead of retrying, but UNAUTHENTICATED still
+    retries."""
 
     def setUp(self):
         self.client = _make_core_client()
-
-    def _assert_surfaces_immediately(self, status_code):
-        from scalekit.common.exceptions import ScalekitServerException
-        call_count = [0]
-
-        def func(data, metadata, timeout=None):
-            call_count[0] += 1
-            raise _make_rpc_error(status_code)
-
-        with self.assertRaises(ScalekitServerException):
-            self.client.grpc_exec(func, data=None, retry=2, retry_on_transient=False)
-
-        self.assertEqual(call_count[0], 1)
 
     def test_unavailable_surfaces_immediately_when_opted_out(self):
         """UNAVAILABLE can mean the request already reached and was processed
         by the server (e.g. a keepalive ping timeout mid-call) — a call site
         that can't tolerate double-execution opts out via
         retry_on_transient=False."""
-        self._assert_surfaces_immediately(StatusCode.UNAVAILABLE)
+        from scalekit.common.exceptions import ScalekitServerException
+        call_count = [0]
 
-    def test_aborted_surfaces_immediately_when_opted_out(self):
-        self._assert_surfaces_immediately(StatusCode.ABORTED)
+        def func(data, metadata, timeout=None):
+            call_count[0] += 1
+            raise _make_rpc_error(StatusCode.UNAVAILABLE)
+
+        with self.assertRaises(ScalekitServerException):
+            self.client.grpc_exec(func, data=None, retry=2, retry_on_transient=False)
+
+        self.assertEqual(call_count[0], 1)
 
     def test_unauthenticated_still_retries_when_opted_out(self):
         """retry_on_transient=False must not affect UNAUTHENTICATED's own
@@ -278,6 +268,42 @@ class TestTransientRetryOptOut(unittest.TestCase):
 
         self.assertIs(result, success_response)
         self.assertEqual(call_count[0], 2)
+
+
+class TestNeverRetriedTransientCodes(unittest.TestCase):
+    """ABORTED/INTERNAL/CANCELLED never retry, regardless of
+    retry_on_transient — the retried set is scoped to UNAVAILABLE
+    specifically, matching the Node SDK's retry scope exactly (Node also
+    retries only Code.Unavailable). Same "might have already executed"
+    reasoning as UNAVAILABLE, just not extended to these codes."""
+
+    def setUp(self):
+        self.client = _make_core_client()
+
+    def _assert_surfaces_immediately(self, status_code, **kwargs):
+        from scalekit.common.exceptions import ScalekitServerException
+        call_count = [0]
+
+        def func(data, metadata, timeout=None):
+            call_count[0] += 1
+            raise _make_rpc_error(status_code)
+
+        with self.assertRaises(ScalekitServerException):
+            self.client.grpc_exec(func, data=None, retry=2, **kwargs)
+
+        self.assertEqual(call_count[0], 1)
+
+    def test_aborted_never_retries(self):
+        self._assert_surfaces_immediately(StatusCode.ABORTED, retry_on_transient=True)
+        self._assert_surfaces_immediately(StatusCode.ABORTED, retry_on_transient=False)
+
+    def test_internal_never_retries(self):
+        self._assert_surfaces_immediately(StatusCode.INTERNAL, retry_on_transient=True)
+        self._assert_surfaces_immediately(StatusCode.INTERNAL, retry_on_transient=False)
+
+    def test_cancelled_never_retries(self):
+        self._assert_surfaces_immediately(StatusCode.CANCELLED, retry_on_transient=True)
+        self._assert_surfaces_immediately(StatusCode.CANCELLED, retry_on_transient=False)
 
 
 class TestDeadlineExceededNeverRetries(unittest.TestCase):
