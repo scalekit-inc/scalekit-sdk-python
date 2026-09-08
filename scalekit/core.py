@@ -59,8 +59,15 @@ DEFAULT_CALL_TIMEOUT_S = 20
 
 # Tool execution (ToolsClient) proxies to third-party APIs (Gmail, Slack, ...)
 # whose own latency this SDK doesn't control, so it gets a longer deadline
-# than ordinary control-plane calls — mirrors the Node SDK's toolTimeoutMs,
-# which is also 60s against the same 20s timeoutMs control-plane default.
+# than ordinary control-plane calls. Deliberately kept BELOW the infra load
+# balancer's backend timeout for this path (62s, per infra config), rather
+# than matching it: two independent timers racing at the identical value
+# produce a coin-flip on which one fires first, and a caller sees two
+# different failure signatures (a clean ScalekitGatewayTimeoutException vs
+# whatever shape the LB's own forced termination takes) for the same
+# underlying "this call ran too long" condition. Landing below the LB's
+# bound makes the SDK's own deadline the deterministic, always-first
+# timeout, so callers always get the same, well-formed exception.
 DEFAULT_TOOL_CALL_TIMEOUT_S = 60
 
 
@@ -83,6 +90,14 @@ def _assert_valid_timeout(name: str, value) -> None:
         )
 
 
+def _is_success_status(status_code: int) -> bool:
+    """200-only would be a footgun: the token/JWKS endpoints are only ever
+    expected to reply 200, but a strict != 200 check would misclassify any
+    other legitimate 2xx (e.g. 201/202/204) as an error. Check the actual
+    success range instead of hardcoding a single code."""
+    return 200 <= status_code < 300
+
+
 def _as_gateway_timeout_response(exp: Exception) -> Response:
     """Wrap a requests timeout as a synthetic 504 Response so it flows through
     ScalekitServerException.promote() like any other HTTP error, instead of
@@ -97,7 +112,9 @@ def _as_gateway_timeout_response(exp: Exception) -> Response:
 
 
 class WithCall(Protocol):
-    def __call__(self, request: TRequest, timeout: float, metadata: TMetadata) -> TResponse: ...
+    # timeout: Optional to match grpc's multicallables (e.g. UnaryUnaryMultiCallable.with_call),
+    # which themselves default it to None rather than requiring it.
+    def __call__(self, request: TRequest, timeout: Optional[float] = None, metadata: TMetadata = None) -> TResponse: ...
 
 
 class CoreClient:
@@ -151,7 +168,10 @@ class CoreClient:
                                         calls (ToolsClient), which proxy to
                                         third-party APIs and can legitimately run
                                         longer than ordinary control-plane calls.
-                                        Defaults to 60.
+                                        Defaults to 60, deliberately below the
+                                        infra load balancer's 62s backend timeout
+                                        for this path so this deadline is always
+                                        the one that fires, not a coin flip.
         :type                        : ``` float ```
         :returns
             None
@@ -232,7 +252,7 @@ class CoreClient:
         }
 
         response = self.authenticate(data=params)
-        if response.status_code != 200:
+        if not _is_success_status(response.status_code):
             raise ScalekitServerException.promote(response)
         response = json.loads(response.content)
         self.access_token = response["access_token"]
@@ -257,7 +277,7 @@ class CoreClient:
             raise ScalekitServerException.promote(_as_gateway_timeout_response(exp))
         except requests.exceptions.RequestException as exp:
             raise ScalekitException(exp)
-        if response.status_code != 200:
+        if not _is_success_status(response.status_code):
             raise ScalekitServerException.promote(response)
         return response
 
@@ -275,6 +295,8 @@ class CoreClient:
             raise ScalekitServerException.promote(_as_gateway_timeout_response(exp))
         except requests.exceptions.RequestException as exp:
             raise ScalekitException(exp)
+        if not _is_success_status(response.status_code):
+            raise ScalekitServerException.promote(response)
         response = json.loads(response.content)
         keys = response["keys"]
 

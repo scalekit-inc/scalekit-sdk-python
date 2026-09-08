@@ -51,6 +51,7 @@ class TestHttpTimeout(unittest.TestCase):
     def test_get_jwks_passes_timeout_to_requests_get(self):
         """get_jwks() must pass a non-None timeout to requests.get."""
         mock_response = MagicMock()
+        mock_response.status_code = 200
         mock_response.content = json.dumps({"keys": []}).encode("utf-8")
 
         with patch("scalekit.core.requests.get", return_value=mock_response) as mock_get:
@@ -60,6 +61,26 @@ class TestHttpTimeout(unittest.TestCase):
         _, kwargs = mock_get.call_args
         self.assertIn("timeout", kwargs)
         self.assertIsNotNone(kwargs["timeout"])
+
+    def test_authenticate_accepts_non_200_success_status(self):
+        """A strict != 200 check is a footgun: it would misclassify any other
+        legitimate 2xx (e.g. 201) as an error. authenticate() must accept the
+        whole 2xx range, not just 200."""
+        mock_response = MagicMock()
+        mock_response.status_code = 201
+
+        with patch("scalekit.core.requests.post", return_value=mock_response):
+            result = self.client.authenticate(data={"grant_type": "client_credentials"})
+
+        self.assertIs(result, mock_response)
+
+    def test_get_jwks_accepts_non_200_success_status(self):
+        mock_response = MagicMock()
+        mock_response.status_code = 201
+        mock_response.content = json.dumps({"keys": []}).encode("utf-8")
+
+        with patch("scalekit.core.requests.get", return_value=mock_response):
+            self.client.get_jwks()  # must not raise
 
     def test_authenticate_timeout_raises_gateway_timeout_exception(self):
         """A requests.Timeout from the token endpoint must surface as
@@ -115,6 +136,22 @@ class TestHttpTimeout(unittest.TestCase):
             side_effect=requests.exceptions.ConnectionError("Connection reset by peer"),
         ):
             with self.assertRaises(ScalekitException):
+                self.client.get_jwks()
+
+    def test_get_jwks_non_200_raises_scalekit_server_exception(self):
+        """A non-200 JWKS response must not reach json.loads()/["keys"] — that
+        path raises a bare KeyError/JSONDecodeError which escapes the SDK's
+        exception boundary entirely, the same class of leak
+        _as_gateway_timeout_response was added to prevent for timeouts."""
+        from scalekit.common.exceptions import ScalekitServerException
+
+        mock_response = MagicMock()
+        mock_response.status_code = 500
+        mock_response.reason = "INTERNAL_SERVER_ERROR"
+        mock_response.text = "internal error"
+
+        with patch("scalekit.core.requests.get", return_value=mock_response):
+            with self.assertRaises(ScalekitServerException):
                 self.client.get_jwks()
 
 

@@ -100,7 +100,10 @@ class ScalekitServerException(ScalekitException):
             self._message = None
         elif isinstance(error, grpc.RpcError):
             self._grpc_status = error.code()
-            self._http_status = GRPC_TO_HTTP.get(self._grpc_status)
+            # Every current StatusCode is mapped, so this default is latent today —
+            # but without it, any future/unmapped code gives None here and __str__
+            # crashes on None.name, the same shape as the CANCELLED-as-bare-int bug.
+            self._http_status = GRPC_TO_HTTP.get(self._grpc_status, HTTPStatus.INTERNAL_SERVER_ERROR)
             try:
                 # rpc_status.from_call raises ValueError (not just returning None)
                 # when grpc-status-details-bin is present but internally

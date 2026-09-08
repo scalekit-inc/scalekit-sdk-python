@@ -233,6 +233,21 @@ class TestExceptionNoneStatusGuard(unittest.TestCase):
         self.assertEqual(exc._message, "error")
         self.assertIn("error", str(exc))
 
+    def test_unmapped_grpc_status_falls_back_to_internal_server_error(self):
+        """Every current StatusCode is mapped in GRPC_TO_HTTP, so this is latent
+        today — but .get() must still carry a default, or a future/unmapped code
+        gives http_status=None and __str__ crashes on None.name, the same shape
+        as the CANCELLED-as-bare-int bug already fixed."""
+        import scalekit.common.exceptions as exceptions_module
+        from http import HTTPStatus
+
+        rpc_err = _make_rpc_error(StatusCode.UNAVAILABLE)
+        with patch.object(exceptions_module, "GRPC_TO_HTTP", {}):
+            exc = exceptions_module.ScalekitServerException(rpc_err)
+
+        self.assertEqual(exc.http_status, HTTPStatus.INTERNAL_SERVER_ERROR)
+        self.assertIn("INTERNAL_SERVER_ERROR", str(exc))
+
 
 if __name__ == "__main__":
     unittest.main()
