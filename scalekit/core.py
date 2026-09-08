@@ -19,6 +19,33 @@ TMetadata = TypeVar("TMetadata")
 TOKEN_ENDPOINT = "/oauth/token"
 JWKS_ENDPOINT = "/keys"
 
+# Must clear the backend's EnforcementPolicy.MinTime (30s, scalekit's
+# cmd/grpc.go) with real margin, not just match it: grpc-core pings on this
+# exact interval for as long as the channel is open (keepalive_permit_without_calls
+# below), so a value equal to MinTime leaves zero room for jitter between the
+# client's timer and the server's strike window — one early ping is a strike,
+# three and the server GOAWAYs the connection, recreating the bug this fixes.
+# 60s matches the Java SDK's default for the same reason.
+DEFAULT_KEEPALIVE_TIME_MS = 60_000
+DEFAULT_KEEPALIVE_TIMEOUT_MS = 10_000
+
+# The floor tracks DEFAULT_KEEPALIVE_TIME_MS for the reason spelled out above:
+# the backend's EnforcementPolicy.MinTime is 30s, and a value at exactly 30s has
+# zero jitter headroom — grpc's ping timer drifts slightly early, so an early
+# ping counts as a strike and enough strikes make the server GOAWAY. 60s gives
+# 2x margin over the 30s MinTime. Since there is no legitimate reason to go below
+# the default, the only sensible choices are 0 (disabled) or >= 60s. (gRPC also
+# silently clamps sub-10s values up to 10s per grpc/proposal A8, so a small value
+# never even reaches the wire as requested.) Reject 1..59999.
+MIN_KEEPALIVE_TIME_MS = 60_000
+
+# requests defaults to no timeout, so a black-holed connection blocks the
+# calling thread until the OS abandons the socket. Bound the connect and read
+# phases separately with a (connect, read) tuple.
+DEFAULT_HTTP_CONNECT_TIMEOUT_S = 10
+DEFAULT_HTTP_READ_TIMEOUT_S = 30
+DEFAULT_HTTP_TIMEOUT = (DEFAULT_HTTP_CONNECT_TIMEOUT_S, DEFAULT_HTTP_READ_TIMEOUT_S)
+
 
 class WithCall(Protocol):
     def __call__(self, request: TRequest, metadata: TMetadata) -> TResponse: ...
@@ -32,16 +59,36 @@ class CoreClient:
     api_version = "20260727"
     user_agent = f"{sdk_version} Python/{platform.python_version()} ({platform.system()}; {platform.architecture()}"
 
-    def __init__(self, env_url, client_id, client_secret):
+    def __init__(
+        self,
+        env_url,
+        client_id,
+        client_secret,
+        keepalive_time_ms: int = DEFAULT_KEEPALIVE_TIME_MS,
+        keepalive_timeout_ms: int = DEFAULT_KEEPALIVE_TIMEOUT_MS,
+    ):
         """
         Initializer for Core client
 
-        :param env_url        : Environment URL
-        :type                 : ``` str ```
-        :param client_id      : Client ID
-        :type                 : ``` str ```
-        :param client_secret  : Client Secret
-        :type                 : ``` str ```
+        :param env_url               : Environment URL
+        :type                        : ``` str ```
+        :param client_id             : Client ID
+        :type                        : ``` str ```
+        :param client_secret         : Client Secret
+        :type                        : ``` str ```
+        :param keepalive_time_ms     : How often, in milliseconds, an idle gRPC
+                                        connection is verified before reuse.
+                                        Must stay above the backend's keepalive
+                                        MinTime (30s) with real margin, or the
+                                        server treats this ping as abuse. Defaults
+                                        to 60000. Set to 0 to disable keepalive
+                                        entirely.
+        :type                        : ``` int ```
+        :param keepalive_timeout_ms  : How long, in milliseconds, to wait for a
+                                        keepalive response before treating an
+                                        idle connection as dead. Defaults to
+                                        10000.
+        :type                        : ``` int ```
         :returns
             None
         """
@@ -50,6 +97,20 @@ class CoreClient:
         self.env_url = env_url
         self.client_id = client_id
         self.client_secret = client_secret
+        # 0 means "disabled" and is allowed through deliberately; only 1..59999
+        # is rejected. A value below the 60s default leaves too little margin
+        # over the Scalekit server's 30s MinTime — an early ping gets struck as
+        # abusive and the server GOAWAYs — and gRPC silently raises sub-10s
+        # values to 10s, so a small value is never what the caller asked for.
+        if keepalive_time_ms and keepalive_time_ms < MIN_KEEPALIVE_TIME_MS:
+            raise ValueError(
+                f"keepalive_time_ms must be 0 (disabled) or >= {MIN_KEEPALIVE_TIME_MS}; "
+                f"got {keepalive_time_ms}. A value below the default leaves too little "
+                "margin over the Scalekit server's 30s MinTime (early pings are struck "
+                "as abusive), and gRPC silently raises sub-10s values to 10s."
+            )
+        self.keepalive_time_ms = keepalive_time_ms
+        self.keepalive_timeout_ms = keepalive_timeout_ms
         self.keys = {}
         self.access_token = None
         self.grpc_secure_channel = None
@@ -70,7 +131,24 @@ class CoreClient:
             channel_credentials,
             call_credentials,
         )
-        self.grpc_secure_channel = grpc.secure_channel(self.host, composite_credentials)
+        # keepalive_time_ms == 0 disables keepalive entirely: no options are
+        # passed, so grpc-core falls back to its own defaults (no idle pings).
+        channel_options = []
+        if self.keepalive_time_ms:
+            # keepalive_permit_without_calls=1 so an idle channel is still
+            # periodically verified: without it, grpc-core only sends HTTP/2
+            # keepalive PINGs while there are active calls, so a connection
+            # silently dropped by a network intermediary while idle isn't
+            # detected until the next real call is written to it.
+            channel_options = [
+                ('grpc.keepalive_time_ms', self.keepalive_time_ms),
+                ('grpc.keepalive_timeout_ms', self.keepalive_timeout_ms),
+                ('grpc.keepalive_permit_without_calls', 1),
+                ('grpc.http2.max_pings_without_data', 0),
+            ]
+        self.grpc_secure_channel = grpc.secure_channel(
+            self.host, composite_credentials, options=channel_options
+        )
 
     def __authenticate_client(self):
         """
@@ -104,6 +182,7 @@ class CoreClient:
             headers=self.get_headers(headers=headers),
             data=data,
             verify=True,
+            timeout=DEFAULT_HTTP_TIMEOUT,
         )
         if response.status_code != 200:
             raise ScalekitServerException.promote(response)
@@ -114,7 +193,9 @@ class CoreClient:
         if self.keys and len(self.keys) > 0:
             return
         response = requests.get(
-            self.env_url + JWKS_ENDPOINT, headers=self.get_headers()
+            self.env_url + JWKS_ENDPOINT,
+            headers=self.get_headers(),
+            timeout=DEFAULT_HTTP_TIMEOUT,
         )
         response = json.loads(response.content)
         keys = response["keys"]
