@@ -337,6 +337,7 @@ class CoreClient:
         data: TRequest,
         retry=2,
         timeout: Optional[float] = None,
+        retry_on_transient: bool = True,
     ) -> TResponse:
         """
         :param timeout : Per-call deadline override, in seconds. Defaults to
@@ -349,6 +350,16 @@ class CoreClient:
                           is a public method a caller could invoke directly
                           with an unvalidated override.
         :type           : ``` Optional[float] ```
+        :param retry_on_transient : Whether UNAVAILABLE/ABORTED/DEADLINE_EXCEEDED/
+                          INTERNAL/CANCELLED are retried (matching this SDK's
+                          currently-released behavior) or surface immediately.
+                          Defaults to True; set False at a call site where a
+                          retry risks double-executing a non-idempotent
+                          operation (see ToolsClient.execute_tool). Does not
+                          affect the separate UNAUTHENTICATED retry below,
+                          which is always safe — rejected before touching
+                          business logic — regardless of this flag.
+        :type           : ``` bool ```
         """
         if timeout is None:
             timeout = self.call_timeout_s
@@ -379,25 +390,34 @@ class CoreClient:
                     self.__authenticate_client()
                 except Exception:
                     raise ScalekitServerException.promote(exp)
-                return self.grpc_exec(func, data, retry=retry - 1, timeout=timeout)
+                return self.grpc_exec(
+                    func, data, retry=retry - 1, timeout=timeout,
+                    retry_on_transient=retry_on_transient,
+                )
             elif exp.code() == grpc.StatusCode.RESOURCE_EXHAUSTED:
                 # Surface Scalekit rate-limits immediately — retrying triples the damage
                 raise ScalekitServerException.promote(exp)
-            else:
+            elif retry_on_transient and retry > 0:
                 # Every other code (UNAVAILABLE, ABORTED, DEADLINE_EXCEEDED, INTERNAL,
                 # CANCELLED, ...) can mean the request already reached and was
                 # processed by the server — a dead/refused connection, a stream torn
                 # down mid-flight, or a keepalive ping timeout on a still-in-progress
                 # call are all indistinguishable to the caller from "the server did
-                # the work but the response never made it back." Auto-retrying any of
+                # the work but the response never made it back." Retrying any of
                 # these risks double-executing a non-idempotent call (e.g. execute_tool
-                # sending an email, create_organization), and there's no per-RPC
-                # idempotency classification to safely tell them apart — so none of
-                # them are retried. UNAUTHENTICATED above is the one exception: a 401
-                # is rejected before touching business logic, so there's nothing to
-                # double-execute. A caller who wants resilience against a transient
-                # blip on a read/idempotent call is expected to retry at their own
-                # layer, where they know their own idempotency guarantees.
+                # sending an email) — kept on by default (matching this SDK's
+                # currently-released behavior, and avoiding compounding this
+                # release's other changes to the same failure mode: the keepalive
+                # fix and the new per-call deadline), but individual call sites can
+                # opt out via retry_on_transient=False where double-execution is a
+                # real concern — see ToolsClient.execute_tool for the first one.
+                return self.grpc_exec(
+                    func, data, retry=retry - 1, timeout=timeout,
+                    retry_on_transient=retry_on_transient,
+                )
+            else:
+                # Either retry_on_transient=False (this call site opted out — see
+                # ToolsClient.execute_tool) or retry is exhausted.
                 raise ScalekitServerException.promote(exp)
         except Exception as exp:
             raise ScalekitException(exp)

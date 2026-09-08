@@ -123,9 +123,9 @@ class TestGrpcExecPassesTimeout(unittest.TestCase):
 
     def test_timeout_preserved_across_retries(self):
         """A retried call must keep using the same timeout as the original attempt,
-        not silently fall back to call_timeout_s. UNAUTHENTICATED is the only
-        code that retries (see tests/test_transient_error_no_retry.py for why
-        UNAVAILABLE and everything else surface immediately instead)."""
+        not silently fall back to call_timeout_s (see
+        tests/test_transient_error_no_retry.py for the full retry-policy
+        coverage, including the retry_on_transient opt-out)."""
         import grpc
         from unittest.mock import patch
 
