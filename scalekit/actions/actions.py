@@ -198,7 +198,7 @@ class ActionClient:
         :param identifier: Filter/resolve by connected-account identifier (optional)
         :type: str
         :param provider: Filter by provider key, e.g. 'github' (optional)
-        :type: List[str]
+        :type: str
         :param tool_name: Filter to specific tool names (optional)
         :type: List[str]
         :param query: Free-form search query across tool metadata (optional)

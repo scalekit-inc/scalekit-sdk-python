@@ -48,15 +48,15 @@ class Tool(BaseModel):
             Tool instance
         """
         definition = None
-        if proto_tool.definition:
+        if proto_tool.HasField("definition"):
             definition = MessageToDict(proto_tool.definition)
 
         metadata = None
-        if proto_tool.metadata:
+        if proto_tool.HasField("metadata"):
             metadata = MessageToDict(proto_tool.metadata)
 
         updated_at = None
-        if proto_tool.updated_at:
+        if proto_tool.HasField("updated_at"):
             updated_at = proto_tool.updated_at.ToDatetime()
 
         return cls(
