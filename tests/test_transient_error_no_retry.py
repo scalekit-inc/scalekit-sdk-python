@@ -385,6 +385,13 @@ class TestExecuteToolOptsOutOfTransientRetryKwarg(unittest.TestCase):
         _, kwargs = mock_exec.call_args
         self.assertEqual(kwargs["timeout"], self.core_client.tool_call_timeout_s)
 
+    def test_search_tools_uses_tool_call_timeout(self):
+        with patch.object(self.core_client, "grpc_exec", return_value="ok") as mock_exec:
+            self.tools.search_tools(query="send an email")
+
+        _, kwargs = mock_exec.call_args
+        self.assertEqual(kwargs["timeout"], self.core_client.tool_call_timeout_s)
+
 
 class TestExceptionNoneStatusGuard(unittest.TestCase):
     """rpc_status.from_call(error) returns None for any transport-level failure

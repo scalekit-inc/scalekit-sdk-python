@@ -129,6 +129,7 @@ class ToolsClient:
                 identifier=identifier,
                 top_k=top_k
             ),
+            timeout=self.core_client.tool_call_timeout_s,
         )
 
     def execute_tool(
