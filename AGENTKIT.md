@@ -114,6 +114,11 @@ Searches tools ranked by relevance to a natural-language query — the job to be
 exact tool name. Pass `identifier` to also get per-connection readiness (usable now,
 needs a new connection, or needs re-auth) so you can gate execution on the right auth step.
 
+`needs_connection` means an existing connected account for that provider is inactive; an
+empty `connections` list means no account exists for the provider at all (not an error).
+Only pass a result's `connected_account_id` to `ExecuteTool` when `readiness_state` is
+`TOOL_READINESS_STATE_READY`.
+
 ### 🔌 Usage
 
 ```python

@@ -204,10 +204,11 @@ class TestTools(BaseTest):
                         )
                     )
         finally:
-            self.scalekit_client.connected_accounts.delete_connected_account(
+            delete_response = self.scalekit_client.connected_accounts.delete_connected_account(
                 connector="GMAIL",
                 identifier=identifier
             )
+            self.assertEqual(delete_response[1].code().name, "OK")
 
     def test_execute_tool_with_identifier(self):
         """ Method to test execute tool with identifier (backward compatibility) """
