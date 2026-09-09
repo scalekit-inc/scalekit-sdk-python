@@ -1,7 +1,7 @@
 from datetime import timedelta
 from typing import Optional, Any, List, Dict, Union
 import requests
-from scalekit.actions.types import ToolRequest,ExecuteToolResponse,MagicLinkResponse,ListConnectedAccountsResponse,DeleteConnectedAccountResponse,GetConnectedAccountAuthResponse,GetConnectedAccountDetailsResponse,ToolInput, \
+from scalekit.actions.types import ToolRequest,ExecuteToolResponse,MagicLinkResponse,ListConnectedAccountsResponse,ListToolsResponse,DeleteConnectedAccountResponse,GetConnectedAccountAuthResponse,GetConnectedAccountDetailsResponse,ToolInput, \
     UpdateConnectedAccountResponse,CreateMcpConfigResponse,ListMcpConfigsResponse,UpdateMcpConfigResponse,DeleteMcpConfigResponse, \
     EnsureMcpInstanceResponse,UpdateMcpInstanceResponse,GetMcpInstanceResponse,ListMcpInstancesResponse,DeleteMcpInstanceResponse,GetMcpInstanceAuthStateResponse, \
     McpConfig,McpConfigConnectionToolMapping,VerifyConnectedAccountUserResponse, \
@@ -16,6 +16,8 @@ from scalekit.actions.modifier import (
     apply_pre_modifiers, apply_post_modifiers
 )
 from scalekit.common.exceptions import ScalekitNotFoundException
+from scalekit.v1.tools.tools_pb2 import Filter
+from google.protobuf.wrappers_pb2 import BoolValue
 
 
 
@@ -168,9 +170,86 @@ class ActionClient:
         modified_response = apply_post_modifiers(tool_name, response.data, self._modifiers)
 
         response.data = modified_response
-        
+
         return response
-    
+
+    def list_tools(
+        self,
+        connection_name: Optional[str] = None,
+        identifier: Optional[str] = None,
+        provider: Optional[str] = None,
+        tool_name: Optional[List[str]] = None,
+        query: Optional[str] = None,
+        organization_id: Optional[str] = None,
+        user_id: Optional[str] = None,
+        connected_account_id: Optional[str] = None,
+        summary: Optional[bool] = None,
+        page_size: Optional[int] = None,
+        page_token: Optional[str] = None,
+        **kwargs
+    ) -> ListToolsResponse:
+        """
+        List tools available in your workspace, optionally scoped to a connected account.
+
+        Thin wrapper around ToolsClient.list_tools.
+
+        :param connection_name: Filter by connector identifier, e.g. 'github-connect' (optional)
+        :type: str
+        :param identifier: Filter/resolve by connected-account identifier (optional)
+        :type: str
+        :param provider: Filter by provider key, e.g. 'github' (optional)
+        :type: List[str]
+        :param tool_name: Filter to specific tool names (optional)
+        :type: List[str]
+        :param query: Free-form search query across tool metadata (optional)
+        :type: str
+        :param organization_id: Organization ID to scope the connected-account lookup (optional)
+        :type: str
+        :param user_id: User ID to scope the connected-account lookup (optional)
+        :type: str
+        :param connected_account_id: Direct connected account ID, as an alternative to
+            identifier + connection_name (optional)
+        :type: str
+        :param summary: Whether to return a summarized tool definition (optional)
+        :type: bool
+        :param page_size: Maximum number of tools to return per page (optional)
+        :type: int
+        :param page_token: Token from a previous response for pagination (optional)
+        :type: str
+
+        :returns:
+            ListToolsResponse containing the matching tools
+        """
+        has_filter_fields = any([
+            connection_name, identifier, provider, tool_name,
+            query, organization_id, user_id, connected_account_id,
+            summary is not None,
+        ])
+        filter_kwargs = {
+            "connector": connection_name,
+            "identifier": identifier,
+            "provider": provider,
+            "tool_name": tool_name,
+            "query": query,
+            "organization_id": organization_id,
+            "user_id": user_id,
+            "connected_account_id": connected_account_id,
+        }
+        if summary is not None:
+            filter_kwargs["summary"] = BoolValue(value=summary)
+        filter_obj = Filter(**filter_kwargs) if has_filter_fields else None
+
+        # Call the existing tools.list_tools which returns (response, metadata) tuple
+        result_tuple = self.tools.list_tools(
+            filter=filter_obj,
+            page_size=page_size,
+            page_token=page_token
+        )
+
+        proto_response = result_tuple[0]
+
+        return ListToolsResponse.from_proto(proto_response)
+
     def get_authorization_link(
             self,
             identifier: Optional[str] = None,
