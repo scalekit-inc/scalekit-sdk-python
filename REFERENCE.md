@@ -5899,6 +5899,177 @@ scalekit_client.m2m_client.remove_organization_client_secret(
 </dl>
 </details>
 
+## Resources
+
+Access the consents your end users grant against a resource, such as an MCP server. A consent records that one end user allowed a specific API client to act on their behalf. Each consent identifies the user by `external_user_id` — the identifier your application supplied when the consent was granted.
+
+<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">list_user_consents</a>(resource_id, search?, page_size?, page_token?, user_ids?) -> ListResourceUserConsentsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists the end-user consents granted against a resource, with pagination.
+
+Each returned consent carries `id`, `external_user_id`, `client_id`, `client_name`, `scopes` and `granted_at`. The response also carries `total_size` plus `next_page_token` / `prev_page_token` cursors.
+
+Filter by user in one of two ways. Pass `user_ids` to match specific external user IDs exactly and case-sensitively. Pass `search` for a case-insensitive substring match. When you give both, `user_ids` wins and `search` is ignored.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.resources.list_user_consents(
+    'res_123456',
+    page_size=20,
+    user_ids=['usr_123456']  # optional; takes precedence over search
+)
+
+print(response[0].total_size, response[0].next_page_token)
+for consent in response[0].consents:
+    print(consent.id, consent.external_user_id, consent.client_id, consent.scopes)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**resource_id:** `str` - Resource whose consents to list (format: `res_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**search:** `Optional[str]` - Case-insensitive substring match on external user IDs. Ignored when `user_ids` is set.
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_size:** `Optional[int]` - Page size for pagination (max 30)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_token:** `Optional[str]` - Page token for pagination
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**user_ids:** `Optional[List[str]]` - Exact match on external user IDs, max 25. Takes precedence over `search`.
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">revoke_user_consent</a>(client_id, consent_id) -> RevokeUserConsentResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Revokes a single end-user consent held by an API client.
+
+Deletes the consent, so the client is prompted for consent again on its next authorization attempt, and revokes every active refresh token issued to that client for the same user. Access tokens already issued stay valid until they expire.
+
+Note that `client_id` is the API client that holds the consent (format: `m2m_...`), not the resource id. This matches the underlying route `DELETE /clients/{client_id}/consents/{consent_id}`.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+scalekit_client.resources.revoke_user_consent(
+    'm2m_123456',
+    'usrcnst_123456'
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**client_id:** `str` - Client holding the consent (format: `m2m_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**consent_id:** `str` - Consent to revoke (format: `usrcnst_...`)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Connected Accounts
 
 <details><summary><code>client.connected_accounts.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connected_accounts.py">list_connected_accounts</a>(organization_id?, user_id?, connector?, identifier?, provider?, page_size?, page_token?) -> ListConnectedAccountsResponse</code></summary>

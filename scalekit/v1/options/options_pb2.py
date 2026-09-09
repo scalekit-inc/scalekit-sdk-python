@@ -15,7 +15,7 @@ _sym_db = _symbol_database.Default()
 from google.protobuf import descriptor_pb2 as google_dot_protobuf_dot_descriptor__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n!scalekit/v1/options/options.proto\x12\x13scalekit.v1.options\x1a google/protobuf/descriptor.proto\"\xbd\x01\n\nAuthOption\x12X\n\x13\x61uthentication_type\x18\x03 \x01(\x0e\x32\'.scalekit.v1.options.AuthenticationTypeR\x12\x61uthenticationType\x12 \n\x0bpermissions\x18\x01 \x03(\tR\x0bpermissions\x12\x33\n\x06policy\x18\x02 \x01(\x0e\x32\x1b.scalekit.v1.options.PolicyR\x06policy**\n\x06Policy\x12\x08\n\x04\x44\x45NY\x10\x00\x12\x0b\n\x07PARTIAL\x10\x01\x12\t\n\x05\x41LLOW\x10\x02*\xd5\x05\n\x12\x41uthenticationType\x12\x0b\n\x07\x42LOCKED\x10\x00\x12\x08\n\x04NONE\x10\x01\x12\r\n\tWORKSPACE\x10@\x12\x13\n\x0f\x43USTOMER_PORTAL\x10 \x12\x0b\n\x07SESSION\x10\x10\x12\x15\n\x11WORKSPACE_SESSION\x10P\x12\x14\n\x10WORKSPACE_CLIENT\x10\x44\x12%\n!WORKSPACE_SESSION_CUSTOMER_PORTAL\x10p\x12,\n(WORKSPACE_SESSION_CUSTOMER_PORTAL_CLIENT\x10t\x12$\n WORKSPACE_CUSTOMER_PORTAL_CLIENT\x10\x64\x12\x1d\n\x19WORKSPACE_CUSTOMER_PORTAL\x10`\x12\x08\n\x04USER\x10\x08\x12\n\n\x06\x43LIENT\x10\x04\x12\x12\n\x0eSESSION_CLIENT\x10\x14\x12\x1c\n\x18WORKSPACE_SESSION_CLIENT\x10T\x12\"\n\x1e\x43USTOMER_PORTAL_SESSION_CLIENT\x10\x34\x12\x10\n\x0cSESSION_USER\x10\x18\x12\x13\n\x0e\x41\x43TIONS_PORTAL\x10\x80\x01\x12\x35\n0WORKSPACE_SESSION_CUSTOMER_PORTAL_ACTIONS_PORTAL\x10\xf0\x01\x12<\n7WORKSPACE_SESSION_CUSTOMER_PORTAL_ACTIONS_PORTAL_CLIENT\x10\xf4\x01\x12\x1d\n\x18WORKSPACE_ACTIONS_PORTAL\x10\xc0\x01\x12$\n\x1fWORKSPACE_ACTIONS_PORTAL_CLIENT\x10\xc4\x01\x12\x34\n/WORKSPACE_ACTIONS_PORTAL_CUSTOMER_PORTAL_CLIENT\x10\xe4\x01\x12-\n(WORKSPACE_CUSTOMER_PORTAL_ACTIONS_PORTAL\x10\xe0\x01:b\n\x0b\x61uth_option\x12\x1e.google.protobuf.MethodOptions\x18\xd0\x86\x03 \x01(\x0b\x32\x1f.scalekit.v1.options.AuthOptionR\nauthOptionB6Z4github.com/scalekit-inc/scalekit/pkg/grpc/authoptionb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n!scalekit/v1/options/options.proto\x12\x13scalekit.v1.options\x1a google/protobuf/descriptor.proto\"\xbd\x01\n\nAuthOption\x12X\n\x13\x61uthentication_type\x18\x03 \x01(\x0e\x32\'.scalekit.v1.options.AuthenticationTypeR\x12\x61uthenticationType\x12 \n\x0bpermissions\x18\x01 \x03(\tR\x0bpermissions\x12\x33\n\x06policy\x18\x02 \x01(\x0e\x32\x1b.scalekit.v1.options.PolicyR\x06policy\"\xbf\x01\n\x0f\x41gentToolOption\x12\x12\n\x04name\x18\x01 \x01(\tR\x04name\x12 \n\x0b\x64\x65scription\x18\x02 \x01(\tR\x0b\x64\x65scription\x12\x39\n\x08mutation\x18\x03 \x01(\x0e\x32\x1d.scalekit.v1.options.MutationR\x08mutation\x12\x18\n\x07summary\x18\x04 \x01(\tR\x07summary\x12!\n\x0cscope_fields\x18\x05 \x03(\tR\x0bscopeFields\"*\n\x10\x41gentFieldOption\x12\x16\n\x06\x65xpose\x18\x01 \x01(\x08R\x06\x65xpose**\n\x06Policy\x12\x08\n\x04\x44\x45NY\x10\x00\x12\x0b\n\x07PARTIAL\x10\x01\x12\t\n\x05\x41LLOW\x10\x02*\xd5\x05\n\x12\x41uthenticationType\x12\x0b\n\x07\x42LOCKED\x10\x00\x12\x08\n\x04NONE\x10\x01\x12\r\n\tWORKSPACE\x10@\x12\x13\n\x0f\x43USTOMER_PORTAL\x10 \x12\x0b\n\x07SESSION\x10\x10\x12\x15\n\x11WORKSPACE_SESSION\x10P\x12\x14\n\x10WORKSPACE_CLIENT\x10\x44\x12%\n!WORKSPACE_SESSION_CUSTOMER_PORTAL\x10p\x12,\n(WORKSPACE_SESSION_CUSTOMER_PORTAL_CLIENT\x10t\x12$\n WORKSPACE_CUSTOMER_PORTAL_CLIENT\x10\x64\x12\x1d\n\x19WORKSPACE_CUSTOMER_PORTAL\x10`\x12\x08\n\x04USER\x10\x08\x12\n\n\x06\x43LIENT\x10\x04\x12\x12\n\x0eSESSION_CLIENT\x10\x14\x12\x1c\n\x18WORKSPACE_SESSION_CLIENT\x10T\x12\"\n\x1e\x43USTOMER_PORTAL_SESSION_CLIENT\x10\x34\x12\x10\n\x0cSESSION_USER\x10\x18\x12\x13\n\x0e\x41\x43TIONS_PORTAL\x10\x80\x01\x12\x35\n0WORKSPACE_SESSION_CUSTOMER_PORTAL_ACTIONS_PORTAL\x10\xf0\x01\x12<\n7WORKSPACE_SESSION_CUSTOMER_PORTAL_ACTIONS_PORTAL_CLIENT\x10\xf4\x01\x12\x1d\n\x18WORKSPACE_ACTIONS_PORTAL\x10\xc0\x01\x12$\n\x1fWORKSPACE_ACTIONS_PORTAL_CLIENT\x10\xc4\x01\x12\x34\n/WORKSPACE_ACTIONS_PORTAL_CUSTOMER_PORTAL_CLIENT\x10\xe4\x01\x12-\n(WORKSPACE_CUSTOMER_PORTAL_ACTIONS_PORTAL\x10\xe0\x01*9\n\x08Mutation\x12\x18\n\x14MUTATION_UNSPECIFIED\x10\x00\x12\x08\n\x04READ\x10\x01\x12\t\n\x05WRITE\x10\x02:b\n\x0b\x61uth_option\x12\x1e.google.protobuf.MethodOptions\x18\xd0\x86\x03 \x01(\x0b\x32\x1f.scalekit.v1.options.AuthOptionR\nauthOption:e\n\nagent_tool\x12\x1e.google.protobuf.MethodOptions\x18\xd1\x86\x03 \x01(\x0b\x32$.scalekit.v1.options.AgentToolOptionR\tagentTool:g\n\x0b\x61gent_field\x12\x1d.google.protobuf.FieldOptions\x18\xd2\x86\x03 \x01(\x0b\x32%.scalekit.v1.options.AgentFieldOptionR\nagentFieldB6Z4github.com/scalekit-inc/scalekit/pkg/grpc/authoptionb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -23,10 +23,16 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'scalekit.v1.options.options
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z4github.com/scalekit-inc/scalekit/pkg/grpc/authoption'
-  _globals['_POLICY']._serialized_start=284
-  _globals['_POLICY']._serialized_end=326
-  _globals['_AUTHENTICATIONTYPE']._serialized_start=329
-  _globals['_AUTHENTICATIONTYPE']._serialized_end=1054
+  _globals['_POLICY']._serialized_start=522
+  _globals['_POLICY']._serialized_end=564
+  _globals['_AUTHENTICATIONTYPE']._serialized_start=567
+  _globals['_AUTHENTICATIONTYPE']._serialized_end=1292
+  _globals['_MUTATION']._serialized_start=1294
+  _globals['_MUTATION']._serialized_end=1351
   _globals['_AUTHOPTION']._serialized_start=93
   _globals['_AUTHOPTION']._serialized_end=282
+  _globals['_AGENTTOOLOPTION']._serialized_start=285
+  _globals['_AGENTTOOLOPTION']._serialized_end=476
+  _globals['_AGENTFIELDOPTION']._serialized_start=478
+  _globals['_AGENTFIELDOPTION']._serialized_end=520
 # @@protoc_insertion_point(module_scope)

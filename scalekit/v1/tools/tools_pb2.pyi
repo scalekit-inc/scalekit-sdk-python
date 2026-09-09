@@ -9,11 +9,23 @@ from google.protobuf import wrappers_pb2 as _wrappers_pb2
 from protoc_gen_openapiv2.options import annotations_pb2 as _annotations_pb2_1
 from scalekit.v1.options import options_pb2 as _options_pb2
 from google.protobuf.internal import containers as _containers
+from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Mapping, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
+
+class ToolReadinessState(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    TOOL_READINESS_STATE_UNSPECIFIED: _ClassVar[ToolReadinessState]
+    TOOL_READINESS_STATE_READY: _ClassVar[ToolReadinessState]
+    TOOL_READINESS_STATE_NEEDS_CONNECTION: _ClassVar[ToolReadinessState]
+    TOOL_READINESS_STATE_NEEDS_REAUTH: _ClassVar[ToolReadinessState]
+TOOL_READINESS_STATE_UNSPECIFIED: ToolReadinessState
+TOOL_READINESS_STATE_READY: ToolReadinessState
+TOOL_READINESS_STATE_NEEDS_CONNECTION: ToolReadinessState
+TOOL_READINESS_STATE_NEEDS_REAUTH: ToolReadinessState
 
 class CreateToolRequest(_message.Message):
     __slots__ = ("tool",)
@@ -129,6 +141,28 @@ class ExecuteToolResponse(_message.Message):
     execution_id: str
     def __init__(self, data: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., execution_id: _Optional[str] = ...) -> None: ...
 
+class RefreshToolsRequest(_message.Message):
+    __slots__ = ("identifier", "connected_account_id", "connector", "organization_id", "user_id")
+    IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
+    CONNECTED_ACCOUNT_ID_FIELD_NUMBER: _ClassVar[int]
+    CONNECTOR_FIELD_NUMBER: _ClassVar[int]
+    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
+    USER_ID_FIELD_NUMBER: _ClassVar[int]
+    identifier: str
+    connected_account_id: str
+    connector: str
+    organization_id: str
+    user_id: str
+    def __init__(self, identifier: _Optional[str] = ..., connected_account_id: _Optional[str] = ..., connector: _Optional[str] = ..., organization_id: _Optional[str] = ..., user_id: _Optional[str] = ...) -> None: ...
+
+class RefreshToolsResponse(_message.Message):
+    __slots__ = ("tools", "total_size")
+    TOOLS_FIELD_NUMBER: _ClassVar[int]
+    TOTAL_SIZE_FIELD_NUMBER: _ClassVar[int]
+    tools: _containers.RepeatedCompositeFieldContainer[Tool]
+    total_size: int
+    def __init__(self, tools: _Optional[_Iterable[_Union[Tool, _Mapping]]] = ..., total_size: _Optional[int] = ...) -> None: ...
+
 class SetToolDefaultRequest(_message.Message):
     __slots__ = ("name", "schema_version", "tool_version")
     NAME_FIELD_NUMBER: _ClassVar[int]
@@ -218,3 +252,43 @@ class ListAvailableToolsResponse(_message.Message):
     prev_page_token: str
     tools: _containers.RepeatedCompositeFieldContainer[Tool]
     def __init__(self, next_page_token: _Optional[str] = ..., total_size: _Optional[int] = ..., prev_page_token: _Optional[str] = ..., tools: _Optional[_Iterable[_Union[Tool, _Mapping]]] = ...) -> None: ...
+
+class SearchToolsRequest(_message.Message):
+    __slots__ = ("query", "identifier", "top_k")
+    QUERY_FIELD_NUMBER: _ClassVar[int]
+    IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
+    TOP_K_FIELD_NUMBER: _ClassVar[int]
+    query: str
+    identifier: str
+    top_k: int
+    def __init__(self, query: _Optional[str] = ..., identifier: _Optional[str] = ..., top_k: _Optional[int] = ...) -> None: ...
+
+class SearchToolsResponse(_message.Message):
+    __slots__ = ("tools",)
+    TOOLS_FIELD_NUMBER: _ClassVar[int]
+    tools: _containers.RepeatedCompositeFieldContainer[SearchedTool]
+    def __init__(self, tools: _Optional[_Iterable[_Union[SearchedTool, _Mapping]]] = ...) -> None: ...
+
+class SearchedTool(_message.Message):
+    __slots__ = ("name", "provider", "description", "score", "connections")
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    PROVIDER_FIELD_NUMBER: _ClassVar[int]
+    DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
+    SCORE_FIELD_NUMBER: _ClassVar[int]
+    CONNECTIONS_FIELD_NUMBER: _ClassVar[int]
+    name: str
+    provider: str
+    description: str
+    score: float
+    connections: _containers.RepeatedCompositeFieldContainer[ConnectionReadiness]
+    def __init__(self, name: _Optional[str] = ..., provider: _Optional[str] = ..., description: _Optional[str] = ..., score: _Optional[float] = ..., connections: _Optional[_Iterable[_Union[ConnectionReadiness, _Mapping]]] = ...) -> None: ...
+
+class ConnectionReadiness(_message.Message):
+    __slots__ = ("connection_name", "connected_account_id", "readiness_state")
+    CONNECTION_NAME_FIELD_NUMBER: _ClassVar[int]
+    CONNECTED_ACCOUNT_ID_FIELD_NUMBER: _ClassVar[int]
+    READINESS_STATE_FIELD_NUMBER: _ClassVar[int]
+    connection_name: str
+    connected_account_id: str
+    readiness_state: ToolReadinessState
+    def __init__(self, connection_name: _Optional[str] = ..., connected_account_id: _Optional[str] = ..., readiness_state: _Optional[_Union[ToolReadinessState, str]] = ...) -> None: ...
