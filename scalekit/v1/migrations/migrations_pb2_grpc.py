@@ -45,6 +45,16 @@ class MigrationServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateEnvKeysRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateEnvKeysResponse.FromString,
                 )
+        self.ReconcileConnectionsAccrual = channel.unary_unary(
+                '/scalekit.v1.migrations.MigrationService/ReconcileConnectionsAccrual',
+                request_serializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.ReconcileConnectionsAccrualRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.ReconcileConnectionsAccrualResponse.FromString,
+                )
+        self.ProjectBillingCatalog = channel.unary_unary(
+                '/scalekit.v1.migrations.MigrationService/ProjectBillingCatalog',
+                request_serializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.ProjectBillingCatalogRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.ProjectBillingCatalogResponse.FromString,
+                )
 
 
 class MigrationServiceServicer(object):
@@ -86,6 +96,18 @@ class MigrationServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ReconcileConnectionsAccrual(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ProjectBillingCatalog(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_MigrationServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -118,6 +140,16 @@ def add_MigrationServiceServicer_to_server(servicer, server):
                     servicer.MigrateEnvKeys,
                     request_deserializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateEnvKeysRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateEnvKeysResponse.SerializeToString,
+            ),
+            'ReconcileConnectionsAccrual': grpc.unary_unary_rpc_method_handler(
+                    servicer.ReconcileConnectionsAccrual,
+                    request_deserializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.ReconcileConnectionsAccrualRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.ReconcileConnectionsAccrualResponse.SerializeToString,
+            ),
+            'ProjectBillingCatalog': grpc.unary_unary_rpc_method_handler(
+                    servicer.ProjectBillingCatalog,
+                    request_deserializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.ProjectBillingCatalogRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.ProjectBillingCatalogResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -228,5 +260,39 @@ class MigrationService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.migrations.MigrationService/MigrateEnvKeys',
             scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateEnvKeysRequest.SerializeToString,
             scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateEnvKeysResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ReconcileConnectionsAccrual(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.migrations.MigrationService/ReconcileConnectionsAccrual',
+            scalekit_dot_v1_dot_migrations_dot_migrations__pb2.ReconcileConnectionsAccrualRequest.SerializeToString,
+            scalekit_dot_v1_dot_migrations_dot_migrations__pb2.ReconcileConnectionsAccrualResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ProjectBillingCatalog(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.migrations.MigrationService/ProjectBillingCatalog',
+            scalekit_dot_v1_dot_migrations_dot_migrations__pb2.ProjectBillingCatalogRequest.SerializeToString,
+            scalekit_dot_v1_dot_migrations_dot_migrations__pb2.ProjectBillingCatalogResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

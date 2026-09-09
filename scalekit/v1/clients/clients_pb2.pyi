@@ -401,16 +401,24 @@ class ConsentedUser(_message.Message):
     def __init__(self, consent_id: _Optional[str] = ..., external_user_id: _Optional[str] = ..., scopes: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class ListResourceUserConsentsRequest(_message.Message):
-    __slots__ = ("resource_id", "search", "page_size", "page_token")
+    __slots__ = ("resource_id", "search", "page_size", "page_token", "filter")
     RESOURCE_ID_FIELD_NUMBER: _ClassVar[int]
     SEARCH_FIELD_NUMBER: _ClassVar[int]
     PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
     PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    FILTER_FIELD_NUMBER: _ClassVar[int]
     resource_id: str
     search: str
     page_size: int
     page_token: str
-    def __init__(self, resource_id: _Optional[str] = ..., search: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ...) -> None: ...
+    filter: ResourceUserConsentFilter
+    def __init__(self, resource_id: _Optional[str] = ..., search: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ..., filter: _Optional[_Union[ResourceUserConsentFilter, _Mapping]] = ...) -> None: ...
+
+class ResourceUserConsentFilter(_message.Message):
+    __slots__ = ("external_user_id",)
+    EXTERNAL_USER_ID_FIELD_NUMBER: _ClassVar[int]
+    external_user_id: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, external_user_id: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class ListResourceUserConsentsResponse(_message.Message):
     __slots__ = ("total_size", "next_page_token", "consents", "prev_page_token")
@@ -782,6 +790,36 @@ class UpdateClientResponse(_message.Message):
     CLIENT_FIELD_NUMBER: _ClassVar[int]
     client: Client
     def __init__(self, client: _Optional[_Union[Client, _Mapping]] = ...) -> None: ...
+
+class AddEnvironmentRedirectUriRequest(_message.Message):
+    __slots__ = ("redirect_uri",)
+    REDIRECT_URI_FIELD_NUMBER: _ClassVar[int]
+    redirect_uri: str
+    def __init__(self, redirect_uri: _Optional[str] = ...) -> None: ...
+
+class RemoveEnvironmentRedirectUriRequest(_message.Message):
+    __slots__ = ("redirect_uri",)
+    REDIRECT_URI_FIELD_NUMBER: _ClassVar[int]
+    redirect_uri: str
+    def __init__(self, redirect_uri: _Optional[str] = ...) -> None: ...
+
+class SetEnvironmentInitiateLoginUriRequest(_message.Message):
+    __slots__ = ("initiate_login_uri",)
+    INITIATE_LOGIN_URI_FIELD_NUMBER: _ClassVar[int]
+    initiate_login_uri: str
+    def __init__(self, initiate_login_uri: _Optional[str] = ...) -> None: ...
+
+class EnvironmentLoginUrisResponse(_message.Message):
+    __slots__ = ("client_id", "redirect_uris", "post_logout_redirect_uris", "initiate_login_uri")
+    CLIENT_ID_FIELD_NUMBER: _ClassVar[int]
+    REDIRECT_URIS_FIELD_NUMBER: _ClassVar[int]
+    POST_LOGOUT_REDIRECT_URIS_FIELD_NUMBER: _ClassVar[int]
+    INITIATE_LOGIN_URI_FIELD_NUMBER: _ClassVar[int]
+    client_id: str
+    redirect_uris: _containers.RepeatedScalarFieldContainer[str]
+    post_logout_redirect_uris: _containers.RepeatedScalarFieldContainer[str]
+    initiate_login_uri: str
+    def __init__(self, client_id: _Optional[str] = ..., redirect_uris: _Optional[_Iterable[str]] = ..., post_logout_redirect_uris: _Optional[_Iterable[str]] = ..., initiate_login_uri: _Optional[str] = ...) -> None: ...
 
 class CreateClientSecretRequest(_message.Message):
     __slots__ = ("client_id",)

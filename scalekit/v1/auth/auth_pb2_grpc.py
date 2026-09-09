@@ -32,7 +32,7 @@ class AuthServiceStub(object):
                 )
         self.ResendPasswordless = channel.unary_unary(
                 '/scalekit.v1.auth.AuthService/ResendPasswordless',
-                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                request_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.ResendPasswordlessRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
         self.ListUserOrganizations = channel.unary_unary(
@@ -172,7 +172,7 @@ def add_AuthServiceServicer_to_server(servicer, server):
             ),
             'ResendPasswordless': grpc.unary_unary_rpc_method_handler(
                     servicer.ResendPasswordless,
-                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    request_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.ResendPasswordlessRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'ListUserOrganizations': grpc.unary_unary_rpc_method_handler(
@@ -288,7 +288,7 @@ class AuthService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.auth.AuthService/ResendPasswordless',
-            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            scalekit_dot_v1_dot_auth_dot_auth__pb2.ResendPasswordlessRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
