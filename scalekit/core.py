@@ -80,15 +80,16 @@ DEFAULT_CALL_TIMEOUT_S = 20
 # timeout, so callers always get the same, well-formed exception.
 DEFAULT_TOOL_CALL_TIMEOUT_S = 60
 
-# Backoff for the retry_on_transient path (UNAVAILABLE only — see grpc_exec).
+# Backoff for the retry_on_unavailable path (UNAVAILABLE only — see grpc_exec).
 # The backoff FORMULA matches the Node SDK's exactly: base doubles each
 # attempt up to a 30s ceiling, then half-jittered (0.5-1.0x) so a fleet of
 # clients retrying the same overloaded backend doesn't retry in lockstep.
-# This is only agreement on the formula, not a claim the two SDKs' retry
-# policies match in general — Node retries only Unavailable, and this SDK's
-# retryable set is scoped to match that (ABORTED/INTERNAL/CANCELLED do not
-# retry here either, as of this fix). Does not apply to the UNAUTHENTICATED
-# retry (immediate — a 401 isn't a signal the backend is under load).
+# This is only agreement on the formula, not on runtime behavior for the
+# failure mode that matters most — see the UNAVAILABLE branch in grpc_exec
+# for why a transport reset still reaches this retry in Python but not in
+# Node, despite both naming the retried code UNAVAILABLE/Unavailable. Does
+# not apply to the UNAUTHENTICATED retry (immediate — a 401 isn't a signal
+# the backend is under load).
 RETRY_BACKOFF_BASE_S = 1.0
 RETRY_BACKOFF_MAX_S = 30.0
 
@@ -359,7 +360,7 @@ class CoreClient:
         data: TRequest,
         retry=2,
         timeout: Optional[float] = None,
-        retry_on_transient: bool = True,
+        retry_on_unavailable: bool = True,
         _attempt: int = 0,
     ) -> TResponse:
         """
@@ -375,11 +376,16 @@ class CoreClient:
                           individually, not the total call across retries —
                           see DEFAULT_CALL_TIMEOUT_S's comment.
         :type           : ``` Optional[float] ```
-        :param retry_on_transient : Whether UNAVAILABLE is retried (matching
-                          this SDK's currently-released behavior) or surfaces
-                          immediately. Defaults to True; set False at a call
-                          site where a retry risks double-executing a
-                          non-idempotent operation (see
+        :param retry_on_unavailable : Whether UNAVAILABLE is retried, with
+                          backoff, or surfaces immediately. Defaults to True.
+                          Note this is a NARROWING of the released SDK's
+                          behavior, not a preservation of it — the released
+                          SDK retries every status code not already
+                          special-cased above (INVALID_ARGUMENT, NOT_FOUND,
+                          ALREADY_EXISTS, PERMISSION_DENIED, all of it),
+                          immediately, no backoff. Set False at a call site
+                          where even the UNAVAILABLE retry risks
+                          double-executing a non-idempotent operation (see
                           ToolsClient.execute_tool). Does not affect the
                           separate UNAUTHENTICATED retry below, which is
                           always safe — rejected before touching business
@@ -431,7 +437,7 @@ class CoreClient:
                     raise ScalekitServerException.promote(exp)
                 return self.grpc_exec(
                     func, data, retry=retry - 1, timeout=timeout,
-                    retry_on_transient=retry_on_transient, _attempt=_attempt,
+                    retry_on_unavailable=retry_on_unavailable, _attempt=_attempt,
                 )
             elif exp.code() == grpc.StatusCode.RESOURCE_EXHAUSTED:
                 # Surface Scalekit rate-limits immediately — retrying triples the damage
@@ -446,26 +452,41 @@ class CoreClient:
                 # call_timeout_s default: 3 x 20s = 60s worst case). A deadline
                 # that already expired once retrying it unconditionally makes
                 # things worse, not more resilient — so it never retries,
-                # regardless of retry_on_transient.
+                # regardless of retry_on_unavailable.
                 raise ScalekitServerException.promote(exp)
-            elif exp.code() == grpc.StatusCode.UNAVAILABLE and retry_on_transient and retry > 0:
+            elif exp.code() == grpc.StatusCode.UNAVAILABLE and retry_on_unavailable and retry > 0:
                 # UNAVAILABLE can mean the request already reached and was
                 # processed by the server — a dead/refused connection, a stream
                 # torn down mid-flight, or a keepalive ping timeout on a
                 # still-in-progress call are all indistinguishable to the caller
                 # from "the server did the work but the response never made it
                 # back." Retrying risks double-executing a non-idempotent call
-                # (e.g. execute_tool sending an email) — kept on by default
-                # (matching this SDK's currently-released behavior), but
-                # individual call sites can opt out via retry_on_transient=False
-                # where double-execution is a real concern — see
-                # ToolsClient.execute_tool for the first one.
+                # (e.g. execute_tool sending an email). Individual call sites can
+                # opt out via retry_on_unavailable=False where double-execution is
+                # a real concern — see ToolsClient.execute_tool for the first one.
                 #
-                # Scoped to UNAVAILABLE specifically, matching the Node SDK's
-                # retry scope exactly (Node retries only Code.Unavailable) —
-                # ABORTED/INTERNAL/CANCELLED fall through to the branch below
-                # and never retry, on the same "might have already executed"
-                # reasoning, deliberately not just for UNAVAILABLE.
+                # This is NOT "matching this SDK's currently-released behavior":
+                # the released SDK's else-branch (`elif retry > 0:`) re-sends on
+                # every status code the branches above don't special-case —
+                # INVALID_ARGUMENT, NOT_FOUND, ALREADY_EXISTS, PERMISSION_DENIED,
+                # all of it, immediately, no backoff. Narrowing the retried set
+                # down to UNAVAILABLE alone is the largest user-visible behavior
+                # change in this release, not a preserved default — see the PR
+                # description for the plain statement of that change.
+                #
+                # Nor is this full retry-scope parity with the Node SDK, despite
+                # both retrying a code spelled UNAVAILABLE/Unavailable: grpc-python
+                # classifies a dead/reset connection as UNAVAILABLE natively, so
+                # THIS branch fires for exactly the failure mode this ticket
+                # (SK-1867) exists to fix. connect-node's own error mapping
+                # surfaces that same reset as Code.Aborted, and its retry check
+                # (`error.code === Code.Unavailable`, core.ts) runs on that raw
+                # code BEFORE the Aborted -> Unavailable re-keying in promote()
+                # (base-exception.ts, only reached on the no-retry path) — so
+                # Node's Unavailable branch never actually fires for a transport
+                # reset; the re-key only affects which exception CLASS the
+                # caller sees afterward. The two SDKs agree on the branch's name,
+                # not on which real failures reach it.
                 #
                 # Backed off (jittered exponential, matching the Node SDK's
                 # formula) rather than retried immediately: on a backend
@@ -476,11 +497,11 @@ class CoreClient:
                 time.sleep(base_backoff * (0.5 + random.random() * 0.5))
                 return self.grpc_exec(
                     func, data, retry=retry - 1, timeout=timeout,
-                    retry_on_transient=retry_on_transient, _attempt=_attempt + 1,
+                    retry_on_unavailable=retry_on_unavailable, _attempt=_attempt + 1,
                 )
             else:
                 # ABORTED, INTERNAL, CANCELLED (never retried, any value of
-                # retry_on_transient) — or UNAVAILABLE when retry_on_transient=
+                # retry_on_unavailable) — or UNAVAILABLE when retry_on_unavailable=
                 # False (see ToolsClient.execute_tool) or retry is exhausted.
                 raise ScalekitServerException.promote(exp)
         except Exception as exp:

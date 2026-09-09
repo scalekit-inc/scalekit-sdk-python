@@ -175,6 +175,6 @@ class ToolsClient:
             timeout=self.core_client.tool_call_timeout_s,
             # A retry on UNAVAILABLE can double-execute a non-idempotent call —
             # sending an email twice, for example. Opt out here specifically;
-            # see grpc_exec's retry_on_transient for the broader rationale.
-            retry_on_transient=False,
+            # see grpc_exec's retry_on_unavailable for the broader rationale.
+            retry_on_unavailable=False,
         )

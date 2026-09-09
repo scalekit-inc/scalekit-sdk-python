@@ -125,7 +125,7 @@ class TestGrpcExecPassesTimeout(unittest.TestCase):
         """A retried call must keep using the same timeout as the original attempt,
         not silently fall back to call_timeout_s (see
         tests/test_transient_error_no_retry.py for the full retry-policy
-        coverage, including the retry_on_transient opt-out)."""
+        coverage, including the retry_on_unavailable opt-out)."""
         import grpc
         from unittest.mock import patch
 
