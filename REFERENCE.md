@@ -6847,3 +6847,91 @@ scalekit_client.actions.providers.delete_custom_provider(
 </dd>
 </dl>
 </details>
+
+## Tools
+
+<details><summary><code>client.tools.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/tools.py">search_tools</a>(query, identifier?, top_k?) -> SearchToolsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Searches tools ranked by relevance to a natural-language query — the job to be done, not an exact tool name.
+
+Pass `identifier` to also get per-connection readiness (`TOOL_READINESS_STATE_READY`, `TOOL_READINESS_STATE_NEEDS_CONNECTION`, or `TOOL_READINESS_STATE_NEEDS_REAUTH`) on each result, so you can gate execution on the right auth step before calling `execute_tool`. `TOOL_READINESS_STATE_NEEDS_CONNECTION` means an existing connected account for that provider is inactive; an empty `connections` list means no account exists for the provider at all (not an error). Only pass a result's `connected_account_id` to `execute_tool` when `readiness_state` is `TOOL_READINESS_STATE_READY`.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from scalekit.v1.tools.tools_pb2 import TOOL_READINESS_STATE_READY
+
+response = scalekit_client.tools.search_tools(
+    query="send a message to a slack channel",
+    identifier="user@example.com",
+    top_k=10
+)
+
+for tool in response[0].tools:
+    print(tool.name, tool.score)
+    for connection in tool.connections:
+        # readiness_state is an int at runtime -- always compare against the
+        # named enum constant, never a raw int or a string.
+        is_ready = connection.readiness_state == TOOL_READINESS_STATE_READY
+        print(" ", connection.connection_name, is_ready, connection.connected_account_id)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**query:** `str` - Natural-language query or keywords describing the job to be done. 1-256 characters.
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**identifier:** `Optional[str]` - Connected-account identifier (e.g. the end user's email or ID). When set, each result is annotated with readiness for this identifier's connections.
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**top_k:** `Optional[int]` - Maximum number of ranked results to return. Defaults to 10, capped at 50.
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>

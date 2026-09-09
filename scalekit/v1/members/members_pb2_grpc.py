@@ -22,6 +22,11 @@ class MembersServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_members_dot_members__pb2.CreateMemberRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_members_dot_members__pb2.CreateMemberResponse.FromString,
                 )
+        self.InviteMember = channel.unary_unary(
+                '/scalekit.v1.members.MembersService/InviteMember',
+                request_serializer=scalekit_dot_v1_dot_members_dot_members__pb2.InviteMemberRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_members_dot_members__pb2.CreateMemberResponse.FromString,
+                )
         self.UpdateCurrentMember = channel.unary_unary(
                 '/scalekit.v1.members.MembersService/UpdateCurrentMember',
                 request_serializer=scalekit_dot_v1_dot_members_dot_members__pb2.UpdateCurrentMemberRequest.SerializeToString,
@@ -52,6 +57,51 @@ class MembersServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_members_dot_members__pb2.DeleteMemberRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
+        self.AssignDashboardRole = channel.unary_unary(
+                '/scalekit.v1.members.MembersService/AssignDashboardRole',
+                request_serializer=scalekit_dot_v1_dot_members_dot_members__pb2.AssignDashboardRoleRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_members_dot_members__pb2.AssignDashboardRoleResponse.FromString,
+                )
+        self.SetDashboardEnvironmentRole = channel.unary_unary(
+                '/scalekit.v1.members.MembersService/SetDashboardEnvironmentRole',
+                request_serializer=scalekit_dot_v1_dot_members_dot_members__pb2.SetDashboardEnvironmentRoleRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_members_dot_members__pb2.SetDashboardEnvironmentRoleResponse.FromString,
+                )
+        self.ClearDashboardEnvironmentRole = channel.unary_unary(
+                '/scalekit.v1.members.MembersService/ClearDashboardEnvironmentRole',
+                request_serializer=scalekit_dot_v1_dot_members_dot_members__pb2.ClearDashboardEnvironmentRoleRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_members_dot_members__pb2.ClearDashboardEnvironmentRoleResponse.FromString,
+                )
+        self.ListDashboardMemberEnvironmentRoles = channel.unary_unary(
+                '/scalekit.v1.members.MembersService/ListDashboardMemberEnvironmentRoles',
+                request_serializer=scalekit_dot_v1_dot_members_dot_members__pb2.ListDashboardMemberEnvironmentRolesRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_members_dot_members__pb2.ListDashboardMemberEnvironmentRolesResponse.FromString,
+                )
+        self.ListDashboardRoles = channel.unary_unary(
+                '/scalekit.v1.members.MembersService/ListDashboardRoles',
+                request_serializer=scalekit_dot_v1_dot_members_dot_members__pb2.ListDashboardRolesRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_members_dot_members__pb2.ListDashboardRolesResponse.FromString,
+                )
+        self.ListDashboardPermissions = channel.unary_unary(
+                '/scalekit.v1.members.MembersService/ListDashboardPermissions',
+                request_serializer=scalekit_dot_v1_dot_members_dot_members__pb2.ListDashboardPermissionsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_members_dot_members__pb2.ListDashboardPermissionsResponse.FromString,
+                )
+        self.CreateDashboardRole = channel.unary_unary(
+                '/scalekit.v1.members.MembersService/CreateDashboardRole',
+                request_serializer=scalekit_dot_v1_dot_members_dot_members__pb2.CreateDashboardRoleRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_members_dot_members__pb2.CreateDashboardRoleResponse.FromString,
+                )
+        self.UpdateDashboardRole = channel.unary_unary(
+                '/scalekit.v1.members.MembersService/UpdateDashboardRole',
+                request_serializer=scalekit_dot_v1_dot_members_dot_members__pb2.UpdateDashboardRoleRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_members_dot_members__pb2.UpdateDashboardRoleResponse.FromString,
+                )
+        self.DeleteDashboardRole = channel.unary_unary(
+                '/scalekit.v1.members.MembersService/DeleteDashboardRole',
+                request_serializer=scalekit_dot_v1_dot_members_dot_members__pb2.DeleteDashboardRoleRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_members_dot_members__pb2.DeleteDashboardRoleResponse.FromString,
+                )
 
 
 class MembersServiceServicer(object):
@@ -61,6 +111,29 @@ class MembersServiceServicer(object):
 
     def CreateMember(self, request, context):
         """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def InviteMember(self, request, context):
+        """Invite one teammate to the caller's workspace by email address, and nothing else.
+
+        WHY THIS IS NOT AN (agent_tool) ANNOTATION ON CreateMember, because that is the
+        obvious thing to try and it does not work. A gated write's approval-card summary must
+        name every request field the model can set (protoc-gen-agenttool's
+        checkWriteSummaryCoversRequest), and CreateMemberRequest embeds the SHARED Member
+        message, whose exposed fields include `id` and `role`. Neither has an honest place in
+        an invite sentence — CreateMember ignores both — and neither can be hidden, because
+        `agent_field` applies to reads and writes alike and list_workspace_members is
+        described to the model as returning exactly "id, email, name, and role". So the two
+        legal answers per field are both unavailable, and the remedy the tool system
+        prescribes for that is the one taken here: a purpose-specific RPC whose request holds
+        only what the tool is allowed to choose.
+
+        It is a thin front for CreateMember, not a second implementation: no dashboard role is
+        assigned (an invited member resolves to No Access until AssignDashboardRole runs),
+        which is also the safe default for a write an LLM proposed.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -101,12 +174,75 @@ class MembersServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def AssignDashboardRole(self, request, context):
+        """Dashboard RBAC (sk_dash_*) role management. These RPCs are inert unless dashboard
+        RBAC is enabled for the workspace; when disabled they fail with FAILED_PRECONDITION
+        and never touch the authorization graph.
+
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def SetDashboardEnvironmentRole(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ClearDashboardEnvironmentRole(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListDashboardMemberEnvironmentRoles(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListDashboardRoles(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListDashboardPermissions(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def CreateDashboardRole(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateDashboardRole(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeleteDashboardRole(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_MembersServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'CreateMember': grpc.unary_unary_rpc_method_handler(
                     servicer.CreateMember,
                     request_deserializer=scalekit_dot_v1_dot_members_dot_members__pb2.CreateMemberRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_members_dot_members__pb2.CreateMemberResponse.SerializeToString,
+            ),
+            'InviteMember': grpc.unary_unary_rpc_method_handler(
+                    servicer.InviteMember,
+                    request_deserializer=scalekit_dot_v1_dot_members_dot_members__pb2.InviteMemberRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_members_dot_members__pb2.CreateMemberResponse.SerializeToString,
             ),
             'UpdateCurrentMember': grpc.unary_unary_rpc_method_handler(
@@ -139,6 +275,51 @@ def add_MembersServiceServicer_to_server(servicer, server):
                     request_deserializer=scalekit_dot_v1_dot_members_dot_members__pb2.DeleteMemberRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
+            'AssignDashboardRole': grpc.unary_unary_rpc_method_handler(
+                    servicer.AssignDashboardRole,
+                    request_deserializer=scalekit_dot_v1_dot_members_dot_members__pb2.AssignDashboardRoleRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_members_dot_members__pb2.AssignDashboardRoleResponse.SerializeToString,
+            ),
+            'SetDashboardEnvironmentRole': grpc.unary_unary_rpc_method_handler(
+                    servicer.SetDashboardEnvironmentRole,
+                    request_deserializer=scalekit_dot_v1_dot_members_dot_members__pb2.SetDashboardEnvironmentRoleRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_members_dot_members__pb2.SetDashboardEnvironmentRoleResponse.SerializeToString,
+            ),
+            'ClearDashboardEnvironmentRole': grpc.unary_unary_rpc_method_handler(
+                    servicer.ClearDashboardEnvironmentRole,
+                    request_deserializer=scalekit_dot_v1_dot_members_dot_members__pb2.ClearDashboardEnvironmentRoleRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_members_dot_members__pb2.ClearDashboardEnvironmentRoleResponse.SerializeToString,
+            ),
+            'ListDashboardMemberEnvironmentRoles': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListDashboardMemberEnvironmentRoles,
+                    request_deserializer=scalekit_dot_v1_dot_members_dot_members__pb2.ListDashboardMemberEnvironmentRolesRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_members_dot_members__pb2.ListDashboardMemberEnvironmentRolesResponse.SerializeToString,
+            ),
+            'ListDashboardRoles': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListDashboardRoles,
+                    request_deserializer=scalekit_dot_v1_dot_members_dot_members__pb2.ListDashboardRolesRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_members_dot_members__pb2.ListDashboardRolesResponse.SerializeToString,
+            ),
+            'ListDashboardPermissions': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListDashboardPermissions,
+                    request_deserializer=scalekit_dot_v1_dot_members_dot_members__pb2.ListDashboardPermissionsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_members_dot_members__pb2.ListDashboardPermissionsResponse.SerializeToString,
+            ),
+            'CreateDashboardRole': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateDashboardRole,
+                    request_deserializer=scalekit_dot_v1_dot_members_dot_members__pb2.CreateDashboardRoleRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_members_dot_members__pb2.CreateDashboardRoleResponse.SerializeToString,
+            ),
+            'UpdateDashboardRole': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateDashboardRole,
+                    request_deserializer=scalekit_dot_v1_dot_members_dot_members__pb2.UpdateDashboardRoleRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_members_dot_members__pb2.UpdateDashboardRoleResponse.SerializeToString,
+            ),
+            'DeleteDashboardRole': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteDashboardRole,
+                    request_deserializer=scalekit_dot_v1_dot_members_dot_members__pb2.DeleteDashboardRoleRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_members_dot_members__pb2.DeleteDashboardRoleResponse.SerializeToString,
+            ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
             'scalekit.v1.members.MembersService', rpc_method_handlers)
@@ -164,6 +345,23 @@ class MembersService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.members.MembersService/CreateMember',
             scalekit_dot_v1_dot_members_dot_members__pb2.CreateMemberRequest.SerializeToString,
+            scalekit_dot_v1_dot_members_dot_members__pb2.CreateMemberResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def InviteMember(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.members.MembersService/InviteMember',
+            scalekit_dot_v1_dot_members_dot_members__pb2.InviteMemberRequest.SerializeToString,
             scalekit_dot_v1_dot_members_dot_members__pb2.CreateMemberResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
@@ -267,5 +465,158 @@ class MembersService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.members.MembersService/DeleteMember',
             scalekit_dot_v1_dot_members_dot_members__pb2.DeleteMemberRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def AssignDashboardRole(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.members.MembersService/AssignDashboardRole',
+            scalekit_dot_v1_dot_members_dot_members__pb2.AssignDashboardRoleRequest.SerializeToString,
+            scalekit_dot_v1_dot_members_dot_members__pb2.AssignDashboardRoleResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def SetDashboardEnvironmentRole(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.members.MembersService/SetDashboardEnvironmentRole',
+            scalekit_dot_v1_dot_members_dot_members__pb2.SetDashboardEnvironmentRoleRequest.SerializeToString,
+            scalekit_dot_v1_dot_members_dot_members__pb2.SetDashboardEnvironmentRoleResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ClearDashboardEnvironmentRole(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.members.MembersService/ClearDashboardEnvironmentRole',
+            scalekit_dot_v1_dot_members_dot_members__pb2.ClearDashboardEnvironmentRoleRequest.SerializeToString,
+            scalekit_dot_v1_dot_members_dot_members__pb2.ClearDashboardEnvironmentRoleResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListDashboardMemberEnvironmentRoles(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.members.MembersService/ListDashboardMemberEnvironmentRoles',
+            scalekit_dot_v1_dot_members_dot_members__pb2.ListDashboardMemberEnvironmentRolesRequest.SerializeToString,
+            scalekit_dot_v1_dot_members_dot_members__pb2.ListDashboardMemberEnvironmentRolesResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListDashboardRoles(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.members.MembersService/ListDashboardRoles',
+            scalekit_dot_v1_dot_members_dot_members__pb2.ListDashboardRolesRequest.SerializeToString,
+            scalekit_dot_v1_dot_members_dot_members__pb2.ListDashboardRolesResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListDashboardPermissions(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.members.MembersService/ListDashboardPermissions',
+            scalekit_dot_v1_dot_members_dot_members__pb2.ListDashboardPermissionsRequest.SerializeToString,
+            scalekit_dot_v1_dot_members_dot_members__pb2.ListDashboardPermissionsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def CreateDashboardRole(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.members.MembersService/CreateDashboardRole',
+            scalekit_dot_v1_dot_members_dot_members__pb2.CreateDashboardRoleRequest.SerializeToString,
+            scalekit_dot_v1_dot_members_dot_members__pb2.CreateDashboardRoleResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def UpdateDashboardRole(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.members.MembersService/UpdateDashboardRole',
+            scalekit_dot_v1_dot_members_dot_members__pb2.UpdateDashboardRoleRequest.SerializeToString,
+            scalekit_dot_v1_dot_members_dot_members__pb2.UpdateDashboardRoleResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DeleteDashboardRole(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.members.MembersService/DeleteDashboardRole',
+            scalekit_dot_v1_dot_members_dot_members__pb2.DeleteDashboardRoleRequest.SerializeToString,
+            scalekit_dot_v1_dot_members_dot_members__pb2.DeleteDashboardRoleResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

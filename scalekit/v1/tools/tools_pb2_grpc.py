@@ -35,6 +35,11 @@ class ToolServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_tools_dot_tools__pb2.ListAvailableToolsRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_tools_dot_tools__pb2.ListAvailableToolsResponse.FromString,
                 )
+        self.SearchTools = channel.unary_unary(
+                '/scalekit.v1.tools.ToolService/SearchTools',
+                request_serializer=scalekit_dot_v1_dot_tools_dot_tools__pb2.SearchToolsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_tools_dot_tools__pb2.SearchToolsResponse.FromString,
+                )
         self.SetToolDefault = channel.unary_unary(
                 '/scalekit.v1.tools.ToolService/SetToolDefault',
                 request_serializer=scalekit_dot_v1_dot_tools_dot_tools__pb2.SetToolDefaultRequest.SerializeToString,
@@ -54,6 +59,11 @@ class ToolServiceStub(object):
                 '/scalekit.v1.tools.ToolService/ExecuteTool',
                 request_serializer=scalekit_dot_v1_dot_tools_dot_tools__pb2.ExecuteToolRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_tools_dot_tools__pb2.ExecuteToolResponse.FromString,
+                )
+        self.RefreshTools = channel.unary_unary(
+                '/scalekit.v1.tools.ToolService/RefreshTools',
+                request_serializer=scalekit_dot_v1_dot_tools_dot_tools__pb2.RefreshToolsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_tools_dot_tools__pb2.RefreshToolsResponse.FromString,
                 )
 
 
@@ -84,6 +94,13 @@ class ToolServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def SearchTools(self, request, context):
+        """Search tools by natural-language query
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def SetToolDefault(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -105,6 +122,12 @@ class ToolServiceServicer(object):
     def ExecuteTool(self, request, context):
         """Execute Tool
         """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def RefreshTools(self, request, context):
+        """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -132,6 +155,11 @@ def add_ToolServiceServicer_to_server(servicer, server):
                     request_deserializer=scalekit_dot_v1_dot_tools_dot_tools__pb2.ListAvailableToolsRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_tools_dot_tools__pb2.ListAvailableToolsResponse.SerializeToString,
             ),
+            'SearchTools': grpc.unary_unary_rpc_method_handler(
+                    servicer.SearchTools,
+                    request_deserializer=scalekit_dot_v1_dot_tools_dot_tools__pb2.SearchToolsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_tools_dot_tools__pb2.SearchToolsResponse.SerializeToString,
+            ),
             'SetToolDefault': grpc.unary_unary_rpc_method_handler(
                     servicer.SetToolDefault,
                     request_deserializer=scalekit_dot_v1_dot_tools_dot_tools__pb2.SetToolDefaultRequest.FromString,
@@ -151,6 +179,11 @@ def add_ToolServiceServicer_to_server(servicer, server):
                     servicer.ExecuteTool,
                     request_deserializer=scalekit_dot_v1_dot_tools_dot_tools__pb2.ExecuteToolRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_tools_dot_tools__pb2.ExecuteToolResponse.SerializeToString,
+            ),
+            'RefreshTools': grpc.unary_unary_rpc_method_handler(
+                    servicer.RefreshTools,
+                    request_deserializer=scalekit_dot_v1_dot_tools_dot_tools__pb2.RefreshToolsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_tools_dot_tools__pb2.RefreshToolsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -231,6 +264,23 @@ class ToolService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
+    def SearchTools(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.tools.ToolService/SearchTools',
+            scalekit_dot_v1_dot_tools_dot_tools__pb2.SearchToolsRequest.SerializeToString,
+            scalekit_dot_v1_dot_tools_dot_tools__pb2.SearchToolsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
     def SetToolDefault(request,
             target,
             options=(),
@@ -295,5 +345,22 @@ class ToolService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.tools.ToolService/ExecuteTool',
             scalekit_dot_v1_dot_tools_dot_tools__pb2.ExecuteToolRequest.SerializeToString,
             scalekit_dot_v1_dot_tools_dot_tools__pb2.ExecuteToolResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def RefreshTools(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.tools.ToolService/RefreshTools',
+            scalekit_dot_v1_dot_tools_dot_tools__pb2.RefreshToolsRequest.SerializeToString,
+            scalekit_dot_v1_dot_tools_dot_tools__pb2.RefreshToolsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
