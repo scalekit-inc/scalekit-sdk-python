@@ -1,9 +1,9 @@
 from basetest import BaseTest
 
-# A real MCP server resource in the test environment. It currently has no
-# consents, which is fine — these tests assert the call shape and pagination
-# envelope, never the consent contents.
-TEST_RESOURCE_ID = "res_142145647087190278"
+# A real MCP server resource in the test environment. These tests assert the
+# call shape and the pagination envelope, never the consent contents, so they
+# hold whether or not the resource currently has consents.
+TEST_RESOURCE_ID = "res_90805895235109156"
 
 
 class TestResourceClient(BaseTest):
