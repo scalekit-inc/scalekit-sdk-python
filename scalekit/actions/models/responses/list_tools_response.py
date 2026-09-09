@@ -136,7 +136,7 @@ class ListToolsResponse(BaseModel):
         return cls(
             tools=tools,
             tool_names=list(proto_response.tool_names),
-            total_count=proto_response.total_size if proto_response.total_size else None,
+            total_count=proto_response.total_size,
             next_page_token=proto_response.next_page_token if proto_response.next_page_token else None,
             previous_page_token=proto_response.prev_page_token if proto_response.prev_page_token else None
         )
