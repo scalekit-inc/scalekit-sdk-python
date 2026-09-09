@@ -1,11 +1,17 @@
 from typing import TypeVar, Optional, Protocol
 
+import math
+import random
+import time
+from http import HTTPStatus
+
 import grpc
 import jwt
 import json
 import requests
 import platform
 from urllib.parse import urlparse
+from requests.models import Response
 
 from cryptography.hazmat.primitives import serialization
 from scalekit._version import __version__ as _sdk_version
@@ -46,9 +52,92 @@ DEFAULT_HTTP_CONNECT_TIMEOUT_S = 10
 DEFAULT_HTTP_READ_TIMEOUT_S = 30
 DEFAULT_HTTP_TIMEOUT = (DEFAULT_HTTP_CONNECT_TIMEOUT_S, DEFAULT_HTTP_READ_TIMEOUT_S)
 
+# grpc-python stub calls default timeout=None (no deadline) when the caller
+# doesn't pass one — grpc_exec never did, so a call could block forever on a
+# connection the keepalive check above hasn't (yet) noticed is dead, exactly
+# the same class of bug the HTTP timeout above exists to prevent. Matches the
+# Node SDK's timeoutMs default (20s) for the same control-plane calls.
+#
+# This bounds each individual attempt, not the total call: grpc_exec passes
+# the same value into every retry recursion (see UNAVAILABLE's backoff retry
+# below), so a call that retries takes up to (retries + 1) x this value in
+# the worst case, not this value total. A monotonic total-budget deadline
+# (compute once, pass the remaining time per attempt) would close that gap
+# but isn't implemented — left as a known, documented gap rather than a
+# silent one.
+DEFAULT_CALL_TIMEOUT_S = 20
+
+# Tool execution (ToolsClient) proxies to third-party APIs (Gmail, Slack, ...)
+# whose own latency this SDK doesn't control, so it gets a longer deadline
+# than ordinary control-plane calls. Deliberately kept BELOW the infra load
+# balancer's backend timeout for this path (62s, per infra config), rather
+# than matching it: two independent timers racing at the identical value
+# produce a coin-flip on which one fires first, and a caller sees two
+# different failure signatures (a clean ScalekitGatewayTimeoutException vs
+# whatever shape the LB's own forced termination takes) for the same
+# underlying "this call ran too long" condition. Landing below the LB's
+# bound makes the SDK's own deadline the deterministic, always-first
+# timeout, so callers always get the same, well-formed exception.
+DEFAULT_TOOL_CALL_TIMEOUT_S = 60
+
+# Backoff for the retry_on_unavailable path (UNAVAILABLE only — see grpc_exec).
+# The backoff FORMULA matches the Node SDK's exactly: base doubles each
+# attempt up to a 30s ceiling, then half-jittered (0.5-1.0x) so a fleet of
+# clients retrying the same overloaded backend doesn't retry in lockstep.
+# This is only agreement on the formula, not on runtime behavior for the
+# failure mode that matters most — see the UNAVAILABLE branch in grpc_exec
+# for why a transport reset still reaches this retry in Python but not in
+# Node, despite both naming the retried code UNAVAILABLE/Unavailable. Does
+# not apply to the UNAUTHENTICATED retry (immediate — a 401 isn't a signal
+# the backend is under load).
+RETRY_BACKOFF_BASE_S = 1.0
+RETRY_BACKOFF_MAX_S = 30.0
+
+
+def _assert_valid_timeout(name: str, value) -> None:
+    """A non-positive or non-finite timeout is never what the caller wants:
+    grpc-python treats timeout=0/negative as "already expired" (the call fails
+    immediately) and this SDK has no "no deadline" escape hatch — silently
+    reintroducing the unbounded-block bug this parameter exists to fix is not
+    an option worth offering. Shared by the constructor (call_timeout_s/
+    tool_call_timeout_s) and grpc_exec's per-call override, so an override
+    can't bypass the same rule."""
+    if (
+        not isinstance(value, (int, float))
+        or isinstance(value, bool)
+        or not math.isfinite(value)
+        or value <= 0
+    ):
+        raise ValueError(
+            f"{name} must be a positive, finite number of seconds; got {value!r}."
+        )
+
+
+def _is_success_status(status_code: int) -> bool:
+    """200-only would be a footgun: the token/JWKS endpoints are only ever
+    expected to reply 200, but a strict != 200 check would misclassify any
+    other legitimate 2xx (e.g. 201/202/204) as an error. Check the actual
+    success range instead of hardcoding a single code."""
+    return 200 <= status_code < 300
+
+
+def _as_gateway_timeout_response(exp: Exception) -> Response:
+    """Wrap a requests timeout as a synthetic 504 Response so it flows through
+    ScalekitServerException.promote() like any other HTTP error, instead of
+    leaking a raw requests exception past the SDK's exception boundary —
+    matches the Node SDK's ScalekitGatewayTimeoutException.fromAxiosTimeout."""
+    response = Response()
+    response.status_code = HTTPStatus.GATEWAY_TIMEOUT
+    response.reason = "GATEWAY_TIMEOUT"
+    response.encoding = "utf-8"
+    response._content = str(exp).encode("utf-8")
+    return response
+
 
 class WithCall(Protocol):
-    def __call__(self, request: TRequest, metadata: TMetadata) -> TResponse: ...
+    # timeout: Optional to match grpc's multicallables (e.g. UnaryUnaryMultiCallable.with_call),
+    # which themselves default it to None rather than requiring it.
+    def __call__(self, request: TRequest, timeout: Optional[float] = None, metadata: TMetadata = None) -> TResponse: ...
 
 
 class CoreClient:
@@ -66,6 +155,8 @@ class CoreClient:
         client_secret,
         keepalive_time_ms: int = DEFAULT_KEEPALIVE_TIME_MS,
         keepalive_timeout_ms: int = DEFAULT_KEEPALIVE_TIMEOUT_MS,
+        call_timeout_s: float = DEFAULT_CALL_TIMEOUT_S,
+        tool_call_timeout_s: float = DEFAULT_TOOL_CALL_TIMEOUT_S,
     ):
         """
         Initializer for Core client
@@ -89,6 +180,22 @@ class CoreClient:
                                         idle connection as dead. Defaults to
                                         10000.
         :type                        : ``` int ```
+        :param call_timeout_s        : Deadline, in seconds, applied to every gRPC
+                                        call unless a call site overrides it (e.g.
+                                        tool execution — see tool_call_timeout_s).
+                                        Without this, a call can block forever on
+                                        a connection that looks fine to the client
+                                        but is silently dead. Defaults to 20.
+        :type                        : ``` float ```
+        :param tool_call_timeout_s   : Deadline, in seconds, for tool-execution
+                                        calls (ToolsClient), which proxy to
+                                        third-party APIs and can legitimately run
+                                        longer than ordinary control-plane calls.
+                                        Defaults to 60, deliberately below the
+                                        infra load balancer's 62s backend timeout
+                                        for this path so this deadline is always
+                                        the one that fires, not a coin flip.
+        :type                        : ``` float ```
         :returns
             None
         """
@@ -109,8 +216,12 @@ class CoreClient:
                 "margin over the Scalekit server's 30s MinTime (early pings are struck "
                 "as abusive), and gRPC silently raises sub-10s values to 10s."
             )
+        _assert_valid_timeout("call_timeout_s", call_timeout_s)
+        _assert_valid_timeout("tool_call_timeout_s", tool_call_timeout_s)
         self.keepalive_time_ms = keepalive_time_ms
         self.keepalive_timeout_ms = keepalive_timeout_ms
+        self.call_timeout_s = call_timeout_s
+        self.tool_call_timeout_s = tool_call_timeout_s
         self.keys = {}
         self.access_token = None
         self.grpc_secure_channel = None
@@ -164,7 +275,7 @@ class CoreClient:
         }
 
         response = self.authenticate(data=params)
-        if response.status_code != 200:
+        if not _is_success_status(response.status_code):
             raise ScalekitServerException.promote(response)
         response = json.loads(response.content)
         self.access_token = response["access_token"]
@@ -177,14 +288,19 @@ class CoreClient:
         :type       : ``` str ```
         """
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        response = requests.post(
-            self.env_url + TOKEN_ENDPOINT,
-            headers=self.get_headers(headers=headers),
-            data=data,
-            verify=True,
-            timeout=DEFAULT_HTTP_TIMEOUT,
-        )
-        if response.status_code != 200:
+        try:
+            response = requests.post(
+                self.env_url + TOKEN_ENDPOINT,
+                headers=self.get_headers(headers=headers),
+                data=data,
+                verify=True,
+                timeout=DEFAULT_HTTP_TIMEOUT,
+            )
+        except requests.exceptions.Timeout as exp:
+            raise ScalekitServerException.promote(_as_gateway_timeout_response(exp))
+        except requests.exceptions.RequestException as exp:
+            raise ScalekitException(exp)
+        if not _is_success_status(response.status_code):
             raise ScalekitServerException.promote(response)
         return response
 
@@ -192,11 +308,18 @@ class CoreClient:
         """Method to get JWT Keys"""
         if self.keys and len(self.keys) > 0:
             return
-        response = requests.get(
-            self.env_url + JWKS_ENDPOINT,
-            headers=self.get_headers(),
-            timeout=DEFAULT_HTTP_TIMEOUT,
-        )
+        try:
+            response = requests.get(
+                self.env_url + JWKS_ENDPOINT,
+                headers=self.get_headers(),
+                timeout=DEFAULT_HTTP_TIMEOUT,
+            )
+        except requests.exceptions.Timeout as exp:
+            raise ScalekitServerException.promote(_as_gateway_timeout_response(exp))
+        except requests.exceptions.RequestException as exp:
+            raise ScalekitException(exp)
+        if not _is_success_status(response.status_code):
+            raise ScalekitServerException.promote(response)
         response = json.loads(response.content)
         keys = response["keys"]
 
@@ -236,10 +359,61 @@ class CoreClient:
         func: WithCall,
         data: TRequest,
         retry=2,
+        timeout: Optional[float] = None,
+        retry_on_unavailable: bool = True,
+        _attempt: int = 0,
     ) -> TResponse:
+        """
+        :param timeout : Per-call deadline override, in seconds. Defaults to
+                          ``self.call_timeout_s`` when omitted — pass this
+                          explicitly only when a specific call needs a
+                          different bound (see ToolsClient's use of
+                          ``self.core_client.tool_call_timeout_s``). Validated
+                          against the same rule as the constructor's
+                          call_timeout_s/tool_call_timeout_s, since grpc_exec
+                          is a public method a caller could invoke directly
+                          with an unvalidated override. Bounds each attempt
+                          individually, not the total call across retries —
+                          see DEFAULT_CALL_TIMEOUT_S's comment.
+        :type           : ``` Optional[float] ```
+        :param retry_on_unavailable : Whether UNAVAILABLE is retried, with
+                          backoff, or surfaces immediately. Defaults to True.
+                          Note this is a NARROWING of the released SDK's
+                          behavior, not a preservation of it — the released
+                          SDK retries every status code not already
+                          special-cased above (INVALID_ARGUMENT, NOT_FOUND,
+                          ALREADY_EXISTS, PERMISSION_DENIED, all of it),
+                          immediately, no backoff. Set False at a call site
+                          where even the UNAVAILABLE retry risks
+                          double-executing a non-idempotent operation (see
+                          ToolsClient.execute_tool). Does not affect the
+                          separate UNAUTHENTICATED retry below, which is
+                          always safe — rejected before touching business
+                          logic — regardless of this flag. Also does not
+                          affect DEADLINE_EXCEEDED, ABORTED, or INTERNAL/
+                          CANCELLED, none of which retry under either value
+                          — see the branches below for why each is excluded.
+                          When True, a retry sleeps (blocking) for the
+                          backoff delay before re-attempting — see
+                          RETRY_BACKOFF_BASE_S/RETRY_BACKOFF_MAX_S. Callers
+                          holding a lock or a request-handling thread across
+                          this call should account for that.
+        :type           : ``` bool ```
+        :param _attempt : Internal — how many UNAVAILABLE retries have
+                          already happened, used to compute the backoff
+                          delay before the next one. Not meant to be passed
+                          by callers directly. Does not increment on the
+                          UNAUTHENTICATED retry, which has no backoff.
+        :type           : ``` int ```
+        """
+        if timeout is None:
+            timeout = self.call_timeout_s
+        else:
+            _assert_valid_timeout("timeout", timeout)
         try:
             resp = func(
                 data,
+                timeout=timeout,
                 metadata=tuple(self.get_headers().items()),
             )
             return resp
@@ -252,17 +426,83 @@ class CoreClient:
             if exp.code() == grpc.StatusCode.UNAUTHENTICATED:
                 if retry <= 0:
                     raise ScalekitServerException.promote(exp)
+                # Only a failure of the refresh itself falls back to the original
+                # 401 — the retried call's own outcome (success or a different
+                # error entirely, e.g. DEADLINE_EXCEEDED) must propagate as-is,
+                # not get reported as "unauthorized" just because that's what
+                # triggered the first attempt.
                 try:
                     self.__authenticate_client()
-                    return self.grpc_exec(func, data, retry=retry-1)
-                except Exception as refresh_exp:
+                except Exception:
                     raise ScalekitServerException.promote(exp)
+                return self.grpc_exec(
+                    func, data, retry=retry - 1, timeout=timeout,
+                    retry_on_unavailable=retry_on_unavailable, _attempt=_attempt,
+                )
             elif exp.code() == grpc.StatusCode.RESOURCE_EXHAUSTED:
                 # Surface Scalekit rate-limits immediately — retrying triples the damage
                 raise ScalekitServerException.promote(exp)
-            elif retry > 0:
-                return self.grpc_exec(func, data, retry=retry - 1)
+            elif exp.code() == grpc.StatusCode.DEADLINE_EXCEEDED:
+                # grpc_exec passes the same `timeout` value into every retry
+                # recursion — it bounds each individual attempt, not the total
+                # call. Retrying a DEADLINE_EXCEEDED with a fresh full-length
+                # window multiplies the worst-case wall-clock time by
+                # (retry + 1) instead of bounding it, defeating the point of
+                # having a deadline at all (e.g. retry=2 at the 20s
+                # call_timeout_s default: 3 x 20s = 60s worst case). A deadline
+                # that already expired once retrying it unconditionally makes
+                # things worse, not more resilient — so it never retries,
+                # regardless of retry_on_unavailable.
+                raise ScalekitServerException.promote(exp)
+            elif exp.code() == grpc.StatusCode.UNAVAILABLE and retry_on_unavailable and retry > 0:
+                # UNAVAILABLE can mean the request already reached and was
+                # processed by the server — a dead/refused connection, a stream
+                # torn down mid-flight, or a keepalive ping timeout on a
+                # still-in-progress call are all indistinguishable to the caller
+                # from "the server did the work but the response never made it
+                # back." Retrying risks double-executing a non-idempotent call
+                # (e.g. execute_tool sending an email). Individual call sites can
+                # opt out via retry_on_unavailable=False where double-execution is
+                # a real concern — see ToolsClient.execute_tool for the first one.
+                #
+                # This is NOT "matching this SDK's currently-released behavior":
+                # the released SDK's else-branch (`elif retry > 0:`) re-sends on
+                # every status code the branches above don't special-case —
+                # INVALID_ARGUMENT, NOT_FOUND, ALREADY_EXISTS, PERMISSION_DENIED,
+                # all of it, immediately, no backoff. Narrowing the retried set
+                # down to UNAVAILABLE alone is the largest user-visible behavior
+                # change in this release, not a preserved default — see the PR
+                # description for the plain statement of that change.
+                #
+                # Nor is this full retry-scope parity with the Node SDK, despite
+                # both retrying a code spelled UNAVAILABLE/Unavailable: grpc-python
+                # classifies a dead/reset connection as UNAVAILABLE natively, so
+                # THIS branch fires for exactly the failure mode this ticket
+                # (SK-1867) exists to fix. connect-node's own error mapping
+                # surfaces that same reset as Code.Aborted, and its retry check
+                # (`error.code === Code.Unavailable`, core.ts) runs on that raw
+                # code BEFORE the Aborted -> Unavailable re-keying in promote()
+                # (base-exception.ts, only reached on the no-retry path) — so
+                # Node's Unavailable branch never actually fires for a transport
+                # reset; the re-key only affects which exception CLASS the
+                # caller sees afterward. The two SDKs agree on the branch's name,
+                # not on which real failures reach it.
+                #
+                # Backed off (jittered exponential, matching the Node SDK's
+                # formula) rather than retried immediately: on a backend
+                # returning UNAVAILABLE because it's overloaded, every client
+                # retrying instantly just triples the load it's already
+                # struggling with.
+                base_backoff = min(RETRY_BACKOFF_BASE_S * (2 ** _attempt), RETRY_BACKOFF_MAX_S)
+                time.sleep(base_backoff * (0.5 + random.random() * 0.5))
+                return self.grpc_exec(
+                    func, data, retry=retry - 1, timeout=timeout,
+                    retry_on_unavailable=retry_on_unavailable, _attempt=_attempt + 1,
+                )
             else:
+                # ABORTED, INTERNAL, CANCELLED (never retried, any value of
+                # retry_on_unavailable) — or UNAVAILABLE when retry_on_unavailable=
+                # False (see ToolsClient.execute_tool) or retry is exhausted.
                 raise ScalekitServerException.promote(exp)
         except Exception as exp:
             raise ScalekitException(exp)
