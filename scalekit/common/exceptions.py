@@ -1,10 +1,19 @@
 
+import enum
+
 import grpc
 from grpc import StatusCode
 from http import HTTPStatus
 from grpc_status import rpc_status
 from requests.models import Response
 from scalekit.v1.errdetails.errdetails_pb2 import ErrorInfo
+
+
+class NonStandardHTTPStatus(enum.IntEnum):
+    """HTTP status codes not in the stdlib http.HTTPStatus enum, needed so
+    __str__ can read .name/.value the same way it does for every HTTPStatus
+    entry in GRPC_TO_HTTP."""
+    CLIENT_CLOSED_REQUEST = 499
 
 
 GRPC_TO_HTTP = {
@@ -18,7 +27,7 @@ GRPC_TO_HTTP = {
     StatusCode.ALREADY_EXISTS: HTTPStatus.CONFLICT,
     StatusCode.ABORTED: HTTPStatus.CONFLICT,
     StatusCode.RESOURCE_EXHAUSTED: HTTPStatus.TOO_MANY_REQUESTS,
-    StatusCode.CANCELLED: 499,
+    StatusCode.CANCELLED: NonStandardHTTPStatus.CLIENT_CLOSED_REQUEST,
     StatusCode.DATA_LOSS: HTTPStatus.INTERNAL_SERVER_ERROR,
     StatusCode.UNKNOWN: HTTPStatus.INTERNAL_SERVER_ERROR,
     StatusCode.INTERNAL: HTTPStatus.INTERNAL_SERVER_ERROR,
@@ -91,9 +100,29 @@ class ScalekitServerException(ScalekitException):
             self._message = None
         elif isinstance(error, grpc.RpcError):
             self._grpc_status = error.code()
-            self._http_status = GRPC_TO_HTTP.get(self._grpc_status)
-            self._message = rpc_status.from_call(error).message
-            self._err_details = rpc_status.from_call(error).details
+            # Every current StatusCode is mapped, so this default is latent today —
+            # but without it, any future/unmapped code gives None here and __str__
+            # crashes on None.name, the same shape as the CANCELLED-as-bare-int bug.
+            self._http_status = GRPC_TO_HTTP.get(self._grpc_status, HTTPStatus.INTERNAL_SERVER_ERROR)
+            try:
+                # rpc_status.from_call raises ValueError (not just returning None)
+                # when grpc-status-details-bin is present but internally
+                # inconsistent with the call's own code/message — a malformed or
+                # tampered status must not crash the exception meant to describe it.
+                status = rpc_status.from_call(error)
+            except ValueError:
+                status = None
+            if status:
+                self._message = status.message
+            else:
+                # error.details() is grpc's documented accessor for the plain-text
+                # message; str(error) falls back to _InactiveRpcError's multi-line
+                # debug repr (or '' for other RpcError subclasses), which is a
+                # weaker signal than what details() gives when it's available.
+                details_fn = getattr(error, "details", None)
+                details_text = details_fn() if callable(details_fn) else None
+                self._message = details_text or str(error)
+            self._err_details = status.details if status else []
             self._error_code = None
 
             for detail in self._err_details:
@@ -187,11 +216,16 @@ class ScalekitServerException(ScalekitException):
                     f"{self._message}: {details_str}\n{border}\n")
         else:
             border = "=" * 40
+            # _err_details is empty exactly when there was no trailing
+            # google.rpc.Status to unpack (e.g. a transport-level failure with
+            # no response from the server) — _message is where the real error
+            # text lives in that case, so fall back to it rather than printing
+            # an empty list and hiding the one thing this render is for.
             return (f"\n{border}\n"
                     f"Error Code: {self._error_code}\n"
                     f"GRPC: ({self._grpc_status.name}: {self._grpc_status.value})\n"
                     f"HTTP: ({self._http_status.name}: {self._http_status.value})\n"
-                    f"Error Details: {self._err_details}\n{border}\n")
+                    f"Error Details: {self._err_details or self._message}\n{border}\n")
 
     @property
     def http_status(self):

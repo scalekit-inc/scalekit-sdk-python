@@ -68,7 +68,7 @@ def _make_rpc_error(status_code: StatusCode, error_code: str = None,
 
 def _make_core_client():
     """Return a CoreClient instance with __init__ bypassed (no real network calls)."""
-    from scalekit.core import CoreClient
+    from scalekit.core import CoreClient, DEFAULT_CALL_TIMEOUT_S, DEFAULT_TOOL_CALL_TIMEOUT_S
     client = CoreClient.__new__(CoreClient)
     client.access_token = "test-token"
     client.host = "example.com"
@@ -77,6 +77,8 @@ def _make_core_client():
     client.client_secret = "csec"
     client.keys = {}
     client.grpc_secure_channel = None
+    client.call_timeout_s = DEFAULT_CALL_TIMEOUT_S
+    client.tool_call_timeout_s = DEFAULT_TOOL_CALL_TIMEOUT_S
     return client
 
 
@@ -99,7 +101,7 @@ class TestPhase1CurrentBehavior(unittest.TestCase):
         """Helper that creates a callable raising side_effects in sequence."""
         calls = iter(side_effects)
 
-        def func(data, metadata):
+        def func(data, metadata, timeout=None):
             effect = next(calls)
             if isinstance(effect, Exception):
                 raise effect
@@ -144,7 +146,7 @@ class TestPhase1CurrentBehavior(unittest.TestCase):
         )
         call_count = [0]
 
-        def func(data, metadata):
+        def func(data, metadata, timeout=None):
             call_count[0] += 1
             raise tool_429
 
@@ -174,7 +176,7 @@ class TestPhase1CurrentBehavior(unittest.TestCase):
         )
         call_count = [0]
 
-        def func(data, metadata):
+        def func(data, metadata, timeout=None):
             call_count[0] += 1
             raise tool_401
 
@@ -198,7 +200,7 @@ class TestPhase1CurrentBehavior(unittest.TestCase):
         scalekit_429 = _make_rpc_error(StatusCode.RESOURCE_EXHAUSTED)  # no error_code
         call_count = [0]
 
-        def func(data, metadata):
+        def func(data, metadata, timeout=None):
             call_count[0] += 1
             raise scalekit_429
 
@@ -222,7 +224,7 @@ class TestPhase2NewBehavior(unittest.TestCase):
     def _always_raise(self, exc):
         call_count = [0]
 
-        def func(data, metadata):
+        def func(data, metadata, timeout=None):
             call_count[0] += 1
             raise exc
 
@@ -407,7 +409,7 @@ class TestPhase2NewBehavior(unittest.TestCase):
         success_response = object()
         call_count = [0]
 
-        def func(data, metadata):
+        def func(data, metadata, timeout=None):
             call_count[0] += 1
             if call_count[0] == 1:
                 raise unauth_error
@@ -427,7 +429,7 @@ class TestPhase2NewBehavior(unittest.TestCase):
         scalekit_429 = _make_rpc_error(StatusCode.RESOURCE_EXHAUSTED)  # no error_code
         call_count = [0]
 
-        def func(data, metadata):
+        def func(data, metadata, timeout=None):
             call_count[0] += 1
             raise scalekit_429
 
