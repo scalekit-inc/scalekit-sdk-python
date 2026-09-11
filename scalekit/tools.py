@@ -51,6 +51,7 @@ class ToolsClient:
                 page_size=page_size,
                 page_token=page_token
             ),
+            timeout=self.core_client.tool_call_timeout_s,
         )
 
 
@@ -87,6 +88,7 @@ class ToolsClient:
                 page_size=page_size,
                 page_token=page_token
             ),
+            timeout=self.core_client.tool_call_timeout_s,
         )
 
     def search_tools(
@@ -127,6 +129,7 @@ class ToolsClient:
                 identifier=identifier,
                 top_k=top_k
             ),
+            timeout=self.core_client.tool_call_timeout_s,
         )
 
     def execute_tool(
@@ -170,4 +173,9 @@ class ToolsClient:
                 connected_account_id=connected_account_id,
                 connector=connection_name
             ),
+            timeout=self.core_client.tool_call_timeout_s,
+            # A retry on UNAVAILABLE can double-execute a non-idempotent call —
+            # sending an email twice, for example. Opt out here specifically;
+            # see grpc_exec's retry_on_unavailable for the broader rationale.
+            retry_on_unavailable=False,
         )
