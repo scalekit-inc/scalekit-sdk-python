@@ -78,9 +78,19 @@ class ScalekitClient:
         :type                        : ``` str ```
         :param keepalive_time_ms     : How often, in milliseconds, an idle gRPC
                                         connection is verified before reuse.
+                                        Also derives grpc.client_idle_timeout_ms
+                                        (see CLIENT_IDLE_TIMEOUT_CEILING_MS),
+                                        which proactively recycles a connection
+                                        with zero active calls before the
+                                        backend's own MaxConnectionIdle would.
                                         Defaults to 60000; most callers never
                                         need to set this. Set to 0 to disable
-                                        keepalive entirely.
+                                        both of this SDK's own settings for
+                                        these — grpc-core still applies its own
+                                        (much larger) default idle behavior
+                                        when no options are passed at all, so
+                                        this isn't "no idle handling," just no
+                                        SDK-configured one.
         :type                        : ``` int ```
         :param keepalive_timeout_ms  : How long, in milliseconds, to wait for a
                                         keepalive response before treating an

@@ -45,6 +45,32 @@ DEFAULT_KEEPALIVE_TIMEOUT_MS = 10_000
 # never even reaches the wire as requested.) Reject 1..59999.
 MIN_KEEPALIVE_TIME_MS = 60_000
 
+# grpc-core exposes 'grpc.client_idle_timeout_ms' (gRFC A9) as the client-side
+# equivalent of what the Go and Node SDKs implement by hand on their
+# self-managed HTTP/2 transports (grpcIdleConnTimeout / idleConnectionTimeoutMs):
+# proactively transition a fully-idle channel so its connection is torn down
+# and lazily recreated on the next call, instead of waiting to discover it's
+# dead (or waiting for the backend to GOAWAY it) only when a real request is
+# written to it. This SDK previously configured keepalive pings but never this
+# option — the gap this constant and CLIENT_IDLE_TIMEOUT_PING_CYCLES close.
+#
+# Must stay strictly BELOW the backend's own grpcKeepaliveMaxConnectionIdle
+# (5 min, scalekit's cmd/grpc.go), not equal to it: landing exactly on the
+# backend's bound is a race — whichever side's timer fires first wins, and the
+# loser is a request written into a socket the other side just closed. Mirrors
+# the Go SDK's grpcIdleConnCeiling and the Node SDK's
+# IDLE_CONNECTION_TIMEOUT_CEILING_MS exactly (both 4 minutes), for the same
+# reason.
+CLIENT_IDLE_TIMEOUT_CEILING_MS = 240_000
+
+# Multiplier applied to keepalive_time_ms before clamping to the ceiling above
+# — mirrors the Go SDK's grpcIdleConnPingCycles / Node SDK's
+# IDLE_PING_CYCLES_BEFORE_CLOSE (both 5) exactly, so this SDK scales down
+# correctly alongside the other two should MIN_KEEPALIVE_TIME_MS itself ever
+# be lowered. Superseded by the ceiling for every currently-valid non-zero
+# keepalive_time_ms (60s x 5 = 300s already exceeds the 4-minute ceiling).
+CLIENT_IDLE_TIMEOUT_PING_CYCLES = 5
+
 # requests defaults to no timeout, so a black-holed connection blocks the
 # calling thread until the OS abandons the socket. Bound the connect and read
 # phases separately with a (connect, read) tuple.
@@ -113,6 +139,22 @@ def _assert_valid_timeout(name: str, value) -> None:
         )
 
 
+def _client_idle_timeout_ms_for(keepalive_time_ms: int) -> int:
+    """Derive grpc.client_idle_timeout_ms from keepalive_time_ms — mirrors the
+    Go SDK's idleConnTimeoutFor / Node SDK's idleConnectionTimeoutMsFor exactly
+    (same formula, same constants), so the three SDKs land on the same idle-close
+    behavior. keepalive_time_ms == 0 (disabled) returns 0, meaning "not set" to
+    the caller (see __grpc_secure_channel — no option is passed, so grpc-core's
+    own much larger default applies), consistent with keepalive_time_ms == 0
+    disabling the ping-based idle detection above too."""
+    if not keepalive_time_ms:
+        return 0
+    scaled = keepalive_time_ms * CLIENT_IDLE_TIMEOUT_PING_CYCLES
+    if scaled <= 0 or scaled > CLIENT_IDLE_TIMEOUT_CEILING_MS:
+        return CLIENT_IDLE_TIMEOUT_CEILING_MS
+    return scaled
+
+
 def _is_success_status(status_code: int) -> bool:
     """200-only would be a footgun: the token/JWKS endpoints are only ever
     expected to reply 200, but a strict != 200 check would misclassify any
@@ -171,9 +213,18 @@ class CoreClient:
                                         connection is verified before reuse.
                                         Must stay above the backend's keepalive
                                         MinTime (30s) with real margin, or the
-                                        server treats this ping as abuse. Defaults
-                                        to 60000. Set to 0 to disable keepalive
-                                        entirely.
+                                        server treats this ping as abuse. Also
+                                        derives grpc.client_idle_timeout_ms (see
+                                        CLIENT_IDLE_TIMEOUT_CEILING_MS), which
+                                        proactively recycles a connection with
+                                        zero active calls before the backend's
+                                        own MaxConnectionIdle would. Defaults to
+                                        60000. Set to 0 to disable both of this
+                                        SDK's own settings for these — grpc-core
+                                        still applies its own (much larger)
+                                        default idle behavior when no options
+                                        are passed at all, so this isn't "no
+                                        idle handling," just no SDK-configured one.
         :type                        : ``` int ```
         :param keepalive_timeout_ms  : How long, in milliseconds, to wait for a
                                         keepalive response before treating an
@@ -242,8 +293,10 @@ class CoreClient:
             channel_credentials,
             call_credentials,
         )
-        # keepalive_time_ms == 0 disables keepalive entirely: no options are
-        # passed, so grpc-core falls back to its own defaults (no idle pings).
+        # keepalive_time_ms == 0 disables keepalive (and, below, the derived
+        # idle-close timeout) entirely: no options are passed, so grpc-core
+        # falls back to its own defaults (no idle pings, ~30 min idle timeout)
+        # — an escape hatch for a network path that rejects this pattern.
         channel_options = []
         if self.keepalive_time_ms:
             # keepalive_permit_without_calls=1 so an idle channel is still
@@ -256,6 +309,10 @@ class CoreClient:
                 ('grpc.keepalive_timeout_ms', self.keepalive_timeout_ms),
                 ('grpc.keepalive_permit_without_calls', 1),
                 ('grpc.http2.max_pings_without_data', 0),
+                # Proactively idle out (and lazily recreate on next use) a
+                # connection with zero active calls before the backend's own
+                # MaxConnectionIdle would — see CLIENT_IDLE_TIMEOUT_CEILING_MS.
+                ('grpc.client_idle_timeout_ms', _client_idle_timeout_ms_for(self.keepalive_time_ms)),
             ]
         self.grpc_secure_channel = grpc.secure_channel(
             self.host, composite_credentials, options=channel_options
