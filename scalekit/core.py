@@ -219,7 +219,12 @@ class CoreClient:
                                         proactively recycles a connection with
                                         zero active calls before the backend's
                                         own MaxConnectionIdle would. Defaults to
-                                        60000. Set to 0 to disable both entirely.
+                                        60000. Set to 0 to disable both of this
+                                        SDK's own settings for these — grpc-core
+                                        still applies its own (much larger)
+                                        default idle behavior when no options
+                                        are passed at all, so this isn't "no
+                                        idle handling," just no SDK-configured one.
         :type                        : ``` int ```
         :param keepalive_timeout_ms  : How long, in milliseconds, to wait for a
                                         keepalive response before treating an
