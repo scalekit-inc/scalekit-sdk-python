@@ -213,9 +213,13 @@ class CoreClient:
                                         connection is verified before reuse.
                                         Must stay above the backend's keepalive
                                         MinTime (30s) with real margin, or the
-                                        server treats this ping as abuse. Defaults
-                                        to 60000. Set to 0 to disable keepalive
-                                        entirely.
+                                        server treats this ping as abuse. Also
+                                        derives grpc.client_idle_timeout_ms (see
+                                        CLIENT_IDLE_TIMEOUT_CEILING_MS), which
+                                        proactively recycles a connection with
+                                        zero active calls before the backend's
+                                        own MaxConnectionIdle would. Defaults to
+                                        60000. Set to 0 to disable both entirely.
         :type                        : ``` int ```
         :param keepalive_timeout_ms  : How long, in milliseconds, to wait for a
                                         keepalive response before treating an
