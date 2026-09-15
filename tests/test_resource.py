@@ -1,9 +1,18 @@
+from faker import Faker
+
 from basetest import BaseTest
+from scalekit.common.exceptions import ScalekitNotFoundException
+from scalekit.v1.clients.clients_pb2 import ResourceClient as ResourceClientProto
 
 # A real MCP server resource in the test environment. These tests assert the
 # call shape and the pagination envelope, never the consent contents, so they
 # hold whether or not the resource currently has consents.
 TEST_RESOURCE_ID = "res_90805895235109156"
+
+# Syntactically valid but nonexistent resource id, used to assert that
+# delete_resource_client refuses to touch a client under the wrong resource
+# scope instead of trusting the id pair blindly.
+OTHER_RESOURCE_ID = "res_999999999999999999"
 
 
 class TestResourceClient(BaseTest):
@@ -79,3 +88,201 @@ class TestResourceClient(BaseTest):
             )
 
         self.assertEqual(str(context.exception), "consent_id is required")
+
+
+class TestResourceClientCRUD(BaseTest):
+    """ Class definition for TestResourceClientCRUD Class """
+
+    def setUp(self):
+        self.client_id = None
+
+    def tearDown(self):
+        if self.client_id:
+            try:
+                self.scalekit_client.resources.delete_resource_client(
+                    resource_id=TEST_RESOURCE_ID, client_id=self.client_id
+                )
+            except Exception:
+                pass  # Ignore cleanup errors
+
+    def test_create_resource_client(self):
+        """ Method to test create resource client """
+        client = ResourceClientProto(
+            name=Faker().company(),
+            description=Faker().sentence(),
+            scopes=["read", "write"],
+        )
+        response = self.scalekit_client.resources.create_resource_client(
+            resource_id=TEST_RESOURCE_ID, client=client
+        )
+        self.client_id = response[0].client.client_id
+
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertIsNotNone(response[0].client.client_id)
+        self.assertIsNotNone(response[0].plain_secret)
+        self.assertEqual(response[0].client.resource_id, TEST_RESOURCE_ID)
+        self.assertEqual(response[0].client.name, client.name)
+        self.assertEqual(response[0].client.description, client.description)
+        self.assertEqual(list(response[0].client.scopes), ["read", "write"])
+
+    def test_create_resource_client_without_resource_id(self):
+        """ Method to test create resource client without a resource id """
+        with self.assertRaises(ValueError) as context:
+            self.scalekit_client.resources.create_resource_client(
+                resource_id="", client=ResourceClientProto(name="x")
+            )
+
+        self.assertEqual(str(context.exception), "resource_id is required")
+
+    def test_get_resource_client(self):
+        """ Method to test get resource client """
+        create_response = self.scalekit_client.resources.create_resource_client(
+            resource_id=TEST_RESOURCE_ID, client=ResourceClientProto(name=Faker().company())
+        )
+        self.client_id = create_response[0].client.client_id
+
+        response = self.scalekit_client.resources.get_resource_client(
+            resource_id=TEST_RESOURCE_ID, client_id=self.client_id
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertEqual(response[0].client.client_id, self.client_id)
+        self.assertIsNotNone(response[0].consented_users)
+
+    def test_get_resource_client_without_resource_id(self):
+        """ Method to test get resource client without a resource id """
+        with self.assertRaises(ValueError) as context:
+            self.scalekit_client.resources.get_resource_client(resource_id="", client_id="m2m_1234567890")
+
+        self.assertEqual(str(context.exception), "resource_id is required")
+
+    def test_get_resource_client_without_client_id(self):
+        """ Method to test get resource client without a client id """
+        with self.assertRaises(ValueError) as context:
+            self.scalekit_client.resources.get_resource_client(resource_id=TEST_RESOURCE_ID, client_id="")
+
+        self.assertEqual(str(context.exception), "client_id is required")
+
+    def test_list_resource_clients(self):
+        """ Method to test list resource clients """
+        create_response = self.scalekit_client.resources.create_resource_client(
+            resource_id=TEST_RESOURCE_ID, client=ResourceClientProto(name=Faker().company())
+        )
+        self.client_id = create_response[0].client.client_id
+
+        response = self.scalekit_client.resources.list_resource_clients(resource_id=TEST_RESOURCE_ID)
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertIsInstance(response[0].total_dcr_clients, int)
+        self.assertIsInstance(response[0].total_static_clients, int)
+        response_client_ids = [c.client_id for c in response[0].clients]
+        self.assertIn(self.client_id, response_client_ids)
+
+    def test_list_resource_clients_without_resource_id(self):
+        """ Method to test list resource clients without a resource id """
+        with self.assertRaises(ValueError) as context:
+            self.scalekit_client.resources.list_resource_clients(resource_id="")
+
+        self.assertEqual(str(context.exception), "resource_id is required")
+
+    def test_update_resource_client(self):
+        """ Method to test update resource client """
+        create_response = self.scalekit_client.resources.create_resource_client(
+            resource_id=TEST_RESOURCE_ID, client=ResourceClientProto(name="Original Name")
+        )
+        self.client_id = create_response[0].client.client_id
+
+        response = self.scalekit_client.resources.update_resource_client(
+            resource_id=TEST_RESOURCE_ID,
+            client_id=self.client_id,
+            client=ResourceClientProto(name="Updated Name", description="Updated description"),
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertEqual(response[0].client.name, "Updated Name")
+        self.assertEqual(response[0].client.description, "Updated description")
+
+    def test_update_resource_client_scopes_via_update_mask(self):
+        """ Method to test update resource client scopes using the update mask """
+        create_response = self.scalekit_client.resources.create_resource_client(
+            resource_id=TEST_RESOURCE_ID, client=ResourceClientProto(name=Faker().company(), scopes=["read"])
+        )
+        self.client_id = create_response[0].client.client_id
+
+        response = self.scalekit_client.resources.update_resource_client(
+            resource_id=TEST_RESOURCE_ID,
+            client_id=self.client_id,
+            client=ResourceClientProto(scopes=["read", "write"]),
+            update_mask=["scopes"],
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertEqual(list(response[0].client.scopes), ["read", "write"])
+
+    def test_update_resource_client_without_resource_id(self):
+        """ Method to test update resource client without a resource id """
+        with self.assertRaises(ValueError) as context:
+            self.scalekit_client.resources.update_resource_client(
+                resource_id="", client_id="m2m_1234567890", client=ResourceClientProto()
+            )
+
+        self.assertEqual(str(context.exception), "resource_id is required")
+
+    def test_update_resource_client_without_client_id(self):
+        """ Method to test update resource client without a client id """
+        with self.assertRaises(ValueError) as context:
+            self.scalekit_client.resources.update_resource_client(
+                resource_id=TEST_RESOURCE_ID, client_id="", client=ResourceClientProto()
+            )
+
+        self.assertEqual(str(context.exception), "client_id is required")
+
+    def test_delete_resource_client(self):
+        """ Method to test delete resource client """
+        create_response = self.scalekit_client.resources.create_resource_client(
+            resource_id=TEST_RESOURCE_ID, client=ResourceClientProto(name=Faker().company())
+        )
+        client_id = create_response[0].client.client_id
+
+        response = self.scalekit_client.resources.delete_resource_client(
+            resource_id=TEST_RESOURCE_ID, client_id=client_id
+        )
+        self.assertEqual(response[1].code().name, "OK")
+
+        with self.assertRaises(ScalekitNotFoundException):
+            self.scalekit_client.resources.get_resource_client(
+                resource_id=TEST_RESOURCE_ID, client_id=client_id
+            )
+
+    def test_delete_resource_client_without_resource_id(self):
+        """ Method to test delete resource client without a resource id """
+        with self.assertRaises(ValueError) as context:
+            self.scalekit_client.resources.delete_resource_client(resource_id="", client_id="m2m_1234567890")
+
+        self.assertEqual(str(context.exception), "resource_id is required")
+
+    def test_delete_resource_client_without_client_id(self):
+        """ Method to test delete resource client without a client id """
+        with self.assertRaises(ValueError) as context:
+            self.scalekit_client.resources.delete_resource_client(resource_id=TEST_RESOURCE_ID, client_id="")
+
+        self.assertEqual(str(context.exception), "client_id is required")
+
+    def test_delete_resource_client_refuses_wrong_resource(self):
+        """ Method to test that delete refuses a client that does not belong to the given resource """
+        create_response = self.scalekit_client.resources.create_resource_client(
+            resource_id=TEST_RESOURCE_ID, client=ResourceClientProto(name=Faker().company())
+        )
+        self.client_id = create_response[0].client.client_id
+
+        # OTHER_RESOURCE_ID doesn't exist, so the client can't belong to it —
+        # the server's own resource-scoping on GetResourceClient refuses the
+        # delete before it ever runs, and the SDK-side ownership check in
+        # delete_resource_client is the second line of defense for a backend
+        # that didn't enforce this.
+        with self.assertRaises(ScalekitNotFoundException):
+            self.scalekit_client.resources.delete_resource_client(
+                resource_id=OTHER_RESOURCE_ID, client_id=self.client_id
+            )
+
+        # The client must still exist under its real resource.
+        still_there = self.scalekit_client.resources.get_resource_client(
+            resource_id=TEST_RESOURCE_ID, client_id=self.client_id
+        )
+        self.assertEqual(still_there[0].client.client_id, self.client_id)

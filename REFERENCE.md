@@ -5901,7 +5901,361 @@ scalekit_client.m2m_client.remove_organization_client_secret(
 
 ## Resources
 
-Access the consents your end users grant against a resource, such as an MCP server. A consent records that one end user allowed a specific API client to act on their behalf. Each consent identifies the user by `external_user_id` — the identifier your application supplied when the consent was granted.
+Manage the API clients scoped to a resource (such as an MCP server), and access the consents your end users grant against one. A consent records that one end user allowed a specific API client to act on their behalf. Each consent identifies the user by `external_user_id` — the identifier your application supplied when the consent was granted.
+
+<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">create_resource_client</a>(resource_id, client) -> CreateResourceClientResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Creates a new API client scoped to a resource.
+
+Returns the created `client` plus a `plain_secret` — the plaintext client secret, only available at creation time. `audience` is ignored for `MCP_SERVER`/`MCP_GATEWAY` resources, which get their audience from the resource itself.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from scalekit.v1.clients.clients_pb2 import ResourceClient
+
+response = scalekit_client.resources.create_resource_client(
+    'res_123456',
+    ResourceClient(
+        name='My Resource Client',
+        description='optional description',
+        scopes=['read', 'write'],
+        audience=['my-api'],
+        custom_claims=[{'key': 'plan', 'value': 'pro'}],
+        expiry=86400,
+        redirect_uris=['https://example.com/callback'],
+    ),
+)
+
+print(response[0].client.client_id, response[0].plain_secret)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**resource_id:** `str` - Resource to create the client for (format: `res_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**client:** `ResourceClient` (proto message from `scalekit.v1.clients.clients_pb2`) - Desired client properties: `name`, `description`, `scopes`, `audience`, `custom_claims`, `expiry`, `redirect_uris`
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">get_resource_client</a>(resource_id, client_id) -> GetResourceClientResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Retrieves a single API client scoped to a resource, along with the end-users who have granted it consent.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.resources.get_resource_client('res_123456', 'm2m_123456')
+
+print(response[0].client.name, response[0].consented_users)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**resource_id:** `str` - Resource the client must belong to (format: `res_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**client_id:** `str` - Client id (format: `m2m_...`)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">list_resource_clients</a>(resource_id) -> ListResourceClientsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists every API client scoped to a resource.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.resources.list_resource_clients('res_123456')
+
+print(response[0].total_dcr_clients, response[0].total_static_clients)
+for c in response[0].clients:
+    print(c.client_id, c.name)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**resource_id:** `str` - Resource whose clients to list (format: `res_...`)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">update_resource_client</a>(resource_id, client_id, client, update_mask?) -> UpdateResourceClientResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Updates an existing API client scoped to a resource.
+
+`update_mask` lists which fields of `client` to change, as raw field paths (e.g. `["scopes", "custom_claims"]`). Verified against a live environment: the server only actually honors the mask for `scopes`, `custom_claims` and `redirect_uris` — include one of those paths with an empty value (e.g. `scopes=[]`) to clear it. `name`/`description` are applied whenever non-empty regardless of `update_mask` (an empty string is a no-op, not a clear), and `audience` is currently not applied on update at all, regardless of value or `update_mask`.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from scalekit.v1.clients.clients_pb2 import ResourceClient
+
+response = scalekit_client.resources.update_resource_client(
+    'res_123456',
+    'm2m_123456',
+    ResourceClient(name='Updated Name', scopes=['read', 'write']),
+    update_mask=['name', 'scopes'],
+)
+
+print(response[0].client.name, response[0].client.scopes)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**resource_id:** `str` - Resource the client must belong to (format: `res_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**client_id:** `str` - Client id to update
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**client:** `ResourceClient` (proto message from `scalekit.v1.clients.clients_pb2`) - Fields to update
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**update_mask:** `Optional[List[str]]` - Field paths in `client` to apply (see description above for which fields actually honor this)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">delete_resource_client</a>(resource_id, client_id) -> DeleteResourceClientResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Permanently deletes an API client scoped to a resource.
+
+`DeleteResourceClient` shares its underlying delete path with client deletion in general, so nothing forces the given `client_id` to actually belong to `resource_id` — but this method lives on `resources`, so callers reasonably expect it to only ever touch clients within that resource. This fetches the client first and verifies its own `resource_id` matches before deleting, and refuses instead of trusting the id pair blindly.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+scalekit_client.resources.delete_resource_client('res_123456', 'm2m_123456')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**resource_id:** `str` - Resource the client must belong to (format: `res_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**client_id:** `str` - Client id to delete
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
 
 <details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">list_user_consents</a>(resource_id, search?, page_size?, page_token?, user_ids?) -> ListResourceUserConsentsResponse</code></summary>
 <dl>
