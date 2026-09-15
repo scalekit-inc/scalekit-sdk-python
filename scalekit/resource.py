@@ -110,8 +110,9 @@ class ResourceClient:
         custom_claims and redirect_uris — include one of those paths with an
         empty value (e.g. scopes=[]) to clear it. name/description are
         applied whenever non-empty regardless of update_mask (an empty
-        string is a no-op, not a clear), and audience is currently not
-        applied on update at all, regardless of value or update_mask.
+        string is a no-op, not a clear). audience cannot be changed here at
+        all — a resource client's audience is fixed to the resource it
+        belongs to, by design, not something this call can widen or repoint.
 
         :param resource_id  : Resource the client must belong to (format: res_xxxxx)
         :type               : ``` str ```
