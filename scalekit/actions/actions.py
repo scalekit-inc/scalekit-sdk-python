@@ -20,6 +20,30 @@ from scalekit.v1.tools.tools_pb2 import Filter
 from google.protobuf.wrappers_pb2 import BoolValue
 
 
+class MissingFrameworkDependency(ImportError):
+    """Raised when an optional framework integration's package is not installed.
+
+    Deliberately still an ImportError so existing ``except ImportError`` handlers
+    keep working unchanged.
+
+    Note the consequence: ``hasattr(client.actions, "google")`` *raises* rather
+    than returning False, because ``hasattr`` only swallows AttributeError. Use
+    :meth:`ActionClient.has_framework` to probe for an integration instead --
+    ``hasattr`` cannot be made safe here without changing the exception type,
+    which would be a breaking change and is left for a major version.
+    """
+
+
+def _unwrap_tools_result(result):
+    """Accept either a response message or a legacy ``(response, call)`` tuple.
+
+    ToolsClient used to return the raw ``.with_call`` tuple; it now returns the
+    message so its type annotations are true. This keeps the two call sites here
+    working against either shape.
+    """
+    if isinstance(result, tuple):
+        return result[0]
+    return result
 
 
 class ActionClient:
@@ -66,11 +90,11 @@ class ActionClient:
                 from scalekit.actions.frameworks.langchain import LangChain
                 self._langchain = LangChain(self.tools, execute_callback=self.execute_tool)
             except ImportError as e:
-                raise ImportError(
+                raise MissingFrameworkDependency(
                     "LangChain not found. To use LangChain integration, please install:\n"
                     "pip install langchain\n\n"
                     "For more information, see: https://python.langchain.com/docs/\n"
-                )
+                ) from e
         return self._langchain
 
 
@@ -82,13 +106,37 @@ class ActionClient:
                 from scalekit.actions.frameworks.google_adk import GoogleADK
                 self._google = GoogleADK(self.tools, execute_callback=self.execute_tool)
             except ImportError as e:
-                raise ImportError(
+                raise MissingFrameworkDependency(
                     "Google ADK not found. To use Google ADK integration, please install:\n"
                     "pip install google-adk\n\n"
                     "For more information, see: https://google.github.io/adk-docs/\n"
-                )
+                ) from e
 
         return self._google
+
+    #: Optional framework integrations, by the accessor that exposes each one.
+    FRAMEWORKS = ("langchain", "google")
+
+    def has_framework(self, name: str) -> bool:
+        """Return whether an optional framework integration is usable.
+
+        ``hasattr(actions, "google")`` cannot answer this: the property raises
+        ImportError when the package is absent, and ``hasattr`` only swallows
+        AttributeError, so the probe itself blows up. Use this instead::
+
+            available = [f for f in ActionClient.FRAMEWORKS
+                         if scalekit_client.actions.has_framework(f)]
+
+        :param name: Accessor name, e.g. ``"langchain"`` or ``"google"``.
+        :returns: True when the integration can be constructed, else False.
+        """
+        if name not in self.FRAMEWORKS:
+            return False
+        try:
+            getattr(self, name)
+        except ImportError:
+            return False
+        return True
 
     @property
     def mcp(self) -> "ActionMcp":
@@ -160,9 +208,10 @@ class ActionClient:
             connection_name=connection_name
         )
         
-        # Extract the response[0] (the actual ExecuteToolResponse proto object)
-        proto_response = result_tuple[0]
-        
+        # ToolsClient now returns the response message itself, matching its
+        # annotation; _unwrap keeps this tolerant of either shape.
+        proto_response = _unwrap_tools_result(result_tuple)
+
         # Convert proto to our ExecuteToolResponse class
         response = ExecuteToolResponse.from_proto(proto_response)
         
@@ -246,7 +295,7 @@ class ActionClient:
             page_token=page_token
         )
 
-        proto_response = result_tuple[0]
+        proto_response = _unwrap_tools_result(result_tuple)
 
         return ListToolsResponse.from_proto(proto_response)
 
