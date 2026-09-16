@@ -6279,7 +6279,7 @@ print(allowed_scopes)
 response = scalekit_client.resources.update_resource_client(
     'res_123456',
     'm2m_123456',
-    ResourceClient(name='Updated Name', scopes=[allowed_scopes[0]]),
+    ResourceClient(name='Updated Name', scopes=allowed_scopes),
     update_mask=['name', 'scopes'],
 )
 
