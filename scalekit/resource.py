@@ -102,9 +102,13 @@ class ResourceClient:
         Method to create a new API client scoped to a resource
 
         Returns the created client plus a plain_secret — the plaintext
-        client secret, only available at creation time. audience is ignored
-        for MCP_SERVER/MCP_GATEWAY resources, which get their audience from
-        the resource itself.
+        client secret, only available at creation time.
+
+        audience cannot be set through this SDK — it is always
+        server-determined, for any resource type. Setting a non-empty
+        `client.audience` raises ValueError immediately rather than
+        silently forwarding it (previously honored server-side for
+        non-MCP resources; intentionally removed before this shipped).
 
         :param resource_id  : Resource id to create the client for (format: res_xxxxx)
         :type               : ``` str ```
@@ -115,6 +119,8 @@ class ResourceClient:
         """
         if not resource_id:
             raise ValueError("resource_id is required")
+        if client is not None and len(client.audience) > 0:
+            raise ValueError("audience cannot be set via the SDK; it is always server-determined")
 
         return self.core_client.grpc_exec(
             self.client_service.CreateResourceClient.with_call,
@@ -178,10 +184,10 @@ class ResourceClient:
         applied whenever non-empty regardless of update_mask (an empty
         string is a no-op, not a clear).
 
-        "audience" is not a supported update_mask path — a resource client's
-        audience is fixed at creation and can never be changed via update,
-        for any resource type, so this rejects it outright rather than
-        silently accepting a path that can never take effect.
+        "audience" is not a supported update_mask path — audience cannot be
+        set through this SDK at all, on create or update, for any resource
+        type, so this rejects it outright rather than silently accepting a
+        path that can never take effect.
 
         :param resource_id  : Resource the client must belong to (format: res_xxxxx)
         :type               : ``` str ```
@@ -199,7 +205,7 @@ class ResourceClient:
         if not client_id:
             raise ValueError("client_id is required")
         if update_mask and "audience" in update_mask:
-            raise ValueError("audience cannot be changed via update; it is fixed at creation")
+            raise ValueError("audience cannot be set via the SDK; it is always server-determined")
 
         return self.core_client.grpc_exec(
             self.client_service.UpdateResourceClient.with_call,

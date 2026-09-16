@@ -297,7 +297,17 @@ class TestResourceClientCRUD(BaseTest):
                 update_mask=["audience"],
             )
 
-        self.assertEqual(str(context.exception), "audience cannot be changed via update; it is fixed at creation")
+        self.assertEqual(str(context.exception), "audience cannot be set via the SDK; it is always server-determined")
+
+    def test_create_resource_client_rejects_audience(self):
+        """ Method to test that create rejects a non-empty audience, since it can never be set through the SDK """
+        with self.assertRaises(ValueError) as context:
+            self.scalekit_client.resources.create_resource_client(
+                resource_id=TEST_RESOURCE_ID,
+                client=ResourceClientProto(name="Audience Reject Test", audience=["https://api.example.com"]),
+            )
+
+        self.assertEqual(str(context.exception), "audience cannot be set via the SDK; it is always server-determined")
 
     def test_delete_resource_client(self):
         """ Method to test delete resource client """

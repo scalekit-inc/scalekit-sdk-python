@@ -6058,7 +6058,9 @@ for resource in response[0].resources:
 
 Creates a new API client scoped to a resource.
 
-Returns the created `client` plus a `plain_secret` — the plaintext client secret, only available at creation time. `audience` is ignored for `MCP_SERVER`/`MCP_GATEWAY` resources, which get their audience from the resource itself.
+Returns the created `client` plus a `plain_secret` — the plaintext client secret, only available at creation time.
+
+`audience` cannot be set through this SDK — it is always server-determined, for any resource type. Setting a non-empty `client.audience` raises `ValueError` immediately.
 </dd>
 </dl>
 </dd>
@@ -6252,7 +6254,7 @@ Updates an existing API client scoped to a resource.
 
 `update_mask` lists which fields of `client` to change, as raw field paths (e.g. `["scopes", "custom_claims"]`). Verified against a live environment: the server only actually honors the mask for `scopes`, `custom_claims` and `redirect_uris` — include one of those paths with an empty value (e.g. `scopes=[]`) to clear it. `name`/`description` are applied whenever non-empty regardless of `update_mask` (an empty string is a no-op, not a clear).
 
-`"audience"` is not a supported `update_mask` path — a resource client's audience is fixed at creation and can never be changed via update, for any resource type, so this raises `ValueError` rather than silently accepting a path that can never take effect.
+`"audience"` is not a supported `update_mask` path — audience cannot be set through this SDK at all, on create or update, for any resource type, so this raises `ValueError` rather than silently accepting a path that can never take effect.
 </dd>
 </dl>
 </dd>
