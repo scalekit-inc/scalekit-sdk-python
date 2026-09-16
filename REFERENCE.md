@@ -6247,7 +6247,7 @@ for c in response[0].clients:
 
 Updates an existing API client scoped to a resource.
 
-`update_mask` lists which fields of `client` to change, as raw field paths (e.g. `["scopes", "custom_claims"]`). Verified against a live environment: the server only actually honors the mask for `scopes`, `custom_claims` and `redirect_uris` — include one of those paths with an empty value (e.g. `scopes=[]`) to clear it. `name`/`description` are applied whenever non-empty regardless of `update_mask` (an empty string is a no-op, not a clear). `audience` cannot be changed here at all — a resource client's audience is fixed to the resource it belongs to, by design.
+`update_mask` lists which fields of `client` to change, as raw field paths (e.g. `["scopes", "custom_claims"]`). Verified against a live environment: the server only actually honors the mask for `scopes`, `custom_claims` and `redirect_uris` — include one of those paths with an empty value (e.g. `scopes=[]`) to clear it. `name`/`description` are applied whenever non-empty regardless of `update_mask` (an empty string is a no-op, not a clear). `audience` cannot be changed via update for any resource type — this call never touches it, so whatever value the client received at creation stays fixed for its lifetime. For MCP_SERVER/MCP_GATEWAY resources that value is always the resource's own audience (`create_resource_client` ignores caller-supplied audience for those types); for other resource types it's whichever value create used — the caller-supplied audience, or the resource's own id if none was supplied.
 </dd>
 </dl>
 </dd>
