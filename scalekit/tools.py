@@ -1,7 +1,13 @@
 from typing import Optional
 
 from scalekit.core import CoreClient
-from scalekit.util import struct_to_dict
+from scalekit.utils.proto import (
+    register_struct_dict_property,
+    # Re-exported: `from scalekit.tools import struct_to_dict` is the
+    # natural reach for anyone already working with these properties, and
+    # it's the type-checkable way to do the same conversion by hand.
+    struct_to_dict,
+)
 from scalekit.v1.tools.tools_pb2 import *
 from scalekit.v1.tools.tools_pb2_grpc import ToolServiceStub
 from google.protobuf import empty_pb2
@@ -9,14 +15,19 @@ from google.protobuf import empty_pb2
 # Purely additive convenience properties -- see struct_to_dict's docstring
 # for why `dict(response.data)` / `dict(tool.definition)` are not enough
 # for any tool response/definition with nested objects or lists. This does
-# not change what `.data`/`.definition` return or their type in any way
-# (both are still the exact same google.protobuf.Struct as before), so
-# every existing call site keeps working unmodified -- these are new
-# attributes, not replacements. Registered here (rather than as a method on
+# not change what `.data`/`.definition`/`.metadata` return or their type in
+# any way (all are still the exact same google.protobuf.Struct as before),
+# so every existing call site keeps working unmodified -- these are new
+# attributes, not replacements. Registered here (rather than as methods on
 # ToolsClient) so they're available directly on any Tool/ExecuteToolResponse
-# instance, including ones nested inside list/search responses.
-ExecuteToolResponse.data_dict = property(lambda self: struct_to_dict(self.data))
-Tool.definition_dict = property(lambda self: struct_to_dict(self.definition))
+# instance, including ones nested inside a ListScopedToolsResponse.
+#
+# Note these are computed on each access, so the returned dict is a fresh
+# copy: mutating it does not write back to the underlying Struct. Assign to
+# `.data`/`.definition`/`.metadata` itself to change the message.
+register_struct_dict_property(ExecuteToolResponse, "data", "data_dict")
+register_struct_dict_property(Tool, "definition", "definition_dict")
+register_struct_dict_property(Tool, "metadata", "metadata_dict")
 
 
 class ToolsClient:
@@ -46,6 +57,16 @@ class ToolsClient:
     ) -> ListToolsResponse:
         """
         Method to list tools
+
+        Each returned tool's ``definition`` and ``metadata`` are
+        google.protobuf.Struct values. Use ``definition_dict`` /
+        ``metadata_dict`` for a fully-converted native dict --
+        ``dict(tool.definition)`` only shallow-converts and leaves nested
+        fields (such as ``input_schema.properties``) as raw protobuf
+        objects::
+
+            response, _ = scalekit_client.tools.list_tools()
+            schema = response.tools[0].definition_dict["input_schema"]
 
         :param filter           : Filter parameters for listing tools
         :type                   : ``` Filter ```
@@ -81,6 +102,19 @@ class ToolsClient:
         """
         Method to list scoped tools for a specific identifier
 
+        Each returned tool's ``.tool.definition`` is a
+        google.protobuf.Struct. Use ``.tool.definition_dict`` for a
+        fully-converted native dict (nested objects such as
+        ``input_schema.properties`` included) --
+        ``dict(scoped_tool.tool.definition)`` only shallow-converts and
+        leaves nested fields as raw protobuf objects. Note the property
+        is on the inner ``Tool``, not on the ``ScopedTool`` wrapper::
+
+            response, _ = scalekit_client.tools.list_scoped_tools(
+                identifier="user@example.com",
+            )
+            schema = response.tools[0].tool.definition_dict["input_schema"]
+
         :param identifier       : Identifier to scope the tools list
         :type                   : ``` str ```
         :param filter           : Filter parameters for scoped tools
@@ -92,12 +126,6 @@ class ToolsClient:
 
         :returns:
             List Scoped Tools Response
-
-        Each returned tool's `.tool.definition` is a google.protobuf.Struct.
-        Use `.tool.definition_dict` to get a fully-converted native dict
-        (handles nested objects like `input_schema.properties` correctly) --
-        `dict(.tool.definition)` only shallow-converts and leaves nested
-        fields as raw protobuf objects.
         """
         return self.core_client.grpc_exec(
             self.tool_service.ListScopedTools.with_call,
@@ -162,6 +190,24 @@ class ToolsClient:
         """
         Method to execute a tool using a connected account
 
+        The response's ``data`` is a google.protobuf.Struct. Use
+        ``data_dict`` for a fully-converted native dict/list -- a real
+        tool response usually has nested objects or lists (a GitHub
+        repo's ``owner``/``permissions``/``topics``, say), and
+        ``dict(response.data)`` only shallow-converts, leaving those
+        nested fields as raw protobuf objects that ``json.dumps`` then
+        refuses::
+
+            response, _ = scalekit_client.tools.execute_tool(
+                tool_name="github.repos.get",
+                identifier="user@example.com",
+            )
+            owner = response.data_dict["owner"]["login"]
+
+        ``data_dict`` is None when the tool returned no data, and every
+        number in it is a float -- see
+        ``scalekit.utils.proto.struct_to_dict`` for both details.
+
         :param tool_name        : Name of the tool to execute
         :type                   : ``` str ```
         :param identifier       : Identifier of the connected account
@@ -175,13 +221,6 @@ class ToolsClient:
 
         :returns:
             Execute Tool Response
-
-        The response's `.data` is a google.protobuf.Struct. Use
-        `.data_dict` to get a fully-converted native dict/list -- a real
-        tool response often has nested objects or lists (e.g. a GitHub
-        repo's `owner`/`permissions`/`topics`), and `dict(response.data)`
-        only shallow-converts, leaving those nested fields as raw protobuf
-        objects instead of plain dict/list.
         """
         from google.protobuf import struct_pb2
 
