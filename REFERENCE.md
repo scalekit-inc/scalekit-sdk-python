@@ -5899,6 +5899,177 @@ scalekit_client.m2m_client.remove_organization_client_secret(
 </dl>
 </details>
 
+## Resources
+
+Access the consents your end users grant against a resource, such as an MCP server. A consent records that one end user allowed a specific API client to act on their behalf. Each consent identifies the user by `external_user_id` — the identifier your application supplied when the consent was granted.
+
+<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">list_user_consents</a>(resource_id, search?, page_size?, page_token?, user_ids?) -> ListResourceUserConsentsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists the end-user consents granted against a resource, with pagination.
+
+Each returned consent carries `id`, `external_user_id`, `client_id`, `client_name`, `scopes` and `granted_at`. The response also carries `total_size` plus `next_page_token` / `prev_page_token` cursors.
+
+Filter by user in one of two ways. Pass `user_ids` to match specific external user IDs exactly and case-sensitively. Pass `search` for a case-insensitive substring match. When you give both, `user_ids` wins and `search` is ignored.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.resources.list_user_consents(
+    'res_123456',
+    page_size=20,
+    user_ids=['usr_123456']  # optional; takes precedence over search
+)
+
+print(response[0].total_size, response[0].next_page_token)
+for consent in response[0].consents:
+    print(consent.id, consent.external_user_id, consent.client_id, consent.scopes)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**resource_id:** `str` - Resource whose consents to list (format: `res_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**search:** `Optional[str]` - Case-insensitive substring match on external user IDs. Ignored when `user_ids` is set.
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_size:** `Optional[int]` - Page size for pagination (max 30)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_token:** `Optional[str]` - Page token for pagination
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**user_ids:** `Optional[List[str]]` - Exact match on external user IDs, max 25. Takes precedence over `search`.
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">revoke_user_consent</a>(client_id, consent_id) -> RevokeUserConsentResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Revokes a single end-user consent held by an API client.
+
+Deletes the consent, so the client is prompted for consent again on its next authorization attempt, and revokes every active refresh token issued to that client for the same user. Access tokens already issued stay valid until they expire.
+
+Note that `client_id` is the API client that holds the consent (format: `m2m_...`), not the resource id. This matches the underlying route `DELETE /clients/{client_id}/consents/{consent_id}`.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+scalekit_client.resources.revoke_user_consent(
+    'm2m_123456',
+    'usrcnst_123456'
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**client_id:** `str` - Client holding the consent (format: `m2m_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**consent_id:** `str` - Consent to revoke (format: `usrcnst_...`)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Connected Accounts
 
 <details><summary><code>client.connected_accounts.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connected_accounts.py">list_connected_accounts</a>(organization_id?, user_id?, connector?, identifier?, provider?, page_size?, page_token?) -> ListConnectedAccountsResponse</code></summary>
@@ -6843,6 +7014,94 @@ scalekit_client.actions.providers.delete_custom_provider(
 **📦 Response**
 
 `DeleteCustomProviderResponse` (empty — success is indicated by no exception being raised).
+
+</dd>
+</dl>
+</details>
+
+## Tools
+
+<details><summary><code>client.tools.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/tools.py">search_tools</a>(query, identifier?, top_k?) -> SearchToolsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Searches tools ranked by relevance to a natural-language query — the job to be done, not an exact tool name.
+
+Pass `identifier` to also get per-connection readiness (`TOOL_READINESS_STATE_READY`, `TOOL_READINESS_STATE_NEEDS_CONNECTION`, or `TOOL_READINESS_STATE_NEEDS_REAUTH`) on each result, so you can gate execution on the right auth step before calling `execute_tool`. `TOOL_READINESS_STATE_NEEDS_CONNECTION` means an existing connected account for that provider is inactive; an empty `connections` list means no account exists for the provider at all (not an error). Only pass a result's `connected_account_id` to `execute_tool` when `readiness_state` is `TOOL_READINESS_STATE_READY`.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from scalekit.v1.tools.tools_pb2 import TOOL_READINESS_STATE_READY
+
+response = scalekit_client.tools.search_tools(
+    query="send a message to a slack channel",
+    identifier="user@example.com",
+    top_k=10
+)
+
+for tool in response[0].tools:
+    print(tool.name, tool.score)
+    for connection in tool.connections:
+        # readiness_state is an int at runtime -- always compare against the
+        # named enum constant, never a raw int or a string.
+        is_ready = connection.readiness_state == TOOL_READINESS_STATE_READY
+        print(" ", connection.connection_name, is_ready, connection.connected_account_id)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**query:** `str` - Natural-language query or keywords describing the job to be done. 1-256 characters.
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**identifier:** `Optional[str]` - Connected-account identifier (e.g. the end user's email or ID). When set, each result is annotated with readiness for this identifier's connections.
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**top_k:** `Optional[int]` - Maximum number of ranked results to return. Defaults to 10, capped at 50.
+
+</dd>
+</dl>
+</dd>
+</dl>
+
 
 </dd>
 </dl>

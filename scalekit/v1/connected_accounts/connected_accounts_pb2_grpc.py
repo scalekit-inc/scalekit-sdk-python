@@ -44,6 +44,11 @@ class ConnectedAccountServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetMagicLinkForConnectedAccountRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetMagicLinkForConnectedAccountResponse.FromString,
                 )
+        self.AuthorizeOrgWideCredential = channel.unary_unary(
+                '/scalekit.v1.connected_accounts.ConnectedAccountService/AuthorizeOrgWideCredential',
+                request_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.AuthorizeOrgWideCredentialRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.AuthorizeOrgWideCredentialResponse.FromString,
+                )
         self.GetConnectedAccount = channel.unary_unary(
                 '/scalekit.v1.connected_accounts.ConnectedAccountService/GetConnectedAccount',
                 request_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetConnectedAccountRequest.SerializeToString,
@@ -131,6 +136,13 @@ class ConnectedAccountServiceServicer(object):
 
     def GetMagicLinkForConnectedAccount(self, request, context):
         """Generate Magic Link for Account Connection
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def AuthorizeOrgWideCredential(self, request, context):
+        """Authorize the shared credential for an ORG_WIDE connection
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -242,6 +254,11 @@ def add_ConnectedAccountServiceServicer_to_server(servicer, server):
                     servicer.GetMagicLinkForConnectedAccount,
                     request_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetMagicLinkForConnectedAccountRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetMagicLinkForConnectedAccountResponse.SerializeToString,
+            ),
+            'AuthorizeOrgWideCredential': grpc.unary_unary_rpc_method_handler(
+                    servicer.AuthorizeOrgWideCredential,
+                    request_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.AuthorizeOrgWideCredentialRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.AuthorizeOrgWideCredentialResponse.SerializeToString,
             ),
             'GetConnectedAccount': grpc.unary_unary_rpc_method_handler(
                     servicer.GetConnectedAccount,
@@ -397,6 +414,23 @@ class ConnectedAccountService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connected_accounts.ConnectedAccountService/GetMagicLinkForConnectedAccount',
             scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetMagicLinkForConnectedAccountRequest.SerializeToString,
             scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetMagicLinkForConnectedAccountResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def AuthorizeOrgWideCredential(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connected_accounts.ConnectedAccountService/AuthorizeOrgWideCredential',
+            scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.AuthorizeOrgWideCredentialRequest.SerializeToString,
+            scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.AuthorizeOrgWideCredentialResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

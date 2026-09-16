@@ -25,6 +25,52 @@ FSA_DATA_TYPE_CONNECTION: FSADataType
 FSA_DATA_TYPE_SESSION: FSADataType
 FSA_DATA_TYPE_USER_MANAGEMENT: FSADataType
 
+class ProjectBillingCatalogRequest(_message.Message):
+    __slots__ = ("version", "dry_run", "end_previous_card")
+    VERSION_FIELD_NUMBER: _ClassVar[int]
+    DRY_RUN_FIELD_NUMBER: _ClassVar[int]
+    END_PREVIOUS_CARD_FIELD_NUMBER: _ClassVar[int]
+    version: int
+    dry_run: bool
+    end_previous_card: bool
+    def __init__(self, version: _Optional[int] = ..., dry_run: bool = ..., end_previous_card: bool = ...) -> None: ...
+
+class ProjectBillingCatalogResponse(_message.Message):
+    __slots__ = ("version", "dry_run", "metrics_created", "products_created", "rates_added", "skipped", "rate_card_id", "previous_rate_card_ended")
+    VERSION_FIELD_NUMBER: _ClassVar[int]
+    DRY_RUN_FIELD_NUMBER: _ClassVar[int]
+    METRICS_CREATED_FIELD_NUMBER: _ClassVar[int]
+    PRODUCTS_CREATED_FIELD_NUMBER: _ClassVar[int]
+    RATES_ADDED_FIELD_NUMBER: _ClassVar[int]
+    SKIPPED_FIELD_NUMBER: _ClassVar[int]
+    RATE_CARD_ID_FIELD_NUMBER: _ClassVar[int]
+    PREVIOUS_RATE_CARD_ENDED_FIELD_NUMBER: _ClassVar[int]
+    version: int
+    dry_run: bool
+    metrics_created: int
+    products_created: int
+    rates_added: int
+    skipped: int
+    rate_card_id: str
+    previous_rate_card_ended: bool
+    def __init__(self, version: _Optional[int] = ..., dry_run: bool = ..., metrics_created: _Optional[int] = ..., products_created: _Optional[int] = ..., rates_added: _Optional[int] = ..., skipped: _Optional[int] = ..., rate_card_id: _Optional[str] = ..., previous_rate_card_ended: bool = ...) -> None: ...
+
+class ReconcileConnectionsAccrualRequest(_message.Message):
+    __slots__ = ("environment_ids",)
+    ENVIRONMENT_IDS_FIELD_NUMBER: _ClassVar[int]
+    environment_ids: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, environment_ids: _Optional[_Iterable[str]] = ...) -> None: ...
+
+class ReconcileConnectionsAccrualResponse(_message.Message):
+    __slots__ = ("success_environments", "failed_environments", "error_messages")
+    SUCCESS_ENVIRONMENTS_FIELD_NUMBER: _ClassVar[int]
+    FAILED_ENVIRONMENTS_FIELD_NUMBER: _ClassVar[int]
+    ERROR_MESSAGES_FIELD_NUMBER: _ClassVar[int]
+    success_environments: int
+    failed_environments: int
+    error_messages: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, success_environments: _Optional[int] = ..., failed_environments: _Optional[int] = ..., error_messages: _Optional[_Iterable[str]] = ...) -> None: ...
+
 class MigrateEnvKeysRequest(_message.Message):
     __slots__ = ("environment_ids", "key_type", "key_ref", "provider", "force_reencrypt")
     ENVIRONMENT_IDS_FIELD_NUMBER: _ClassVar[int]

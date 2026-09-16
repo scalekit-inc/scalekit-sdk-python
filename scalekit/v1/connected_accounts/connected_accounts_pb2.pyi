@@ -105,7 +105,7 @@ class GetMyConnectionMagicLinkResponse(_message.Message):
     def __init__(self, link: _Optional[str] = ..., expiry: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
 class ListConnectedAccountsRequest(_message.Message):
-    __slots__ = ("organization_id", "user_id", "connector", "identifier", "provider", "page_size", "page_token", "query", "connection_names")
+    __slots__ = ("organization_id", "user_id", "connector", "identifier", "provider", "page_size", "page_token", "query", "connection_names", "is_org_wide_credential")
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     USER_ID_FIELD_NUMBER: _ClassVar[int]
     CONNECTOR_FIELD_NUMBER: _ClassVar[int]
@@ -115,6 +115,7 @@ class ListConnectedAccountsRequest(_message.Message):
     PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
     QUERY_FIELD_NUMBER: _ClassVar[int]
     CONNECTION_NAMES_FIELD_NUMBER: _ClassVar[int]
+    IS_ORG_WIDE_CREDENTIAL_FIELD_NUMBER: _ClassVar[int]
     organization_id: str
     user_id: str
     connector: str
@@ -124,7 +125,8 @@ class ListConnectedAccountsRequest(_message.Message):
     page_token: str
     query: str
     connection_names: _containers.RepeatedScalarFieldContainer[str]
-    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., connector: _Optional[str] = ..., identifier: _Optional[str] = ..., provider: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ..., query: _Optional[str] = ..., connection_names: _Optional[_Iterable[str]] = ...) -> None: ...
+    is_org_wide_credential: bool
+    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., connector: _Optional[str] = ..., identifier: _Optional[str] = ..., provider: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ..., query: _Optional[str] = ..., connection_names: _Optional[_Iterable[str]] = ..., is_org_wide_credential: bool = ...) -> None: ...
 
 class ListConnectedAccountsResponse(_message.Message):
     __slots__ = ("connected_accounts", "total_size", "next_page_token", "prev_page_token")
@@ -248,6 +250,28 @@ class GetMagicLinkForConnectedAccountResponse(_message.Message):
     expiry: _timestamp_pb2.Timestamp
     def __init__(self, link: _Optional[str] = ..., expiry: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
+class AuthorizeOrgWideCredentialRequest(_message.Message):
+    __slots__ = ("connection_id", "authorization_details", "api_config")
+    CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
+    AUTHORIZATION_DETAILS_FIELD_NUMBER: _ClassVar[int]
+    API_CONFIG_FIELD_NUMBER: _ClassVar[int]
+    connection_id: str
+    authorization_details: AuthorizationDetails
+    api_config: _struct_pb2.Struct
+    def __init__(self, connection_id: _Optional[str] = ..., authorization_details: _Optional[_Union[AuthorizationDetails, _Mapping]] = ..., api_config: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
+
+class AuthorizeOrgWideCredentialResponse(_message.Message):
+    __slots__ = ("link", "expiry", "connected_account_id", "status")
+    LINK_FIELD_NUMBER: _ClassVar[int]
+    EXPIRY_FIELD_NUMBER: _ClassVar[int]
+    CONNECTED_ACCOUNT_ID_FIELD_NUMBER: _ClassVar[int]
+    STATUS_FIELD_NUMBER: _ClassVar[int]
+    link: str
+    expiry: _timestamp_pb2.Timestamp
+    connected_account_id: str
+    status: ConnectorStatus
+    def __init__(self, link: _Optional[str] = ..., expiry: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., connected_account_id: _Optional[str] = ..., status: _Optional[_Union[ConnectorStatus, str]] = ...) -> None: ...
+
 class VerifyConnectedAccountUserRequest(_message.Message):
     __slots__ = ("auth_request_id", "identifier")
     AUTH_REQUEST_ID_FIELD_NUMBER: _ClassVar[int]
@@ -283,7 +307,7 @@ class GetConnectedAccountByIdentifierResponse(_message.Message):
     def __init__(self, connected_account: _Optional[_Union[ConnectedAccount, _Mapping]] = ...) -> None: ...
 
 class ConnectedAccount(_message.Message):
-    __slots__ = ("identifier", "provider", "status", "authorization_type", "authorization_details", "token_expires_at", "updated_at", "connector", "last_used_at", "id", "connection_id", "api_config")
+    __slots__ = ("identifier", "provider", "status", "authorization_type", "authorization_details", "token_expires_at", "updated_at", "connector", "last_used_at", "id", "connection_id", "api_config", "is_org_wide_credential")
     IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
     PROVIDER_FIELD_NUMBER: _ClassVar[int]
     STATUS_FIELD_NUMBER: _ClassVar[int]
@@ -296,6 +320,7 @@ class ConnectedAccount(_message.Message):
     ID_FIELD_NUMBER: _ClassVar[int]
     CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
     API_CONFIG_FIELD_NUMBER: _ClassVar[int]
+    IS_ORG_WIDE_CREDENTIAL_FIELD_NUMBER: _ClassVar[int]
     identifier: str
     provider: str
     status: ConnectorStatus
@@ -308,7 +333,8 @@ class ConnectedAccount(_message.Message):
     id: str
     connection_id: str
     api_config: _struct_pb2.Struct
-    def __init__(self, identifier: _Optional[str] = ..., provider: _Optional[str] = ..., status: _Optional[_Union[ConnectorStatus, str]] = ..., authorization_type: _Optional[_Union[ConnectorType, str]] = ..., authorization_details: _Optional[_Union[AuthorizationDetails, _Mapping]] = ..., token_expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., connector: _Optional[str] = ..., last_used_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., id: _Optional[str] = ..., connection_id: _Optional[str] = ..., api_config: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
+    is_org_wide_credential: bool
+    def __init__(self, identifier: _Optional[str] = ..., provider: _Optional[str] = ..., status: _Optional[_Union[ConnectorStatus, str]] = ..., authorization_type: _Optional[_Union[ConnectorType, str]] = ..., authorization_details: _Optional[_Union[AuthorizationDetails, _Mapping]] = ..., token_expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., connector: _Optional[str] = ..., last_used_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., id: _Optional[str] = ..., connection_id: _Optional[str] = ..., api_config: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., is_org_wide_credential: bool = ...) -> None: ...
 
 class CreateConnectedAccount(_message.Message):
     __slots__ = ("authorization_details", "api_config")
@@ -327,7 +353,7 @@ class UpdateConnectedAccount(_message.Message):
     def __init__(self, authorization_details: _Optional[_Union[AuthorizationDetails, _Mapping]] = ..., api_config: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
 
 class ConnectedAccountForList(_message.Message):
-    __slots__ = ("identifier", "provider", "status", "authorization_type", "token_expires_at", "updated_at", "connector", "last_used_at", "id", "connection_id")
+    __slots__ = ("identifier", "provider", "status", "authorization_type", "token_expires_at", "updated_at", "connector", "last_used_at", "id", "connection_id", "is_org_wide_credential")
     IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
     PROVIDER_FIELD_NUMBER: _ClassVar[int]
     STATUS_FIELD_NUMBER: _ClassVar[int]
@@ -338,6 +364,7 @@ class ConnectedAccountForList(_message.Message):
     LAST_USED_AT_FIELD_NUMBER: _ClassVar[int]
     ID_FIELD_NUMBER: _ClassVar[int]
     CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
+    IS_ORG_WIDE_CREDENTIAL_FIELD_NUMBER: _ClassVar[int]
     identifier: str
     provider: str
     status: ConnectorStatus
@@ -348,7 +375,8 @@ class ConnectedAccountForList(_message.Message):
     last_used_at: _timestamp_pb2.Timestamp
     id: str
     connection_id: str
-    def __init__(self, identifier: _Optional[str] = ..., provider: _Optional[str] = ..., status: _Optional[_Union[ConnectorStatus, str]] = ..., authorization_type: _Optional[_Union[ConnectorType, str]] = ..., token_expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., connector: _Optional[str] = ..., last_used_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., id: _Optional[str] = ..., connection_id: _Optional[str] = ...) -> None: ...
+    is_org_wide_credential: bool
+    def __init__(self, identifier: _Optional[str] = ..., provider: _Optional[str] = ..., status: _Optional[_Union[ConnectorStatus, str]] = ..., authorization_type: _Optional[_Union[ConnectorType, str]] = ..., token_expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., connector: _Optional[str] = ..., last_used_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., id: _Optional[str] = ..., connection_id: _Optional[str] = ..., is_org_wide_credential: bool = ...) -> None: ...
 
 class AuthorizationDetails(_message.Message):
     __slots__ = ("oauth_token", "static_auth", "google_dwd", "trusted_idp")

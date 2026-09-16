@@ -110,12 +110,14 @@ class DiscoveryAuthMethodRequest(_message.Message):
     def __init__(self, discovery_request: _Optional[_Union[DiscoveryRequest, _Mapping]] = ...) -> None: ...
 
 class DiscoveryRequest(_message.Message):
-    __slots__ = ("email", "intent")
+    __slots__ = ("email", "intent", "g_recaptcha_response")
     EMAIL_FIELD_NUMBER: _ClassVar[int]
     INTENT_FIELD_NUMBER: _ClassVar[int]
+    G_RECAPTCHA_RESPONSE_FIELD_NUMBER: _ClassVar[int]
     email: str
     intent: Intent
-    def __init__(self, email: _Optional[str] = ..., intent: _Optional[_Union[Intent, str]] = ...) -> None: ...
+    g_recaptcha_response: str
+    def __init__(self, email: _Optional[str] = ..., intent: _Optional[_Union[Intent, str]] = ..., g_recaptcha_response: _Optional[str] = ...) -> None: ...
 
 class DiscoveryAuthMethodResponse(_message.Message):
     __slots__ = ("auth_method",)
@@ -162,10 +164,18 @@ class VerifyPasswordLessOtpResponse(_message.Message):
     def __init__(self) -> None: ...
 
 class OTPRequest(_message.Message):
-    __slots__ = ("code_challenge",)
+    __slots__ = ("code_challenge", "g_recaptcha_response")
     CODE_CHALLENGE_FIELD_NUMBER: _ClassVar[int]
+    G_RECAPTCHA_RESPONSE_FIELD_NUMBER: _ClassVar[int]
     code_challenge: str
-    def __init__(self, code_challenge: _Optional[str] = ...) -> None: ...
+    g_recaptcha_response: str
+    def __init__(self, code_challenge: _Optional[str] = ..., g_recaptcha_response: _Optional[str] = ...) -> None: ...
+
+class ResendPasswordlessRequest(_message.Message):
+    __slots__ = ("g_recaptcha_response",)
+    G_RECAPTCHA_RESPONSE_FIELD_NUMBER: _ClassVar[int]
+    g_recaptcha_response: str
+    def __init__(self, g_recaptcha_response: _Optional[str] = ...) -> None: ...
 
 class ListUserOrganizationsResponse(_message.Message):
     __slots__ = ("organizations", "user", "intent")

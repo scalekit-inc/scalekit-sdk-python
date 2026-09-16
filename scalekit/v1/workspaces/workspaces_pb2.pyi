@@ -20,6 +20,13 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
+class BillingMode(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    BILLING_MODE_UNSPECIFIED: _ClassVar[BillingMode]
+    STRIPE: _ClassVar[BillingMode]
+    STRIPE_AND_METRONOME: _ClassVar[BillingMode]
+    METRONOME: _ClassVar[BillingMode]
+
 class BillingSubscriptionStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
     BILLING_SUBSCRIPTION_STATUS_UNSPECIFIED: _ClassVar[BillingSubscriptionStatus]
@@ -71,6 +78,10 @@ class CheckoutSessionMode(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     setup: _ClassVar[CheckoutSessionMode]
     subscription: _ClassVar[CheckoutSessionMode]
     payment: _ClassVar[CheckoutSessionMode]
+BILLING_MODE_UNSPECIFIED: BillingMode
+STRIPE: BillingMode
+STRIPE_AND_METRONOME: BillingMode
+METRONOME: BillingMode
 BILLING_SUBSCRIPTION_STATUS_UNSPECIFIED: BillingSubscriptionStatus
 BILLING_SUBSCRIPTION_ACTIVE: BillingSubscriptionStatus
 BILLING_SUBSCRIPTION_CANCELED: BillingSubscriptionStatus
@@ -114,7 +125,7 @@ class WorkspaceExtendedInfo(_message.Message):
     def __init__(self, payment_overdue: bool = ..., payment_method_present: bool = ..., free_quota_exceeded: bool = ...) -> None: ...
 
 class Workspace(_message.Message):
-    __slots__ = ("id", "create_time", "update_time", "display_name", "region_code", "extended_info", "billing_customer_id", "billing_subscription_id", "auth_domain", "deployment")
+    __slots__ = ("id", "create_time", "update_time", "display_name", "region_code", "extended_info", "billing_customer_id", "billing_subscription_id", "auth_domain", "deployment", "billing_mode")
     ID_FIELD_NUMBER: _ClassVar[int]
     CREATE_TIME_FIELD_NUMBER: _ClassVar[int]
     UPDATE_TIME_FIELD_NUMBER: _ClassVar[int]
@@ -125,6 +136,7 @@ class Workspace(_message.Message):
     BILLING_SUBSCRIPTION_ID_FIELD_NUMBER: _ClassVar[int]
     AUTH_DOMAIN_FIELD_NUMBER: _ClassVar[int]
     DEPLOYMENT_FIELD_NUMBER: _ClassVar[int]
+    BILLING_MODE_FIELD_NUMBER: _ClassVar[int]
     id: str
     create_time: _timestamp_pb2.Timestamp
     update_time: _timestamp_pb2.Timestamp
@@ -135,7 +147,8 @@ class Workspace(_message.Message):
     billing_subscription_id: str
     auth_domain: str
     deployment: str
-    def __init__(self, id: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., display_name: _Optional[str] = ..., region_code: _Optional[_Union[_commons_pb2.RegionCode, str]] = ..., extended_info: _Optional[_Union[WorkspaceExtendedInfo, _Mapping]] = ..., billing_customer_id: _Optional[str] = ..., billing_subscription_id: _Optional[str] = ..., auth_domain: _Optional[str] = ..., deployment: _Optional[str] = ...) -> None: ...
+    billing_mode: BillingMode
+    def __init__(self, id: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., display_name: _Optional[str] = ..., region_code: _Optional[_Union[_commons_pb2.RegionCode, str]] = ..., extended_info: _Optional[_Union[WorkspaceExtendedInfo, _Mapping]] = ..., billing_customer_id: _Optional[str] = ..., billing_subscription_id: _Optional[str] = ..., auth_domain: _Optional[str] = ..., deployment: _Optional[str] = ..., billing_mode: _Optional[_Union[BillingMode, str]] = ...) -> None: ...
 
 class CreateWorkspace(_message.Message):
     __slots__ = ("email", "company")

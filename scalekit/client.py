@@ -9,10 +9,17 @@ import hmac
 import hashlib
 import base64
 from datetime import datetime, timedelta, timezone
-from scalekit.core import CoreClient
+from scalekit.core import (
+    CoreClient,
+    DEFAULT_KEEPALIVE_TIME_MS,
+    DEFAULT_KEEPALIVE_TIMEOUT_MS,
+    DEFAULT_CALL_TIMEOUT_S,
+    DEFAULT_TOOL_CALL_TIMEOUT_S,
+)
 from scalekit.domain import DomainClient
 from scalekit.connection import ConnectionClient
 from scalekit.m2m_client import M2MClient
+from scalekit.resource import ResourceClient
 from scalekit.organization import OrganizationClient
 from scalekit.directory import DirectoryClient
 from scalekit.users import UserClient
@@ -50,28 +57,83 @@ webhook_signature_version = "v1"
 class ScalekitClient:
     """ Class definition for scalekit client """
 
-    def __init__(self, env_url: str, client_id: str, client_secret: str):
+    def __init__(
+        self,
+        env_url: str,
+        client_id: str,
+        client_secret: str,
+        keepalive_time_ms: int = DEFAULT_KEEPALIVE_TIME_MS,
+        keepalive_timeout_ms: int = DEFAULT_KEEPALIVE_TIMEOUT_MS,
+        call_timeout_s: float = DEFAULT_CALL_TIMEOUT_S,
+        tool_call_timeout_s: float = DEFAULT_TOOL_CALL_TIMEOUT_S,
+    ):
         """
         Initializer for Scalekit base class
 
-        :param env_url        : Environment URL
-        :type                 : ``` str ```
-        :param client_id      : Client ID
-        :type                 : ``` str ```
-        :param client_secret  : Client Secret
-        :type                 : ``` str ```
+        :param env_url               : Environment URL
+        :type                        : ``` str ```
+        :param client_id             : Client ID
+        :type                        : ``` str ```
+        :param client_secret         : Client Secret
+        :type                        : ``` str ```
+        :param keepalive_time_ms     : How often, in milliseconds, an idle gRPC
+                                        connection is verified before reuse.
+                                        Also derives grpc.client_idle_timeout_ms
+                                        (see CLIENT_IDLE_TIMEOUT_CEILING_MS),
+                                        which proactively recycles a connection
+                                        with zero active calls before the
+                                        backend's own MaxConnectionIdle would.
+                                        Defaults to 60000; most callers never
+                                        need to set this. Set to 0 to disable
+                                        both of this SDK's own settings for
+                                        these — grpc-core still applies its own
+                                        (much larger) default idle behavior
+                                        when no options are passed at all, so
+                                        this isn't "no idle handling," just no
+                                        SDK-configured one.
+        :type                        : ``` int ```
+        :param keepalive_timeout_ms  : How long, in milliseconds, to wait for a
+                                        keepalive response before treating an
+                                        idle connection as dead. Defaults to
+                                        10000.
+        :type                        : ``` int ```
+        :param call_timeout_s        : Deadline, in seconds, applied to every gRPC
+                                        call except ToolsClient calls (list_tools,
+                                        list_scoped_tools, execute_tool — see
+                                        tool_call_timeout_s). Without this, a call
+                                        can block forever on a connection that
+                                        looks fine to the client but is silently
+                                        dead. Bounds each attempt individually,
+                                        not the total call across retries — a
+                                        call that retries can take a multiple of
+                                        this value in the worst case. Defaults
+                                        to 20.
+        :type                        : ``` float ```
+        :param tool_call_timeout_s   : Deadline, in seconds, for tool-execution
+                                        calls, which proxy to third-party APIs and
+                                        can legitimately run longer than ordinary
+                                        control-plane calls. Defaults to 60.
+        :type                        : ``` float ```
 
         :returns:
             None
         """
         try:
             self.core_client = CoreClient(
-                env_url=env_url, client_id=client_id, client_secret=client_secret)
+                env_url=env_url,
+                client_id=client_id,
+                client_secret=client_secret,
+                keepalive_time_ms=keepalive_time_ms,
+                keepalive_timeout_ms=keepalive_timeout_ms,
+                call_timeout_s=call_timeout_s,
+                tool_call_timeout_s=tool_call_timeout_s,
+            )
             self.domain = DomainClient(self.core_client)
             self.connection = ConnectionClient(self.core_client)
             self.organization = OrganizationClient(self.core_client)
             self.directory = DirectoryClient(self.core_client)
             self.m2m_client = M2MClient(self.core_client)
+            self.resources = ResourceClient(self.core_client)
             self.users = UserClient(self.core_client)
             self.roles = RoleClient(self.core_client)
             self.permissions = PermissionClient(self.core_client)

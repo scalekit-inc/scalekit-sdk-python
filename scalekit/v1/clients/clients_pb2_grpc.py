@@ -35,6 +35,21 @@ class ClientServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateClientRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateClientResponse.FromString,
                 )
+        self.AddEnvironmentRedirectUri = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/AddEnvironmentRedirectUri',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.AddEnvironmentRedirectUriRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.EnvironmentLoginUrisResponse.FromString,
+                )
+        self.RemoveEnvironmentRedirectUri = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/RemoveEnvironmentRedirectUri',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.RemoveEnvironmentRedirectUriRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.EnvironmentLoginUrisResponse.FromString,
+                )
+        self.SetEnvironmentInitiateLoginUri = channel.unary_unary(
+                '/scalekit.v1.clients.ClientService/SetEnvironmentInitiateLoginUri',
+                request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.SetEnvironmentInitiateLoginUriRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.EnvironmentLoginUrisResponse.FromString,
+                )
         self.DeleteClient = channel.unary_unary(
                 '/scalekit.v1.clients.ClientService/DeleteClient',
                 request_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.DeleteClientRequest.SerializeToString,
@@ -224,6 +239,44 @@ class ClientServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def UpdateClient(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def AddEnvironmentRedirectUri(self, request, context):
+        """Delta operations on the ENVIRONMENT client's login URIs — the single OIDC client
+        every environment is provisioned with, which is what the dashboard's "Redirect URIs"
+        settings and the support agent's `list_redirect_uris` tool both read.
+
+        WHY THESE EXIST rather than an (agent_tool) annotation on UpdateClient, because it
+        reads as duplication otherwise. Two independent reasons, and either alone is enough:
+
+        1. The approval card. A gated write's summary must name every value the model chose
+        (protoc-gen-agenttool's checkWriteSummaryCoversRequest), and UpdateClient's
+        request carries a whole Client message plus a FieldMask — a message and a
+        repeated field, neither of which has a one-line rendering on a card. Hiding both
+        leaves a tool that can set nothing. A request that is one URI is the only shape
+        the gate can describe honestly.
+        2. Read-modify-write belongs on the server. UpdateClient REPLACES post_login_uris
+        wholesale, so "add one URI" through it means the caller reads the list, appends,
+        and writes it back — and any concurrent edit between the read and the write is
+        silently discarded. Here the list is read and written inside one call.
+
+        PREVIEW because they are dashboard/agent conveniences over UpdateClient, not a new
+        public API surface: the public way to set these remains UpdateClient.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def RemoveEnvironmentRedirectUri(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def SetEnvironmentInitiateLoginUri(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -463,6 +516,21 @@ def add_ClientServiceServicer_to_server(servicer, server):
                     servicer.UpdateClient,
                     request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateClientRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateClientResponse.SerializeToString,
+            ),
+            'AddEnvironmentRedirectUri': grpc.unary_unary_rpc_method_handler(
+                    servicer.AddEnvironmentRedirectUri,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.AddEnvironmentRedirectUriRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.EnvironmentLoginUrisResponse.SerializeToString,
+            ),
+            'RemoveEnvironmentRedirectUri': grpc.unary_unary_rpc_method_handler(
+                    servicer.RemoveEnvironmentRedirectUri,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.RemoveEnvironmentRedirectUriRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.EnvironmentLoginUrisResponse.SerializeToString,
+            ),
+            'SetEnvironmentInitiateLoginUri': grpc.unary_unary_rpc_method_handler(
+                    servicer.SetEnvironmentInitiateLoginUri,
+                    request_deserializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.SetEnvironmentInitiateLoginUriRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_clients_dot_clients__pb2.EnvironmentLoginUrisResponse.SerializeToString,
             ),
             'DeleteClient': grpc.unary_unary_rpc_method_handler(
                     servicer.DeleteClient,
@@ -704,6 +772,57 @@ class ClientService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/UpdateClient',
             scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateClientRequest.SerializeToString,
             scalekit_dot_v1_dot_clients_dot_clients__pb2.UpdateClientResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def AddEnvironmentRedirectUri(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/AddEnvironmentRedirectUri',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.AddEnvironmentRedirectUriRequest.SerializeToString,
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.EnvironmentLoginUrisResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def RemoveEnvironmentRedirectUri(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/RemoveEnvironmentRedirectUri',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.RemoveEnvironmentRedirectUriRequest.SerializeToString,
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.EnvironmentLoginUrisResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def SetEnvironmentInitiateLoginUri(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.clients.ClientService/SetEnvironmentInitiateLoginUri',
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.SetEnvironmentInitiateLoginUriRequest.SerializeToString,
+            scalekit_dot_v1_dot_clients_dot_clients__pb2.EnvironmentLoginUrisResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

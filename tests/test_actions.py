@@ -7,6 +7,7 @@ from scalekit.actions.types import (
     ExecuteToolResponse,
     MagicLinkResponse,
     ListConnectedAccountsResponse,
+    ListToolsResponse,
     DeleteConnectedAccountResponse,
     GetConnectedAccountAuthResponse,
     GetConnectedAccountDetailsResponse,
@@ -170,6 +171,37 @@ class TestConnect(BaseTest):
         )
         self.assertIsNotNone(result)
         self.assertIsInstance(result, ListConnectedAccountsResponse)
+
+    def test_list_tools_method_exists(self):
+        """Method to test list_tools method exists on the actions facade"""
+        self.assertTrue(hasattr(self.scalekit_client.actions, 'list_tools'))
+        self.assertTrue(callable(self.scalekit_client.actions.list_tools))
+
+    def test_list_tools_response_structure(self):
+        """Method to test list_tools returns ListToolsResponse"""
+        result = self.scalekit_client.actions.list_tools()
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, ListToolsResponse)
+        self.assertTrue(hasattr(result, 'tools'))
+        self.assertTrue(hasattr(result, 'tool_names'))
+        self.assertTrue(hasattr(result, 'total_count'))
+        self.assertTrue(hasattr(result, 'next_page_token'))
+        self.assertTrue(hasattr(result, 'previous_page_token'))
+
+    def test_list_tools_with_connection_name_and_identifier(self):
+        """connection_name + identifier filter passes through to the tools client and returns a valid response."""
+        result = self.scalekit_client.actions.list_tools(
+            connection_name=self.test_connection_name,
+            identifier=self.test_identifier,
+        )
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, ListToolsResponse)
+
+    def test_list_tools_with_page_size(self):
+        """list_tools supports pagination parameters."""
+        result = self.scalekit_client.actions.list_tools(page_size=5)
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, ListToolsResponse)
 
     def test_magic_link_response_structure(self):
         """Method to test MagicLinkResponse structure and methods"""
