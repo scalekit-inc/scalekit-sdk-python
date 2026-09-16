@@ -1,7 +1,7 @@
 from faker import Faker
 
 from basetest import BaseTest
-from scalekit.common.exceptions import ScalekitNotFoundException
+from scalekit.common.exceptions import ScalekitBadRequestException, ScalekitNotFoundException
 from scalekit.v1.clients.clients_pb2 import ResourceClient as ResourceClientProto
 from scalekit.v1.clients.clients_pb2 import ResourceType
 
@@ -452,3 +452,45 @@ class TestResourceClientSecret(BaseTest):
             )
 
         self.assertEqual(str(context.exception), "secret_id is required")
+
+    def test_delete_resource_client_secret_refuses_when_last_remaining(self):
+        """ Method to test that delete secret refuses to remove a client's only remaining secret """
+        create_response = self.scalekit_client.resources.create_resource_client(
+            resource_id=TEST_RESOURCE_ID, client=ResourceClientProto(name=Faker().company())
+        )
+        self.client_id = create_response[0].client.client_id
+
+        fetched = self.scalekit_client.resources.get_resource_client(
+            resource_id=TEST_RESOURCE_ID, client_id=self.client_id
+        )
+        only_secret_id = fetched[0].client.secrets[0].id
+
+        with self.assertRaises(ScalekitBadRequestException):
+            self.scalekit_client.resources.delete_resource_client_secret(
+                resource_id=TEST_RESOURCE_ID,
+                client_id=self.client_id,
+                secret_id=only_secret_id,
+            )
+
+    def test_create_resource_client_secret_refuses_past_limit(self):
+        """ Method to test that creating a secret past the server-enforced per-client limit fails """
+        # The exact limit is environment-configurable (verified live: 5 in
+        # Scalekit's own dev environment, not the dashboard's stricter
+        # UI-only threshold of 2) — probe until the server actually refuses
+        # rather than asserting a specific count.
+        create_response = self.scalekit_client.resources.create_resource_client(
+            resource_id=TEST_RESOURCE_ID, client=ResourceClientProto(name=Faker().company())
+        )
+        self.client_id = create_response[0].client.client_id
+
+        limit_hit = False
+        for _ in range(20):
+            try:
+                self.scalekit_client.resources.create_resource_client_secret(
+                    resource_id=TEST_RESOURCE_ID, client_id=self.client_id
+                )
+            except ScalekitBadRequestException:
+                limit_hit = True
+                break
+
+        self.assertTrue(limit_hit)
