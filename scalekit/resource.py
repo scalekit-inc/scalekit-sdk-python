@@ -42,10 +42,17 @@ class ResourceClient:
         scopes) — call this first to see what the resource actually allows
         before creating or updating a resource client with scopes.
 
+        The returned resource's scopes field is every scope defined in the
+        environment, not just the ones this resource allows — each entry
+        carries an enabled flag, and only the ones with enabled=True are
+        actually usable on this resource. Filter on that flag (and read
+        name, not the whole object) to get the actual allowlist:
+        [s.name for s in response[0].resource.scopes if s.enabled]
+
         :param resource_id  : Resource to fetch (format: res_xxxxx)
         :type               : ``` str ```
         :returns:
-            Get Resource Response, with the resource including its allowed scopes
+            Get Resource Response, with the resource including every environment scope annotated with enabled
         """
         if not resource_id:
             raise ValueError("resource_id is required")

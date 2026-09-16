@@ -5918,6 +5918,8 @@ Manage the API clients scoped to a resource (such as an MCP server), and access 
 Retrieves a single resource by id.
 
 A resource client's `scopes` are only actually granted in an issued token when they also appear in the resource's own `scopes` allowlist (the server intersects requested scopes against the environment's permissions, the resource's allowed scopes, and the client's own scopes) — call this first to see what the resource actually allows before creating or updating a resource client with `scopes`.
+
+`resource.scopes` is every scope defined in the environment, not just the ones this resource allows — each entry carries an `enabled` flag, and only the ones with `enabled=True` are actually usable on this resource. Filter on that flag to get the actual allowlist.
 </dd>
 </dl>
 </dd>
@@ -5934,7 +5936,8 @@ A resource client's `scopes` are only actually granted in an issued token when t
 ```python
 response = scalekit_client.resources.get_resource('res_123456')
 
-print(response[0].resource.scopes)
+allowed_scopes = [s.name for s in response[0].resource.scopes if s.enabled]
+print(allowed_scopes)
 ```
 </dd>
 </dl>
