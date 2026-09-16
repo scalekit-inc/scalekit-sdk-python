@@ -15,7 +15,7 @@ from scalekit.v1.clients.clients_pb2_grpc import ClientServiceStub
 
 
 class ResourceClient:
-    """API to manage the API clients scoped to a resource, and to read and revoke end-user consents granted against one"""
+    """Client for reading resources, managing the API clients scoped to a resource, and reading and revoking end-user consents granted against one."""
 
     def __init__(self, core_client: CoreClient):
         """
@@ -28,6 +28,60 @@ class ResourceClient:
         """
         self.core_client = core_client
         self.client_service = ClientServiceStub(self.core_client.grpc_secure_channel)
+
+    def get_resource(self, resource_id: str) -> GetResourceResponse:
+        """
+        Method to retrieve a single resource by id
+
+        A resource client's scopes are only actually granted in an issued
+        token when they also appear in the resource's own scopes allowlist
+        (the server intersects requested scopes against the environment's
+        permissions, the resource's allowed scopes, and the client's own
+        scopes) — call this first to see what the resource actually allows
+        before creating or updating a resource client with scopes.
+
+        :param resource_id  : Resource to fetch (format: res_xxxxx)
+        :type               : ``` str ```
+        :returns:
+            Get Resource Response, with the resource including its allowed scopes
+        """
+        if not resource_id:
+            raise ValueError("resource_id is required")
+
+        return self.core_client.grpc_exec(
+            self.client_service.GetResource.with_call,
+            GetResourceRequest(resource_id=resource_id)
+        )
+
+    def list_resources(
+        self,
+        resource_type: ResourceType,
+        page_size: Optional[int] = None,
+        page_token: Optional[str] = None,
+    ) -> ListResourcesResponse:
+        """
+        Method to list resources of a given type in the environment, with pagination
+
+        resource_type is required by the underlying API — there is no way to
+        list every type in one call; list each type separately if needed.
+
+        :param resource_type    : Resource type to filter by (e.g. ResourceType.MCP_SERVER)
+        :type                   : ``` ResourceType ```
+        :param page_size        : Page size for pagination (max 30)
+        :type                   : ``` int ```
+        :param page_token       : Page token for pagination
+        :type                   : ``` str ```
+        :returns:
+            List Resources Response
+        """
+        return self.core_client.grpc_exec(
+            self.client_service.ListResources.with_call,
+            ListResourcesRequest(
+                resource_type=resource_type,
+                page_size=page_size,
+                page_token=page_token,
+            )
+        )
 
     def create_resource_client(
         self, resource_id: str, client: ResourceClientProto

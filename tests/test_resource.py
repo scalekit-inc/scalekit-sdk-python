@@ -3,6 +3,7 @@ from faker import Faker
 from basetest import BaseTest
 from scalekit.common.exceptions import ScalekitNotFoundException
 from scalekit.v1.clients.clients_pb2 import ResourceClient as ResourceClientProto
+from scalekit.v1.clients.clients_pb2 import ResourceType
 
 # A real MCP server resource in the test environment. These tests assert the
 # call shape and the pagination envelope, never the consent contents, so they
@@ -13,6 +14,52 @@ TEST_RESOURCE_ID = "res_90805895235109156"
 # delete_resource_client refuses to touch a client under the wrong resource
 # scope instead of trusting the id pair blindly.
 OTHER_RESOURCE_ID = "res_999999999999999999"
+
+
+class TestResource(BaseTest):
+    """ Class definition for TestResource Class """
+
+    def test_get_resource(self):
+        """ Method to test get resource by id, including its allowed scopes """
+        response = self.scalekit_client.resources.get_resource(
+            resource_id=TEST_RESOURCE_ID
+        )
+
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertEqual(response[0].resource.id, TEST_RESOURCE_ID)
+        self.assertIsNotNone(response[0].resource.scopes)
+
+    def test_get_resource_without_resource_id(self):
+        """ Method to test get resource without a resource id """
+        with self.assertRaises(ValueError) as context:
+            self.scalekit_client.resources.get_resource(resource_id="")
+
+        self.assertEqual(str(context.exception), "resource_id is required")
+
+    def test_get_resource_nonexistent(self):
+        """ Method to test get resource for a nonexistent resource id """
+        with self.assertRaises(ScalekitNotFoundException):
+            self.scalekit_client.resources.get_resource(resource_id=OTHER_RESOURCE_ID)
+
+    def test_list_resources(self):
+        """ Method to test list resources of a given type in the environment """
+        response = self.scalekit_client.resources.list_resources(
+            resource_type=ResourceType.MCP_SERVER
+        )
+
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertIsInstance(response[0].total_size, int)
+        response_resource_ids = [r.id for r in response[0].resources]
+        self.assertIn(TEST_RESOURCE_ID, response_resource_ids)
+
+    def test_list_resources_with_page_size(self):
+        """ Method to test list resources with a page size """
+        response = self.scalekit_client.resources.list_resources(
+            resource_type=ResourceType.MCP_SERVER, page_size=1
+        )
+
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertTrue(len(response[0].resources) <= 1)
 
 
 class TestResourceClient(BaseTest):
