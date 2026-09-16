@@ -1,5 +1,7 @@
-from typing import Optional, List
+from typing import Optional, List, Tuple
 
+import grpc
+from google.protobuf.empty_pb2 import Empty
 from google.protobuf.field_mask_pb2 import FieldMask
 
 from scalekit.core import CoreClient
@@ -260,7 +262,9 @@ class ResourceClient:
             CreateClientSecretRequest(client_id=client_id)
         )
 
-    def delete_resource_client_secret(self, resource_id: str, client_id: str, secret_id: str) -> None:
+    def delete_resource_client_secret(
+        self, resource_id: str, client_id: str, secret_id: str
+    ) -> Tuple[Empty, grpc.Call]:
         """
         Method to permanently delete a secret from an API client scoped to a resource
 
@@ -275,7 +279,7 @@ class ResourceClient:
         :param secret_id    : Secret id to delete
         :type               : ``` str ```
         :returns:
-            None
+            Tuple of the empty response and the underlying grpc.Call
         """
         if not resource_id:
             raise ValueError("resource_id is required")

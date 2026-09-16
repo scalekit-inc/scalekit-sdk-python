@@ -6450,7 +6450,7 @@ print(response[0].plain_secret, response[0].secret.id)
 </dl>
 </details>
 
-<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">delete_resource_client_secret</a>(resource_id, client_id, secret_id) -> None</code></summary>
+<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">delete_resource_client_secret</a>(resource_id, client_id, secret_id) -> Tuple[Empty, grpc.Call]</code></summary>
 <dl>
 <dd>
 
@@ -6464,7 +6464,7 @@ print(response[0].plain_secret, response[0].secret.id)
 
 Permanently deletes a secret from an API client scoped to a resource.
 
-Like `create_resource_client_secret`, the underlying delete call is keyed by `client_id` alone, so this verifies the client belongs to `resource_id` first rather than trusting the id pair blindly.
+Like `create_resource_client_secret`, the underlying delete call is keyed by `client_id` alone, so this verifies the client belongs to `resource_id` first rather than trusting the id pair blindly. Returns a tuple of the empty response and the underlying `grpc.Call`, so callers can read the RPC status if needed.
 </dd>
 </dl>
 </dd>
