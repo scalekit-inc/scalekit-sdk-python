@@ -230,6 +230,69 @@ class ResourceClient:
             DeleteResourceClientRequest(resource_id=resource_id, client_id=client_id)
         )
 
+    def create_resource_client_secret(self, resource_id: str, client_id: str) -> CreateClientSecretResponse:
+        """
+        Method to create a new secret for an API client scoped to a resource
+
+        The underlying secret-creation call is keyed by client_id alone — it
+        has no notion of a resource — so this fetches the client first and
+        verifies it belongs to resource_id before creating a secret for it,
+        the same ownership check delete_resource_client applies.
+
+        :param resource_id  : Resource the client must belong to (format: res_xxxxx)
+        :type               : ``` str ```
+        :param client_id    : Client id to create a secret for
+        :type               : ``` str ```
+        :returns:
+            Create Client Secret Response
+        """
+        if not resource_id:
+            raise ValueError("resource_id is required")
+        if not client_id:
+            raise ValueError("client_id is required")
+
+        fetched = self.get_resource_client(resource_id, client_id)
+        if fetched[0].client.resource_id != resource_id:
+            raise ValueError(f"Client {client_id} does not belong to resource {resource_id}")
+
+        return self.core_client.grpc_exec(
+            self.client_service.CreateClientSecret.with_call,
+            CreateClientSecretRequest(client_id=client_id)
+        )
+
+    def delete_resource_client_secret(self, resource_id: str, client_id: str, secret_id: str) -> None:
+        """
+        Method to permanently delete a secret from an API client scoped to a resource
+
+        Like create_resource_client_secret, the underlying delete call is
+        keyed by client_id alone, so this verifies the client belongs to
+        resource_id first rather than trusting the id pair blindly.
+
+        :param resource_id  : Resource the client must belong to (format: res_xxxxx)
+        :type               : ``` str ```
+        :param client_id    : Client id the secret belongs to
+        :type               : ``` str ```
+        :param secret_id    : Secret id to delete
+        :type               : ``` str ```
+        :returns:
+            None
+        """
+        if not resource_id:
+            raise ValueError("resource_id is required")
+        if not client_id:
+            raise ValueError("client_id is required")
+        if not secret_id:
+            raise ValueError("secret_id is required")
+
+        fetched = self.get_resource_client(resource_id, client_id)
+        if fetched[0].client.resource_id != resource_id:
+            raise ValueError(f"Client {client_id} does not belong to resource {resource_id}")
+
+        return self.core_client.grpc_exec(
+            self.client_service.DeleteClientSecret.with_call,
+            DeleteClientSecretRequest(client_id=client_id, secret_id=secret_id)
+        )
+
     def list_user_consents(
         self,
         resource_id: str,

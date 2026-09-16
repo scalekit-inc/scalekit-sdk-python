@@ -6384,6 +6384,144 @@ scalekit_client.resources.delete_resource_client('res_123456', 'm2m_123456')
 </dl>
 </details>
 
+<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">create_resource_client_secret</a>(resource_id, client_id) -> CreateClientSecretResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Creates a new secret for an API client scoped to a resource.
+
+The underlying secret-creation call is keyed by `client_id` alone — it has no notion of a resource — so this fetches the client first and verifies it belongs to `resource_id` before creating a secret for it, the same ownership check `delete_resource_client` applies.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.resources.create_resource_client_secret('res_123456', 'm2m_123456')
+
+print(response[0].plain_secret, response[0].secret.id)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**resource_id:** `str` - Resource the client must belong to (format: `res_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**client_id:** `str` - Client id to create a secret for
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">delete_resource_client_secret</a>(resource_id, client_id, secret_id) -> None</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Permanently deletes a secret from an API client scoped to a resource.
+
+Like `create_resource_client_secret`, the underlying delete call is keyed by `client_id` alone, so this verifies the client belongs to `resource_id` first rather than trusting the id pair blindly.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+scalekit_client.resources.delete_resource_client_secret('res_123456', 'm2m_123456', 'ksec_123456')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**resource_id:** `str` - Resource the client must belong to (format: `res_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**client_id:** `str` - Client id the secret belongs to
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**secret_id:** `str` - Secret id to delete
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 <details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">list_user_consents</a>(resource_id, search?, page_size?, page_token?, user_ids?) -> ListResourceUserConsentsResponse</code></summary>
 <dl>
 <dd>

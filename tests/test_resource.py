@@ -340,3 +340,115 @@ class TestResourceClientCRUD(BaseTest):
             resource_id=TEST_RESOURCE_ID, client_id=self.client_id
         )
         self.assertEqual(still_there[0].client.client_id, self.client_id)
+
+
+class TestResourceClientSecret(BaseTest):
+    """ Class definition for TestResourceClientSecret Class """
+
+    def setUp(self):
+        self.client_id = None
+
+    def tearDown(self):
+        if self.client_id:
+            try:
+                self.scalekit_client.resources.delete_resource_client(
+                    resource_id=TEST_RESOURCE_ID, client_id=self.client_id
+                )
+            except ScalekitNotFoundException:
+                pass  # The test already deleted the client
+
+    def test_create_and_delete_resource_client_secret(self):
+        """ Method to test create then delete a secret for a resource client """
+        create_response = self.scalekit_client.resources.create_resource_client(
+            resource_id=TEST_RESOURCE_ID, client=ResourceClientProto(name=Faker().company())
+        )
+        self.client_id = create_response[0].client.client_id
+
+        secret_response = self.scalekit_client.resources.create_resource_client_secret(
+            resource_id=TEST_RESOURCE_ID, client_id=self.client_id
+        )
+        self.assertEqual(secret_response[1].code().name, "OK")
+        self.assertTrue(secret_response[0].plain_secret)
+        self.assertTrue(secret_response[0].secret.id)
+
+        delete_response = self.scalekit_client.resources.delete_resource_client_secret(
+            resource_id=TEST_RESOURCE_ID,
+            client_id=self.client_id,
+            secret_id=secret_response[0].secret.id,
+        )
+        self.assertEqual(delete_response[1].code().name, "OK")
+
+    def test_create_resource_client_secret_refuses_wrong_resource(self):
+        """ Method to test that create secret refuses a client that does not belong to the given resource """
+        create_response = self.scalekit_client.resources.create_resource_client(
+            resource_id=TEST_RESOURCE_ID, client=ResourceClientProto(name=Faker().company())
+        )
+        self.client_id = create_response[0].client.client_id
+
+        with self.assertRaises(ScalekitNotFoundException):
+            self.scalekit_client.resources.create_resource_client_secret(
+                resource_id=OTHER_RESOURCE_ID, client_id=self.client_id
+            )
+
+    def test_delete_resource_client_secret_refuses_wrong_resource(self):
+        """ Method to test that delete secret refuses a client that does not belong to the given resource """
+        create_response = self.scalekit_client.resources.create_resource_client(
+            resource_id=TEST_RESOURCE_ID, client=ResourceClientProto(name=Faker().company())
+        )
+        self.client_id = create_response[0].client.client_id
+
+        secret_response = self.scalekit_client.resources.create_resource_client_secret(
+            resource_id=TEST_RESOURCE_ID, client_id=self.client_id
+        )
+
+        with self.assertRaises(ScalekitNotFoundException):
+            self.scalekit_client.resources.delete_resource_client_secret(
+                resource_id=OTHER_RESOURCE_ID,
+                client_id=self.client_id,
+                secret_id=secret_response[0].secret.id,
+            )
+
+    def test_create_resource_client_secret_without_resource_id(self):
+        """ Method to test create resource client secret without a resource id """
+        with self.assertRaises(ValueError) as context:
+            self.scalekit_client.resources.create_resource_client_secret(
+                resource_id="", client_id="m2m_1234567890"
+            )
+
+        self.assertEqual(str(context.exception), "resource_id is required")
+
+    def test_create_resource_client_secret_without_client_id(self):
+        """ Method to test create resource client secret without a client id """
+        with self.assertRaises(ValueError) as context:
+            self.scalekit_client.resources.create_resource_client_secret(
+                resource_id=TEST_RESOURCE_ID, client_id=""
+            )
+
+        self.assertEqual(str(context.exception), "client_id is required")
+
+    def test_delete_resource_client_secret_without_resource_id(self):
+        """ Method to test delete resource client secret without a resource id """
+        with self.assertRaises(ValueError) as context:
+            self.scalekit_client.resources.delete_resource_client_secret(
+                resource_id="", client_id="m2m_1234567890", secret_id="ksec_1234567890"
+            )
+
+        self.assertEqual(str(context.exception), "resource_id is required")
+
+    def test_delete_resource_client_secret_without_client_id(self):
+        """ Method to test delete resource client secret without a client id """
+        with self.assertRaises(ValueError) as context:
+            self.scalekit_client.resources.delete_resource_client_secret(
+                resource_id=TEST_RESOURCE_ID, client_id="", secret_id="ksec_1234567890"
+            )
+
+        self.assertEqual(str(context.exception), "client_id is required")
+
+    def test_delete_resource_client_secret_without_secret_id(self):
+        """ Method to test delete resource client secret without a secret id """
+        with self.assertRaises(ValueError) as context:
+            self.scalekit_client.resources.delete_resource_client_secret(
+                resource_id=TEST_RESOURCE_ID, client_id="m2m_1234567890", secret_id=""
+            )
+
+        self.assertEqual(str(context.exception), "secret_id is required")
