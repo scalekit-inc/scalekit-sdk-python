@@ -6254,8 +6254,6 @@ for c in response[0].clients:
 <dd>
 
 Updates a resource client.
-
-`update_mask` lists which fields of `client` to change, as raw field paths (e.g. `["scopes", "custom_claims"]`). Verified against a live environment: the server only actually honors the mask for `scopes`, `custom_claims` and `redirect_uris` — include one of those paths with an empty value (e.g. `scopes=[]`) to clear it. `name`/`description` are applied whenever non-empty regardless of `update_mask` (an empty string is a no-op, not a clear).
 </dd>
 </dl>
 </dd>
