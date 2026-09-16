@@ -516,6 +516,92 @@ class ActionClient:
         proto_response = result_tuple[0]
         return GetConnectedAccountDetailsResponse.from_proto(proto_response)
 
+    def search_tools(
+        self,
+        query: str,
+        identifier: Optional[str] = None,
+        top_k: Optional[int] = None,
+    ):
+        """Find tools that fit a goal, ranked by relevance.
+
+        Delegates to ``tools.search_tools``. Prefer this over listing a whole
+        connector: binding one to a model costs roughly 85k tokens of schema per
+        request, against about 700 for a single search.
+
+        Pass ``identifier`` and each result's ``connections`` carries that user's
+        ``readiness_state`` per connection -- check it before executing.
+
+        :param query      : Natural-language description of the job to be done
+        :type             : ``` str ```
+        :param identifier : Connected-account identifier to annotate results with
+        :type             : ``` str ```
+        :param top_k      : Maximum ranked results (default 10, capped at 50)
+        :type             : ``` int ```
+
+        :returns:
+            Search Tools Response. Also indexable as ``result[0]`` -- the
+            underlying call returns a ``(response, call)`` tuple.
+        """
+        return self.tools.search_tools(query=query, identifier=identifier, top_k=top_k)
+
+    def list_scoped_tools(
+        self,
+        identifier: str,
+        filter: Optional[Any] = None,
+        page_size: Optional[int] = None,
+        page_token: Optional[str] = None,
+    ):
+        """List tools for one identifier, narrowed by an explicit filter.
+
+        Delegates to ``tools.list_scoped_tools``. ``filter`` is typed optional but
+        the server rejects calls that omit it -- pass a ``ScopedToolFilter``.
+
+        :param identifier : Identifier to scope the tools list
+        :type             : ``` str ```
+        :param filter     : ScopedToolFilter narrowing providers, tool names or
+                            connection names. Required in practice.
+        :param page_size  : Maximum tools per page
+        :type             : ``` int ```
+        :param page_token : Cursor from a previous response's next_page_token
+        :type             : ``` str ```
+
+        :returns:
+            List Scoped Tools Response. Also indexable as ``result[0]``.
+        """
+        return self.tools.list_scoped_tools(
+            identifier=identifier,
+            filter=filter,
+            page_size=page_size,
+            page_token=page_token,
+        )
+
+    def list_available_tools(
+        self,
+        identifier: str,
+        page_size: Optional[int] = None,
+        page_token: Optional[str] = None,
+    ):
+        """List every tool available to one identifier across their connections.
+
+        Delegates to ``tools.list_available_tools``. Paginated -- follow
+        ``next_page_token`` when you need the complete set.
+
+        :param identifier : Identifier to list available tools for
+        :type             : ``` str ```
+        :param page_size  : Maximum tools per page
+        :type             : ``` int ```
+        :param page_token : Cursor from a previous response's next_page_token
+        :type             : ``` str ```
+
+        :returns:
+            List Available Tools Response. Also indexable as ``result[0]``.
+        """
+        return self.tools.list_available_tools(
+            identifier=identifier,
+            page_size=page_size,
+            page_token=page_token,
+        )
+
     def add_modifier(self, modifier: Modifier) -> None:
         """Add a modifier to the private list"""
         self._modifiers.append(modifier)
