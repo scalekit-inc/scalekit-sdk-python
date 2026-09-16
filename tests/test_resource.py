@@ -61,6 +61,13 @@ class TestResource(BaseTest):
         self.assertEqual(response[1].code().name, "OK")
         self.assertTrue(len(response[0].resources) <= 1)
 
+    def test_list_resources_without_resource_type(self):
+        """ Method to test list resources without a resource type """
+        with self.assertRaises(ValueError) as context:
+            self.scalekit_client.resources.list_resources(resource_type=None)
+
+        self.assertEqual(str(context.exception), "resource_type is required")
+
 
 class TestResourceClient(BaseTest):
     """ Class definition for TestResourceClient Class """
@@ -149,8 +156,8 @@ class TestResourceClientCRUD(BaseTest):
                 self.scalekit_client.resources.delete_resource_client(
                     resource_id=TEST_RESOURCE_ID, client_id=self.client_id
                 )
-            except Exception:
-                pass  # Ignore cleanup errors
+            except ScalekitNotFoundException:
+                pass  # The test already deleted the client
 
     def test_create_resource_client(self):
         """ Method to test create resource client """

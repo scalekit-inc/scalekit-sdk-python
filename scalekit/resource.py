@@ -74,6 +74,9 @@ class ResourceClient:
         :returns:
             List Resources Response
         """
+        if resource_type is None:
+            raise ValueError("resource_type is required")
+
         return self.core_client.grpc_exec(
             self.client_service.ListResources.with_call,
             ListResourcesRequest(

@@ -6074,17 +6074,8 @@ from scalekit.v1.clients.clients_pb2 import ResourceClient
 
 response = scalekit_client.resources.create_resource_client(
     'res_123456',
-    ResourceClient(
-        name='My Resource Client',
-        description='optional description',
-        scopes=['read', 'write'],
-        audience=['my-api'],
-        custom_claims=[{'key': 'plan', 'value': 'pro'}],
-        expiry=86400,
-        redirect_uris=['https://example.com/callback'],
-    ),
+    ResourceClient(name='My Resource Client'),
 )
-
 print(response[0].client.client_id, response[0].plain_secret)
 ```
 </dd>
@@ -6343,9 +6334,7 @@ print(response[0].client.name, response[0].client.scopes)
 <dl>
 <dd>
 
-Permanently deletes an API client scoped to a resource.
-
-`DeleteResourceClient` shares its underlying delete path with client deletion in general, so nothing forces the given `client_id` to actually belong to `resource_id` — but this method lives on `resources`, so callers reasonably expect it to only ever touch clients within that resource. This fetches the client first and verifies its own `resource_id` matches before deleting, and refuses instead of trusting the id pair blindly.
+Permanently deletes the API client if it belongs to this resource. Raises if the client is missing or scoped to a different resource.
 </dd>
 </dl>
 </dd>
