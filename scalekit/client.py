@@ -30,6 +30,7 @@ from scalekit.tools import ToolsClient
 from scalekit.actions import ActionClient
 from scalekit.providers import ProvidersClient
 from scalekit.passwordless import PasswordlessClient
+from scalekit.agent import UserScope
 from scalekit.mcp import McpClient
 from scalekit.sessions import SessionsClient
 from scalekit.auth import AuthClient
@@ -151,6 +152,27 @@ class ScalekitClient:
             self.tokens = TokenClient(self.core_client)
         except Exception:
             raise
+
+    def for_identifier(self, identifier: str) -> UserScope:
+        """Bind AgentKit to one end user.
+
+        Returns a small facade over ``actions`` and ``tools`` that carries the
+        identifier for you and exposes the three steps an agent takes: check the
+        connection, find tools that fit the goal, run one. It adds no capability
+        -- every method composes calls that already exist -- and you can drop
+        back to ``actions``/``tools`` at any point.
+
+            user = scalekit_client.for_identifier("usr_8f3a2c")
+            state = user.ensure_connected("github-connect")
+            tools = user.find_tools("star a repository")
+            result = user.run(tools[0].name, {"owner": "o", "repo": "r"})
+
+        :param identifier: Your application's stable identifier for this user.
+        :returns: A :class:`~scalekit.agent.UserScope`.
+        """
+        if not identifier:
+            raise ValueError("identifier is required")
+        return UserScope(identifier=identifier, _actions=self.actions, _tools=self.tools)
 
     def get_authorization_url(
         self, redirect_uri: str, options: AuthorizationUrlOptions | None
