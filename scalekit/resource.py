@@ -169,14 +169,12 @@ class ResourceClient:
         custom_claims and redirect_uris — include one of those paths with an
         empty value (e.g. scopes=[]) to clear it. name/description are
         applied whenever non-empty regardless of update_mask (an empty
-        string is a no-op, not a clear). audience cannot be changed via
-        update for any resource type — this call never touches it, so
-        whatever value the client received at creation stays fixed for its
-        lifetime. For MCP_SERVER/MCP_GATEWAY resources that value is always
-        the resource's own audience (create_resource_client ignores
-        caller-supplied audience for those types); for other resource types
-        it's whichever value create used — the caller-supplied audience, or
-        the resource's own id if none was supplied.
+        string is a no-op, not a clear).
+
+        "audience" is not a supported update_mask path — a resource client's
+        audience is fixed at creation and can never be changed via update,
+        for any resource type, so this rejects it outright rather than
+        silently accepting a path that can never take effect.
 
         :param resource_id  : Resource the client must belong to (format: res_xxxxx)
         :type               : ``` str ```
@@ -193,6 +191,8 @@ class ResourceClient:
             raise ValueError("resource_id is required")
         if not client_id:
             raise ValueError("client_id is required")
+        if update_mask and "audience" in update_mask:
+            raise ValueError("audience cannot be changed via update; it is fixed at creation")
 
         return self.core_client.grpc_exec(
             self.client_service.UpdateResourceClient.with_call,

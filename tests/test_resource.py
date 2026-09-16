@@ -287,6 +287,18 @@ class TestResourceClientCRUD(BaseTest):
 
         self.assertEqual(str(context.exception), "client_id is required")
 
+    def test_update_resource_client_rejects_audience_in_update_mask(self):
+        """ Method to test that update rejects an audience path in update_mask, since it can never take effect """
+        with self.assertRaises(ValueError) as context:
+            self.scalekit_client.resources.update_resource_client(
+                resource_id=TEST_RESOURCE_ID,
+                client_id="m2m_1234567890",
+                client=ResourceClientProto(audience=["https://api.example.com"]),
+                update_mask=["audience"],
+            )
+
+        self.assertEqual(str(context.exception), "audience cannot be changed via update; it is fixed at creation")
+
     def test_delete_resource_client(self):
         """ Method to test delete resource client """
         create_response = self.scalekit_client.resources.create_resource_client(
