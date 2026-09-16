@@ -5935,6 +5935,7 @@ A resource client's `scopes` are only actually granted in an issued token when t
 
 ```python
 response = scalekit_client.resources.get_resource('res_123456')
+print(response[0].resource)
 
 allowed_scopes = [s.name for s in response[0].resource.scopes if s.enabled]
 print(allowed_scopes)
@@ -6056,11 +6057,9 @@ for resource in response[0].resources:
 <dl>
 <dd>
 
-Creates a new API client scoped to a resource.
+Creates a resource client.
 
 Returns the created `client` plus a `plain_secret` — the plaintext client secret, only available at creation time.
-
-`audience` cannot be set through this SDK — it is always server-determined, for any resource type. Setting a non-empty `client.audience` raises `ValueError` immediately.
 </dd>
 </dl>
 </dd>
@@ -6077,9 +6076,13 @@ Returns the created `client` plus a `plain_secret` — the plaintext client secr
 ```python
 from scalekit.v1.clients.clients_pb2 import ResourceClient
 
+resource_response = scalekit_client.resources.get_resource('res_123456')
+allowed_scopes = [s.name for s in resource_response[0].resource.scopes if s.enabled]
+print(allowed_scopes)
+
 response = scalekit_client.resources.create_resource_client(
     'res_123456',
-    ResourceClient(name='My Resource Client'),
+    ResourceClient(name='My Resource Client', scopes=allowed_scopes),
 )
 print(response[0].client.client_id, response[0].plain_secret)
 ```
@@ -6128,7 +6131,7 @@ print(response[0].client.client_id, response[0].plain_secret)
 <dl>
 <dd>
 
-Retrieves a single API client scoped to a resource, along with the end-users who have granted it consent.
+Fetches a single resource client, along with the end-users who have granted it consent.
 </dd>
 </dl>
 </dd>
@@ -6145,7 +6148,7 @@ Retrieves a single API client scoped to a resource, along with the end-users who
 ```python
 response = scalekit_client.resources.get_resource_client('res_123456', 'm2m_123456')
 
-print(response[0].client.name, response[0].consented_users)
+print(response[0].client.name)
 ```
 </dd>
 </dl>
@@ -6192,7 +6195,7 @@ print(response[0].client.name, response[0].consented_users)
 <dl>
 <dd>
 
-Lists every API client scoped to a resource.
+Lists resource clients.
 </dd>
 </dl>
 </dd>
@@ -6250,11 +6253,9 @@ for c in response[0].clients:
 <dl>
 <dd>
 
-Updates an existing API client scoped to a resource.
+Updates a resource client.
 
 `update_mask` lists which fields of `client` to change, as raw field paths (e.g. `["scopes", "custom_claims"]`). Verified against a live environment: the server only actually honors the mask for `scopes`, `custom_claims` and `redirect_uris` — include one of those paths with an empty value (e.g. `scopes=[]`) to clear it. `name`/`description` are applied whenever non-empty regardless of `update_mask` (an empty string is a no-op, not a clear).
-
-`"audience"` is not a supported `update_mask` path — audience cannot be set through this SDK at all, on create or update, for any resource type, so this raises `ValueError` rather than silently accepting a path that can never take effect.
 </dd>
 </dl>
 </dd>
@@ -6271,10 +6272,14 @@ Updates an existing API client scoped to a resource.
 ```python
 from scalekit.v1.clients.clients_pb2 import ResourceClient
 
+resource_response = scalekit_client.resources.get_resource('res_123456')
+allowed_scopes = [s.name for s in resource_response[0].resource.scopes if s.enabled]
+print(allowed_scopes)
+
 response = scalekit_client.resources.update_resource_client(
     'res_123456',
     'm2m_123456',
-    ResourceClient(name='Updated Name', scopes=['read', 'write']),
+    ResourceClient(name='Updated Name', scopes=[allowed_scopes[0]]),
     update_mask=['name', 'scopes'],
 )
 
@@ -6301,7 +6306,7 @@ print(response[0].client.name, response[0].client.scopes)
 <dl>
 <dd>
 
-**client_id:** `str` - Client id to update
+**client_id:** `str` - Client id to update (format: `m2m_...`)
 
 </dd>
 </dl>
@@ -6341,7 +6346,7 @@ print(response[0].client.name, response[0].client.scopes)
 <dl>
 <dd>
 
-Permanently deletes the API client if it belongs to this resource. Raises if the client is missing or scoped to a different resource.
+Deletes resource clients. Raises if the client is missing or scoped to a different resource.
 </dd>
 </dl>
 </dd>
@@ -6379,7 +6384,7 @@ scalekit_client.resources.delete_resource_client('res_123456', 'm2m_123456')
 <dl>
 <dd>
 
-**client_id:** `str` - Client id to delete
+**client_id:** `str` - Client id to delete (format: `m2m_...`)
 
 </dd>
 </dl>
@@ -6403,11 +6408,9 @@ scalekit_client.resources.delete_resource_client('res_123456', 'm2m_123456')
 <dl>
 <dd>
 
-Creates a new secret for an API client scoped to a resource.
+Creates a new secret for resource client. Only 2 client secrets are recommended to exist at a given point in time. If need for more secret creation arises, please use `delete_resource_client_secret` to delete an existing secret first.
 
-The underlying secret-creation call is keyed by `client_id` alone — it has no notion of a resource — so this fetches the client first and verifies it belongs to `resource_id` before creating a secret for it, the same ownership check `delete_resource_client` applies.
-
-The backend caps how many secrets a client can hold at once (a configurable limit — 5 in Scalekit's own dev environment, verified live; treat the exact number as environment-specific, not a fixed constant). Exceeding it raises (the server rejects it as `INVALID_ARGUMENT`, "only N secrets are allowed") — delete an existing secret first via `delete_resource_client_secret`. The dashboard itself is more conservative than the server limit: it only shows an "Add new secret" action while a client has fewer than 2 secrets. Match whichever threshold — the actual server limit or the dashboard's stricter 2 — fits your own UX.
+The plaintext client secret, only available at creation time.
 </dd>
 </dl>
 </dd>
@@ -6447,7 +6450,7 @@ print(response[0].plain_secret, response[0].secret.id)
 <dl>
 <dd>
 
-**client_id:** `str` - Client id to create a secret for
+**client_id:** `str` - Client id to create a secret for (format: `m2m_...`)
 
 </dd>
 </dl>
@@ -6471,11 +6474,7 @@ print(response[0].plain_secret, response[0].secret.id)
 <dl>
 <dd>
 
-Permanently deletes a secret from an API client scoped to a resource.
-
-Like `create_resource_client_secret`, the underlying delete call is keyed by `client_id` alone, so this verifies the client belongs to `resource_id` first rather than trusting the id pair blindly. Returns a tuple of the empty response and the underlying `grpc.Call`, so callers can read the RPC status if needed.
-
-A client must always keep at least 1 secret. Calling this on a client's last remaining secret raises (the server rejects it as `INVALID_ARGUMENT`, "at least one secret is required"). Mirror the dashboard's own UX: only offer a "Revoke" action on a secret while the client has more than 1.
+Permanently deletes a secret from resource client. A client must always keep at least 1 secret. Calling this on a client's last remaining secret raises an error.
 </dd>
 </dl>
 </dd>
@@ -6513,7 +6512,7 @@ scalekit_client.resources.delete_resource_client_secret('res_123456', 'm2m_12345
 <dl>
 <dd>
 
-**client_id:** `str` - Client id the secret belongs to
+**client_id:** `str` - Client id the secret belongs to (format: `m2m_...`)
 
 </dd>
 </dl>
@@ -6521,7 +6520,7 @@ scalekit_client.resources.delete_resource_client_secret('res_123456', 'm2m_12345
 <dl>
 <dd>
 
-**secret_id:** `str` - Secret id to delete
+**secret_id:** `str` - Secret id to delete (format: `sks_...`)
 
 </dd>
 </dl>
