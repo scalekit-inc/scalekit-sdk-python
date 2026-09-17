@@ -1,12 +1,23 @@
-from typing import Optional, List
+from typing import Optional, List, Tuple
+
+import grpc
+from google.protobuf.empty_pb2 import Empty
+from google.protobuf.field_mask_pb2 import FieldMask
 
 from scalekit.core import CoreClient
 from scalekit.v1.clients.clients_pb2 import *
+# The proto message scalekit.v1.clients.ResourceClient shares its name with
+# this file's own ResourceClient class below — the wildcard import above
+# binds the proto message to that name first, but the `class ResourceClient`
+# statement further down overwrites it in this module's namespace. Re-import
+# the proto message under an alias so it stays reachable for type hints and
+# for constructing request payloads.
+from scalekit.v1.clients.clients_pb2 import ResourceClient as ResourceClientProto
 from scalekit.v1.clients.clients_pb2_grpc import ClientServiceStub
 
 
 class ResourceClient:
-    """API to read and revoke end-user consents granted against a resource"""
+    """Client for reading resources, managing the API clients scoped to a resource, and reading and revoking end-user consents granted against one."""
 
     def __init__(self, core_client: CoreClient):
         """
@@ -19,6 +30,307 @@ class ResourceClient:
         """
         self.core_client = core_client
         self.client_service = ClientServiceStub(self.core_client.grpc_secure_channel)
+
+    def get_resource(self, resource_id: str) -> GetResourceResponse:
+        """
+        Method to retrieve a single resource by id
+
+        A resource client's scopes are only actually granted in an issued
+        token when they also appear in the resource's own scopes allowlist
+        (the server intersects requested scopes against the environment's
+        permissions, the resource's allowed scopes, and the client's own
+        scopes) — call this first to see what the resource actually allows
+        before creating or updating a resource client with scopes.
+
+        The returned resource's scopes field is every scope defined in the
+        environment, not just the ones this resource allows — each entry
+        carries an enabled flag, and only the ones with enabled=True are
+        actually usable on this resource. Filter on that flag (and read
+        name, not the whole object) to get the actual allowlist:
+        [s.name for s in response[0].resource.scopes if s.enabled]
+
+        :param resource_id  : Resource to fetch (format: res_xxxxx)
+        :type               : ``` str ```
+        :returns:
+            Get Resource Response, with the resource including every environment scope annotated with enabled
+        """
+        if not resource_id:
+            raise ValueError("resource_id is required")
+
+        return self.core_client.grpc_exec(
+            self.client_service.GetResource.with_call,
+            GetResourceRequest(resource_id=resource_id)
+        )
+
+    def list_resources(
+        self,
+        resource_type: ResourceType,
+        page_size: Optional[int] = None,
+        page_token: Optional[str] = None,
+    ) -> ListResourcesResponse:
+        """
+        Method to list resources of a given type in the environment, with pagination
+
+        resource_type is required by the underlying API — there is no way to
+        list every type in one call; list each type separately if needed.
+
+        :param resource_type    : Resource type to filter by (e.g. ResourceType.MCP_SERVER)
+        :type                   : ``` ResourceType ```
+        :param page_size        : Page size for pagination (max 30)
+        :type                   : ``` int ```
+        :param page_token       : Page token for pagination
+        :type                   : ``` str ```
+        :returns:
+            List Resources Response
+        """
+        if resource_type is None:
+            raise ValueError("resource_type is required")
+
+        return self.core_client.grpc_exec(
+            self.client_service.ListResources.with_call,
+            ListResourcesRequest(
+                resource_type=resource_type,
+                page_size=page_size,
+                page_token=page_token,
+            )
+        )
+
+    def create_resource_client(
+        self, resource_id: str, client: ResourceClientProto
+    ) -> CreateResourceClientResponse:
+        """
+        Method to create a new API client scoped to a resource
+
+        Returns the created client plus a plain_secret — the plaintext
+        client secret, only available at creation time.
+
+        audience cannot be set through this SDK — it is always
+        server-determined, for any resource type. Setting a non-empty
+        `client.audience` raises ValueError immediately rather than
+        silently forwarding it (previously honored server-side for
+        non-MCP resources; intentionally removed before this shipped).
+
+        :param resource_id  : Resource id to create the client for (format: res_xxxxx)
+        :type               : ``` str ```
+        :param client       : ResourceClient obj with the desired client properties defined
+        :type               : ``` obj ```
+        :returns:
+            Create Resource Client Response
+        """
+        if not resource_id:
+            raise ValueError("resource_id is required")
+        if client is not None and len(client.audience) > 0:
+            raise ValueError("audience cannot be set via the SDK; it is always server-determined")
+
+        return self.core_client.grpc_exec(
+            self.client_service.CreateResourceClient.with_call,
+            CreateResourceClientRequest(resource_id=resource_id, client=client)
+        )
+
+    def get_resource_client(self, resource_id: str, client_id: str) -> GetResourceClientResponse:
+        """
+        Method to retrieve a single API client scoped to a resource, along with
+        the end-users who have granted it consent
+
+        :param resource_id  : Resource the client must belong to (format: res_xxxxx)
+        :type               : ``` str ```
+        :param client_id    : Client id (format: m2m_xxxxx)
+        :type               : ``` str ```
+        :returns:
+            Get Resource Client Response
+        """
+        if not resource_id:
+            raise ValueError("resource_id is required")
+        if not client_id:
+            raise ValueError("client_id is required")
+
+        return self.core_client.grpc_exec(
+            self.client_service.GetResourceClient.with_call,
+            GetResourceClientRequest(resource_id=resource_id, client_id=client_id)
+        )
+
+    def list_resource_clients(self, resource_id: str) -> ListResourceClientsResponse:
+        """
+        Method to list every API client scoped to a resource
+
+        :param resource_id  : Resource whose clients to list (format: res_xxxxx)
+        :type               : ``` str ```
+        :returns:
+            List Resource Clients Response
+        """
+        if not resource_id:
+            raise ValueError("resource_id is required")
+
+        return self.core_client.grpc_exec(
+            self.client_service.ListResourceClients.with_call,
+            ListResourceClientsRequest(resource_id=resource_id)
+        )
+
+    def update_resource_client(
+        self,
+        resource_id: str,
+        client_id: str,
+        client: ResourceClientProto,
+        update_mask: Optional[List[str]] = None,
+    ) -> UpdateResourceClientResponse:
+        """
+        Method to update an existing API client scoped to a resource
+
+        update_mask lists which fields of `client` to change, as raw field
+        paths (e.g. ["scopes", "custom_claims"]). Verified against a live
+        environment: the server only actually honors the mask for scopes,
+        custom_claims and redirect_uris — include one of those paths with an
+        empty value (e.g. scopes=[]) to clear it. name/description are
+        applied whenever non-empty regardless of update_mask (an empty
+        string is a no-op, not a clear).
+
+        "audience" is not a supported update_mask path — audience cannot be
+        set through this SDK at all, on create or update, for any resource
+        type, so this rejects it outright rather than silently accepting a
+        path that can never take effect.
+
+        :param resource_id  : Resource the client must belong to (format: res_xxxxx)
+        :type               : ``` str ```
+        :param client_id    : Client id to update
+        :type               : ``` str ```
+        :param client       : ResourceClient obj with the fields to update
+        :type               : ``` obj ```
+        :param update_mask  : Field paths in `client` to apply (see note above)
+        :type               : ``` list ```
+        :returns:
+            Update Resource Client Response
+        """
+        if not resource_id:
+            raise ValueError("resource_id is required")
+        if not client_id:
+            raise ValueError("client_id is required")
+        if update_mask and "audience" in update_mask:
+            raise ValueError("audience cannot be set via the SDK; it is always server-determined")
+
+        return self.core_client.grpc_exec(
+            self.client_service.UpdateResourceClient.with_call,
+            UpdateResourceClientRequest(
+                resource_id=resource_id,
+                client_id=client_id,
+                client=client,
+                update_mask=FieldMask(paths=update_mask) if update_mask else None,
+            )
+        )
+
+    def delete_resource_client(self, resource_id: str, client_id: str) -> DeleteResourceClientResponse:
+        """
+        Method to permanently delete an API client scoped to a resource
+
+        DeleteResourceClient shares its underlying delete path with client
+        deletion in general, so nothing forces the given client_id to
+        actually belong to resource_id. Since this method lives on
+        `resources`, callers reasonably expect it to only ever touch clients
+        within that resource — so this fetches the client first and verifies
+        its own resource_id matches before deleting, refusing instead of
+        trusting the id pair blindly.
+
+        :param resource_id  : Resource the client must belong to (format: res_xxxxx)
+        :type               : ``` str ```
+        :param client_id    : Client id to delete
+        :type               : ``` str ```
+        :returns:
+            Delete Resource Client Response
+        """
+        if not resource_id:
+            raise ValueError("resource_id is required")
+        if not client_id:
+            raise ValueError("client_id is required")
+
+        fetched = self.get_resource_client(resource_id, client_id)
+        if fetched[0].client.resource_id != resource_id:
+            raise ValueError(f"Client {client_id} does not belong to resource {resource_id}")
+
+        return self.core_client.grpc_exec(
+            self.client_service.DeleteResourceClient.with_call,
+            DeleteResourceClientRequest(resource_id=resource_id, client_id=client_id)
+        )
+
+    def create_resource_client_secret(self, resource_id: str, client_id: str) -> CreateClientSecretResponse:
+        """
+        Method to create a new secret for an API client scoped to a resource
+
+        The underlying secret-creation call is keyed by client_id alone — it
+        has no notion of a resource — so this fetches the client first and
+        verifies it belongs to resource_id before creating a secret for it,
+        the same ownership check delete_resource_client applies.
+
+        The backend caps how many secrets a client can hold at once (a
+        configurable limit — 5 in Scalekit's own dev environment, verified
+        live; treat the exact number as environment-specific, not a fixed
+        constant). Exceeding it raises (the server rejects it as
+        INVALID_ARGUMENT, "only N secrets are allowed") — delete an existing
+        secret first via delete_resource_client_secret. The dashboard itself
+        is more conservative than the server limit: it only shows an "Add
+        new secret" action while a client has fewer than 2 secrets. Match
+        whichever threshold — the actual server limit or the dashboard's
+        stricter 2 — fits your own UX.
+
+        :param resource_id  : Resource the client must belong to (format: res_xxxxx)
+        :type               : ``` str ```
+        :param client_id    : Client id to create a secret for
+        :type               : ``` str ```
+        :returns:
+            Create Client Secret Response
+        """
+        if not resource_id:
+            raise ValueError("resource_id is required")
+        if not client_id:
+            raise ValueError("client_id is required")
+
+        fetched = self.get_resource_client(resource_id, client_id)
+        if fetched[0].client.resource_id != resource_id:
+            raise ValueError(f"Client {client_id} does not belong to resource {resource_id}")
+
+        return self.core_client.grpc_exec(
+            self.client_service.CreateClientSecret.with_call,
+            CreateClientSecretRequest(client_id=client_id)
+        )
+
+    def delete_resource_client_secret(
+        self, resource_id: str, client_id: str, secret_id: str
+    ) -> Tuple[Empty, grpc.Call]:
+        """
+        Method to permanently delete a secret from an API client scoped to a resource
+
+        Like create_resource_client_secret, the underlying delete call is
+        keyed by client_id alone, so this verifies the client belongs to
+        resource_id first rather than trusting the id pair blindly.
+
+        A client must always keep at least 1 secret. Calling this on a
+        client's last remaining secret raises (the server rejects it as
+        INVALID_ARGUMENT, "at least one secret is required"). Mirror the
+        dashboard's own UX: only offer a "Revoke" action on a secret while
+        the client has more than 1.
+
+        :param resource_id  : Resource the client must belong to (format: res_xxxxx)
+        :type               : ``` str ```
+        :param client_id    : Client id the secret belongs to
+        :type               : ``` str ```
+        :param secret_id    : Secret id to delete
+        :type               : ``` str ```
+        :returns:
+            Tuple of the empty response and the underlying grpc.Call
+        """
+        if not resource_id:
+            raise ValueError("resource_id is required")
+        if not client_id:
+            raise ValueError("client_id is required")
+        if not secret_id:
+            raise ValueError("secret_id is required")
+
+        fetched = self.get_resource_client(resource_id, client_id)
+        if fetched[0].client.resource_id != resource_id:
+            raise ValueError(f"Client {client_id} does not belong to resource {resource_id}")
+
+        return self.core_client.grpc_exec(
+            self.client_service.DeleteClientSecret.with_call,
+            DeleteClientSecretRequest(client_id=client_id, secret_id=secret_id)
+        )
 
     def list_user_consents(
         self,
