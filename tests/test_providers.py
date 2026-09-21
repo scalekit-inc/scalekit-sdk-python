@@ -3,11 +3,14 @@ import uuid
 
 from faker import Faker
 from basetest import BaseTest
+from google.protobuf.json_format import MessageToDict
 
 from scalekit.common.exceptions import ScalekitNotFoundException
+from scalekit.providers import _patterns_to_list_value
 from scalekit.actions.types import (
     AuthPattern,
     AuthField,
+    AuthFieldOption,
     OAuthConfig,
     CreateCustomProviderRequest,
     UpdateCustomProviderRequest,
@@ -658,3 +661,311 @@ class TestAuthFieldInputType(unittest.TestCase):
             }
         )
         self.assertEqual([f.input_type for f in pattern.fields], ["select", "password"])
+
+
+
+# A provider auth pattern in the shape the API serves one: an OAUTH pattern
+# carrying a select field with its options. Values are placeholders — these
+# tests pin the SDK's handling of the structure, not any particular connector.
+SERVED_OAUTH_PATTERN = {
+    "type": "OAUTH",
+    "display_name": "OAuth 2.0",
+    "description": "",
+    "oauth_config": {"pkce_enabled": True},
+    "fields": [
+        {
+            "field_name": "example_choice",
+            "label": "Example Choice",
+            "hint": "Pick one of the two example values",
+            "input_type": "select",
+            "required": False,
+            "options": [
+                {
+                    "value": "first",
+                    "display_name": "First",
+                    "description": "The first example value",
+                    "default": True,
+                },
+                {
+                    "value": "second",
+                    "display_name": "Second",
+                    "description": "The second example value",
+                    "default": False,
+                },
+            ],
+        }
+    ],
+}
+
+
+class TestServedPatternDecoding(unittest.TestCase):
+    """Pure unit tests (no network) for decoding auth patterns off the wire.
+
+    Regression guard for SK-2030. The SDK used to hardcode three constraints
+    over auth_patterns, which the server sends as an untyped protobuf ListValue:
+    input_type was Literal['text', 'password'], type was
+    Literal['OAUTH', 'BEARER', 'API_KEY', 'NO_AUTH'], and fields had to be empty
+    on an OAUTH pattern. Real providers satisfy none of the three, so
+    list_providers() raised a ValidationError and lost the whole page. The
+    server owns these vocabularies and validates almost nothing, so the SDK must
+    accept what it is given and pass unknown shapes through.
+    """
+
+    def test_oauth_pattern_with_fields_decodes(self):
+        """OAUTH patterns do carry fields; the SDK must not reject them."""
+        pattern = AuthPattern.from_dict(SERVED_OAUTH_PATTERN)
+        self.assertEqual(pattern.type, "OAUTH")
+        self.assertEqual([f.field_name for f in pattern.fields], ["example_choice"])
+
+    def test_select_field_options_are_decoded(self):
+        """A select field is useless without its choices, so options must survive."""
+        field = AuthPattern.from_dict(SERVED_OAUTH_PATTERN).fields[0]
+        self.assertEqual([o.value for o in field.options], ["first", "second"])
+        self.assertEqual(field.options[0].display_name, "First")
+        self.assertEqual(field.options[0].description, "The first example value")
+        self.assertTrue(field.options[0].default)
+        self.assertFalse(field.options[1].default)
+
+    def test_unknown_pattern_types_decode(self):
+        """type is server-owned; an unrecognised one must pass through, not raise."""
+        for auth_type in ("OAUTH", "BEARER", "API_KEY", "NO_AUTH", "SOME_FUTURE_TYPE"):
+            with self.subTest(type=auth_type):
+                pattern = AuthPattern.from_dict(
+                    {"type": auth_type, "display_name": "Example", "fields": []}
+                )
+                self.assertEqual(pattern.type, auth_type)
+
+    def test_oauth_config_on_non_oauth_type_decodes(self):
+        """oauth_config is not exclusive to type='OAUTH' on the decode path."""
+        pattern = AuthPattern.from_dict(
+            {
+                "type": "SOME_FUTURE_TYPE",
+                "display_name": "Example",
+                "fields": [],
+                "oauth_config": {"pkce_enabled": False},
+            }
+        )
+        self.assertIsNotNone(pattern.oauth_config)
+        self.assertFalse(pattern.oauth_config.pkce_enabled)
+
+    def test_unknown_keys_survive_round_trip(self):
+        """A key the SDK does not model is preserved, not silently dropped.
+
+        auth_patterns is an untyped ListValue, so the server can add keys at any
+        level. Dropping them is what made SK-2030 recur one level up.
+        """
+        pattern = AuthPattern.from_dict(
+            {
+                "type": "API_KEY",
+                "display_name": "API Key",
+                "some_future_pattern_key": {"a": 1},
+                "oauth_config": {"pkce_enabled": True, "some_future_oauth_key": "x"},
+                "fields": [
+                    {
+                        "field_name": "api_key",
+                        "input_type": "password",
+                        "some_future_field_key": {"b": 2},
+                        "options": [{"value": "v", "some_future_option_key": 3}],
+                    }
+                ],
+            }
+        )
+        encoded = pattern.to_dict()
+        self.assertEqual(encoded["some_future_pattern_key"], {"a": 1})
+        self.assertEqual(encoded["oauth_config"]["some_future_oauth_key"], "x")
+        self.assertEqual(encoded["fields"][0]["some_future_field_key"], {"b": 2})
+        self.assertEqual(
+            encoded["fields"][0]["options"][0]["some_future_option_key"], 3
+        )
+
+    def test_account_fields_and_proxy_domains_decode(self):
+        """account_fields and allowed_proxy_domains are modelled, not dropped."""
+        pattern = AuthPattern.from_dict(
+            {
+                "type": "API_KEY",
+                "display_name": "API Key",
+                "fields": [],
+                "account_fields": [{"field_name": "subdomain", "input_type": "text"}],
+                "allowed_proxy_domains": ["api.example.com"],
+            }
+        )
+        self.assertEqual([f.field_name for f in pattern.account_fields], ["subdomain"])
+        self.assertEqual(pattern.allowed_proxy_domains, ["api.example.com"])
+
+    def test_header_name_and_is_path_param_decode(self):
+        """Multi-header API_KEY mode and path-param fields round-trip."""
+        field = AuthField.from_dict(
+            {"field_name": "region", "is_path_param": True, "header_name": "X-Api-Key"}
+        )
+        self.assertTrue(field.is_path_param)
+        self.assertEqual(field.header_name, "X-Api-Key")
+        self.assertEqual(AuthField.from_dict(field.to_dict()).header_name, "X-Api-Key")
+
+    def test_oauth_config_detail_is_preserved(self):
+        """OAuthConfig models only pkce_enabled; the rest must not be dropped.
+
+        A caller that lists providers, edits one and writes it back would
+        otherwise erase the connector's OAuth endpoints and scopes.
+        """
+        served = {
+            "pkce_enabled": True,
+            "authorize_uri": "https://auth.example.com/authorize",
+            "token_uri": "https://auth.example.com/token",
+            "user_info_uri": "https://api.example.com/userinfo",
+            "allow_use_scalekit_credentials": True,
+            "available_scopes": [
+                {
+                    "scope": "example.read",
+                    "display_name": "Read",
+                    "description": "Read access",
+                    "required": True,
+                }
+            ],
+        }
+        encoded = AuthPattern.from_dict(
+            {
+                "type": "OAUTH",
+                "display_name": "OAuth 2.0",
+                "fields": [],
+                "oauth_config": served,
+            }
+        ).to_dict()["oauth_config"]
+        for key, value in served.items():
+            with self.subTest(key=key):
+                self.assertEqual(encoded[key], value)
+
+    def test_decoded_pattern_stays_editable(self):
+        """Editing a decoded pattern must not trip the authoring guardrails.
+
+        validate_assignment=True re-runs the model validator on every attribute
+        write, and that re-run carries no validation context. A served shape the
+        guardrails would reject must stay editable once decoded.
+        """
+        pattern = AuthPattern.from_dict(
+            {
+                "type": "OAUTH",
+                "display_name": "Example",
+                "fields": [{"field_name": "example_choice", "input_type": "select"}],
+            }
+        )
+        pattern.description = "edited"
+        self.assertEqual(pattern.description, "edited")
+        self.assertEqual(len(pattern.fields), 1)
+
+    def test_json_nulls_are_tolerated(self):
+        """Nullable server fields can arrive as JSON null, not just absent.
+
+        oauth_config, hint and the list fields are all nullable server-side, and
+        a null used to raise AttributeError rather than decode.
+        """
+        pattern = AuthPattern.from_dict(
+            {
+                "type": "API_KEY",
+                "display_name": "Example",
+                "fields": None,
+                "account_fields": None,
+                "allowed_proxy_domains": None,
+                "oauth_config": None,
+            }
+        )
+        self.assertEqual(pattern.fields, [])
+        self.assertEqual(pattern.account_fields, [])
+        self.assertEqual(pattern.allowed_proxy_domains, [])
+        self.assertIsNone(pattern.oauth_config)
+        self.assertNotIn("oauth_config", pattern.to_dict())
+
+        field = AuthField.from_dict(
+            {"field_name": "f", "hint": None, "label": None, "options": None}
+        )
+        self.assertEqual(field.hint, "")
+        self.assertEqual(field.label, "")
+        self.assertEqual(field.options, [])
+
+    def test_pattern_without_fields_key_decodes(self):
+        """'fields' is not guaranteed present on a served pattern."""
+        pattern = AuthPattern.from_dict({"type": "API_KEY", "display_name": "Example"})
+        self.assertEqual(pattern.fields, [])
+
+    def test_non_identifier_keys_are_accepted(self):
+        """A Struct can carry any string key, including ones that are not identifiers."""
+        encoded = AuthField.from_dict(
+            {"field_name": "x", "weird-key": 1, "class": 2}
+        ).to_dict()
+        self.assertEqual(encoded["weird-key"], 1)
+        self.assertEqual(encoded["class"], 2)
+
+    def test_defaults_stay_off_the_wire(self):
+        """New fields must not bloat the create payload when unset."""
+        self.assertEqual(
+            AuthField(field_name="api_key", input_type="password").to_dict(),
+            {"field_name": "api_key", "label": "", "input_type": "password"},
+        )
+
+    def test_round_trip_preserves_the_whole_pattern(self):
+        """from_dict -> to_dict returns what came in.
+
+        to_dict() omits keys holding their default ('description' here), so the
+        objects are compared rather than the raw dicts.
+        """
+        once = AuthPattern.from_dict(SERVED_OAUTH_PATTERN)
+        self.assertEqual(AuthPattern.from_dict(once.to_dict()), once)
+        self.assertEqual(
+            set(SERVED_OAUTH_PATTERN) - set(once.to_dict()), {"description"}
+        )
+
+    def test_round_trip_survives_the_protobuf_wire(self):
+        """The real create/update path must not alter a pattern either.
+
+        _patterns_to_list_value is what create_custom_provider and
+        update_custom_provider actually send, so this covers ParseDict into the
+        ListValue as well as the model.
+        """
+        decoded = AuthPattern.from_dict(SERVED_OAUTH_PATTERN)
+        wire = MessageToDict(_patterns_to_list_value([decoded]))[0]
+        self.assertEqual(AuthPattern.from_dict(wire), decoded)
+        self.assertEqual(wire["fields"][0]["options"][0]["value"], "first")
+
+
+class TestAuthPatternAuthoringGuards(unittest.TestCase):
+    """The authoring guardrails that remain on direct construction.
+
+    These are SDK-side help for create_custom_provider, not server rules, so
+    they must not run when decoding a response — see TestServedPatternDecoding.
+    """
+
+    def test_oauth_requires_oauth_config(self):
+        with self.assertRaises(Exception) as ctx:
+            AuthPattern(type="OAUTH", display_name="Example")
+        self.assertIn("oauth_config is required", str(ctx.exception))
+
+    def test_no_auth_rejects_fields(self):
+        with self.assertRaises(Exception) as ctx:
+            AuthPattern(
+                type="NO_AUTH",
+                display_name="Public",
+                fields=[AuthField(field_name="token")],
+            )
+        self.assertIn("fields must be empty", str(ctx.exception))
+
+    def test_oauth_with_fields_is_allowed(self):
+        """Dropped guard: OAuth connectors do collect pre-flow options."""
+        pattern = AuthPattern(
+            type="OAUTH",
+            display_name="Example",
+            oauth_config=OAuthConfig(),
+            fields=[
+                AuthField(
+                    field_name="example_choice",
+                    input_type="select",
+                    options=[AuthFieldOption(value="first", display_name="First")],
+                )
+            ],
+        )
+        self.assertEqual(pattern.fields[0].options[0].value, "first")
+
+    def test_non_oauth_type_with_oauth_config_is_allowed(self):
+        """Dropped guard: other OAuth-family types legitimately carry one."""
+        pattern = AuthPattern(
+            type="SOME_FUTURE_TYPE", display_name="Example", oauth_config=OAuthConfig()
+        )
+        self.assertIsNotNone(pattern.oauth_config)
