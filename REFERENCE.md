@@ -6960,10 +6960,16 @@ Inspect what a provider asks the user for. `auth_patterns` is fully decoded, so
 there is no protobuf left to unpack — and a `select` field carries its choices
 in `options`:
 
+An `identifier` that matches nothing comes back as an empty list rather than an
+error, so check before indexing:
+
 ```python
 response = scalekit_client.actions.providers.list_providers(
     ListProvidersRequest(identifier="my-connector")
 )
+if not response.providers:
+    raise LookupError("No provider with identifier 'my-connector'")
+
 provider = response.providers[0]
 
 for pattern in provider.auth_patterns:
