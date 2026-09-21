@@ -6086,6 +6086,8 @@ response = scalekit_client.resources.create_resource_client(
 )
 print(response[0].client.client_id, response[0].plain_secret)
 ```
+
+`client` also accepts `description`, `custom_claims`, `expiry` and `redirect_uris` — see Parameters below.
 </dd>
 </dl>
 </dd>
@@ -6107,7 +6109,14 @@ print(response[0].client.client_id, response[0].plain_secret)
 <dl>
 <dd>
 
-**client:** `ResourceClient` (proto message from `scalekit.v1.clients.clients_pb2`) - Desired client properties: `name`, `description`, `scopes`, `audience`, `custom_claims`, `expiry`, `redirect_uris`
+**client:** `ResourceClient` (proto message from `scalekit.v1.clients.clients_pb2`) - Desired client properties
+- `name: str` - Human-readable name for the client. Defaults to "Resource Client" if omitted.
+- `description: str` - Optional description
+- `scopes: List[str]` - Scopes to grant. These scopes should be the same or subset of the scopes available for the resource.
+- `audience: List[str]` - Not settable through this SDK — audience is always server-determined. Passing a non-empty list raises `ValueError`.
+- `custom_claims: List[CustomClaim]` - Custom claims to embed in access tokens, as `CustomClaim(key, value)` messages. Keep this to the essentials, as it increases token size.
+- `expiry: int` - Access token lifetime in seconds. Defaults to the resource's configured expiry, or one day.
+- `redirect_uris: List[str]` - Allowed redirect URIs, for a pre-registered (non-DCR) client
 
 </dd>
 </dl>
@@ -6313,6 +6322,13 @@ print(response[0].client.name, response[0].client.scopes)
 <dd>
 
 **client:** `ResourceClient` (proto message from `scalekit.v1.clients.clients_pb2`) - Fields to update
+- `name: str` - Updated name. An empty string is a no-op server-side, not a clear.
+- `description: str` - Updated description. An empty string is a no-op server-side, not a clear.
+- `scopes: List[str]` - Updated scopes (replaces existing; pass `[]` and include `"scopes"` in `update_mask` to clear). These scopes should be the same or subset of the scopes available for the resource.
+- `audience: List[str]` - Not settable through this SDK — audience is always server-determined. Not a supported `update_mask` path; including it raises `ValueError`.
+- `custom_claims: List[CustomClaim]` - Custom claims to set, as `CustomClaim(key, value)` messages (replaces existing; pass `[]` and include `"custom_claims"` in `update_mask` to clear).
+- `expiry: int` - Updated access token lifetime in seconds
+- `redirect_uris: List[str]` - Updated redirect URIs (replaces existing; pass `[]` and include `"redirect_uris"` in `update_mask` to clear)
 
 </dd>
 </dl>
@@ -6320,7 +6336,7 @@ print(response[0].client.name, response[0].client.scopes)
 <dl>
 <dd>
 
-**update_mask:** `Optional[List[str]]` - Field paths in `client` to apply (see description above for which fields actually honor this)
+**update_mask:** `Optional[List[str]]` - Field paths in `client` to apply, e.g. `["scopes", "custom_claims"]`. The server only actually honors the mask for `scopes`, `custom_claims` and `redirect_uris` — include one of those paths with an empty value to clear it. `name`/`description` are applied whenever non-empty regardless of `update_mask`. `audience` is not a supported path.
 
 </dd>
 </dl>
