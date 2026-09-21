@@ -6934,6 +6934,67 @@ response = scalekit_client.actions.providers.list_providers(
     ListProvidersRequest(provider_type=ProviderType.ALL, page_size=100)
 )
 ```
+
+Page through the whole catalog. Pass `page_token=None` (or omit it) for the
+first page, then feed back `next_page_token` until it comes back empty:
+
+```python
+page_token = None
+while True:
+    response = scalekit_client.actions.providers.list_providers(
+        ListProvidersRequest(
+            provider_type=ProviderType.ALL,
+            page_size=100,
+            page_token=page_token,
+        )
+    )
+    for provider in response.providers:
+        print(provider.identifier)
+
+    page_token = response.next_page_token
+    if not page_token:
+        break
+```
+
+Inspect what a provider asks the user for. `auth_patterns` is fully decoded, so
+there is no protobuf left to unpack — and a `select` field carries its choices
+in `options`:
+
+```python
+response = scalekit_client.actions.providers.list_providers(
+    ListProvidersRequest(identifier="my-connector")
+)
+provider = response.providers[0]
+
+for pattern in provider.auth_patterns:
+    print(f"{pattern.type} — {pattern.display_name}")
+
+    for field in pattern.fields:
+        required = " (required)" if field.required else ""
+        print(f"  {field.field_name}: {field.input_type}{required}")
+
+        # Only populated when input_type == "select"
+        for option in field.options:
+            default = " [default]" if option.default else ""
+            print(f"    - {option.value} — {option.display_name}{default}")
+
+    if pattern.oauth_config:
+        print(f"  pkce_enabled={pattern.oauth_config.pkce_enabled}")
+```
+
+`input_type` and `pattern.type` are plain strings, not fixed enums — the
+vocabulary belongs to the provider catalog and grows over time. Compare against
+the values you care about and let anything else fall through rather than
+matching exhaustively:
+
+```python
+if field.input_type == "password":
+    ...  # mask the input
+elif field.input_type == "select":
+    ...  # render field.options
+else:
+    ...  # "text", "textarea", or something newer — render a plain input
+```
 </dd>
 </dl>
 </dd>
