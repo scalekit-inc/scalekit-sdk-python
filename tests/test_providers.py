@@ -603,3 +603,58 @@ class TestAuthPatternDefaults(unittest.TestCase):
         first = AuthPattern(type="NO_AUTH", display_name="A")
         second = AuthPattern(type="NO_AUTH", display_name="B")
         self.assertIsNot(first.fields, second.fields)
+
+
+class TestAuthFieldInputType(unittest.TestCase):
+    """Pure unit tests (no network) for AuthField.input_type.
+
+    Regression guard: input_type used to be typed Literal['text', 'password'],
+    so decoding a provider whose catalogue serves any other input_type (the
+    catalogue also serves 'select' and 'textarea') raised a pydantic
+    ValidationError and broke list_providers() for the whole page. The value
+    vocabulary is server-owned, so the SDK must accept any string.
+    """
+
+    def test_from_dict_accepts_select_and_textarea(self):
+        """The response-decoding path must not reject catalogue-served types."""
+        for input_type in ("select", "textarea"):
+            field = AuthField.from_dict(
+                {"field_name": "region", "label": "Region", "input_type": input_type}
+            )
+            self.assertEqual(field.input_type, input_type)
+
+    def test_from_dict_accepts_unknown_input_type(self):
+        """An input_type the SDK has never seen is passed through, not rejected."""
+        field = AuthField.from_dict(
+            {"field_name": "f", "input_type": "some_future_widget"}
+        )
+        self.assertEqual(field.input_type, "some_future_widget")
+
+    def test_direct_construction_accepts_select(self):
+        self.assertEqual(AuthField(field_name="region", input_type="select").input_type, "select")
+
+    def test_defaults_to_text_when_absent(self):
+        """Missing input_type still defaults to 'text' (unchanged behaviour)."""
+        self.assertEqual(AuthField.from_dict({"field_name": "f"}).input_type, "text")
+
+    def test_round_trip_preserves_input_type(self):
+        """to_dict/from_dict round-trips a select field without loss."""
+        original = AuthField(field_name="region", label="Region", input_type="select", required=True)
+        restored = AuthField.from_dict(original.to_dict())
+        self.assertEqual(restored.input_type, "select")
+        self.assertEqual(restored.field_name, "region")
+        self.assertTrue(restored.required)
+
+    def test_pattern_with_select_field_decodes(self):
+        """AuthPattern.from_dict (the list_providers decode path) accepts a select field."""
+        pattern = AuthPattern.from_dict(
+            {
+                "type": "API_KEY",
+                "display_name": "API Key",
+                "fields": [
+                    {"field_name": "region", "label": "Region", "input_type": "select"},
+                    {"field_name": "api_key", "label": "API Key", "input_type": "password"},
+                ],
+            }
+        )
+        self.assertEqual([f.input_type for f in pattern.fields], ["select", "password"])

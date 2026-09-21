@@ -32,12 +32,16 @@ class AuthField(BaseModel):
             "Example: 'API Key', 'Bearer Token'. Defaults to empty string."
         ),
     )
-    input_type: Literal["text", "password"] = Field(
+    input_type: str = Field(
         "text",
         description=(
             "Optional. Controls how the input is rendered in the UI. "
-            "Accepted values: 'text' (visible input, default) or "
-            "'password' (masked input — use for secrets, tokens, and keys)."
+            "Known values: 'text' (visible input, default), 'password' (masked "
+            "input — use for secrets, tokens, and keys), 'select' (dropdown), and "
+            "'textarea' (multi-line input). Not restricted to a fixed set: the "
+            "value vocabulary is owned by the Scalekit provider catalogue and may "
+            "grow, so the SDK accepts any string and passes an unknown type through "
+            "unchanged rather than failing to parse the response."
         ),
     )
     hint: str = Field(
