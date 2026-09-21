@@ -1,19 +1,101 @@
-from typing import Dict, List, Literal, Optional
+from typing import Dict, List, Optional
 
 from google.protobuf.json_format import MessageToDict
-from pydantic import BaseModel, Field, root_validator
+from pydantic import BaseModel, Field, PrivateAttr, ValidationInfo, model_validator
+
+
+class AuthFieldOption(BaseModel):
+    """One selectable choice on an AuthField whose input_type is 'select'.
+
+    Served alongside every select field. Without these the caller has a
+    dropdown with no values to render.
+    """
+
+    value: str = Field(
+        "",
+        description=(
+            "The value submitted when this choice is selected. This is what gets "
+            "stored as the field's credential value. Example: 'offline'."
+        ),
+    )
+    display_name: str = Field(
+        "",
+        description=(
+            "Human-readable label for this choice as shown in the dropdown. "
+            "Example: 'Offline'."
+        ),
+    )
+    description: str = Field(
+        "",
+        description=(
+            "Optional. Longer explanation of what this choice means, shown as "
+            "helper text. Example: 'Offline with refresh token support'."
+        ),
+    )
+    default: bool = Field(
+        False,
+        description=(
+            "Whether this choice is pre-selected when the field is first "
+            "rendered. At most one option in a field is the default."
+        ),
+    )
+
+    def to_dict(self) -> dict:
+        """Serialize this option to a wire-format dict.
+
+        :returns: Dict with 'value', 'display_name', 'description', and 'default'.
+                  Keys the SDK does not declare are re-emitted unchanged.
+        :rtype: dict
+        """
+        d: dict = {
+            "value": self.value,
+            "display_name": self.display_name,
+            "description": self.description,
+            "default": self.default,
+        }
+        d.update(self.model_extra or {})
+        return d
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "AuthFieldOption":
+        """Deserialize an AuthFieldOption from a response dict.
+
+        Keys this SDK does not declare are kept on the instance rather than
+        dropped, so they survive a decode/encode round-trip.
+
+        :param d: Dict containing option data as returned by the server.
+        :type d: dict
+        :returns: AuthFieldOption instance populated from the dict values.
+        :rtype: AuthFieldOption
+        """
+        known = {
+            "value": d.get("value") or "",
+            "display_name": d.get("display_name") or "",
+            "description": d.get("description") or "",
+            "default": d.get("default") or False,
+        }
+        extras = {k: v for k, v in d.items() if k not in known}
+        return cls(**known, **extras)
+
+    class Config:
+        extra = "allow"
 
 
 class AuthField(BaseModel):
-    """A single credential input field displayed to the user during connection setup.
+    """A single input field displayed to the user during connection setup.
 
-    AuthField is only used with BEARER and API_KEY auth patterns — do not attach
-    fields to OAUTH patterns (the OAuth flow collects credentials itself).
+    Use one AuthField per value the user must supply. For a BEARER connector, add
+    one AuthField(field_name='token', ...). For an API_KEY connector, add one
+    AuthField(field_name='api_key', ...). Always set input_type='password' for
+    tokens and keys so the UI masks the value.
 
-    Use one AuthField per credential the user must supply. For a BEARER connector, add one AuthField(field_name='token', ...). For an
-    API_KEY connector, add one AuthField(field_name='api_key',
-    ...). Always set input_type='password' for tokens and keys so the UI masks the
-    value.
+    Fields are not limited to BEARER and API_KEY patterns. OAUTH patterns carry
+    them too, for options collected before the browser flow starts rather than
+    credentials — a select field choosing how the flow behaves, for example.
+
+    The server models this as a free-form JSON object, so it may carry keys this
+    SDK does not declare. Those are preserved on the instance and re-emitted by
+    to_dict() rather than dropped.
     """
 
     field_name: str = Field(
@@ -32,12 +114,16 @@ class AuthField(BaseModel):
             "Example: 'API Key', 'Bearer Token'. Defaults to empty string."
         ),
     )
-    input_type: Literal["text", "password"] = Field(
+    input_type: str = Field(
         "text",
         description=(
             "Optional. Controls how the input is rendered in the UI. "
-            "Accepted values: 'text' (visible input, default) or "
-            "'password' (masked input — use for secrets, tokens, and keys)."
+            "Known values: 'text' (visible input, default), 'password' (masked "
+            "input — use for secrets, tokens, and keys), 'select' (dropdown), and "
+            "'textarea' (multi-line input). Not restricted to a fixed set: the "
+            "value vocabulary is owned by the Scalekit provider catalogue and may "
+            "grow, so the SDK accepts any string and passes an unknown type through "
+            "unchanged rather than failing to parse the response."
         ),
     )
     hint: str = Field(
@@ -55,12 +141,41 @@ class AuthField(BaseModel):
             "Defaults to False."
         ),
     )
+    options: List["AuthFieldOption"] = Field(
+        default_factory=list,
+        description=(
+            "Optional. The selectable choices for this field, populated when "
+            "input_type='select'. Empty for every other input type. A select "
+            "field without options cannot be rendered, so the catalogue always "
+            "ships them together."
+        ),
+    )
+    is_path_param: bool = Field(
+        False,
+        description=(
+            "Optional. True when the collected value is substituted into the "
+            "provider's request path rather than sent as a credential — used by "
+            "connectors whose base URL embeds a tenant or region. Defaults to False."
+        ),
+    )
+    header_name: str = Field(
+        "",
+        description=(
+            "Optional. On an API_KEY pattern, marks this field's value for "
+            "injection as this exact HTTP header (case preserved). Setting it on "
+            "any field puts the pattern in multiple-headers mode. Empty means "
+            "single-key mode, which uses the pattern's auth_header_key_override. "
+            "Defaults to empty string."
+        ),
+    )
 
     def to_dict(self) -> dict:
         """Serialize this field to a wire-format dict for inclusion in auth_patterns.
 
-        :returns: Dict representation of the field. 'hint' and 'required' are omitted
-                  when they hold their default values to keep the wire payload minimal.
+        :returns: Dict representation of the field. 'hint', 'required', 'options',
+                  'is_path_param', and 'header_name' are omitted when they hold
+                  their default values to keep the wire payload minimal. Keys the
+                  SDK does not declare are re-emitted unchanged.
         :rtype: dict
         """
         d: dict = {
@@ -72,24 +187,43 @@ class AuthField(BaseModel):
             d["hint"] = self.hint
         if self.required:
             d["required"] = True
+        if self.options:
+            d["options"] = [o.to_dict() for o in self.options]
+        if self.is_path_param:
+            d["is_path_param"] = True
+        if self.header_name:
+            d["header_name"] = self.header_name
+        d.update(self.model_extra or {})
         return d
 
     @classmethod
     def from_dict(cls, d: dict) -> "AuthField":
         """Deserialize an AuthField from a response dict.
 
+        Keys this SDK does not declare are kept on the instance rather than
+        dropped, so a field the catalogue grows later survives a decode/encode
+        round-trip.
+
         :param d: Dict containing field data as returned by the server.
         :type d: dict
         :returns: AuthField instance populated from the dict values.
         :rtype: AuthField
         """
-        return cls(
-            field_name=d.get("field_name") or "",
-            label=d.get("label") or "",
-            input_type=d.get("input_type") or "text",
-            hint=d.get("hint") or "",
-            required=d.get("required") or False,
-        )
+        known = {
+            "field_name": d.get("field_name") or "",
+            "label": d.get("label") or "",
+            "input_type": d.get("input_type") or "text",
+            "hint": d.get("hint") or "",
+            "required": d.get("required") or False,
+            "options": [AuthFieldOption.from_dict(o) for o in d.get("options") or []],
+            "is_path_param": d.get("is_path_param") or False,
+            "header_name": d.get("header_name") or "",
+        }
+        extras = {k: v for k, v in d.items() if k not in known}
+        return cls(**known, **extras)
+
+    class Config:
+        extra = "allow"
 
 
 class OAuthConfig(BaseModel):
@@ -100,8 +234,17 @@ class OAuthConfig(BaseModel):
     endpoints are needed. Set pkce_enabled=False only if your OAuth server does
     not support PKCE.
 
-    This class is only used with AuthPattern(type="OAUTH"). Do not attach it to
-    BEARER or API_KEY patterns.
+    Attach it to AuthPattern(type="OAUTH"). The managed catalogue also attaches
+    one to its other OAuth-family types ('OAUTH_M2M', 'GOOGLE_DWD',
+    'TRELLO_OAUTH1'). Do not attach it to BEARER or API_KEY patterns.
+
+    pkce_enabled is the only key you set when authoring a connector, but a
+    catalogue provider's oauth_config carries much more — 'authorize_uri',
+    'token_uri', 'user_info_uri', 'available_scopes',
+    'allow_use_scalekit_credentials' and others. Those are preserved on the
+    instance (readable as ordinary attributes) and re-emitted by to_dict()
+    rather than dropped, so reading a provider and writing it back does not
+    erase its OAuth endpoints and scopes.
     """
 
     pkce_enabled: bool = Field(
@@ -117,15 +260,22 @@ class OAuthConfig(BaseModel):
     def to_dict(self) -> dict:
         """Serialize to a wire-format dict.
 
-        :returns: Dict with a single key 'pkce_enabled'. Always emitted explicitly
-                  so the server receives an unambiguous value.
+        :returns: Dict with 'pkce_enabled', always emitted explicitly so the
+                  server receives an unambiguous value, plus any other keys the
+                  config was decoded with, re-emitted unchanged.
         :rtype: dict
         """
-        return {"pkce_enabled": self.pkce_enabled}
+        d: dict = {"pkce_enabled": self.pkce_enabled}
+        d.update(self.model_extra or {})
+        return d
 
     @classmethod
     def from_dict(cls, d: dict) -> "OAuthConfig":
         """Deserialize an OAuthConfig from a response dict.
+
+        Keys this SDK does not declare are kept on the instance rather than
+        dropped, so a catalogue provider's endpoints and scopes survive a
+        decode/encode round-trip.
 
         :param d: Dict containing oauth_config data as returned by the server.
         :type d: dict
@@ -133,7 +283,11 @@ class OAuthConfig(BaseModel):
                   is absent from the dict.
         :rtype: OAuthConfig
         """
-        return cls(pkce_enabled=d.get("pkce_enabled", True))
+        extras = {k: v for k, v in d.items() if k != "pkce_enabled"}
+        return cls(pkce_enabled=d.get("pkce_enabled", True), **extras)
+
+    class Config:
+        extra = "allow"
 
 
 class AuthPattern(BaseModel):
@@ -143,7 +297,7 @@ class AuthPattern(BaseModel):
     giving users a choice of how to authenticate. For MCP connectors set is_mcp=True
     on every pattern.
 
-    Type guide:
+    Type guide for the four types you create custom connectors with:
       - "OAUTH"   — Browser-based OAuth 2.0 / 2.1 flow. Attach an OAuthConfig.
       - "BEARER"  — Static bearer token supplied by the user. Add AuthFields for
                     the token input.
@@ -151,15 +305,27 @@ class AuthPattern(BaseModel):
                     key input.
       - "NO_AUTH" — Connector requires no credentials (e.g. public docs MCP
                     servers). Attach no fields and no OAuthConfig.
+
+    Reading providers back can surface further types the managed catalogue uses
+    (e.g. 'BASIC', 'OAUTH_M2M', 'GOOGLE_DWD', 'TRELLO_OAUTH1', 'TRUSTED_IDP'), so
+    type is not restricted to the four above — see the field description.
+
+    The server models this as a free-form JSON object, so it may carry keys this
+    SDK does not declare. Those are preserved on the instance and re-emitted by
+    to_dict() rather than dropped.
     """
 
-    type: Literal["OAUTH", "BEARER", "API_KEY", "NO_AUTH"] = Field(
+    type: str = Field(
         ...,
         description=(
             "Required. Authentication mechanism for this pattern. "
-            "Accepted values: 'OAUTH' (browser OAuth flow), "
-            "'BEARER' (static bearer token), 'API_KEY' (static API key), "
-            "'NO_AUTH' (connector requires no credentials)."
+            "Use one of 'OAUTH' (browser OAuth flow), 'BEARER' (static bearer "
+            "token), 'API_KEY' (static API key), or 'NO_AUTH' (connector requires "
+            "no credentials) when creating a custom connector. Not restricted to "
+            "those four: the managed catalogue also serves 'BASIC', 'OAUTH_M2M', "
+            "'GOOGLE_DWD', 'TRELLO_OAUTH1', 'TRUSTED_IDP' and others, and the set "
+            "is owned by the server, so the SDK accepts any string and passes an "
+            "unknown type through unchanged rather than failing to parse."
         ),
     )
     display_name: str = Field(
@@ -181,11 +347,20 @@ class AuthPattern(BaseModel):
     fields: List[AuthField] = Field(
         default_factory=list,
         description=(
-            "Optional. List of AuthField objects defining the credential inputs "
-            "the user must supply. Only applicable to BEARER and API_KEY types — "
-            "must be empty (or omitted) for OAUTH, which collects credentials "
-            "through the browser OAuth flow, and for NO_AUTH, which collects no "
-            "credentials at all. Defaults to empty list."
+            "Optional. List of AuthField objects defining the inputs the user must "
+            "supply. For BEARER and API_KEY these are the credential itself. OAUTH "
+            "patterns also use them, for options gathered before the browser flow "
+            "starts rather than for credentials, which the flow collects itself. "
+            "Leave empty for NO_AUTH, which collects nothing. Defaults to empty list."
+        ),
+    )
+    account_fields: List[AuthField] = Field(
+        default_factory=list,
+        description=(
+            "Optional. Inputs collected per connected account rather than once per "
+            "connection, for connectors that need an account-scoped value (a "
+            "workspace or subdomain, say) alongside the shared credential. Same "
+            "shape as 'fields'. Defaults to empty list."
         ),
     )
     is_mcp: bool = Field(
@@ -200,9 +375,11 @@ class AuthPattern(BaseModel):
         None,
         description=(
             "Optional. OAuth configuration. Required when type='OAUTH'; omit for "
-            "'BEARER' and 'API_KEY' (must be None). "
+            "'BEARER' and 'API_KEY'. "
             "Pass OAuthConfig() for MCP connectors using Dynamic Client Registration. "
             "Pass OAuthConfig(pkce_enabled=False) to disable PKCE. "
+            "The managed catalogue also attaches one to its other OAuth-family "
+            "types ('OAUTH_M2M', 'GOOGLE_DWD', 'TRELLO_OAUTH1'). "
             "Defaults to None."
         ),
     )
@@ -216,33 +393,51 @@ class AuthPattern(BaseModel):
             "Defaults to empty string (use the default header)."
         ),
     )
+    allowed_proxy_domains: List[str] = Field(
+        default_factory=list,
+        description=(
+            "Optional. Domains this connector's proxied requests may be routed to. "
+            "Empty means no domain restriction beyond the provider's proxy_url. "
+            "Defaults to empty list."
+        ),
+    )
 
-    @root_validator(skip_on_failure=True)
-    def validate_auth_invariants(cls, values):
-        auth_type = values.get("type")
-        if auth_type is None:
-            return values  # type field already failed validation
-        oauth_config = values.get("oauth_config")
-        fields = values.get("fields", [])
-        if auth_type == "OAUTH":
-            if oauth_config is None:
-                raise ValueError("oauth_config is required when type='OAUTH'")
-            if fields:
-                raise ValueError("fields must be empty when type='OAUTH'")
-        else:
-            if oauth_config is not None:
-                raise ValueError(f"oauth_config must be None when type='{auth_type}'")
-            if auth_type == "NO_AUTH" and fields:
-                raise ValueError("fields must be empty when type='NO_AUTH'")
-        return values
+    # Set on instances produced by from_dict. validate_assignment=True re-runs
+    # the validator below on every attribute write, and that re-run carries no
+    # validation context, so without this flag editing a decoded provider would
+    # raise for a shape the server legitimately served.
+    _decoded: bool = PrivateAttr(default=False)
+
+    @model_validator(mode="after")
+    def validate_auth_invariants(self, info: ValidationInfo):
+        """Guard the shapes create_custom_provider accepts.
+
+        These are SDK-side authoring guardrails, not server rules — the API
+        validates almost nothing about an auth pattern. So they are skipped for
+        anything decoded from a response (from_dict passes decoding=True): the
+        managed catalogue legitimately serves shapes a caller should not
+        hand-author, and refusing one would break list_providers() for the whole
+        page.
+        """
+        if (info.context or {}).get("decoding"):
+            self._decoded = True
+            return self
+        if self._decoded:
+            return self
+        if self.type == "OAUTH" and self.oauth_config is None:
+            raise ValueError("oauth_config is required when type='OAUTH'")
+        if self.type == "NO_AUTH" and self.fields:
+            raise ValueError("fields must be empty when type='NO_AUTH'")
+        return self
 
     def to_dict(self) -> dict:
         """Serialize to a wire-format dict for inclusion in the auth_patterns ListValue.
 
         :returns: Dict representation of this auth pattern. 'description' is omitted
                   when empty, 'is_mcp' when False, 'oauth_config' when None, and
-                  'auth_header_key_override' when empty, to keep the wire payload
-                  minimal.
+                  'auth_header_key_override', 'account_fields' and
+                  'allowed_proxy_domains' when empty, to keep the wire payload
+                  minimal. Keys the SDK does not declare are re-emitted unchanged.
         :rtype: dict
         """
         d: dict = {
@@ -258,34 +453,55 @@ class AuthPattern(BaseModel):
             d["oauth_config"] = self.oauth_config.to_dict()
         if self.auth_header_key_override:
             d["auth_header_key_override"] = self.auth_header_key_override
+        if self.account_fields:
+            d["account_fields"] = [f.to_dict() for f in self.account_fields]
+        if self.allowed_proxy_domains:
+            d["allowed_proxy_domains"] = list(self.allowed_proxy_domains)
+        d.update(self.model_extra or {})
         return d
 
     @classmethod
     def from_dict(cls, d: dict) -> "AuthPattern":
         """Deserialize an AuthPattern from a response dict.
 
+        Decoding is deliberately permissive: the authoring guardrails in
+        validate_auth_invariants are skipped, unknown 'type' values are accepted,
+        and keys this SDK does not declare are kept on the instance. A managed
+        provider whose shape the SDK has not seen still decodes, instead of
+        failing the whole list_providers() page.
+
         :param d: Dict containing auth pattern data as returned by the server.
                   The 'oauth_config' key must be present for OAuth patterns;
-                  its absence is interpreted as oauth_config=None (non-OAuth).
+                  its absence is interpreted as oauth_config=None.
         :type d: dict
         :returns: AuthPattern instance populated from the dict values.
         :rtype: AuthPattern
         """
+        # A JSON null is treated as absent, not as an empty config: the server
+        # models oauth_config as a nullable pointer, so the key can arrive with
+        # no value.
         oauth_cfg: Optional[OAuthConfig] = None
-        if "oauth_config" in d:
+        if d.get("oauth_config") is not None:
             oauth_cfg = OAuthConfig.from_dict(d["oauth_config"])
-        return cls(
-            type=d.get("type", ""),
-            display_name=d.get("display_name", ""),
-            description=d.get("description", ""),
-            fields=[AuthField.from_dict(f) for f in d.get("fields", [])],
-            is_mcp=d.get("is_mcp", False),
-            oauth_config=oauth_cfg,
-            auth_header_key_override=d.get("auth_header_key_override", ""),
-        )
+        known = {
+            "type": d.get("type", ""),
+            "display_name": d.get("display_name", ""),
+            "description": d.get("description", ""),
+            "fields": [AuthField.from_dict(f) for f in d.get("fields") or []],
+            "account_fields": [
+                AuthField.from_dict(f) for f in d.get("account_fields") or []
+            ],
+            "is_mcp": d.get("is_mcp", False),
+            "oauth_config": oauth_cfg,
+            "auth_header_key_override": d.get("auth_header_key_override", ""),
+            "allowed_proxy_domains": list(d.get("allowed_proxy_domains") or []),
+        }
+        extras = {k: v for k, v in d.items() if k not in known}
+        return cls.model_validate({**known, **extras}, context={"decoding": True})
 
     class Config:
         validate_assignment = True
+        extra = "allow"
 
 
 class Provider(BaseModel):

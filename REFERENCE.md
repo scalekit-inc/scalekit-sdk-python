@@ -6761,12 +6761,21 @@ response = scalekit_client.actions.providers.create_custom_provider(
 - `proxy_enabled: bool` - Whether to enable Scalekit request proxying. Defaults to `True`.
 - `description: str` - Short description of the provider. Defaults to empty string.
 - `auth_patterns: List[AuthPattern]` - Authentication options for users. Currently only a single element is supported — the list type is intentional for future multi-pattern support.
-  - `type: str` - Auth mechanism: `"OAUTH"`, `"BEARER"`, or `"API_KEY"`.
+  - `type: str` - Auth mechanism. Use `"OAUTH"`, `"BEARER"`, `"API_KEY"`, or `"NO_AUTH"` for custom connectors. Reading providers back can surface further types the managed catalogue uses (`"BASIC"`, `"OAUTH_M2M"`, `"GOOGLE_DWD"`, …), so any string is accepted.
   - `display_name: str` - Display name for this auth option.
   - `description: str` - Short description of this auth option.
   - `is_mcp: bool` - Set `True` for MCP server providers.
   - `oauth_config: Optional[OAuthConfig]` - Required when `type="OAUTH"`. `OAuthConfig(pkce_enabled=True)` by default.
-  - `fields: List[AuthField]` - Credential input fields for `BEARER` and `API_KEY` types.
+  - `fields: List[AuthField]` - Input fields shown during connection setup. Credentials for `BEARER` and `API_KEY`; `OAUTH` patterns use them for options collected before the browser flow (e.g. `access_type`).
+    - `field_name: str` - Machine-readable key for the field.
+    - `label: str` / `hint: str` - Label and helper text shown in the UI.
+    - `input_type: str` - How the input renders: `"text"` (default), `"password"`, `"select"`, `"textarea"`. Not a fixed set — the catalogue owns this vocabulary.
+    - `required: bool` - Whether the user must fill the field.
+    - `options: List[AuthFieldOption]` - Choices for a `"select"` field, each with `value`, `display_name`, `description`, and `default`.
+    - `is_path_param: bool` - The value is substituted into the request path rather than sent as a credential.
+    - `header_name: str` - On `API_KEY`, inject this field's value as this exact HTTP header (enables multiple-headers mode).
+  - `account_fields: List[AuthField]` - Inputs collected per connected account rather than once per connection.
+  - `allowed_proxy_domains: List[str]` - Domains proxied requests may be routed to.
 - `icon_src: str` - URL of the provider's icon image. Defaults to empty string.
 - `metadata: Dict[str, str]` - Arbitrary string key-value pairs attached to the provider. Keys 3-25 chars, values 1-256 chars, max 20 pairs. Defaults to empty dict.
 
@@ -6924,6 +6933,73 @@ for provider in response.providers:
 response = scalekit_client.actions.providers.list_providers(
     ListProvidersRequest(provider_type=ProviderType.ALL, page_size=100)
 )
+```
+
+Page through the whole catalog. Pass `page_token=None` (or omit it) for the
+first page, then feed back `next_page_token` until it comes back empty:
+
+```python
+page_token = None
+while True:
+    response = scalekit_client.actions.providers.list_providers(
+        ListProvidersRequest(
+            provider_type=ProviderType.ALL,
+            page_size=100,
+            page_token=page_token,
+        )
+    )
+    for provider in response.providers:
+        print(provider.identifier)
+
+    page_token = response.next_page_token
+    if not page_token:
+        break
+```
+
+Inspect what a provider asks the user for. `auth_patterns` is fully decoded, so
+there is no protobuf left to unpack — and a `select` field carries its choices
+in `options`:
+
+An `identifier` that matches nothing comes back as an empty list rather than an
+error, so check before indexing:
+
+```python
+response = scalekit_client.actions.providers.list_providers(
+    ListProvidersRequest(identifier="my-connector")
+)
+if not response.providers:
+    raise LookupError("No provider with identifier 'my-connector'")
+
+provider = response.providers[0]
+
+for pattern in provider.auth_patterns:
+    print(f"{pattern.type} — {pattern.display_name}")
+
+    for field in pattern.fields:
+        required = " (required)" if field.required else ""
+        print(f"  {field.field_name}: {field.input_type}{required}")
+
+        # Only populated when input_type == "select"
+        for option in field.options:
+            default = " [default]" if option.default else ""
+            print(f"    - {option.value} — {option.display_name}{default}")
+
+    if pattern.oauth_config:
+        print(f"  pkce_enabled={pattern.oauth_config.pkce_enabled}")
+```
+
+`input_type` and `pattern.type` are plain strings, not fixed enums — the
+vocabulary belongs to the provider catalog and grows over time. Compare against
+the values you care about and let anything else fall through rather than
+matching exhaustively:
+
+```python
+if field.input_type == "password":
+    ...  # mask the input
+elif field.input_type == "select":
+    ...  # render field.options
+else:
+    ...  # "text", "textarea", or something newer — render a plain input
 ```
 </dd>
 </dl>
