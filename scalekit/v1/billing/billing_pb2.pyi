@@ -36,7 +36,6 @@ class BillingMode(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
     BILLING_MODE_UNSPECIFIED: _ClassVar[BillingMode]
     STRIPE: _ClassVar[BillingMode]
-    STRIPE_AND_METRONOME: _ClassVar[BillingMode]
     METRONOME: _ClassVar[BillingMode]
 
 class BillingAccountStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
@@ -80,7 +79,6 @@ BLOCK: OnExceed
 UPGRADE: OnExceed
 BILLING_MODE_UNSPECIFIED: BillingMode
 STRIPE: BillingMode
-STRIPE_AND_METRONOME: BillingMode
 METRONOME: BillingMode
 BILLING_ACCOUNT_STATUS_UNSPECIFIED: BillingAccountStatus
 PENDING: BillingAccountStatus
@@ -255,18 +253,28 @@ class ListEnvironmentBillingResponse(_message.Message):
     def __init__(self, environments: _Optional[_Iterable[_Union[EnvironmentBilling, _Mapping]]] = ...) -> None: ...
 
 class EnvironmentBilling(_message.Message):
-    __slots__ = ("environment_id", "environment_name", "plans", "catalog_version", "contract_status")
+    __slots__ = ("environment_id", "environment_name", "plans", "catalog_version", "contract_status", "add_ons", "purchasable_add_ons", "full_stack_auth", "period_start", "period_end")
     ENVIRONMENT_ID_FIELD_NUMBER: _ClassVar[int]
     ENVIRONMENT_NAME_FIELD_NUMBER: _ClassVar[int]
     PLANS_FIELD_NUMBER: _ClassVar[int]
     CATALOG_VERSION_FIELD_NUMBER: _ClassVar[int]
     CONTRACT_STATUS_FIELD_NUMBER: _ClassVar[int]
+    ADD_ONS_FIELD_NUMBER: _ClassVar[int]
+    PURCHASABLE_ADD_ONS_FIELD_NUMBER: _ClassVar[int]
+    FULL_STACK_AUTH_FIELD_NUMBER: _ClassVar[int]
+    PERIOD_START_FIELD_NUMBER: _ClassVar[int]
+    PERIOD_END_FIELD_NUMBER: _ClassVar[int]
     environment_id: str
     environment_name: str
     plans: _containers.RepeatedCompositeFieldContainer[LinePlan]
     catalog_version: int
     contract_status: ContractStatus
-    def __init__(self, environment_id: _Optional[str] = ..., environment_name: _Optional[str] = ..., plans: _Optional[_Iterable[_Union[LinePlan, _Mapping]]] = ..., catalog_version: _Optional[int] = ..., contract_status: _Optional[_Union[ContractStatus, str]] = ...) -> None: ...
+    add_ons: _containers.RepeatedScalarFieldContainer[str]
+    purchasable_add_ons: _containers.RepeatedScalarFieldContainer[str]
+    full_stack_auth: bool
+    period_start: str
+    period_end: str
+    def __init__(self, environment_id: _Optional[str] = ..., environment_name: _Optional[str] = ..., plans: _Optional[_Iterable[_Union[LinePlan, _Mapping]]] = ..., catalog_version: _Optional[int] = ..., contract_status: _Optional[_Union[ContractStatus, str]] = ..., add_ons: _Optional[_Iterable[str]] = ..., purchasable_add_ons: _Optional[_Iterable[str]] = ..., full_stack_auth: bool = ..., period_start: _Optional[str] = ..., period_end: _Optional[str] = ...) -> None: ...
 
 class LinePlan(_message.Message):
     __slots__ = ("line", "tier")
@@ -276,21 +284,23 @@ class LinePlan(_message.Message):
     tier: str
     def __init__(self, line: _Optional[str] = ..., tier: _Optional[str] = ...) -> None: ...
 
-class UpdateEnvironmentPlanRequest(_message.Message):
-    __slots__ = ("environment_id", "plans")
-    ENVIRONMENT_ID_FIELD_NUMBER: _ClassVar[int]
+class UpdateBillingPlanRequest(_message.Message):
+    __slots__ = ("plans", "add_ons")
     PLANS_FIELD_NUMBER: _ClassVar[int]
-    environment_id: str
+    ADD_ONS_FIELD_NUMBER: _ClassVar[int]
     plans: _containers.RepeatedCompositeFieldContainer[LinePlan]
-    def __init__(self, environment_id: _Optional[str] = ..., plans: _Optional[_Iterable[_Union[LinePlan, _Mapping]]] = ...) -> None: ...
+    add_ons: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, plans: _Optional[_Iterable[_Union[LinePlan, _Mapping]]] = ..., add_ons: _Optional[_Iterable[str]] = ...) -> None: ...
 
-class UpdateEnvironmentPlanResponse(_message.Message):
-    __slots__ = ("plans", "exceeded")
+class UpdateBillingPlanResponse(_message.Message):
+    __slots__ = ("plans", "add_ons", "exceeded")
     PLANS_FIELD_NUMBER: _ClassVar[int]
+    ADD_ONS_FIELD_NUMBER: _ClassVar[int]
     EXCEEDED_FIELD_NUMBER: _ClassVar[int]
     plans: _containers.RepeatedCompositeFieldContainer[LinePlan]
+    add_ons: _containers.RepeatedScalarFieldContainer[str]
     exceeded: _containers.RepeatedCompositeFieldContainer[ExceededAllowance]
-    def __init__(self, plans: _Optional[_Iterable[_Union[LinePlan, _Mapping]]] = ..., exceeded: _Optional[_Iterable[_Union[ExceededAllowance, _Mapping]]] = ...) -> None: ...
+    def __init__(self, plans: _Optional[_Iterable[_Union[LinePlan, _Mapping]]] = ..., add_ons: _Optional[_Iterable[str]] = ..., exceeded: _Optional[_Iterable[_Union[ExceededAllowance, _Mapping]]] = ...) -> None: ...
 
 class ExceededAllowance(_message.Message):
     __slots__ = ("entitlement", "line", "allowance", "current_usage", "on_exceed")
@@ -305,3 +315,53 @@ class ExceededAllowance(_message.Message):
     current_usage: int
     on_exceed: OnExceed
     def __init__(self, entitlement: _Optional[str] = ..., line: _Optional[str] = ..., allowance: _Optional[int] = ..., current_usage: _Optional[int] = ..., on_exceed: _Optional[_Union[OnExceed, str]] = ...) -> None: ...
+
+class GetBillingUsageRequest(_message.Message):
+    __slots__ = ()
+    def __init__(self) -> None: ...
+
+class GetBillingUsageResponse(_message.Message):
+    __slots__ = ("metrics", "period_start", "period_end")
+    METRICS_FIELD_NUMBER: _ClassVar[int]
+    PERIOD_START_FIELD_NUMBER: _ClassVar[int]
+    PERIOD_END_FIELD_NUMBER: _ClassVar[int]
+    metrics: _containers.RepeatedCompositeFieldContainer[MetricUsage]
+    period_start: str
+    period_end: str
+    def __init__(self, metrics: _Optional[_Iterable[_Union[MetricUsage, _Mapping]]] = ..., period_start: _Optional[str] = ..., period_end: _Optional[str] = ...) -> None: ...
+
+class MetricUsage(_message.Message):
+    __slots__ = ("entitlement", "line", "allowance", "current_usage", "display_name")
+    ENTITLEMENT_FIELD_NUMBER: _ClassVar[int]
+    LINE_FIELD_NUMBER: _ClassVar[int]
+    ALLOWANCE_FIELD_NUMBER: _ClassVar[int]
+    CURRENT_USAGE_FIELD_NUMBER: _ClassVar[int]
+    DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
+    entitlement: str
+    line: str
+    allowance: Allowance
+    current_usage: float
+    display_name: str
+    def __init__(self, entitlement: _Optional[str] = ..., line: _Optional[str] = ..., allowance: _Optional[_Union[Allowance, _Mapping]] = ..., current_usage: _Optional[float] = ..., display_name: _Optional[str] = ...) -> None: ...
+
+class GetBillingConnectionCountsRequest(_message.Message):
+    __slots__ = ()
+    def __init__(self) -> None: ...
+
+class GetBillingConnectionCountsResponse(_message.Message):
+    __slots__ = ("sso_connections", "scim_connections")
+    SSO_CONNECTIONS_FIELD_NUMBER: _ClassVar[int]
+    SCIM_CONNECTIONS_FIELD_NUMBER: _ClassVar[int]
+    sso_connections: int
+    scim_connections: int
+    def __init__(self, sso_connections: _Optional[int] = ..., scim_connections: _Optional[int] = ...) -> None: ...
+
+class GetInvoicesDashboardUrlRequest(_message.Message):
+    __slots__ = ()
+    def __init__(self) -> None: ...
+
+class GetInvoicesDashboardUrlResponse(_message.Message):
+    __slots__ = ("url",)
+    URL_FIELD_NUMBER: _ClassVar[int]
+    url: str
+    def __init__(self, url: _Optional[str] = ...) -> None: ...
