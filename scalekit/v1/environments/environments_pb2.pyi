@@ -154,18 +154,20 @@ class Environment(_message.Message):
     def __init__(self, id: _Optional[str] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., display_name: _Optional[str] = ..., domain: _Optional[str] = ..., region_code: _Optional[_Union[_commons_pb2.RegionCode, str]] = ..., type: _Optional[_Union[_commons_pb2.EnvironmentType, str]] = ..., custom_domain: _Optional[str] = ..., custom_domain_status: _Optional[_Union[CustomDomainStatus, str]] = ...) -> None: ...
 
 class CreateEnvironment(_message.Message):
-    __slots__ = ("display_name", "region_code", "type", "authentication_mode", "plans")
+    __slots__ = ("display_name", "region_code", "type", "authentication_mode", "plans", "add_ons")
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     REGION_CODE_FIELD_NUMBER: _ClassVar[int]
     TYPE_FIELD_NUMBER: _ClassVar[int]
     AUTHENTICATION_MODE_FIELD_NUMBER: _ClassVar[int]
     PLANS_FIELD_NUMBER: _ClassVar[int]
+    ADD_ONS_FIELD_NUMBER: _ClassVar[int]
     display_name: str
     region_code: _commons_pb2.RegionCode
     type: _commons_pb2.EnvironmentType
     authentication_mode: _commons_pb2.AuthenticationMode
     plans: _containers.RepeatedCompositeFieldContainer[_billing_pb2.LinePlan]
-    def __init__(self, display_name: _Optional[str] = ..., region_code: _Optional[_Union[_commons_pb2.RegionCode, str]] = ..., type: _Optional[_Union[_commons_pb2.EnvironmentType, str]] = ..., authentication_mode: _Optional[_Union[_commons_pb2.AuthenticationMode, str]] = ..., plans: _Optional[_Iterable[_Union[_billing_pb2.LinePlan, _Mapping]]] = ...) -> None: ...
+    add_ons: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, display_name: _Optional[str] = ..., region_code: _Optional[_Union[_commons_pb2.RegionCode, str]] = ..., type: _Optional[_Union[_commons_pb2.EnvironmentType, str]] = ..., authentication_mode: _Optional[_Union[_commons_pb2.AuthenticationMode, str]] = ..., plans: _Optional[_Iterable[_Union[_billing_pb2.LinePlan, _Mapping]]] = ..., add_ons: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class UpdateEnvironment(_message.Message):
     __slots__ = ("display_name",)
@@ -288,14 +290,16 @@ class GetPortalCustomizationRequest(_message.Message):
     def __init__(self, id: _Optional[str] = ...) -> None: ...
 
 class PortalSettings(_message.Message):
-    __slots__ = ("custom_branding", "new_self_serve_sso_scim", "enable_conn_delete")
+    __slots__ = ("custom_branding", "new_self_serve_sso_scim", "enable_conn_delete", "mcp_consent_screen_v2")
     CUSTOM_BRANDING_FIELD_NUMBER: _ClassVar[int]
     NEW_SELF_SERVE_SSO_SCIM_FIELD_NUMBER: _ClassVar[int]
     ENABLE_CONN_DELETE_FIELD_NUMBER: _ClassVar[int]
+    MCP_CONSENT_SCREEN_V2_FIELD_NUMBER: _ClassVar[int]
     custom_branding: bool
     new_self_serve_sso_scim: bool
     enable_conn_delete: bool
-    def __init__(self, custom_branding: bool = ..., new_self_serve_sso_scim: bool = ..., enable_conn_delete: bool = ...) -> None: ...
+    mcp_consent_screen_v2: bool
+    def __init__(self, custom_branding: bool = ..., new_self_serve_sso_scim: bool = ..., enable_conn_delete: bool = ..., mcp_consent_screen_v2: bool = ...) -> None: ...
 
 class GetPortalCustomizationResponse(_message.Message):
     __slots__ = ("environmentId", "customization_settings", "settings", "organization_customizations")

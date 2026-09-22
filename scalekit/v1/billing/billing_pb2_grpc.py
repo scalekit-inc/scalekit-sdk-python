@@ -45,10 +45,25 @@ class BillingServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.ListEnvironmentBillingRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.ListEnvironmentBillingResponse.FromString,
                 )
-        self.UpdateEnvironmentPlan = channel.unary_unary(
-                '/scalekit.v1.billing.BillingService/UpdateEnvironmentPlan',
-                request_serializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.UpdateEnvironmentPlanRequest.SerializeToString,
-                response_deserializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.UpdateEnvironmentPlanResponse.FromString,
+        self.UpdateBillingPlan = channel.unary_unary(
+                '/scalekit.v1.billing.BillingService/UpdateBillingPlan',
+                request_serializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.UpdateBillingPlanRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.UpdateBillingPlanResponse.FromString,
+                )
+        self.GetBillingUsage = channel.unary_unary(
+                '/scalekit.v1.billing.BillingService/GetBillingUsage',
+                request_serializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.GetBillingUsageRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.GetBillingUsageResponse.FromString,
+                )
+        self.GetBillingConnectionCounts = channel.unary_unary(
+                '/scalekit.v1.billing.BillingService/GetBillingConnectionCounts',
+                request_serializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.GetBillingConnectionCountsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.GetBillingConnectionCountsResponse.FromString,
+                )
+        self.GetInvoicesDashboardUrl = channel.unary_unary(
+                '/scalekit.v1.billing.BillingService/GetInvoicesDashboardUrl',
+                request_serializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.GetInvoicesDashboardUrlRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.GetInvoicesDashboardUrlResponse.FromString,
                 )
 
 
@@ -104,8 +119,44 @@ class BillingServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def UpdateEnvironmentPlan(self, request, context):
-        """UpdateEnvironmentPlan changes an environment's plan on one or more lines.
+    def UpdateBillingPlan(self, request, context):
+        """UpdateBillingPlan changes an environment's plan on one or more lines.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetBillingUsage(self, request, context):
+        """GetBillingUsage returns current-period usage against allowance for every metered
+        entitlement on an environment's plan. Metronome's own embeddable usage dashboard cannot be
+        scoped to one environment (only the invoices dashboard supports a contract_id filter), so this
+        is a first-party view built on the same per-environment usage query this backend already uses
+        for auto-upgrade checks.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetBillingConnectionCounts(self, request, context):
+        """GetBillingConnectionCounts returns how many SSO connections and SCIM directories are active in
+        this environment RIGHT NOW — a live database count, deliberately NOT read from GetBillingUsage:
+        that endpoint's current_usage is fractional connection-MONTHS accrued so far in the billing period
+        (e.g. 0.97), which answers "how much will this bill", not "how many exist right now", and reads
+        through Metronome's own ingest pipeline (async, dedup-protected — see specs/billing_redesign/spec.md
+        §9), which can lag a just-created or just-disabled connection by more than an instant. A caller
+        deciding whether creating ONE MORE connection would exceed a plan's included allowance needs the
+        count this RPC gives, not that one.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetInvoicesDashboardUrl(self, request, context):
+        """GetInvoicesDashboardUrl mints a short-lived, iframe-embeddable URL for Metronome's own hosted
+        invoices dashboard, scoped to this one environment's contract via Metronome's contract_id
+        dashboard option — the only dashboard type that supports a per-contract filter at all. Unlike
+        GetBillingUsage, no first-party invoice UI is built here: the invoices dashboard needs no
+        custom rendering, just embedding.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -139,10 +190,25 @@ def add_BillingServiceServicer_to_server(servicer, server):
                     request_deserializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.ListEnvironmentBillingRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.ListEnvironmentBillingResponse.SerializeToString,
             ),
-            'UpdateEnvironmentPlan': grpc.unary_unary_rpc_method_handler(
-                    servicer.UpdateEnvironmentPlan,
-                    request_deserializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.UpdateEnvironmentPlanRequest.FromString,
-                    response_serializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.UpdateEnvironmentPlanResponse.SerializeToString,
+            'UpdateBillingPlan': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateBillingPlan,
+                    request_deserializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.UpdateBillingPlanRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.UpdateBillingPlanResponse.SerializeToString,
+            ),
+            'GetBillingUsage': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetBillingUsage,
+                    request_deserializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.GetBillingUsageRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.GetBillingUsageResponse.SerializeToString,
+            ),
+            'GetBillingConnectionCounts': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetBillingConnectionCounts,
+                    request_deserializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.GetBillingConnectionCountsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.GetBillingConnectionCountsResponse.SerializeToString,
+            ),
+            'GetInvoicesDashboardUrl': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetInvoicesDashboardUrl,
+                    request_deserializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.GetInvoicesDashboardUrlRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.GetInvoicesDashboardUrlResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -246,7 +312,7 @@ class BillingService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def UpdateEnvironmentPlan(request,
+    def UpdateBillingPlan(request,
             target,
             options=(),
             channel_credentials=None,
@@ -256,8 +322,59 @@ class BillingService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.billing.BillingService/UpdateEnvironmentPlan',
-            scalekit_dot_v1_dot_billing_dot_billing__pb2.UpdateEnvironmentPlanRequest.SerializeToString,
-            scalekit_dot_v1_dot_billing_dot_billing__pb2.UpdateEnvironmentPlanResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.billing.BillingService/UpdateBillingPlan',
+            scalekit_dot_v1_dot_billing_dot_billing__pb2.UpdateBillingPlanRequest.SerializeToString,
+            scalekit_dot_v1_dot_billing_dot_billing__pb2.UpdateBillingPlanResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetBillingUsage(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.billing.BillingService/GetBillingUsage',
+            scalekit_dot_v1_dot_billing_dot_billing__pb2.GetBillingUsageRequest.SerializeToString,
+            scalekit_dot_v1_dot_billing_dot_billing__pb2.GetBillingUsageResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetBillingConnectionCounts(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.billing.BillingService/GetBillingConnectionCounts',
+            scalekit_dot_v1_dot_billing_dot_billing__pb2.GetBillingConnectionCountsRequest.SerializeToString,
+            scalekit_dot_v1_dot_billing_dot_billing__pb2.GetBillingConnectionCountsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetInvoicesDashboardUrl(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.billing.BillingService/GetInvoicesDashboardUrl',
+            scalekit_dot_v1_dot_billing_dot_billing__pb2.GetInvoicesDashboardUrlRequest.SerializeToString,
+            scalekit_dot_v1_dot_billing_dot_billing__pb2.GetInvoicesDashboardUrlResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
