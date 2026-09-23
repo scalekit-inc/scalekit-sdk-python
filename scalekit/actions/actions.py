@@ -84,7 +84,7 @@ class ActionClient:
             except ImportError as e:
                 raise ImportError(
                     "Google ADK not found. To use Google ADK integration, please install:\n"
-                    "pip install google-adk\n\n"
+                    'pip install "scalekit-sdk-python[google-adk]"\n\n'
                     "For more information, see: https://google.github.io/adk-docs/\n"
                 )
 

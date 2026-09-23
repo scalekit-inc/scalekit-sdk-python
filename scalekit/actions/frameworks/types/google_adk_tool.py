@@ -1,10 +1,15 @@
-from typing import Callable
-from mcp.types import Tool as McpBaseTool
+from typing import TYPE_CHECKING, Callable
+
+if TYPE_CHECKING:
+    from mcp.types import Tool as McpBaseTool
 
 # Dynamic imports with helpful error messages
 def _import_google_adk():
     """Import Google ADK with helpful error message if not available"""
     try:
+        # mcp is an optional dependency of this SDK, and google-adk only
+        # installs it through its own extras, so check for it here too.
+        import mcp.types  # noqa: F401
         from google.adk.tools.mcp_tool.mcp_tool import McpTool
         from google.adk.tools.tool_context import ToolContext
         from google.adk.auth.auth_credential import AuthCredential
@@ -12,7 +17,7 @@ def _import_google_adk():
     except ImportError as e:
         raise ImportError(
             "Google ADK not found. To use Google ADK integration, please install:\n"
-            "pip install google-adk\n\n"
+            'pip install "scalekit-sdk-python[google-adk]"\n\n'
             "For more information, see: https://google.github.io/adk-docs/\n"
             f"Original error: {e}"
         )
@@ -25,7 +30,7 @@ class ScalekitGoogleAdkTool(McpTool):
     
     def __init__(
         self, 
-        mcp_tool: McpBaseTool,
+        mcp_tool: "McpBaseTool",
         connected_account_id: str,
         execute_callback: Callable
     ):
