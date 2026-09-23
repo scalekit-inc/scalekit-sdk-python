@@ -9,6 +9,9 @@ setup(
     name="scalekit-sdk-python",
     version=__version__,
     packages=find_packages(),
+    # grpcio, grpcio-status and requests at these minimums need 3.10+.
+    # Declaring it makes pip on older Python skip releases it can't install.
+    python_requires=">=3.10",
     install_requires=[
         "grpcio>=1.81.0,<2.0",
         "protobuf>=5.29.5,<8.0.0",
@@ -25,7 +28,6 @@ setup(
         "python-dotenv>=1.2.2,<2.0",
         "Faker>=33.0.0,<41.0",
         "pydantic>=2.13.4",
-        "mcp>=1.27.2",
     ],
     extras_require={
         # Framework-specific extras for scalekit.frameworks.* -- kept out of
@@ -34,6 +36,9 @@ setup(
         "flask": ["flask>=2.0"],
         "fastapi": ["fastapi>=0.100"],
         "django": ["django>=4.2"],
+        # The Google ADK adapter builds tools from mcp.types, and google-adk
+        # only installs mcp through its own extras, so request it here.
+        "google-adk": ["google-adk", "mcp>=1.27.2,<2"],
     },
     url="https://github.com/scalekit-inc/scalekit-sdk-python",
     license="MIT",
