@@ -1,4 +1,7 @@
 name: Publish PyPI aliases
+# Pull requests only build and check the aliases; name those runs so they
+# aren't mistaken for publishes in the Actions list.
+run-name: "${{ github.event_name == 'workflow_dispatch' && format('Publish {0} to PyPI', inputs.package) || format('Check PyPI aliases (PR #{0})', github.event.pull_request.number) }}"
 
 # Builds and checks the alias packages in aliases/. Pull requests that touch
 # them only build and check. A manual run also publishes the selected alias.
@@ -91,7 +94,7 @@ jobs:
           retention-days: 7
 
   publish:
-    name: Publish ${{ inputs.package }} to PyPI
+    name: Publish to PyPI
     if: github.event_name == 'workflow_dispatch'
     needs: build
     runs-on: blacksmith-2vcpu-ubuntu-2404
