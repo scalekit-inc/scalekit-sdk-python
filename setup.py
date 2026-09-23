@@ -39,6 +39,9 @@ setup(
         # The Google ADK adapter builds tools from mcp.types, and google-adk
         # only installs mcp through its own extras, so request it here.
         "google-adk": ["google-adk", "mcp>=1.27.2,<2"],
+        # Test-only: starlette's TestClient (used by the FastAPI middleware
+        # tests) needs httpx2. It used to arrive transitively through mcp.
+        "test": ["httpx2"],
     },
     url="https://github.com/scalekit-inc/scalekit-sdk-python",
     license="MIT",
