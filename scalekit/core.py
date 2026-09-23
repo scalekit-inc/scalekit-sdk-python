@@ -187,7 +187,7 @@ class CoreClient:
 
     sdk_version = f"Scalekit-Python/{_sdk_version}"
     # YYYYMMDD
-    api_version = "20260909"
+    api_version = "20260922"
     user_agent = f"{sdk_version} Python/{platform.python_version()} ({platform.system()}; {platform.architecture()}"
 
     def __init__(
