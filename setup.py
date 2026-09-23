@@ -9,9 +9,6 @@ setup(
     name="scalekit-sdk-python",
     version=__version__,
     packages=find_packages(),
-    # mcp and other dependencies need 3.10+. Declaring it makes pip on older
-    # Python fail with a clear error instead of installing an old SDK release.
-    python_requires=">=3.10",
     install_requires=[
         "grpcio>=1.81.0,<2.0",
         "protobuf>=5.29.5,<8.0.0",
