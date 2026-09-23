@@ -1,0 +1,51 @@
+name: Publish PyPI aliases
+
+on:
+  workflow_dispatch:
+    inputs:
+      package:
+        description: "Alias package to publish (a folder in aliases/)"
+        required: true
+        type: choice
+        options:
+          - scalekit
+          - scalekit-sdk
+
+permissions:
+  contents: read
+  id-token: write  # Required for PyPI trusted publishing (OIDC)
+
+jobs:
+  publish:
+    name: Build and publish ${{ inputs.package }}
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    environment: release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: ".python-version"
+
+      - name: Install build dependencies
+        run: pip install build
+
+      - name: Build package
+        run: python -m build aliases/${{ inputs.package }}
+
+      - name: Check the package ships no modules
+        run: |
+          python - <<'PY'
+          import glob, sys, zipfile
+          whl = glob.glob("aliases/${{ inputs.package }}/dist/*.whl")[0]
+          files = [n for n in zipfile.ZipFile(whl).namelist() if ".dist-info/" not in n]
+          if files:
+              sys.exit(f"alias wheel must be metadata-only, found: {files}")
+          PY
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: aliases/${{ inputs.package }}/dist/

@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scalekit-sdk"
+version = "1.0.0"
+description = "Alias for scalekit-sdk-python, the official Scalekit Python SDK"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [{ name = "Team Scalekit", email = "support@scalekit.com" }]
+dependencies = ["scalekit-sdk-python>=2.19"]
+
+[project.urls]
+Homepage = "https://github.com/scalekit-inc/scalekit-sdk-python"
+Documentation = "https://docs.scalekit.com"
+
+# Metadata-only package: it ships no modules of its own, so it can never
+# shadow the real `scalekit` import package from scalekit-sdk-python.
+[tool.setuptools]
+packages = []
