@@ -1,5 +1,7 @@
 name: Publish PyPI aliases
 
+# Builds and checks the alias packages in aliases/. Pull requests that touch
+# them only build and check. A manual run also publishes the selected alias.
 on:
   workflow_dispatch:
     inputs:
@@ -10,42 +12,104 @@ on:
         options:
           - scalekit
           - scalekit-sdk
+  pull_request:
+    paths:
+      - "aliases/**"
+      - ".github/workflows/publish-aliases.yml"
 
-permissions:
-  contents: read
-  id-token: write  # Required for PyPI trusted publishing (OIDC)
+# No default token permissions. Each job asks for only what it needs.
+permissions: {}
+
+concurrency:
+  group: publish-aliases-${{ inputs.package || github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  publish:
-    name: Build and publish ${{ inputs.package }}
+  build:
+    name: Build ${{ matrix.package }}
     runs-on: blacksmith-2vcpu-ubuntu-2404
-    environment: release
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJSON(github.event_name == 'workflow_dispatch' && format('["{0}"]', inputs.package) || '["scalekit", "scalekit-sdk"]') }}
+    env:
+      PACKAGE: ${{ matrix.package }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version-file: ".python-version"
 
-      - name: Install build dependencies
-        run: pip install build
+      - name: Install build tools
+        run: python -m pip install build==1.6.1 twine==7.0.0
 
       - name: Build package
-        run: python -m build aliases/${{ inputs.package }}
+        run: python -m build "aliases/$PACKAGE" --outdir dist
 
-      - name: Check the package ships no modules
+      - name: Check the distributions
         run: |
+          python -m twine check --strict dist/*
           python - <<'PY'
-          import glob, sys, zipfile
-          whl = glob.glob("aliases/${{ inputs.package }}/dist/*.whl")[0]
-          files = [n for n in zipfile.ZipFile(whl).namelist() if ".dist-info/" not in n]
+          import glob, os, sys, zipfile
+          from email.parser import Parser
+
+          package = os.environ["PACKAGE"]
+          wheels = glob.glob("dist/*.whl")
+          if len(wheels) != 1:
+              sys.exit(f"expected one wheel, found {wheels}")
+          wheel = zipfile.ZipFile(wheels[0])
+
+          # An alias must ship no modules, so it can't shadow the real
+          # `scalekit` import package from scalekit-sdk-python.
+          files = [n for n in wheel.namelist() if ".dist-info/" not in n]
           if files:
               sys.exit(f"alias wheel must be metadata-only, found: {files}")
+
+          metadata_file = next(n for n in wheel.namelist() if n.endswith(".dist-info/METADATA"))
+          metadata = Parser().parsestr(wheel.read(metadata_file).decode())
+          if metadata["Name"] != package:
+              sys.exit(f"wheel is named {metadata['Name']!r}, expected {package!r}")
+          requires = metadata.get_all("Requires-Dist") or []
+          if not any(r.startswith("scalekit-sdk-python") for r in requires):
+              sys.exit(f"alias must depend on scalekit-sdk-python, found: {requires}")
+          print(f"{package}: metadata-only, depends on {requires}")
           PY
 
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+      - name: Upload distributions
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          packages-dir: aliases/${{ inputs.package }}/dist/
+          name: dist-${{ matrix.package }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    name: Publish ${{ inputs.package }} to PyPI
+    if: github.event_name == 'workflow_dispatch'
+    needs: build
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    environment:
+      name: release
+      url: https://pypi.org/project/${{ inputs.package }}/
+    # Only this job can mint a PyPI token. It runs no project code: it
+    # downloads the distributions the build job checked and uploads them.
+    permissions:
+      id-token: write # Required for PyPI trusted publishing (OIDC)
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: dist-${{ inputs.package }}
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+        with:
+          packages-dir: dist/
