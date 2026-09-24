@@ -5916,10 +5916,6 @@ Manage the API clients scoped to a resource (such as an MCP server), and access 
 <dd>
 
 Retrieves a single resource by id.
-
-A resource client's `scopes` are only actually granted in an issued token when they also appear in the resource's own `scopes` allowlist (the server intersects requested scopes against the environment's permissions, the resource's allowed scopes, and the client's own scopes) — call this first to see what the resource actually allows before creating or updating a resource client with `scopes`.
-
-`resource.scopes` is every scope defined in the environment, not just the ones this resource allows — each entry carries an `enabled` flag, and only the ones with `enabled=True` are actually usable on this resource. Filter on that flag to get the actual allowlist.
 </dd>
 </dl>
 </dd>
@@ -5978,8 +5974,6 @@ print(allowed_scopes)
 <dd>
 
 Lists resources of a given type in the environment, with pagination.
-
-`resource_type` is required by the underlying API — there is no way to list every type in one call; list each type separately if needed.
 </dd>
 </dl>
 </dd>
@@ -6263,10 +6257,6 @@ for c in response[0].clients:
 <dd>
 
 Updates a resource client.
-
-Only the parameters you pass (non-`None`) are changed — there is no field mask to build yourself; it's derived internally from whichever parameters are set. The server only actually honors this for `scopes`, `custom_claims` and `redirect_uris` — pass an empty list (not `None`) to clear one of those. `name`/`description` are applied whenever non-empty regardless (an empty string is a no-op, not a clear).
-
-There is no `audience` parameter — audience is always server-determined and can never be set through this SDK, on create or update, for any resource type.
 </dd>
 </dl>
 </dd>
@@ -6585,11 +6575,11 @@ scalekit_client.resources.delete_resource_client_secret('res_123456', 'm2m_12345
 <dl>
 <dd>
 
-Lists the end-user consents granted against a resource, with pagination.
+Lists the end-user consents granted against a resource, with pagination. Use this to audit who authorized a client, and to find the `consent_id` you need before revoking.
 
-Each returned consent carries `id`, `external_user_id`, `client_id`, `client_name`, `scopes` and `granted_at`. The response also carries `total_size` plus `next_page_token` / `prev_page_token` cursors.
+Filter by user in one of two ways. Pass `user_ids` to match external user IDs exactly and case-sensitively. Pass `search` for a case-insensitive substring match. When you give both, `user_ids` wins and `search` is ignored.
 
-Filter by user in one of two ways. Pass `user_ids` to match specific external user IDs exactly and case-sensitively. Pass `search` for a case-insensitive substring match. When you give both, `user_ids` wins and `search` is ignored.
+Consents with `id`, `external_user_id`, `client_id`, `client_name`, `scopes`, and `granted_at`, plus `total_size` and the `next_page_token` / `prev_page_token` cursors.
 </dd>
 </dl>
 </dd>
@@ -6683,11 +6673,9 @@ for consent in response[0].consents:
 <dl>
 <dd>
 
-Revokes a single end-user consent held by an API client.
+Revokes a single end-user consent held by an API client. The client is prompted for consent again on its next authorization attempt, and every active refresh token issued to that client for the same user is revoked.
 
-Deletes the consent, so the client is prompted for consent again on its next authorization attempt, and revokes every active refresh token issued to that client for the same user. Access tokens already issued stay valid until they expire.
-
-Note that `client_id` is the API client that holds the consent (format: `m2m_...`), not the resource id. This matches the underlying route `DELETE /clients/{client_id}/consents/{consent_id}`.
+Access tokens that Scalekit already issued stay valid until they expire. See [How revocation affects active access tokens](https://docs.scalekit.com/authenticate/mcp/managing-mcp-clients/#how-revocation-affects-active-access-tokens) for ways to shorten that window.
 </dd>
 </dl>
 </dd>
