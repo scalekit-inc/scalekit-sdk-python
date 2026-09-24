@@ -170,33 +170,44 @@ class ResourceClient:
         self,
         resource_id: str,
         client_id: str,
-        client: ResourceClientProto,
-        update_mask: Optional[List[str]] = None,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        scopes: Optional[List[str]] = None,
+        custom_claims: Optional[List[CustomClaim]] = None,
+        expiry: Optional[int] = None,
+        redirect_uris: Optional[List[str]] = None,
     ) -> UpdateResourceClientResponse:
         """
         Method to update an existing API client scoped to a resource
 
-        update_mask lists which fields of `client` to change, as raw field
-        paths (e.g. ["scopes", "custom_claims"]). Verified against a live
-        environment: the server only actually honors the mask for scopes,
-        custom_claims and redirect_uris — include one of those paths with an
-        empty value (e.g. scopes=[]) to clear it. name/description are
-        applied whenever non-empty regardless of update_mask (an empty
-        string is a no-op, not a clear).
+        Only the parameters you pass (non-None) are changed — there is no
+        field mask to build yourself; it's derived internally from
+        whichever parameters are set. Verified against a live environment:
+        the server only actually honors this for scopes, custom_claims and
+        redirect_uris — pass an empty list (not None) to clear one of
+        those. name/description are applied whenever non-empty regardless
+        (an empty string is a no-op, not a clear).
 
-        "audience" is not a supported update_mask path — audience cannot be
-        set through this SDK at all, on create or update, for any resource
-        type, so this rejects it outright rather than silently accepting a
-        path that can never take effect.
+        There is no audience parameter — audience is always
+        server-determined and can never be set through this SDK, on create
+        or update, for any resource type.
 
-        :param resource_id  : Resource the client must belong to (format: res_xxxxx)
-        :type               : ``` str ```
-        :param client_id    : Client id to update
-        :type               : ``` str ```
-        :param client       : ResourceClient obj with the fields to update
-        :type               : ``` obj ```
-        :param update_mask  : Field paths in `client` to apply (see note above)
-        :type               : ``` list ```
+        :param resource_id   : Resource the client must belong to (format: res_xxxxx)
+        :type                : ``` str ```
+        :param client_id     : Client id to update
+        :type                : ``` str ```
+        :param name          : Updated name, if changing it
+        :type                : ``` str ```
+        :param description   : Updated description, if changing it
+        :type                : ``` str ```
+        :param scopes        : Updated scopes, if changing them (pass [] to clear)
+        :type                : ``` list ```
+        :param custom_claims : Updated custom claims, if changing them (pass [] to clear)
+        :type                : ``` list ```
+        :param expiry        : Updated access token lifetime in seconds, if changing it
+        :type                : ``` int ```
+        :param redirect_uris : Updated redirect URIs, if changing them (pass [] to clear)
+        :type                : ``` list ```
         :returns:
             Update Resource Client Response
         """
@@ -204,8 +215,27 @@ class ResourceClient:
             raise ValueError("resource_id is required")
         if not client_id:
             raise ValueError("client_id is required")
-        if update_mask and "audience" in update_mask:
-            raise ValueError("audience cannot be set via the SDK; it is always server-determined")
+
+        paths = []
+        client = ResourceClientProto()
+        if name is not None:
+            client.name = name
+            paths.append("name")
+        if description is not None:
+            client.description = description
+            paths.append("description")
+        if scopes is not None:
+            client.scopes.extend(scopes)
+            paths.append("scopes")
+        if custom_claims is not None:
+            client.custom_claims.extend(custom_claims)
+            paths.append("custom_claims")
+        if expiry is not None:
+            client.expiry = expiry
+            paths.append("expiry")
+        if redirect_uris is not None:
+            client.redirect_uris.extend(redirect_uris)
+            paths.append("redirect_uris")
 
         return self.core_client.grpc_exec(
             self.client_service.UpdateResourceClient.with_call,
@@ -213,7 +243,7 @@ class ResourceClient:
                 resource_id=resource_id,
                 client_id=client_id,
                 client=client,
-                update_mask=FieldMask(paths=update_mask) if update_mask else None,
+                update_mask=FieldMask(paths=paths) if paths else None,
             )
         )
 

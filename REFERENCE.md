@@ -6250,7 +6250,7 @@ for c in response[0].clients:
 </dl>
 </details>
 
-<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">update_resource_client</a>(resource_id, client_id, client, update_mask?) -> UpdateResourceClientResponse</code></summary>
+<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">update_resource_client</a>(resource_id, client_id, name?, description?, scopes?, custom_claims?, expiry?, redirect_uris?) -> UpdateResourceClientResponse</code></summary>
 <dl>
 <dd>
 
@@ -6263,6 +6263,10 @@ for c in response[0].clients:
 <dd>
 
 Updates a resource client.
+
+Only the parameters you pass (non-`None`) are changed — there is no field mask to build yourself; it's derived internally from whichever parameters are set. The server only actually honors this for `scopes`, `custom_claims` and `redirect_uris` — pass an empty list (not `None`) to clear one of those. `name`/`description` are applied whenever non-empty regardless (an empty string is a no-op, not a clear).
+
+There is no `audience` parameter — audience is always server-determined and can never be set through this SDK, on create or update, for any resource type.
 </dd>
 </dl>
 </dd>
@@ -6277,8 +6281,6 @@ Updates a resource client.
 <dd>
 
 ```python
-from scalekit.v1.clients.clients_pb2 import ResourceClient
-
 resource_response = scalekit_client.resources.get_resource('res_123456')
 allowed_scopes = [s.name for s in resource_response[0].resource.scopes if s.enabled]
 print(allowed_scopes)
@@ -6286,8 +6288,8 @@ print(allowed_scopes)
 response = scalekit_client.resources.update_resource_client(
     'res_123456',
     'm2m_123456',
-    ResourceClient(name='Updated Name', scopes=allowed_scopes),
-    update_mask=['name', 'scopes'],
+    name='Updated Name',
+    scopes=allowed_scopes,
 )
 
 print(response[0].client.name, response[0].client.scopes)
@@ -6321,14 +6323,7 @@ print(response[0].client.name, response[0].client.scopes)
 <dl>
 <dd>
 
-**client:** `ResourceClient` (proto message from `scalekit.v1.clients.clients_pb2`) - Fields to update
-- `name: str` - Updated name. An empty string is a no-op server-side, not a clear.
-- `description: str` - Updated description. An empty string is a no-op server-side, not a clear.
-- `scopes: List[str]` - Updated scopes (replaces existing; pass `[]` and include `"scopes"` in `update_mask` to clear). These scopes should be the same or subset of the scopes available for the resource.
-- `audience: List[str]` - Not settable through this SDK — audience is always server-determined. Not a supported `update_mask` path; including it raises `ValueError`.
-- `custom_claims: List[CustomClaim]` - Custom claims to set, as `CustomClaim(key, value)` messages (replaces existing; pass `[]` and include `"custom_claims"` in `update_mask` to clear).
-- `expiry: int` - Updated access token lifetime in seconds
-- `redirect_uris: List[str]` - Updated redirect URIs (replaces existing; pass `[]` and include `"redirect_uris"` in `update_mask` to clear)
+**name:** `Optional[str]` - Updated name, if changing it. An empty string is a no-op server-side, not a clear.
 
 </dd>
 </dl>
@@ -6336,7 +6331,39 @@ print(response[0].client.name, response[0].client.scopes)
 <dl>
 <dd>
 
-**update_mask:** `Optional[List[str]]` - Field paths in `client` to apply, e.g. `["scopes", "custom_claims"]`. The server only actually honors the mask for `scopes`, `custom_claims` and `redirect_uris` — include one of those paths with an empty value to clear it. `name`/`description` are applied whenever non-empty regardless of `update_mask`. `audience` is not a supported path.
+**description:** `Optional[str]` - Updated description, if changing it. An empty string is a no-op server-side, not a clear.
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**scopes:** `Optional[List[str]]` - Updated scopes, if changing them (replaces existing; pass `[]` to clear). These scopes should be the same or subset of the scopes available for the resource.
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**custom_claims:** `Optional[List[CustomClaim]]` - Updated custom claims, if changing them, as `CustomClaim(key, value)` messages (replaces existing; pass `[]` to clear).
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**expiry:** `Optional[int]` - Updated access token lifetime in seconds, if changing it
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**redirect_uris:** `Optional[List[str]]` - Updated redirect URIs, if changing them (replaces existing; pass `[]` to clear)
 
 </dd>
 </dl>

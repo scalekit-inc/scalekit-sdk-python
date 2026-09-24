@@ -247,14 +247,15 @@ class TestResourceClientCRUD(BaseTest):
         response = self.scalekit_client.resources.update_resource_client(
             resource_id=TEST_RESOURCE_ID,
             client_id=self.client_id,
-            client=ResourceClientProto(name="Updated Name", description="Updated description"),
+            name="Updated Name",
+            description="Updated description",
         )
         self.assertEqual(response[1].code().name, "OK")
         self.assertEqual(response[0].client.name, "Updated Name")
         self.assertEqual(response[0].client.description, "Updated description")
 
-    def test_update_resource_client_scopes_via_update_mask(self):
-        """ Method to test update resource client scopes using the update mask """
+    def test_update_resource_client_scopes(self):
+        """ Method to test update resource client scopes """
         create_response = self.scalekit_client.resources.create_resource_client(
             resource_id=TEST_RESOURCE_ID, client=ResourceClientProto(name=Faker().company(), scopes=["read"])
         )
@@ -263,8 +264,7 @@ class TestResourceClientCRUD(BaseTest):
         response = self.scalekit_client.resources.update_resource_client(
             resource_id=TEST_RESOURCE_ID,
             client_id=self.client_id,
-            client=ResourceClientProto(scopes=["read", "write"]),
-            update_mask=["scopes"],
+            scopes=["read", "write"],
         )
         self.assertEqual(response[1].code().name, "OK")
         self.assertEqual(list(response[0].client.scopes), ["read", "write"])
@@ -273,7 +273,7 @@ class TestResourceClientCRUD(BaseTest):
         """ Method to test update resource client without a resource id """
         with self.assertRaises(ValueError) as context:
             self.scalekit_client.resources.update_resource_client(
-                resource_id="", client_id="m2m_1234567890", client=ResourceClientProto()
+                resource_id="", client_id="m2m_1234567890", name="Updated Name"
             )
 
         self.assertEqual(str(context.exception), "resource_id is required")
@@ -282,22 +282,10 @@ class TestResourceClientCRUD(BaseTest):
         """ Method to test update resource client without a client id """
         with self.assertRaises(ValueError) as context:
             self.scalekit_client.resources.update_resource_client(
-                resource_id=TEST_RESOURCE_ID, client_id="", client=ResourceClientProto()
+                resource_id=TEST_RESOURCE_ID, client_id="", name="Updated Name"
             )
 
         self.assertEqual(str(context.exception), "client_id is required")
-
-    def test_update_resource_client_rejects_audience_in_update_mask(self):
-        """ Method to test that update rejects an audience path in update_mask, since it can never take effect """
-        with self.assertRaises(ValueError) as context:
-            self.scalekit_client.resources.update_resource_client(
-                resource_id=TEST_RESOURCE_ID,
-                client_id="m2m_1234567890",
-                client=ResourceClientProto(audience=["https://api.example.com"]),
-                update_mask=["audience"],
-            )
-
-        self.assertEqual(str(context.exception), "audience cannot be set via the SDK; it is always server-determined")
 
     def test_create_resource_client_rejects_audience(self):
         """ Method to test that create rejects a non-empty audience, since it can never be set through the SDK """
