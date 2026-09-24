@@ -72,7 +72,8 @@ class DirectoryClient:
             page_size: Optional[int] = None,
             page_token: Optional[str] = None,
             include_detail: Optional[bool] = None,
-            updated_after: Optional[str] = None
+            updated_after: Optional[str] = None,
+            directory_group_id: Optional[str] = None
     ) -> tuple[ListDirUsersResponse, Any]:
         """
         Method to fetch list of directory users based on given organization and directory id
@@ -89,6 +90,8 @@ class DirectoryClient:
         :type                    :     ``` bool ```
         :param updated_after      :     param to get updated after detail
         :type                    :     ``` str ```
+        :param directory_group_id :     filter users by membership in a specific directory group
+        :type                    :     ``` str ```
 
         :returns:
              list of directory users
@@ -101,11 +104,13 @@ class DirectoryClient:
                 page_size=page_size,
                 page_token=page_token,
                 include_detail=include_detail,
+                directory_group_id=directory_group_id,
                 updated_after=updated_after
             ),
         )
 
         user_response = (ListDirUsersResponse(), response[1])
+        user_response[0].users = []
         for user in response[0].users:
             dir_user = DirUser()
             dir_user.id = user.id
@@ -166,6 +171,7 @@ class DirectoryClient:
         )
 
         group_response = (ListDirGroupsResponse(), response[1])
+        group_response[0].groups = []
         for group in response[0].groups:
             dir_group = DirGroup()
             dir_group.id = group.id
