@@ -6140,7 +6140,7 @@ print(response[0].client.client_id, response[0].plain_secret)
 <dl>
 <dd>
 
-Fetches a single resource client, along with the end-users who have granted it consent.
+Fetches a single resource client. For a DCR client, the response also includes the end-users who have granted it consent.
 </dd>
 </dl>
 </dd>
@@ -6449,9 +6449,9 @@ scalekit_client.resources.delete_resource_client('res_123456', 'm2m_123456')
 <dl>
 <dd>
 
-Creates a new secret for resource client. Only 2 client secrets are recommended to exist at a given point in time. If need for more secret creation arises, please use `delete_resource_client_secret` to delete an existing secret first.
+Creates a new secret for a resource client. Only 2 client secrets are recommended to exist at a given point in time - use `delete_resource_client_secret` to remove an existing one first if you need more.
 
-The plaintext client secret, only available at creation time.
+The plaintext client secret is only ever returned here, at creation time.
 </dd>
 </dl>
 </dd>
@@ -6515,7 +6515,7 @@ print(response[0].plain_secret, response[0].secret.id)
 <dl>
 <dd>
 
-Permanently deletes a secret from resource client. A client must always keep at least 1 secret. Calling this on a client's last remaining secret raises an error.
+Permanently deletes a secret from a resource client. A client must always keep at least 1 secret - calling this on a client's last remaining secret raises an error.
 </dd>
 </dl>
 </dd>
