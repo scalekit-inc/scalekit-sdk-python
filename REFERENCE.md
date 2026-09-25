@@ -5901,7 +5901,667 @@ scalekit_client.m2m_client.remove_organization_client_secret(
 
 ## Resources
 
-Access the consents your end users grant against a resource, such as an MCP server. A consent records that one end user allowed a specific API client to act on their behalf. Each consent identifies the user by `external_user_id` — the identifier your application supplied when the consent was granted.
+Manage the resource clients scoped to a resource (such as an MCP server), and access the consents your end users grant against one. A consent records that one end user allowed a specific resource client to act on their behalf. Each consent identifies the user by `external_user_id` — the identifier your application supplied when the consent was granted.
+
+<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">get_resource</a>(resource_id) -> GetResourceResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Retrieves a single resource by id.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.resources.get_resource('res_123456')
+print(response[0].resource)
+
+allowed_scopes = [s.name for s in response[0].resource.scopes if s.enabled]
+print(allowed_scopes)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**resource_id:** `str` - Resource to fetch (format: `res_...`)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">list_resources</a>(resource_type, page_size?, page_token?) -> ListResourcesResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists resources of a given type in the environment, with pagination.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from scalekit.v1.clients.clients_pb2 import ResourceType
+
+response = scalekit_client.resources.list_resources(
+    ResourceType.MCP_SERVER,
+    page_size=20,
+)
+
+for resource in response[0].resources:
+    print(resource.id, resource.scopes)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**resource_type:** `ResourceType` - Resource type to filter by (e.g. `ResourceType.MCP_SERVER`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_size:** `Optional[int]` - Page size for pagination (max 30)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_token:** `Optional[str]` - Page token for pagination
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">create_resource_client</a>(resource_id, client) -> CreateResourceClientResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Creates a resource client.
+
+Returns the created `client` plus a `plain_secret` — the plaintext client secret, only available at creation time.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from scalekit.v1.clients.clients_pb2 import ResourceClient
+
+resource_response = scalekit_client.resources.get_resource('res_123456')
+allowed_scopes = [s.name for s in resource_response[0].resource.scopes if s.enabled]
+print(allowed_scopes)
+
+response = scalekit_client.resources.create_resource_client(
+    'res_123456',
+    ResourceClient(name='My Resource Client', scopes=allowed_scopes),
+)
+print(response[0].client.client_id, response[0].plain_secret)
+```
+
+`client` also accepts `description`, `custom_claims`, `expiry` and `redirect_uris` — see Parameters below.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**resource_id:** `str` - Resource to create the client for (format: `res_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**client:** `ResourceClient` (proto message from `scalekit.v1.clients.clients_pb2`) - Desired client properties
+- `name: str` - Human-readable name for the client. Defaults to "Resource Client" if omitted.
+- `description: str` - Optional description
+- `scopes: List[str]` - Scopes to grant. These scopes should be the same or subset of the scopes available for the resource.
+- `audience: List[str]` - Not settable through this SDK — audience is always server-determined. Passing a non-empty list raises `ValueError`.
+- `custom_claims: List[CustomClaim]` - Custom claims to embed in access tokens, as `CustomClaim(key, value)` messages. Keep this to the essentials, as it increases token size.
+- `expiry: int` - Access token lifetime in seconds. Defaults to the resource's configured expiry, or one day.
+- `redirect_uris: List[str]` - Allowed redirect URIs, for a pre-registered (non-DCR) client
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">get_resource_client</a>(resource_id, client_id) -> GetResourceClientResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Fetches a single resource client. For a DCR client, the response also includes the end-users who have granted it consent.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.resources.get_resource_client('res_123456', 'm2m_123456')
+
+print(response[0].client.name)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**resource_id:** `str` - Resource the client must belong to (format: `res_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**client_id:** `str` - Client id (format: `m2m_...`)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">list_resource_clients</a>(resource_id) -> ListResourceClientsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists resource clients.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.resources.list_resource_clients('res_123456')
+
+print(response[0].total_dcr_clients, response[0].total_static_clients)
+for c in response[0].clients:
+    print(c.client_id, c.name)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**resource_id:** `str` - Resource whose clients to list (format: `res_...`)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">update_resource_client</a>(resource_id, client_id, name?, description?, scopes?, custom_claims?, expiry?, redirect_uris?) -> UpdateResourceClientResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Updates a resource client.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+resource_response = scalekit_client.resources.get_resource('res_123456')
+allowed_scopes = [s.name for s in resource_response[0].resource.scopes if s.enabled]
+print(allowed_scopes)
+
+response = scalekit_client.resources.update_resource_client(
+    'res_123456',
+    'm2m_123456',
+    name='Updated Name',
+    scopes=allowed_scopes,
+)
+
+print(response[0].client.name, response[0].client.scopes)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**resource_id:** `str` - Resource the client must belong to (format: `res_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**client_id:** `str` - Client id to update (format: `m2m_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**name:** `Optional[str]` - Updated name, if changing it. An empty string is a no-op server-side, not a clear.
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**description:** `Optional[str]` - Updated description, if changing it. An empty string is a no-op server-side, not a clear.
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**scopes:** `Optional[List[str]]` - Updated scopes, if changing them (replaces existing; pass `[]` to clear). These scopes should be the same or subset of the scopes available for the resource.
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**custom_claims:** `Optional[List[CustomClaim]]` - Updated custom claims, if changing them, as `CustomClaim(key, value)` messages (replaces existing; pass `[]` to clear).
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**expiry:** `Optional[int]` - Updated access token lifetime in seconds, if changing it
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**redirect_uris:** `Optional[List[str]]` - Updated redirect URIs, if changing them (replaces existing; pass `[]` to clear)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">delete_resource_client</a>(resource_id, client_id) -> DeleteResourceClientResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Deletes resource clients. Raises if the client is missing or scoped to a different resource.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+scalekit_client.resources.delete_resource_client('res_123456', 'm2m_123456')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**resource_id:** `str` - Resource the client must belong to (format: `res_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**client_id:** `str` - Client id to delete (format: `m2m_...`)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">create_resource_client_secret</a>(resource_id, client_id) -> CreateClientSecretResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Creates a new secret for a resource client. Only 2 client secrets are recommended to exist at a given point in time - use `delete_resource_client_secret` to remove an existing one first if you need more.
+
+The plaintext client secret is only ever returned here, at creation time.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.resources.create_resource_client_secret('res_123456', 'm2m_123456')
+
+print(response[0].plain_secret, response[0].secret.id)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**resource_id:** `str` - Resource the client must belong to (format: `res_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**client_id:** `str` - Client id to create a secret for (format: `m2m_...`)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">delete_resource_client_secret</a>(resource_id, client_id, secret_id) -> Tuple[Empty, grpc.Call]</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Permanently deletes a secret from a resource client. A client must always keep at least 1 secret - calling this on a client's last remaining secret raises an error.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+scalekit_client.resources.delete_resource_client_secret('res_123456', 'm2m_123456', 'ksec_123456')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**resource_id:** `str` - Resource the client must belong to (format: `res_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**client_id:** `str` - Client id the secret belongs to (format: `m2m_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**secret_id:** `str` - Secret id to delete (format: `sks_...`)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
 
 <details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">list_user_consents</a>(resource_id, search?, page_size?, page_token?, user_ids?) -> ListResourceUserConsentsResponse</code></summary>
 <dl>
@@ -5915,11 +6575,11 @@ Access the consents your end users grant against a resource, such as an MCP serv
 <dl>
 <dd>
 
-Lists the end-user consents granted against a resource, with pagination.
+Lists the end-user consents granted against a resource, with pagination. Use this to audit who authorized a client, and to find the `consent_id` you need before revoking.
 
-Each returned consent carries `id`, `external_user_id`, `client_id`, `client_name`, `scopes` and `granted_at`. The response also carries `total_size` plus `next_page_token` / `prev_page_token` cursors.
+Filter by user in one of two ways. Pass `user_ids` to match external user IDs exactly and case-sensitively. Pass `search` for a case-insensitive substring match. When you give both, `user_ids` wins and `search` is ignored.
 
-Filter by user in one of two ways. Pass `user_ids` to match specific external user IDs exactly and case-sensitively. Pass `search` for a case-insensitive substring match. When you give both, `user_ids` wins and `search` is ignored.
+Consents with `id`, `external_user_id`, `client_id`, `client_name`, `scopes`, and `granted_at`, plus `total_size` and the `next_page_token` / `prev_page_token` cursors.
 </dd>
 </dl>
 </dd>
@@ -6013,11 +6673,9 @@ for consent in response[0].consents:
 <dl>
 <dd>
 
-Revokes a single end-user consent held by an API client.
+Revokes a single end-user consent held by an API client. The client is prompted for consent again on its next authorization attempt, and every active refresh token issued to that client for the same user is revoked.
 
-Deletes the consent, so the client is prompted for consent again on its next authorization attempt, and revokes every active refresh token issued to that client for the same user. Access tokens already issued stay valid until they expire.
-
-Note that `client_id` is the API client that holds the consent (format: `m2m_...`), not the resource id. This matches the underlying route `DELETE /clients/{client_id}/consents/{consent_id}`.
+Access tokens that Scalekit already issued stay valid until they expire. See [How revocation affects active access tokens](https://docs.scalekit.com/authenticate/mcp/managing-mcp-clients/#how-revocation-affects-active-access-tokens) for ways to shorten that window.
 </dd>
 </dl>
 </dd>
@@ -6050,7 +6708,7 @@ scalekit_client.resources.revoke_user_consent(
 <dl>
 <dd>
 
-**client_id:** `str` - Client holding the consent (format: `m2m_...`)
+**client_id:** `str` - API client holding the consent (format: `m2m_...`)
 
 </dd>
 </dl>
