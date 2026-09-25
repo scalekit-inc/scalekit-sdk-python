@@ -5901,7 +5901,7 @@ scalekit_client.m2m_client.remove_organization_client_secret(
 
 ## Resources
 
-Manage the API clients scoped to a resource (such as an MCP server), and access the consents your end users grant against one. A consent records that one end user allowed a specific API client to act on their behalf. Each consent identifies the user by `external_user_id` — the identifier your application supplied when the consent was granted.
+Manage the resource clients scoped to a resource (such as an MCP server), and access the consents your end users grant against one. A consent records that one end user allowed a specific resource client to act on their behalf. Each consent identifies the user by `external_user_id` — the identifier your application supplied when the consent was granted.
 
 <details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">get_resource</a>(resource_id) -> GetResourceResponse</code></summary>
 <dl>
