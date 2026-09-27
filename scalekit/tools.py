@@ -66,9 +66,10 @@ class ToolsClient:
         page_token: Optional[str] = None
     ) -> ListScopedToolsResponse:
         """
-        Method to list scoped tools for a specific identifier
+        List the tools a user can call through their connected accounts
 
-        :param identifier       : Identifier to scope the tools list
+        :param identifier       : Your app's ID for the user, the same value you use
+            when the user connects. Use a stable internal ID, not an email address
         :type                   : ``` str ```
         :param filter           : Filter parameters for scoped tools
         :type                   : ``` ScopedToolFilter ```
@@ -98,7 +99,7 @@ class ToolsClient:
         top_k: Optional[int] = None
     ) -> SearchToolsResponse:
         """
-        Method to search tools ranked by relevance to a natural-language query
+        Search tools ranked by relevance to a natural-language query
 
         Each result's ``score`` is a relevance score where higher is better; it is only
         comparable within the results of a single response, not across separate calls.
@@ -113,8 +114,11 @@ class ToolsClient:
 
         :param query            : Natural-language query or keywords describing the job to be done
         :type                   : ``` str ```
-        :param identifier       : Optional connected-account identifier; when set, each result is
-                                  annotated with readiness for this identifier's connections
+        :param identifier       : Optional. Your app's ID for the user, the same value
+            you use when the user connects. Use a stable internal ID, not an email
+            address.
+                                  When set, each result is annotated with readiness for
+                                      this user's connections
         :type                   : ``` str ```
         :param top_k            : Maximum number of ranked results to return (default 10, capped at 50)
         :type                   : ``` int ```
@@ -145,13 +149,15 @@ class ToolsClient:
 
         :param tool_name        : Name of the tool to execute
         :type                   : ``` str ```
-        :param identifier       : Identifier of the connected account
+        :param identifier       : Your app's ID for the user, the same value you use
+            when the user connects. Use a stable internal ID, not an email address
         :type                   : ``` str ```
         :param params           : Parameters for tool execution
         :type                   : ``` dict ```
         :param connected_account_id : ID of the connected account to use for tool execution
         :type                   : ``` str ```
-        :param connection_name  : Name of the connector/provider (e.g., 'Google Workspace', 'Slack')
+        :param connection_name  : Connection name, as shown in AgentKit > Connections
+            (for example ``gmail``)
         :type                   : ``` str ```
 
         :returns:
