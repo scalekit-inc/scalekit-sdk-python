@@ -160,6 +160,9 @@ class ToolsClient:
             (for example ``gmail``)
         :type                   : ``` str ```
 
+        The connected account must be ``ACTIVE``. Otherwise the call fails with
+        ``INVALID_ARGUMENT``; send the user an authorization link first.
+
         :returns:
             Execute Tool Response
         """

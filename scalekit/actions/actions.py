@@ -312,7 +312,9 @@ class ActionClient:
         :param auth_request_id: Auth request ID as base64url-encoded opaque token from the
                                 user verify redirect URL query params
         :type: str
-        :param identifier: Current logged in user's connected account identifier
+        :param identifier: Your app's ID for the signed-in user, the same value you used
+            when you created the authorization link. Use a stable internal ID, not an
+            email address
         :type: str
 
         :returns:
@@ -349,11 +351,12 @@ class ActionClient:
             identifier: Filter by user. Your app's ID for the user, the same value you
                 use when the user connects. Use a stable internal ID, not an email
                 address.
-            provider: Filter by OAuth/API-key provider slug, e.g. ``"google"``.
-            connection_names: Filter results to connected accounts belonging to *any*
-                of these connection slugs. Useful when you want to check multiple
-                connectors at once, e.g. ``["github", "google-calendar", "slack"]``.
-                Can be combined with ``identifier`` to narrow results to a specific user.
+            provider: Filter by provider key, e.g. ``"google"``.
+            connection_names: Filter to connected accounts in *any* of these
+                connections, by connection name as shown in AgentKit > Connections,
+                e.g. ``["github", "google-calendar", "slack"]``. Takes up to 20 names and
+                can't be combined with ``connection_name``. Combine it with
+                ``identifier`` to check one user's accounts across several connections.
 
         Returns:
             ListConnectedAccountsResponse containing the matching connected accounts.
