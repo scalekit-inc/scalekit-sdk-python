@@ -132,9 +132,14 @@ class ActionClient:
         Account resolution (one of the following combinations is required):
             connected_account_id: ID of the connected account to use. Provide this
                 OR the (identifier + connection_name) pair — not both.
-            identifier + connection_name: Resolve the connected account by user
-                identifier (e.g. a user ID or email) together with the connection
-                name (e.g. 'slack-b1fqL2Dr', 'notion-arffP5Ff').
+            identifier: Your app's ID for the user, the same value you use when the user
+                connects. Use a stable internal ID, not an email address. Pass it with
+                ``connection_name``.
+            connection_name: Connection name, as shown in AgentKit > Connections (for
+                example ``gmail``). Pass it with ``identifier``.
+
+        The connected account must be ``ACTIVE``. Otherwise the call fails with
+        ``INVALID_ARGUMENT``; send the user an authorization link first.
 
         Returns:
             ExecuteToolResponse containing execution results
@@ -193,9 +198,11 @@ class ActionClient:
 
         Thin wrapper around ToolsClient.list_tools.
 
-        :param connection_name: Filter by connector identifier, e.g. 'github-connect' (optional)
+        :param connection_name: Connection name, as shown in AgentKit > Connections (for
+            example ``gmail``) (optional)
         :type: str
-        :param identifier: Filter/resolve by connected-account identifier (optional)
+        :param identifier: Your app's ID for the user, the same value you use when the
+            user connects. Use a stable internal ID, not an email address (optional)
         :type: str
         :param provider: Filter by provider key, e.g. 'github' (optional)
         :type: str
@@ -260,11 +267,14 @@ class ActionClient:
             **kwargs
     ) -> MagicLinkResponse:
         """
-        Get authorization magic link for a connected account
+        Get an authorization link for a connected account. Send it to the user so
+        they can connect their account, or reconnect it after it expires.
 
-        :param connection_name: Connector identifier
+        :param connection_name: Connection name, as shown in AgentKit > Connections (for
+            example ``gmail``)
         :type: str
-        :param identifier: Connected account identifier
+        :param identifier: Your app's ID for the user, the same value you use when the
+            user connects. Use a stable internal ID, not an email address
         :type: str
         :param connected_account_id: Connected account ID (optional)
         :type: str
@@ -302,7 +312,9 @@ class ActionClient:
         :param auth_request_id: Auth request ID as base64url-encoded opaque token from the
                                 user verify redirect URL query params
         :type: str
-        :param identifier: Current logged in user's connected account identifier
+        :param identifier: Your app's ID for the signed-in user, the same value you used
+            when you created the authorization link. Use a stable internal ID, not an
+            email address
         :type: str
 
         :returns:
@@ -333,14 +345,18 @@ class ActionClient:
         """List connected accounts with optional filtering.
 
         Args:
-            connection_name: Filter by a single connector slug, e.g. ``"github"``.
+            connection_name: Filter by one connection. Connection name, as shown in
+                AgentKit > Connections (for example ``gmail``).
                 Mapped to the ``connector`` field in the underlying request.
-            identifier: Filter by end-user identifier, e.g. email or opaque user ID.
-            provider: Filter by OAuth/API-key provider slug, e.g. ``"google"``.
-            connection_names: Filter results to connected accounts belonging to *any*
-                of these connection slugs. Useful when you want to check multiple
-                connectors at once, e.g. ``["github", "google-calendar", "slack"]``.
-                Can be combined with ``identifier`` to narrow results to a specific user.
+            identifier: Filter by user. Your app's ID for the user, the same value you
+                use when the user connects. Use a stable internal ID, not an email
+                address.
+            provider: Filter by provider key, e.g. ``"google"``.
+            connection_names: Filter to connected accounts in *any* of these
+                connections, by connection name as shown in AgentKit > Connections,
+                e.g. ``["github", "google-calendar", "slack"]``. Takes up to 20 names and
+                can't be combined with ``connection_name``. Combine it with
+                ``identifier`` to check one user's accounts across several connections.
 
         Returns:
             ListConnectedAccountsResponse containing the matching connected accounts.
@@ -363,9 +379,12 @@ class ActionClient:
         """
         Delete a connected account
         
-        :param connection_name: Connector identifier (required)
+        :param connection_name: Connection name, as shown in AgentKit > Connections (for
+            example ``gmail``). Required unless you pass ``connected_account_id``
         :type: str
-        :param identifier: Connected account identifier (required)
+        :param identifier: Your app's ID for the user, the same value you use when the
+            user connects. Use a stable internal ID, not an email address. Required
+            unless you pass ``connected_account_id``
         :type: str
         :param connected_account_id: Connected account ID (optional)
         :type: str
@@ -395,11 +414,14 @@ class ActionClient:
         **kwargs
     ) -> GetConnectedAccountAuthResponse:
         """
-        Get connected account authorization details by identifier
+        Get a connected account, including its credentials and status.
         
-        :param connection_name: Connector identifier (required)
+        :param connection_name: Connection name, as shown in AgentKit > Connections (for
+            example ``gmail``). Required unless you pass ``connected_account_id``
         :type: str
-        :param identifier: Connected account identifier (required)
+        :param identifier: Your app's ID for the user, the same value you use when the
+            user connects. Use a stable internal ID, not an email address. Required
+            unless you pass ``connected_account_id``
         :type: str
         :param connected_account_id: Connected account ID (optional)
         :type: str
@@ -440,15 +462,17 @@ class ActionClient:
         You must provide **one** of the following to identify the connected account:
 
         - ``connection_name`` **and** ``identifier`` — use when you know the
-          connector name and the end-user's identifier (e.g. email address).
+          connection name and your app's ID for the user.
         - ``connected_account_id`` — use when you already hold the Scalekit
           connected account ID.
 
-        :param connection_name: Connector identifier, e.g. ``"salesforce-1hpnGzcD"``.
+        :param connection_name: Connection name, as shown in AgentKit > Connections (for
+            example ``gmail``).
             Required when ``connected_account_id`` is not provided.
         :type connection_name: str
-        :param identifier: End-user identifier tied to the connected account,
-            e.g. ``"john.doe"``. Required when ``connected_account_id`` is not provided.
+        :param identifier: Your app's ID for the user, the same value you use when the
+            user connects. Use a stable internal ID, not an email address.
+            Required when ``connected_account_id`` is not provided.
         :type identifier: str
         :param connected_account_id: Scalekit connected account ID. When supplied,
             ``connection_name`` and ``identifier`` are ignored.
@@ -533,9 +557,11 @@ class ActionClient:
         """
         Make a proxied REST API call through Scalekit on behalf of a connected account.
 
-        :param connection_name: Connector identifier (required)
+        :param connection_name: Connection name, as shown in AgentKit > Connections (for
+            example ``gmail``) (required)
         :type connection_name: str
-        :param identifier: Connected account identifier (required)
+        :param identifier: Your app's ID for the user, the same value you use when the
+            user connects. Use a stable internal ID, not an email address (required)
         :type identifier: str
         :param path: API path to call, e.g. "/v1.0/me/messages" (required)
         :type path: str
@@ -778,9 +804,11 @@ class ActionClient:
         """
         Create a new connected account
 
-        :param connection_name: Connector identifier (required)
+        :param connection_name: Connection name, as shown in AgentKit > Connections (for
+            example ``gmail``) (required)
         :type: str
-        :param identifier: Connected account identifier (required)
+        :param identifier: Your app's ID for the user, the same value you use when the
+            user connects. Use a stable internal ID, not an email address (required)
         :type: str
         :param authorization_details: Authorization details (OAuth token or static auth) (optional)
         :type: Optional[Dict[str, Any]]
@@ -841,9 +869,11 @@ class ActionClient:
         """
         Get an existing connected account or create a new one if it doesn't exist
 
-        :param connection_name: Connector identifier (required)
+        :param connection_name: Connection name, as shown in AgentKit > Connections (for
+            example ``gmail``) (required)
         :type: str
-        :param identifier: Connected account identifier (required)
+        :param identifier: Your app's ID for the user, the same value you use when the
+            user connects. Use a stable internal ID, not an email address (required)
         :type: str
         :param authorization_details: Authorization details (OAuth token or static auth) (optional)
         :type: Optional[Dict[str, Any]]
@@ -914,9 +944,11 @@ class ActionClient:
         """
         Update an existing connected account
 
-        :param connection_name: Connector identifier (required)
+        :param connection_name: Connection name, as shown in AgentKit > Connections (for
+            example ``gmail``) (required)
         :type: str
-        :param identifier: Connected account identifier (required)
+        :param identifier: Your app's ID for the user, the same value you use when the
+            user connects. Use a stable internal ID, not an email address (required)
         :type: str
         :param authorization_details: Authorization details (OAuth token or static auth) (optional)
         :type: Optional[Dict[str, Any]]
@@ -1297,9 +1329,10 @@ class ActionMcp:
         Args:
             config_id: Scalekit ID of the MCP configuration to inspect,
                 e.g. ``"cfg_01abc123"``.
-            identifier: End-user identifier for whom to fetch auth state — usually
-                an email address or opaque user ID that was used when calling
-                ``ensure_instance``, e.g. ``"alice@example.com"``.
+            identifier: The user to fetch auth state for. Your app's ID for the user,
+                the same value you use when the user connects. Use a stable internal ID,
+                not an email address,
+                the same one used when calling ``ensure_instance``, e.g. ``"user_123"``.
             include_auth_link: When ``True``, every connected account in the response
                 will include an ``authentication_link`` regardless of its current
                 status. Set this to ``True`` when building a connected-account
@@ -1337,7 +1370,7 @@ class ActionMcp:
 
             state = client.actions.mcp.list_mcp_connected_accounts(
                 config_id="cfg_01abc123",
-                identifier="alice@example.com",
+                identifier="user_123",
                 include_auth_link=True,
             )
             for account in state.connected_accounts:
@@ -1373,9 +1406,10 @@ class ActionMcp:
         Args:
             mcp_config_id: Scalekit ID of the MCP configuration the token should
                 grant access to, e.g. ``"cfg_01abc123"``.
-            identifier: End-user identifier for whom the token is minted — typically
-                the same email or opaque ID used when calling ``ensure_instance``,
-                e.g. ``"alice@example.com"``.
+            identifier: The user the token is minted for. Your app's ID for the user,
+                the same value you use when the user connects. Use a stable internal ID,
+                not an email address,
+                the same one used when calling ``ensure_instance``, e.g. ``"user_123"``.
             expiry: Requested lifetime for the token as a Python ``timedelta``.
                 When omitted, the server-side default TTL is applied (typically
                 1 hour). Example values:
@@ -1399,7 +1433,7 @@ class ActionMcp:
 
             resp = client.actions.mcp.create_session_token(
                 mcp_config_id="cfg_01abc123",
-                identifier="alice@example.com",
+                identifier="user_123",
                 expiry=timedelta(hours=8),
             )
 
