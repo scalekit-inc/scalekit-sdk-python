@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# Only path filters and review instructions are set here. Everything else uses
+# CodeRabbit's defaults.
+reviews:
+  path_filters:
+    # Generated protobuf/gRPC stubs (`make generate`). Never hand-edited.
+    - "!scalekit/v1/**"
+    - "!buf/**"
+  path_instructions:
+    - path: "**"
+      instructions: |
+        Do not comment on generated code (`scalekit/v1/**`, `buf/**`). It is regenerated from the proto repo, so any fix belongs upstream.
+    - path: "**/*.py"
+      instructions: |
+        House conventions. Do not flag these:
+        - A return annotation that names the proto response type, even though `grpc_exec` returns `(response, call)`.
+        - Sub-second `Duration` precision handling. It is deliberate (#164).
