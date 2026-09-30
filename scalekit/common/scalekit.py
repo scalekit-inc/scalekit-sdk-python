@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional, List
+from typing import Optional, List, Union
 
 
 class GrantType(Enum):
@@ -75,10 +75,15 @@ class LogoutUrlOptions:
 
 
 class TokenValidationOptions:
-    """Options for token validation including issuer, audience, and scope validation"""
+    """Options for token validation including issuer, audience, and scope validation
+
+    ``issuer`` accepts a single string or a list of strings. With a list, the token
+    is valid if its ``iss`` claim exactly equals any entry. An unset, empty-string or
+    empty-list issuer skips the issuer check.
+    """
     def __init__(
             self,
-            issuer: Optional[str] = None,
+            issuer: Optional[Union[str, List[str]]] = None,
             audience: Optional[List[str]] = None,
             required_scopes: Optional[List[str]] = None
     ):

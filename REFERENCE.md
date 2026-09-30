@@ -309,6 +309,8 @@ if is_valid:
 
 **options:** `TokenValidationOptions` - Optional validation options for issuer, audience, and scopes
 
+`options.issuer` accepts a `str` or a `List[str]`. With a list, the token is valid if its `iss` claim exactly equals any entry, e.g. `TokenValidationOptions(issuer=[env_url, f"{env_url}/resources/res_123"])`. An unset, empty-string or empty-list issuer skips the issuer check.
+
 </dd>
 </dl>
 </dd>
