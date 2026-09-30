@@ -357,13 +357,14 @@ class ScalekitClient:
     @staticmethod
     def _normalize_issuer(issuer: Optional[Union[str, List[str]]]) -> Optional[Union[str, List[str]]]:
         """
-        Normalize the issuer option. None, "" and [] (after dropping empty entries)
-        mean "skip the issuer check"; a list matches if the token's iss equals any entry.
-        Matching is exact string equality.
+        Normalize the issuer option. None, "" and [] mean "skip the issuer check".
+        A non-empty list is always enforced, even if its entries are blank ([""]
+        matches no token), so config built from unset values fails closed instead
+        of silently skipping validation. A list matches if the token's iss equals
+        any entry. Matching is exact string equality.
         """
         if isinstance(issuer, (list, tuple, set)):
-            issuers = [i for i in issuer if i]
-            return issuers or None
+            return list(issuer) or None
         return issuer or None
 
     def validate_token(

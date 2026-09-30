@@ -123,6 +123,17 @@ class TestMultiIssuerValidation(unittest.TestCase):
         self.assertTrue(self._valid(token, []))
         self.assertEqual(self._claims(token, [])["sub"], "user_1")
 
+    def test_blank_only_list_fails_closed_not_skipped(self):
+        token = self._sign(RESOURCE_ISSUER)
+        self.assertFalse(self._valid(token, [""]))
+        with self.assertRaises(ScalekitValidateTokenFailureException):
+            self._claims(token, [""])
+
+    def test_blank_entries_ignored_alongside_real_ones(self):
+        token = self._sign(RESOURCE_ISSUER)
+        self.assertTrue(self._valid(token, ["", RESOURCE_ISSUER]))
+        self.assertFalse(self._valid(token, ["", BASE_ISSUER]))
+
     def test_empty_string_skips_check(self):
         token = self._sign(RESOURCE_ISSUER)
         self.assertTrue(self._valid(token, ""))
