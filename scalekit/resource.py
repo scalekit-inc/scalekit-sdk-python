@@ -17,7 +17,7 @@ from scalekit.v1.clients.clients_pb2_grpc import ClientServiceStub
 
 
 class ResourceClient:
-    """Client for reading resources, managing the API clients scoped to a resource, and reading and revoking end-user consents granted against one."""
+    """Client for reading resources, managing the resource clients scoped to a resource, and reading and revoking end-user consents granted against one."""
 
     def __init__(self, core_client: CoreClient):
         """
@@ -99,7 +99,7 @@ class ResourceClient:
         self, resource_id: str, client: ResourceClientProto
     ) -> CreateResourceClientResponse:
         """
-        Method to create a new API client scoped to a resource
+        Method to create a new resource client
 
         Returns the created client plus a plain_secret — the plaintext
         client secret, only available at creation time.
@@ -129,7 +129,7 @@ class ResourceClient:
 
     def get_resource_client(self, resource_id: str, client_id: str) -> GetResourceClientResponse:
         """
-        Method to retrieve a single API client scoped to a resource, along with
+        Method to retrieve a single resource client, along with
         the end-users who have granted it consent
 
         :param resource_id  : Resource the client must belong to (format: res_xxxxx)
@@ -151,7 +151,7 @@ class ResourceClient:
 
     def list_resource_clients(self, resource_id: str) -> ListResourceClientsResponse:
         """
-        Method to list every API client scoped to a resource
+        Method to list every resource client
 
         :param resource_id  : Resource whose clients to list (format: res_xxxxx)
         :type               : ``` str ```
@@ -178,7 +178,7 @@ class ResourceClient:
         redirect_uris: Optional[List[str]] = None,
     ) -> UpdateResourceClientResponse:
         """
-        Method to update an existing API client scoped to a resource
+        Method to update an existing resource client
 
         Only the parameters you pass (non-None) are changed — there is no
         field mask to build yourself; it's derived internally from
@@ -249,7 +249,7 @@ class ResourceClient:
 
     def delete_resource_client(self, resource_id: str, client_id: str) -> DeleteResourceClientResponse:
         """
-        Method to permanently delete an API client scoped to a resource
+        Method to permanently delete a resource client
 
         DeleteResourceClient shares its underlying delete path with client
         deletion in general, so nothing forces the given client_id to
@@ -282,7 +282,7 @@ class ResourceClient:
 
     def create_resource_client_secret(self, resource_id: str, client_id: str) -> CreateClientSecretResponse:
         """
-        Method to create a new secret for an API client scoped to a resource
+        Method to create a new secret for a resource client
 
         The underlying secret-creation call is keyed by client_id alone — it
         has no notion of a resource — so this fetches the client first and
@@ -325,7 +325,7 @@ class ResourceClient:
         self, resource_id: str, client_id: str, secret_id: str
     ) -> Tuple[Empty, grpc.Call]:
         """
-        Method to permanently delete a secret from an API client scoped to a resource
+        Method to permanently delete a secret from a resource client
 
         Like create_resource_client_secret, the underlying delete call is
         keyed by client_id alone, so this verifies the client belongs to
