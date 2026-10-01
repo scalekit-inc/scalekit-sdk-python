@@ -1,5 +1,7 @@
-from typing import Dict, Any
-from mcp.types import Tool as McpBaseTool, ToolAnnotations
+from typing import TYPE_CHECKING, Any, Dict
+
+if TYPE_CHECKING:
+    from mcp.types import Tool as McpBaseTool
 
 
 def struct_to_dict(struct) -> Dict[str, Any]:
@@ -44,13 +46,19 @@ def convert_to_mcp_input_schema(definition_dict: Dict[str, Any]) -> Dict[str, An
         "required": input_schema.get("required", [])
     }
 
-def build_mcp_tool_from_spec(spec: Dict[str, Any]) -> McpBaseTool:
+def build_mcp_tool_from_spec(spec: Dict[str, Any]) -> "McpBaseTool":
     """Converts the raw spec dict into an MCP Tool instance.
 
     Mapping performed:
       definition.input_schema -> inputSchema
       definition.annotations.* snake_case -> ToolAnnotations camelCase
+
+    Requires the optional mcp package: pip install "scalekit-sdk-python[google-adk]".
+    It's imported here rather than at module level so the LangChain adapter,
+    which also uses this module, doesn't need it.
     """
+    from mcp.types import Tool as McpBaseTool, ToolAnnotations
+
     definition = spec["definition"]
     ann_raw = definition.get("annotations", {})
     ann_map = {
