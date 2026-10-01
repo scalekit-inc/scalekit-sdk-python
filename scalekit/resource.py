@@ -410,14 +410,14 @@ class ResourceClient:
 
     def revoke_user_consent(self, client_id: str, consent_id: str) -> RevokeUserConsentResponse:
         """
-        Method to revoke a single end-user consent held by an API client
+        Method to revoke a single end-user consent held by a resource client
 
         Deletes the consent, so the client is prompted for consent again on its next
         authorization attempt, and revokes every active refresh token issued to that
         client for the same user. Access tokens already issued stay valid until they
         expire.
 
-        Note that client_id is the API client that holds the consent, not the
+        Note that client_id is the resource client that holds the consent, not the
         resource id.
 
         :param client_id        : Client holding the consent (format: m2m_xxxxx)
