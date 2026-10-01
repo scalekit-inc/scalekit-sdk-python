@@ -1,6 +1,8 @@
 name: Build
 
 on:
+  # Called by release.yml so a release runs the exact PR CI on the released commit.
+  workflow_call:
   push:
     branches:
       - main
