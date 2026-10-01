@@ -7771,6 +7771,8 @@ scalekit_client.actions.providers.delete_custom_provider(
 Searches tools ranked by relevance to a natural-language query — the job to be done, not an exact tool name.
 
 Pass `identifier` to also get per-connection readiness (`TOOL_READINESS_STATE_READY`, `TOOL_READINESS_STATE_NEEDS_CONNECTION`, or `TOOL_READINESS_STATE_NEEDS_REAUTH`) on each result, so you can gate execution on the right auth step before calling `execute_tool`. `TOOL_READINESS_STATE_NEEDS_CONNECTION` means an existing connected account for that provider is inactive; an empty `connections` list means no account exists for the provider at all (not an error). Only pass a result's `connected_account_id` to `execute_tool` when `readiness_state` is `TOOL_READINESS_STATE_READY`.
+
+**PREVIEW:** this endpoint's request and response may change in a future release.
 </dd>
 </dl>
 </dd>
@@ -7831,6 +7833,477 @@ for tool in response[0].tools:
 <dd>
 
 **top_k:** `Optional[int]` - Maximum number of ranked results to return. Defaults to 10, capped at 50.
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.tools.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/tools.py">list_available_tools</a>(identifier, *, page_size?, page_token?) -> (ListAvailableToolsResponse, call)</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists every tool one identifier could use, across all of its connections. This is the counterpart of `list_scoped_tools`, which returns the tools already scoped to that identifier.
+
+Results are paginated — follow `next_page_token` for the complete set. Like every method on `client.tools`, this returns the raw `(response, call)` tuple; use `client.actions.list_available_tools` for a parsed model instead.
+
+**PREVIEW:** this endpoint's request and response may change in a future release.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response, call = scalekit_client.tools.list_available_tools(
+    'user@example.com',
+    page_size=20
+)
+
+for tool in response.tools:
+    print(tool.id, tool.provider)
+
+if response.next_page_token:
+    next_page = scalekit_client.tools.list_available_tools(
+        'user@example.com',
+        page_size=20,
+        page_token=response.next_page_token
+    )
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**identifier:** `str` - Connected-account identifier (e.g. the end user's email or workspace ID). Required by the server, which accepts at most 100 characters.
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_size:** `Optional[int]` - Keyword-only, like every parameter after `identifier`. Maximum number of tools to return per page.
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_token:** `Optional[str]` - `next_page_token` or `prev_page_token` from a previous response, to fetch the next or previous page.
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">search_tools</a>(query, *, identifier?, top_k?) -> SearchToolsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Searches tools ranked by relevance to a natural-language query — the job to be done, not an exact tool name. Prefer this over listing a whole connector: binding a connector's full schema to a model costs roughly 85k tokens per request, against about 700 for one search.
+
+Delegates to `client.tools.search_tools` and returns `SearchToolsResponse` (from `scalekit.actions.types`), whose `tools` are `SearchedTool` models with `name`, `provider`, `description`, `score` and `connections`. Not paginated: `top_k` bounds the whole result set.
+
+**PREVIEW:** this endpoint's request and response may change in a future release.
+
+Each `connections` entry reports readiness as a state **name**, for example `"TOOL_READINESS_STATE_READY"`. A state this SDK build does not know arrives as its decimal value instead of raising, so compare against the names you handle and treat anything else as not ready. An empty `connections` list means the identifier has no connection at all for that tool's provider — not an error, and different from `"TOOL_READINESS_STATE_NEEDS_CONNECTION"`, which means a connected account exists but is inactive.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+result = scalekit_client.actions.search_tools(
+    'send a message to a slack channel',
+    identifier='user@example.com',
+    top_k=5
+)
+
+for tool in result.tools:
+    print(tool.name, tool.score)
+    for connection in tool.connections:
+        if connection.readiness_state == 'TOOL_READINESS_STATE_READY':
+            print('  ready:', connection.connected_account_id)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**query:** `str` - Natural-language query or keywords describing the job to be done. The server accepts 1 to 256 characters.
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**identifier:** `Optional[str]` - Keyword-only, like every parameter after `query`. Connected-account identifier. When set, each result is annotated with readiness for this identifier's connections. An empty string is treated as omitted and is not sent.
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**top_k:** `Optional[int]` - Maximum number of ranked results. The server defaults to 10 and caps the value at 50.
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">list_scoped_tools</a>(identifier, *, filter, page_size?, page_token?) -> ListScopedToolsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists the tools already scoped to one identifier. Each entry names the connected account that backs the tool, so a result can be passed straight to `execute_tool`.
+
+Delegates to `client.tools.list_scoped_tools` and returns `ListScopedToolsResponse` (from `scalekit.actions.types`) with `tools` (`ScopedTool` models carrying `tool`, `identifier` and `connected_account_id`), `total_count`, `next_page_token` (`None` on the last page) and `previous_page_token`.
+
+`filter` is required — passing `None` raises `ValueError` before any network call, and the server rejects a request that arrives without one. Pass an empty `ScopedToolFilter()` to list every scoped tool.
+
+**PREVIEW:** this endpoint's request and response may change in a future release.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from scalekit.v1.tools.tools_pb2 import ScopedToolFilter
+
+page = scalekit_client.actions.list_scoped_tools(
+    'user@example.com',
+    filter=ScopedToolFilter(providers=['slack']),
+    page_size=20
+)
+
+for scoped in page.tools:
+    print(scoped.connected_account_id, scoped.tool.provider)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**identifier:** `str` - Connected-account identifier to scope the list to.
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**filter:** `ScopedToolFilter` - Required and keyword-only, like every parameter after `identifier`. Narrows the list by `providers`, `tool_names` and/or `connection_names`. Build it with `scalekit.v1.tools.tools_pb2.ScopedToolFilter`; an empty `ScopedToolFilter()` narrows nothing.
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_size:** `Optional[int]` - Maximum number of tools to return per page.
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_token:** `Optional[str]` - `next_page_token` or `previous_page_token` from a previous response.
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">list_available_tools</a>(identifier, *, page_size?, page_token?) -> ListAvailableToolsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists every tool one identifier could use, across all of its connections — the counterpart of `list_scoped_tools`.
+
+Delegates to `client.tools.list_available_tools` and returns `ListAvailableToolsResponse` (from `scalekit.actions.types`) with `tools` (the same `Tool` model `list_tools` returns), `total_count`, `next_page_token` (`None` on the last page) and `previous_page_token`. The underlying endpoint is in **PREVIEW** and may change in a future release.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+page = scalekit_client.actions.list_available_tools('user@example.com', page_size=20)
+
+while True:
+    for tool in page.tools:
+        print(tool.id, tool.provider)
+    if not page.next_page_token:
+        break
+    page = scalekit_client.actions.list_available_tools(
+        'user@example.com',
+        page_size=20,
+        page_token=page.next_page_token
+    )
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**identifier:** `str` - Connected-account identifier to scope the list to. Required by the server, which accepts at most 100 characters.
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_size:** `Optional[int]` - Keyword-only, like every parameter after `identifier`. Maximum number of tools to return per page.
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_token:** `Optional[str]` - `next_page_token` or `previous_page_token` from a previous response.
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## MCP
+
+MCP configurations and instances live on `client.mcp` (raw protos) and `client.actions.mcp` (parsed models). The full surface is documented in [`AGENTKIT.md`](AGENTKIT.md#mcp-mcpclient); the entries below cover fetching a single configuration by ID.
+
+<details><summary><code>client.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/mcp.py">get_config</a>(config_id) -> (GetMcpConfigResponse, call)</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Fetches a single MCP configuration by ID, for example one returned by `create_config` or found with `list_configs`. Returns the raw `(response, call)` tuple; use `client.actions.mcp.get_config` for a parsed model instead. Raises `ScalekitNotFoundException` when no configuration has that ID.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response, call = scalekit_client.mcp.get_config('cfg_123')
+
+print(response.config.name, response.config.mcp_server_url)
+for mapping in response.config.connection_tool_mappings:
+    print(mapping.connection_name, list(mapping.tools))
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**config_id:** `str` - ID of the configuration to fetch (`cfg_...`). Required by the server.
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">get_config</a>(config_id) -> GetMcpConfigResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Fetches a single MCP configuration by ID and returns `GetMcpConfigResponse` (from `scalekit.actions.types`), whose `config` holds the same `McpConfig` model `list_configs` returns.
+
+`config_id` is required: a blank value raises `ValueError` before any network call, and an ID that does not exist raises `ScalekitNotFoundException`. `client.actions.get_config(config_id)` is the same call on the `ActionClient` passthrough, alongside `list_configs` / `create_config` / `update_config` / `delete_config`.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+result = scalekit_client.actions.mcp.get_config('cfg_123')
+
+print(result.config.name, result.config.mcp_server_url)
+for mapping in result.config.connection_tool_mappings:
+    print(mapping.connection_name, mapping.tools)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**config_id:** `str` - ID of the configuration to fetch (`cfg_...`). An empty value raises `ValueError` before any network call.
 
 </dd>
 </dl>

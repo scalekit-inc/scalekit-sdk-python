@@ -1,4 +1,6 @@
-from typing import Optional
+from typing import Optional, Tuple
+
+import grpc
 
 from scalekit.core import CoreClient
 from scalekit.v1.tools.tools_pb2 import *
@@ -68,6 +70,9 @@ class ToolsClient:
         """
         Method to list scoped tools for a specific identifier
 
+        This endpoint is in PREVIEW: its request and response may change in a
+        future proto release.
+
         :param identifier       : Identifier to scope the tools list
         :type                   : ``` str ```
         :param filter           : Filter parameters for scoped tools
@@ -91,6 +96,62 @@ class ToolsClient:
             timeout=self.core_client.tool_call_timeout_s,
         )
 
+    def list_available_tools(
+        self,
+        identifier: str,
+        *,
+        page_size: Optional[int] = None,
+        page_token: Optional[str] = None,
+    ) -> Tuple[ListAvailableToolsResponse, grpc.Call]:
+        """List every tool one identifier could use, across all of its connections.
+
+        This is the counterpart of ``list_scoped_tools``: that method returns the
+        tools already scoped to an identifier, this one returns the tools that
+        can be made available to it. Results are paginated -- follow
+        ``next_page_token`` if you need the complete set. Every argument after
+        ``identifier`` is keyword-only.
+
+        This endpoint is in PREVIEW: its request and response may change in a
+        future proto release.
+
+        Args:
+            identifier: Connected-account identifier to scope the list to, e.g.
+                an end user's email or a workspace ID. Required by the server,
+                which accepts at most 100 characters.
+            page_size: Maximum number of tools per page. The server uses its own
+                default when omitted.
+            page_token: ``next_page_token`` or ``prev_page_token`` from a
+                previous response, to fetch the next or previous page.
+
+        Returns:
+            A ``(response, call)`` tuple, like every other method on this client.
+            ``response`` is the ``ListAvailableToolsResponse`` proto message;
+            ``call`` carries the gRPC status and metadata. Use
+            ``client.actions.list_available_tools`` for a parsed model instead.
+
+        Raises:
+            ScalekitBadRequestException: If the server rejects the request, e.g. a
+                missing or over-long ``identifier``.
+            ScalekitServerException: For any other server error.
+
+        Example:
+            response, _ = scalekit_client.tools.list_available_tools(
+                "user@example.com",
+                page_size=20,
+            )
+            for tool in response.tools:
+                print(tool.id, tool.provider)
+        """
+        return self.core_client.grpc_exec(
+            self.tool_service.ListAvailableTools.with_call,
+            ListAvailableToolsRequest(
+                identifier=identifier,
+                page_size=page_size,
+                page_token=page_token,
+            ),
+            timeout=self.core_client.tool_call_timeout_s,
+        )
+
     def search_tools(
         self,
         query: str,
@@ -110,6 +171,9 @@ class ToolsClient:
         accounts on multiple connections for that provider (for example, two Slack
         workspaces) -- inspect each entry's own ``readiness_state`` rather than assuming
         one answer for the whole tool.
+
+        This endpoint is in PREVIEW: its request and response may change in a
+        future proto release.
 
         :param query            : Natural-language query or keywords describing the job to be done
         :type                   : ``` str ```
