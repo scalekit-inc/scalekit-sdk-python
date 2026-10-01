@@ -17,18 +17,12 @@ make generate  # Regenerate from proto (needs buf)
 
 ## Release notes and releases
 
-- Every PR that changes shipped code adds a release-notes fragment:
-  `python3 scripts/release/release.py new --kind <added|changed|deprecated|removed|fixed|security> --ticket SK-1234 --body "..."`
-  (or `changie new`). Write it for the developer upgrading; rules are in
-  scalekit-sdks-wrapper `standards/release-notes.md`.
-- Label every PR `release` or `skip-release` (`no-changelog` only when nothing shipped
-  changes). The `release-notes` check enforces the label, the version and CHANGELOG rules.
-- Never hand-edit the SDK version or `CHANGELOG.md`. A releasing PR runs
-  `python3 scripts/release/release.py prepare`, which computes the version from the
-  fragments, bumps every location in `release.toml` and renders the section.
-- Merging a version bump to `main` starts `.github/workflows/release.yml`. It builds and
-  tests, then waits for a human approval on the `release` environment (someone other than
-  the person who merged) before tagging and publishing.
-- Cross-SDK changes and release-only runs: `/sdk` and `/sdk-release` from
-  scalekit-sdks-wrapper. Never edit `scripts/release/` or the release workflows here; they
-  are vendored from that repo.
+- Releases and cross-SDK changes are driven from scalekit-sdks-wrapper (`/sdk`, `/sdk-release`).
+  Its release tool (`python3 tools/release/release.py --sdk <lang> ...`, run from the wrapper)
+  writes release-notes fragments into `.changes/unreleased/`, bumps the version and renders
+  `CHANGELOG.md`. Notes follow the wrapper's `standards/release-notes.md`.
+- Never hand-edit the SDK version or `CHANGELOG.md` sections.
+- `.github/workflows/release.yml` publishes a version after its release PR has merged. It is
+  started with that version (by Claude from the wrapper, or by a maintainer), and waits for a
+  human approval on the `release` environment from someone other than the person who started
+  it. The workflow is generated in the wrapper; don't edit it here.
