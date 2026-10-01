@@ -9,6 +9,18 @@ from scalekit.actions.types import ToolRequest,ExecuteToolResponse,MagicLinkResp
     CreateCustomProviderResponse,UpdateCustomProviderResponse,ListProvidersResponse,DeleteCustomProviderResponse, \
     ListMcpConnectedAccountsResponse,CreateMcpSessionTokenResponse,McpConnectionAuthState
 from scalekit.actions.models.responses.create_connected_account_response import CreateConnectedAccountResponse
+from scalekit.actions.models.responses.list_available_tools_response import (
+    ListAvailableToolsResponse,
+)
+from scalekit.actions.models.responses.list_scoped_tools_response import (
+    ListScopedToolsResponse,
+)
+from scalekit.actions.models.responses.search_tools_response import (
+    SearchToolsResponse,
+)
+from scalekit.actions.models.responses.get_mcp_config_response import (
+    GetMcpConfigResponse,
+)
 from scalekit.actions.models.requests.create_connected_account_request import CreateConnectedAccountRequest
 from scalekit.actions.models.requests.update_connected_account_request import UpdateConnectedAccountRequest
 from scalekit.actions.modifier import (
@@ -16,7 +28,7 @@ from scalekit.actions.modifier import (
     apply_pre_modifiers, apply_post_modifiers
 )
 from scalekit.common.exceptions import ScalekitNotFoundException
-from scalekit.v1.tools.tools_pb2 import Filter
+from scalekit.v1.tools.tools_pb2 import Filter, ScopedToolFilter
 from google.protobuf.wrappers_pb2 import BoolValue
 
 
@@ -249,6 +261,202 @@ class ActionClient:
         proto_response = result_tuple[0]
 
         return ListToolsResponse.from_proto(proto_response)
+
+    def search_tools(
+        self,
+        query: str,
+        *,
+        identifier: Optional[str] = None,
+        top_k: Optional[int] = None,
+    ) -> SearchToolsResponse:
+        """Search tools ranked by relevance to a natural-language query.
+
+        Describe the job to be done rather than an exact tool name. Prefer this
+        over listing a whole connector: binding a connector's full schema to a
+        model costs roughly 85k tokens per request, against about 700 for one
+        search.
+
+        Pass ``identifier`` and each result's ``connections`` carries that user's
+        readiness per connection -- check it before executing. An empty
+        ``connections`` list means the identifier has no connection at all for
+        that tool's provider, which is not an error and is different from
+        ``"TOOL_READINESS_STATE_NEEDS_CONNECTION"``, which means a connected
+        account exists but is inactive. More than one entry means the identifier
+        has accounts on several connections for that provider (two Slack
+        workspaces, for example) -- inspect each entry's own ``readiness_state``
+        rather than assuming one answer for the whole tool. Every argument after
+        ``query`` is keyword-only.
+
+        This endpoint is in PREVIEW: its request and response may change in a
+        future release.
+
+        Thin wrapper around ``ToolsClient.search_tools``.
+
+        Args:
+            query: Natural-language query or keywords describing the job to be
+                done. The server accepts 1 to 256 characters.
+            identifier: Connected-account identifier, e.g. an end user's email or
+                workspace ID. When set, each result is annotated with readiness
+                for this identifier's connections. An empty string is treated as
+                omitted and is not sent, so results come back unannotated rather
+                than scoped to an identifier the server cannot resolve.
+            top_k: Maximum number of ranked results. The server defaults to 10
+                and caps the value at 50.
+
+        Returns:
+            SearchToolsResponse with the ranked results, best first. Not
+            paginated: ``top_k`` bounds the whole result set.
+
+        Raises:
+            ScalekitBadRequestException: If the server rejects the request, e.g.
+                an empty query or a ``top_k`` above 50.
+            ScalekitServerException: For any other server error.
+
+        Example:
+            result = client.actions.search_tools(
+                "send a message to a slack channel",
+                identifier="user@example.com",
+                top_k=5,
+            )
+            for tool in result.tools:
+                print(tool.name, tool.score)
+                for connection in tool.connections:
+                    print(" ", connection.connection_name, connection.readiness_state)
+        """
+        result_tuple = self.tools.search_tools(
+            query=query,
+            # SearchToolsRequest.identifier has explicit presence, so a blank
+            # string would be sent as *set* and the server would annotate
+            # readiness for an identifier it cannot resolve. Omit it instead.
+            identifier=identifier or None,
+            top_k=top_k,
+        )
+        return SearchToolsResponse.from_proto(result_tuple[0])
+
+    def list_scoped_tools(
+        self,
+        identifier: str,
+        *,
+        filter: ScopedToolFilter,
+        page_size: Optional[int] = None,
+        page_token: Optional[str] = None,
+    ) -> ListScopedToolsResponse:
+        """List the tools already scoped to one identifier.
+
+        Each entry names the connected account that backs the tool for that
+        identifier, so a result can be passed straight to ``execute_tool``. Use
+        ``list_available_tools`` instead to see what the identifier *could* use.
+        Results are paginated -- follow ``next_page_token`` for the complete set.
+        Every argument after ``identifier`` is keyword-only, and ``filter`` is
+        required: the server rejects a request without one. Pass an empty
+        ``ScopedToolFilter()`` to list every scoped tool.
+
+        This endpoint is in PREVIEW: its request and response may change in a
+        future release.
+
+        Thin wrapper around ``ToolsClient.list_scoped_tools``.
+
+        Args:
+            identifier: Connected-account identifier to scope the list to, e.g.
+                an end user's email or workspace ID.
+            filter: Required. Narrows the list by ``providers``, ``tool_names``
+                and/or ``connection_names``. Build it with
+                ``scalekit.v1.tools.tools_pb2.ScopedToolFilter``; an empty
+                ``ScopedToolFilter()`` narrows nothing.
+            page_size: Maximum number of tools per page. The server uses its own
+                default when omitted.
+            page_token: ``next_page_token`` or ``previous_page_token`` from a
+                previous response, to fetch the next or previous page.
+
+        Returns:
+            ListScopedToolsResponse with the scoped tools on this page,
+            ``total_count`` across all pages, and ``next_page_token`` set when
+            more pages remain (``None`` on the last page).
+
+        Raises:
+            ValueError: If ``filter`` is ``None``. Raised before any network
+                call: the server rejects a request without a filter, and
+                ``ToolsClient.list_scoped_tools`` still defaults it to ``None``,
+                so the mistake is caught here rather than after a round trip.
+            ScalekitBadRequestException: If the server rejects the request.
+            ScalekitServerException: For any other server error.
+
+        Example:
+            from scalekit.v1.tools.tools_pb2 import ScopedToolFilter
+
+            page = client.actions.list_scoped_tools(
+                "user@example.com",
+                filter=ScopedToolFilter(providers=["slack"]),
+                page_size=20,
+            )
+            for scoped in page.tools:
+                print(scoped.connected_account_id, scoped.tool.provider)
+        """
+        if filter is None:
+            raise ValueError("filter is required")
+        result_tuple = self.tools.list_scoped_tools(
+            identifier=identifier,
+            filter=filter,
+            page_size=page_size,
+            page_token=page_token,
+        )
+        return ListScopedToolsResponse.from_proto(result_tuple[0])
+
+    def list_available_tools(
+        self,
+        identifier: str,
+        *,
+        page_size: Optional[int] = None,
+        page_token: Optional[str] = None,
+    ) -> ListAvailableToolsResponse:
+        """List every tool one identifier could use, across all of its connections.
+
+        The counterpart of ``list_scoped_tools``: that method returns the tools
+        already scoped to an identifier, this one returns the tools that can be
+        made available to it. Results are paginated -- follow ``next_page_token``
+        for the complete set. Every argument after ``identifier`` is keyword-only.
+
+        This endpoint is in PREVIEW: its request and response may change in a
+        future release.
+
+        Thin wrapper around ``ToolsClient.list_available_tools``.
+
+        Args:
+            identifier: Connected-account identifier to scope the list to, e.g.
+                an end user's email or workspace ID. Required by the server,
+                which accepts at most 100 characters.
+            page_size: Maximum number of tools per page. The server uses its own
+                default when omitted.
+            page_token: ``next_page_token`` or ``previous_page_token`` from a
+                previous response, to fetch the next or previous page.
+
+        Returns:
+            ListAvailableToolsResponse with the tools on this page,
+            ``total_count`` across all pages, and ``next_page_token`` set when
+            more pages remain (``None`` on the last page).
+
+        Raises:
+            ScalekitBadRequestException: If the server rejects the request, e.g. a
+                missing or over-long ``identifier``.
+            ScalekitServerException: For any other server error.
+
+        Example:
+            page = client.actions.list_available_tools("user@example.com", page_size=20)
+            while True:
+                for tool in page.tools:
+                    print(tool.id, tool.provider)
+                if not page.next_page_token:
+                    break
+                page = client.actions.list_available_tools(
+                    "user@example.com", page_size=20, page_token=page.next_page_token
+                )
+        """
+        result_tuple = self.tools.list_available_tools(
+            identifier=identifier,
+            page_size=page_size,
+            page_token=page_token,
+        )
+        return ListAvailableToolsResponse.from_proto(result_tuple[0])
 
     def get_authorization_link(
             self,
@@ -622,6 +830,31 @@ class ActionClient:
             )
         return response
 
+
+    def get_config(self, config_id: str) -> GetMcpConfigResponse:
+        """Fetch an MCP configuration by ID via the action layer.
+
+        Forwards to ``client.actions.mcp.get_config``, alongside the
+        ``list_configs`` / ``create_config`` / ``update_config`` /
+        ``delete_config`` passthroughs.
+
+        Args:
+            config_id: ID of the configuration to fetch, e.g. ``"cfg_123"``.
+
+        Returns:
+            GetMcpConfigResponse whose ``config`` holds the configuration.
+
+        Raises:
+            ValueError: If ``config_id`` is empty, or no MCP client is configured
+                on this client. Raised before any network call.
+            ScalekitNotFoundException: If no configuration has that ID.
+            ScalekitServerException: For any other server error.
+
+        Example:
+            result = client.actions.get_config("cfg_123")
+            print(result.config.name, result.config.mcp_server_url)
+        """
+        return self.mcp.get_config(config_id=config_id)
 
     def list_configs(
         self,
@@ -1053,6 +1286,38 @@ class ActionMcp:
             search=search,
         )
         return ListMcpConfigsResponse.from_proto(result_tuple[0])
+
+    def get_config(self, config_id: str) -> GetMcpConfigResponse:
+        """Fetch a single MCP configuration by ID.
+
+        Use this when you already hold a configuration ID, e.g. one returned by
+        ``create_config`` or found with ``list_configs``.
+
+        Args:
+            config_id: ID of the configuration to fetch, e.g. ``"cfg_123"``.
+
+        Returns:
+            GetMcpConfigResponse: Parsed wrapper whose ``config`` holds the
+            configuration, with the same ``McpConfig`` model that
+            ``list_configs`` returns.
+
+        Raises:
+            ValueError: If ``config_id`` is blank, or an MCP client has not been
+                configured on the action client. Raised before any network call.
+            ScalekitNotFoundException: If no configuration has that ID.
+            ScalekitServerException: For any other server error.
+
+        Example::
+
+            result = client.actions.mcp.get_config("cfg_123")
+            print(result.config.name, result.config.mcp_server_url)
+            for mapping in result.config.connection_tool_mappings:
+                print(mapping.connection_name, mapping.tools)
+        """
+        if not config_id:
+            raise ValueError("config_id is required")
+        result_tuple = self._client().get_config(config_id=config_id)
+        return GetMcpConfigResponse.from_proto(result_tuple[0])
 
     def create_config(
         self,

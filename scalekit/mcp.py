@@ -1,6 +1,7 @@
 from datetime import timedelta
-from typing import Optional, List
+from typing import List, Optional, Tuple
 
+import grpc
 from google.protobuf.duration_pb2 import Duration
 
 from scalekit.core import CoreClient
@@ -73,6 +74,37 @@ class McpClient:
                 filter=filter_obj,
                 search=search or ""
             ),
+        )
+
+    def get_config(self, config_id: str) -> Tuple[GetMcpConfigResponse, grpc.Call]:
+        """Fetch a single MCP configuration by ID.
+
+        Use this when you already hold a configuration ID, e.g. one returned by
+        ``create_config`` or found with ``list_configs``.
+
+        Args:
+            config_id: ID of the configuration to fetch, e.g. ``"cfg_123"``.
+                Required by the server.
+
+        Returns:
+            A ``(response, call)`` tuple, like every other method on this client.
+            ``response`` is the ``GetMcpConfigResponse`` proto message with the
+            configuration on its ``config`` field; ``call`` carries the gRPC
+            status and metadata. Use ``client.actions.mcp.get_config`` for a
+            parsed model instead.
+
+        Raises:
+            ScalekitNotFoundException: If no configuration has that ID.
+            ScalekitBadRequestException: If ``config_id`` is missing or malformed.
+            ScalekitServerException: For any other server error.
+
+        Example:
+            response, _ = scalekit_client.mcp.get_config("cfg_123")
+            print(response.config.name, response.config.mcp_server_url)
+        """
+        return self.core_client.grpc_exec(
+            self.mcp_service.GetMcpConfig.with_call,
+            GetMcpConfigRequest(config_id=config_id),
         )
 
     def create_config(self, mcp_config: McpConfig) -> CreateMcpConfigResponse:

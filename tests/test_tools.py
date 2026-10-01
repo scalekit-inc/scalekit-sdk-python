@@ -2,6 +2,11 @@ import time
 
 from faker import Faker
 from basetest import BaseTest
+from scalekit.actions.types import (
+    ListAvailableToolsResponse,
+    ListScopedToolsResponse,
+    SearchToolsResponse,
+)
 from scalekit.common.exceptions import ScalekitNotFoundException
 
 from scalekit.v1.tools.tools_pb2 import (
@@ -209,6 +214,127 @@ class TestTools(BaseTest):
                 identifier=identifier
             )
             self.assertEqual(delete_response[1].code().name, "OK")
+
+    def _identifier_with_gmail_account(self, prefix):
+        """Create a GMAIL connected account for a fresh identifier and return it.
+
+        Tool discovery is scoped to an identifier, so each test brings its own
+        rather than depending on data another test or another environment left
+        behind. The account is deleted again by addCleanup.
+        """
+        identifier = f"{prefix}_{self.faker.uuid4()}"
+        oauth_token = OauthToken(
+            access_token="test_access_token",
+            refresh_token="test_refresh_token",
+            scopes=["read", "write"]
+        )
+        create_response = self.scalekit_client.connected_accounts.create_connected_account(
+            connector="GMAIL",
+            identifier=identifier,
+            connected_account=CreateConnectedAccount(
+                authorization_details=AuthorizationDetails(oauth_token=oauth_token)
+            )
+        )
+        self.assertEqual(create_response[1].code().name, "OK")
+        self.addCleanup(
+            self.scalekit_client.connected_accounts.delete_connected_account,
+            connector="GMAIL",
+            identifier=identifier,
+        )
+        return identifier
+
+    def test_list_available_tools(self):
+        """ Method to test list available tools returns a bounded page for an identifier """
+        identifier = self._identifier_with_gmail_account("list_available_tools_test")
+
+        response = self.scalekit_client.tools.list_available_tools(identifier, page_size=10)
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertLessEqual(len(response[0].tools), 10)
+        # total_size counts every page, so it can never be smaller than this page.
+        if response[0].total_size:
+            self.assertGreaterEqual(response[0].total_size, len(response[0].tools))
+
+    def test_list_available_tools_second_page(self):
+        """ Method to test list available tools paginates with next_page_token """
+        identifier = self._identifier_with_gmail_account("list_available_paging_test")
+
+        first = self.scalekit_client.tools.list_available_tools(identifier, page_size=1)
+        self.assertEqual(first[1].code().name, "OK")
+        if not first[0].next_page_token:
+            self.skipTest("Identifier has at most one available tool, so there is no second page")
+
+        second = self.scalekit_client.tools.list_available_tools(
+            identifier, page_size=1, page_token=first[0].next_page_token
+        )
+        self.assertEqual(second[1].code().name, "OK")
+        first_ids = [tool.id for tool in first[0].tools]
+        second_ids = [tool.id for tool in second[0].tools]
+        self.assertNotEqual(first_ids, second_ids)
+
+    def test_actions_list_available_tools_returns_model(self):
+        """ Method to test the actions facade maps available tools to the action model """
+        identifier = self._identifier_with_gmail_account("actions_list_available_test")
+
+        result = self.scalekit_client.actions.list_available_tools(identifier, page_size=10)
+        self.assertIsInstance(result, ListAvailableToolsResponse)
+        self.assertLessEqual(len(result.tools), 10)
+        for tool in result.tools:
+            self.assertIsNotNone(tool.id)
+
+    def test_actions_list_scoped_tools_returns_model(self):
+        """ Method to test the actions facade maps scoped tools to the action model """
+        identifier = self._identifier_with_gmail_account("actions_list_scoped_test")
+
+        result = self.scalekit_client.actions.list_scoped_tools(
+            identifier,
+            filter=ScopedToolFilter(connection_names=["GMAIL"]),
+            page_size=10,
+        )
+        self.assertIsInstance(result, ListScopedToolsResponse)
+        self.assertLessEqual(len(result.tools), 10)
+        for scoped_tool in result.tools:
+            self.assertEqual(scoped_tool.identifier, identifier)
+            self.assertIsNotNone(scoped_tool.tool)
+
+    def test_actions_search_tools_returns_model_with_readiness(self):
+        """ Method to test the actions facade maps search results and connection readiness """
+        identifier = self._identifier_with_gmail_account("actions_search_tools_test")
+
+        result = self.scalekit_client.actions.search_tools(
+            "send an email with gmail",
+            identifier=identifier,
+            top_k=5,
+        )
+        self.assertIsInstance(result, SearchToolsResponse)
+        self.assertLessEqual(len(result.tools), 5)
+        if not result.tools:
+            # Search ranks whatever the environment has indexed; an environment
+            # with no matching tool is not a failure of the mapping under test.
+            self.skipTest("No tool in this environment matched the search query")
+
+        scores = [tool.score for tool in result.tools]
+        self.assertEqual(scores, sorted(scores, reverse=True))
+
+        for tool in result.tools:
+            self.assertIsNotNone(tool.name)
+            # connections is empty when the identifier has no connection for the
+            # tool's provider -- not an error, so only the entries that exist are
+            # asserted on.
+            for connection in tool.connections:
+                self.assertIsNotNone(connection.connection_name)
+                # The model maps the enum to its name and never raises, so an
+                # unknown state would arrive as a decimal string instead.
+                # UNSPECIFIED is in the accepted set because the proto allows it
+                # on any entry the server did not evaluate.
+                self.assertIn(
+                    connection.readiness_state,
+                    (
+                        "TOOL_READINESS_STATE_UNSPECIFIED",
+                        "TOOL_READINESS_STATE_READY",
+                        "TOOL_READINESS_STATE_NEEDS_CONNECTION",
+                        "TOOL_READINESS_STATE_NEEDS_REAUTH",
+                    ),
+                )
 
     def test_execute_tool_with_identifier(self):
         """ Method to test execute tool with identifier (backward compatibility) """

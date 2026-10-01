@@ -1,0 +1,25 @@
+kind: added
+body: |
+  `client.actions.search_tools(query, *, identifier=None, top_k=None)` ranks tools against a natural-language query, `client.actions.list_scoped_tools(identifier, *, filter, page_size=None, page_token=None)` lists the tools already scoped to an identifier, and `client.actions.list_available_tools(identifier, *, page_size=None, page_token=None)` lists the tools that identifier could use, returning `SearchToolsResponse`, `ListScopedToolsResponse` and `ListAvailableToolsResponse` from `scalekit.actions.types`. `filter` is required on `list_scoped_tools`: import `ScopedToolFilter` from `scalekit.v1.tools.tools_pb2`, and pass an empty `ScopedToolFilter()` to narrow nothing. Pass `identifier` to `search_tools` and every result carries a `connections` list with per-connection readiness, so you can tell whether a tool is ready to run before executing it. `client.tools.list_available_tools(identifier, *, page_size=None, page_token=None)` exposes the same listing at the low level and returns the raw `(response, call)` tuple; all four methods are in preview, so their requests and responses may change in a future release. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/AGENTKIT.md#tool-discovery)
+
+  ```python
+  from scalekit.v1.tools.tools_pb2 import ScopedToolFilter
+
+  result = client.actions.search_tools("send a message to a slack channel", identifier="user@example.com", top_k=5)
+  for tool in result.tools:
+      print(tool.name, tool.score)
+      for connection in tool.connections:
+          if connection.readiness_state == "TOOL_READINESS_STATE_READY":
+              print("  ready:", connection.connected_account_id)
+
+  scoped = client.actions.list_scoped_tools("user@example.com", filter=ScopedToolFilter(providers=["slack"]))
+  print(scoped.total_count, [scoped_tool.connected_account_id for scoped_tool in scoped.tools])
+
+  page = client.actions.list_available_tools("user@example.com", page_size=20)
+  print(page.total_count, [tool.id for tool in page.tools])
+  ```
+time: '2026-10-01T21:07:34.950018+05:30'
+custom:
+  Breaking: 'No'
+  Ticket: SK-2117
+  Migration: ''

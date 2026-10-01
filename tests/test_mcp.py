@@ -3,6 +3,8 @@ from datetime import datetime, timedelta, timezone
 
 from faker import Faker
 from basetest import BaseTest
+from scalekit.actions.types import GetMcpConfigResponse
+from scalekit.common.exceptions import ScalekitNotFoundException
 
 from scalekit.v1.mcp.mcp_pb2 import (
     Mcp,
@@ -98,6 +100,72 @@ class TestMcp(BaseTest):
         delete_response = self.scalekit_client.mcp.delete_config(config_id=created_mcp_config_id)
         self.assertEqual(delete_response[1].code().name, "OK")
         self.assertTrue(delete_response[0] is not None)
+
+    def _delete_config_if_present(self, config_id):
+        """Delete an MCP config, tolerating one the test already deleted."""
+        try:
+            self.scalekit_client.mcp.delete_config(config_id=config_id)
+        except ScalekitNotFoundException:
+            pass
+
+    def test_get_config_by_id(self):
+        """ get_config returns the config just created, on every layer that exposes it """
+        mcp_config = self._create_test_mcp_config()
+        mcp_config.name = f"py-test-get-config-{uuid.uuid4().hex[:8]}"
+
+        create_response = self.scalekit_client.mcp.create_config(mcp_config=mcp_config)
+        self.assertEqual(create_response[1].code().name, "OK")
+        created_config_id = create_response[0].config.id
+        self.addCleanup(self.scalekit_client.mcp.delete_config, config_id=created_config_id)
+
+        # Low-level client: raw (response, call) tuple.
+        get_response = self.scalekit_client.mcp.get_config(created_config_id)
+        self.assertEqual(get_response[1].code().name, "OK")
+        self.assertEqual(get_response[0].config.id, created_config_id)
+        self.assertEqual(get_response[0].config.name, mcp_config.name)
+
+        # ActionMcp helper: parsed action model.
+        action_result = self.scalekit_client.actions.mcp.get_config(created_config_id)
+        self.assertIsInstance(action_result, GetMcpConfigResponse)
+        self.assertEqual(action_result.config.id, created_config_id)
+        self.assertEqual(action_result.config.name, mcp_config.name)
+        self.assertEqual(
+            [mapping.connection_name for mapping in action_result.config.connection_tool_mappings],
+            [mapping.connection_name for mapping in mcp_config.connection_tool_mappings],
+        )
+
+        # ActionClient passthrough: same model.
+        passthrough_result = self.scalekit_client.actions.get_config(created_config_id)
+        self.assertIsInstance(passthrough_result, GetMcpConfigResponse)
+        self.assertEqual(passthrough_result.config.id, created_config_id)
+
+    def test_get_config_after_delete_raises_not_found(self):
+        """ get_config on a config that no longer exists raises, it never returns an empty config """
+        mcp_config = self._create_test_mcp_config()
+        mcp_config.name = f"py-test-get-config-gone-{uuid.uuid4().hex[:8]}"
+
+        create_response = self.scalekit_client.mcp.create_config(mcp_config=mcp_config)
+        self.assertEqual(create_response[1].code().name, "OK")
+        created_config_id = create_response[0].config.id
+        # The test deletes the config itself; the cleanup is the safety net for
+        # a failure before that, and tolerates the config already being gone.
+        self.addCleanup(self._delete_config_if_present, created_config_id)
+
+        delete_response = self.scalekit_client.mcp.delete_config(config_id=created_config_id)
+        self.assertEqual(delete_response[1].code().name, "OK")
+
+        with self.assertRaises(ScalekitNotFoundException):
+            self.scalekit_client.mcp.get_config(created_config_id)
+
+        with self.assertRaises(ScalekitNotFoundException):
+            self.scalekit_client.actions.mcp.get_config(created_config_id)
+
+    def test_get_config_blank_id_raises_before_any_call(self):
+        """ The action layer rejects a blank config_id locally, without a round trip """
+        with self.assertRaises(ValueError):
+            self.scalekit_client.actions.mcp.get_config("")
+        with self.assertRaises(ValueError):
+            self.scalekit_client.actions.get_config("")
 
     def test_get_instance_auth_state_include_links_variants(self):
         """Ensure auth state retrieval works with include_auth_links True and False."""

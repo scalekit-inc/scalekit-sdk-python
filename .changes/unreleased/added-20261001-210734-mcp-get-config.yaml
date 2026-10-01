@@ -1,0 +1,15 @@
+kind: added
+body: |
+  `client.actions.mcp.get_config(config_id)` fetches a single MCP configuration by ID and returns a `GetMcpConfigResponse` whose `config` is the same `McpConfig` model `list_configs` returns, so you no longer have to list and filter to read one configuration. `client.actions.get_config(config_id)` is the same call on the `ActionClient` passthrough, alongside `list_configs`, `create_config`, `update_config` and `delete_config`; both raise `ValueError` for a blank `config_id` before any network call, and `ScalekitNotFoundException` when no configuration has that ID. `client.mcp.get_config(config_id)` is the low-level form and returns the raw `(response, call)` tuple. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/AGENTKIT.md#actionmcp-helper)
+
+  ```python
+  result = client.actions.mcp.get_config("cfg_123")
+  print(result.config.name, result.config.mcp_server_url)
+  for mapping in result.config.connection_tool_mappings:
+      print(mapping.connection_name, mapping.tools)
+  ```
+time: '2026-10-01T21:07:34.982819+05:30'
+custom:
+  Breaking: 'No'
+  Ticket: SK-2117
+  Migration: ''

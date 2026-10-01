@@ -79,6 +79,8 @@ response = scalekit_client.tools.list_tools(
 
 Lists tools scoped to a specific connected-account identifier (for example workspace or email).
 
+**PREVIEW:** this endpoint's request and response may change in a future release.
+
 ### 🔌 Usage
 
 ```python
@@ -104,6 +106,46 @@ response = scalekit_client.tools.list_scoped_tools(
 </dl>
 </details>
 
+<details><summary><code>client.tools.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/tools.py">list_available_tools</a>(identifier, *, page_size?, page_token?) -> (ListAvailableToolsResponse, call)</code></summary>
+<dl>
+<dd>
+
+### 📝 Description
+
+Lists every tool one identifier could use, across all of its connections. The counterpart of
+`list_scoped_tools`, which returns the tools already scoped to that identifier.
+
+Results are paginated — follow `next_page_token` for the complete set. Returns the raw
+`(response, call)` tuple; use `client.actions.list_available_tools` for a parsed model.
+
+**PREVIEW:** this endpoint's request and response may change in a future release.
+
+### 🔌 Usage
+
+```python
+response, call = scalekit_client.tools.list_available_tools(
+    "user@example.com",
+    page_size=20,
+)
+
+for tool in response.tools:
+    print(tool.id, tool.provider)
+```
+
+### ⚙️ Parameters
+
+**identifier:** `str` — Connected-account identifier (e.g. the end user's email or workspace ID).
+Required by the server, which accepts at most 100 characters.
+
+**page_size:** `Optional[int]` — Keyword-only. Maximum number of tools per page.
+
+**page_token:** `Optional[str]` — Keyword-only. `next_page_token` or `prev_page_token` from a
+previous response.
+
+</dd>
+</dl>
+</details>
+
 <details><summary><code>client.tools.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/tools.py">search_tools</a>(query, identifier?, top_k?) -> SearchToolsResponse</code></summary>
 <dl>
 <dd>
@@ -118,6 +160,8 @@ needs a new connection, or needs re-auth) so you can gate execution on the right
 empty `connections` list means no account exists for the provider at all (not an error).
 Only pass a result's `connected_account_id` to `ExecuteTool` when `readiness_state` is
 `TOOL_READINESS_STATE_READY`.
+
+**PREVIEW:** this endpoint's request and response may change in a future release.
 
 ### 🔌 Usage
 
@@ -785,6 +829,97 @@ Runs pre/post modifiers then delegates to `client.tools.execute_tool`. `tool_nam
 </dd></dl>
 </details>
 
+### Tool discovery
+
+<details><summary><code>client.connect.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">search_tools</a>(query, *, identifier?, top_k?) -> SearchToolsResponse</code></summary>
+<dl><dd>
+
+Searches tools ranked by relevance to a natural-language query — the job to be done, not an exact
+tool name. Prefer this over listing a whole connector: binding a connector's full schema to a model
+costs roughly 85k tokens per request, against about 700 for one search. Delegates to
+`client.tools.search_tools` and returns `SearchToolsResponse` (from `scalekit.actions.types`), whose
+`tools` are `SearchedTool` models with `name`, `provider`, `description`, `score` and `connections`.
+Not paginated: `top_k` bounds the whole result set (server default 10, maximum 50). `identifier` and
+`top_k` are keyword-only, and a blank `identifier` is treated as omitted rather than sent. The
+underlying endpoint is in **PREVIEW** and may change in a future release.
+
+Pass `identifier` and each result's `connections` carries that user's readiness per connection, as a
+state **name** such as `"TOOL_READINESS_STATE_READY"`. A state this SDK build does not know arrives
+as its decimal value rather than raising, so compare against the names you handle and treat anything
+else as not ready. An empty `connections` list means the identifier has no connection at all for
+that tool's provider — not an error, and different from `"TOOL_READINESS_STATE_NEEDS_CONNECTION"`,
+which means a connected account exists but is inactive.
+
+```python
+result = scalekit_client.actions.search_tools(
+    "send a message to a slack channel",
+    identifier="user@example.com",
+    top_k=5,
+)
+for tool in result.tools:
+    print(tool.name, tool.score)
+    for connection in tool.connections:
+        if connection.readiness_state == "TOOL_READINESS_STATE_READY":
+            print("  ready:", connection.connected_account_id)
+```
+
+</dd></dl>
+</details>
+
+<details><summary><code>client.connect.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">list_scoped_tools</a>(identifier, *, filter, page_size?, page_token?) -> ListScopedToolsResponse</code></summary>
+<dl><dd>
+
+Lists the tools already scoped to one identifier. Each entry names the connected account that backs
+the tool, so a result can be passed straight to `execute_tool`. Delegates to
+`client.tools.list_scoped_tools` and returns `ListScopedToolsResponse` (from
+`scalekit.actions.types`) with `tools` (`ScopedTool` models carrying `tool`, `identifier` and
+`connected_account_id`), `total_count`, `next_page_token` (`None` on the last page) and
+`previous_page_token`. `filter`, `page_size` and `page_token` are keyword-only; build `filter` with
+`scalekit.v1.tools.tools_pb2.ScopedToolFilter`. `filter` is **required** — passing `None` raises
+`ValueError` before any network call, and the server rejects a request that arrives without one — so
+pass an empty `ScopedToolFilter()` to list every scoped tool. The
+underlying endpoint is in **PREVIEW** and may change in a future release.
+
+```python
+from scalekit.v1.tools.tools_pb2 import ScopedToolFilter
+
+page = scalekit_client.actions.list_scoped_tools(
+    "user@example.com",
+    filter=ScopedToolFilter(providers=["slack"]),
+    page_size=20,
+)
+for scoped in page.tools:
+    print(scoped.connected_account_id, scoped.tool.provider)
+```
+
+</dd></dl>
+</details>
+
+<details><summary><code>client.connect.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">list_available_tools</a>(identifier, *, page_size?, page_token?) -> ListAvailableToolsResponse</code></summary>
+<dl><dd>
+
+Lists every tool one identifier could use, across all of its connections — the counterpart of
+`list_scoped_tools`. Delegates to `client.tools.list_available_tools` and returns
+`ListAvailableToolsResponse` (from `scalekit.actions.types`) with `tools` (the same `Tool` model
+`list_tools` returns), `total_count`, `next_page_token` (`None` on the last page) and
+`previous_page_token`. `page_size` and `page_token` are keyword-only. The underlying endpoint is in
+**PREVIEW** and may change in a future release.
+
+```python
+page = scalekit_client.actions.list_available_tools("user@example.com", page_size=20)
+while True:
+    for tool in page.tools:
+        print(tool.id, tool.provider)
+    if not page.next_page_token:
+        break
+    page = scalekit_client.actions.list_available_tools(
+        "user@example.com", page_size=20, page_token=page.next_page_token
+    )
+```
+
+</dd></dl>
+</details>
+
 ### OAuth and connected accounts
 
 <details><summary><code>get_authorization_link</code> / <code>verify_connected_account_user</code> / <code>list_connected_accounts</code> / <code>delete_connected_account</code> / <code>get_connected_account</code></summary>
@@ -825,11 +960,31 @@ Register optional pre/post hooks around tool execution (`Modifier` types).
 
 ### MCP passthrough on `ActionClient`
 
-The `ActionClient` also exposes `list_configs`, `create_config`, `update_config`, `delete_config`, `ensure_instance`, `update_instance`, `get_instance`, `list_instances`, `delete_instance`, and `get_instance_auth_state` that forward to `client.mcp` with convenience arguments. Prefer `client.mcp` for raw protos or `client.connect.mcp` for wrapped responses.
+The `ActionClient` also exposes `get_config`, `list_configs`, `create_config`, `update_config`, `delete_config`, `ensure_instance`, `update_instance`, `get_instance`, `list_instances`, `delete_instance`, and `get_instance_auth_state` that forward to `client.mcp` with convenience arguments. Prefer `client.mcp` for raw protos or `client.connect.mcp` for wrapped responses.
 
 ### `ActionMcp` helper
 
-Access via `client.connect.mcp` / `client.actions.mcp`. Requires `McpClient` to be initialized on the parent `ScalekitClient`. Methods include `list_configs`, `create_config` (builds `McpConfig` from `name` / `description` / mappings), `update_config`, `delete_config`, `ensure_instance`, `update_instance`, `get_instance`, `list_instances`, `delete_instance`, and `get_instance_auth_state`, returning parsed wrapper types instead of raw gRPC tuples.
+Access via `client.connect.mcp` / `client.actions.mcp`. Requires `McpClient` to be initialized on the parent `ScalekitClient`. Methods include `get_config`, `list_configs`, `create_config` (builds `McpConfig` from `name` / `description` / mappings), `update_config`, `delete_config`, `ensure_instance`, `update_instance`, `get_instance`, `list_instances`, `delete_instance`, and `get_instance_auth_state`, returning parsed wrapper types instead of raw gRPC tuples.
+
+<details><summary><code>client.actions.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">get_config</a>(config_id) -> GetMcpConfigResponse</code></summary>
+<dl><dd>
+
+Fetches a single MCP configuration by ID, e.g. one returned by `create_config` or found with
+`list_configs`. Returns `GetMcpConfigResponse` (from `scalekit.actions.types`) whose `config` holds
+the same `McpConfig` model `list_configs` returns. `config_id` is required: a blank value raises
+`ValueError` before any network call, and an ID that does not exist raises
+`ScalekitNotFoundException`. `client.actions.get_config(config_id)` is the same call on the
+`ActionClient` passthrough.
+
+```python
+result = scalekit_client.actions.mcp.get_config("cfg_123")
+print(result.config.name, result.config.mcp_server_url)
+for mapping in result.config.connection_tool_mappings:
+    print(mapping.connection_name, mapping.tools)
+```
+
+</dd></dl>
+</details>
 
 
 ## MCP (`McpClient`)
@@ -848,6 +1003,29 @@ Lists MCP server configurations with optional filters.
 **page_size**, **page_token** — Pagination.
 
 **filter_id**, **filter_provider**, **filter_name**, **search** — Restrict or search configs.
+
+</dd></dl>
+</details>
+
+<details><summary><code>client.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/mcp.py">get_config</a>(config_id) -> (GetMcpConfigResponse, call)</code></summary>
+<dl><dd>
+
+### 📝 Description
+
+Fetches a single MCP configuration by ID. Returns the raw `(response, call)` tuple; use
+`client.actions.mcp.get_config` for a parsed model. Raises `ScalekitNotFoundException` when no
+configuration has that ID.
+
+### 🔌 Usage
+
+```python
+response, call = scalekit_client.mcp.get_config("cfg_123")
+print(response.config.name, response.config.mcp_server_url)
+```
+
+### ⚙️ Parameters
+
+**config_id:** `str` — ID of the configuration to fetch (`cfg_...`). Required by the server.
 
 </dd></dl>
 </details>
