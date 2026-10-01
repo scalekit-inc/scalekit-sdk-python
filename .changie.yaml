@@ -1,0 +1,47 @@
+# Release-notes fragment schema for the Scalekit SDKs (standards/release-notes.md §4).
+# Author a fragment interactively with `changie new`, or non-interactively with
+# `python scripts/release/release.py new ...`. Rendering and versioning are done by
+# scripts/release/release.py, not by `changie batch`/`merge`.
+changesDir: .changes
+unreleasedDir: unreleased
+headerPath: header.tpl.md
+changelogPath: CHANGELOG.md
+versionExt: md
+versionFormat: '## [{{.Version}}] - {{.Time.Format "2006-01-02"}}'
+kindFormat: '### {{.Kind}}'
+changeFormat: '- {{.Body}}'
+body:
+  block: true
+  minLength: 20
+kinds:
+  - key: added
+    label: Added
+    auto: minor
+  - key: changed
+    label: Changed
+    auto: patch
+  - key: deprecated
+    label: Deprecated
+    auto: minor
+  - key: removed
+    label: Removed
+    auto: major
+  - key: fixed
+    label: Fixed
+    auto: patch
+  - key: security
+    label: Security
+    auto: patch
+custom:
+  - key: Breaking
+    label: Breaks existing callers?
+    type: enum
+    enumOptions: ["No", "Yes"]
+  - key: Ticket
+    label: Linear ticket (e.g. SK-1234)
+    type: string
+    minLength: 4
+  - key: Migration
+    label: Migration steps with before/after code (required when breaking; empty otherwise)
+    type: block
+    optional: true

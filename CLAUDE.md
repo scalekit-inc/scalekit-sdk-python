@@ -15,13 +15,20 @@ make test    # unittest discover
 make generate  # Regenerate from proto (needs buf)
 ```
 
-## Release
+## Release notes and releases
 
-Package: `scalekit-sdk-python` on PyPI. Workflow: `.github/workflows/release.yml`.
-
-1. Bump `scalekit/_version.py`. Use a minor or patch bump. `setup.py` reads this file.
-2. Review the unreleased changes. If proto or generated API files changed, extra generation steps apply. Those steps are not documented yet. Do not invent them. Ask before you regenerate.
-3. Merge the release branch to `main`.
-4. Create a git tag that matches the version (`v2.17.0` for `2.17.0`). Draft a GitHub Release for that tag.
-5. Publishing does not start on its own. Open the Actions run for the release workflow. Any peer can approve it. The `release` environment gates deploy.
-6. After approval, the workflow publishes to PyPI.
+- Every PR that changes shipped code adds a release-notes fragment:
+  `python3 scripts/release/release.py new --kind <added|changed|deprecated|removed|fixed|security> --ticket SK-1234 --body "..."`
+  (or `changie new`). Write it for the developer upgrading; rules are in
+  scalekit-sdks-wrapper `standards/release-notes.md`.
+- Label every PR `release` or `skip-release` (`no-changelog` only when nothing shipped
+  changes). The `release-notes` check enforces the label, the version and CHANGELOG rules.
+- Never hand-edit the SDK version or `CHANGELOG.md`. A releasing PR runs
+  `python3 scripts/release/release.py prepare`, which computes the version from the
+  fragments, bumps every location in `release.toml` and renders the section.
+- Merging a version bump to `main` starts `.github/workflows/release.yml`. It builds and
+  tests, then waits for a human approval on the `release` environment (someone other than
+  the person who merged) before tagging and publishing.
+- Cross-SDK changes and release-only runs: `/sdk` and `/sdk-release` from
+  scalekit-sdks-wrapper. Never edit `scripts/release/` or the release workflows here; they
+  are vendored from that repo.
