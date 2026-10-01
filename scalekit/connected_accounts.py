@@ -13,6 +13,7 @@ from scalekit.v1.connected_accounts.connected_accounts_pb2 import (
     GetMagicLinkForConnectedAccountResponse,
     ListConnectedAccountsRequest,
     ListConnectedAccountsResponse,
+    ScopeSelection,
     UpdateConnectedAccount,
     UpdateConnectedAccountRequest,
     UpdateConnectedAccountResponse,
@@ -134,7 +135,8 @@ class ConnectedAccountsClient:
         connected_account: UpdateConnectedAccount,
         organization_id: Optional[str] = None,
         user_id: Optional[str] = None,
-        connected_account_id: Optional[str] = None
+        connected_account_id: Optional[str] = None,
+        scope_selection: Optional[ScopeSelection] = None
     ) -> UpdateConnectedAccountResponse:
         """
         Method to update a connected account
@@ -151,20 +153,36 @@ class ConnectedAccountsClient:
         :type                   : ``` UpdateConnectedAccount ```
         :param connected_account_id : ID of the connected account to update
         :type                   : ``` str ```
+        :param scope_selection  : Scopes the end user picked for this connected account.
+                                  This applies when the customer is using the hosted connect
+                                  widget to connect accounts: it carries the selection made in
+                                  that widget. It is honoured only for OAUTH_M2M and GOOGLE_DWD
+                                  connections that allow scope selection
+                                  (``scope_selection_allowed``); the connection's required
+                                  scopes are always added by the server on top of this
+                                  selection. When omitted, a previously saved selection is
+                                  kept as-is.
+                                  Example: ``ScopeSelection(scopes=["https://www.googleapis.com/auth/drive.readonly"],
+                                  optional_scopes=["https://www.googleapis.com/auth/calendar.readonly"])``
+        :type                   : ``` ScopeSelection ```
 
         :returns:
             Update Connected Account Response
         """
+        request = UpdateConnectedAccountRequest(
+            organization_id=organization_id,
+            user_id=user_id,
+            connector=connector,
+            identifier=identifier,
+            connected_account=connected_account,
+            id=connected_account_id
+        )
+        if scope_selection is not None:
+            request.scope_selection.CopyFrom(scope_selection)
+
         return self.core_client.grpc_exec(
             self.connected_accounts_service.UpdateConnectedAccount.with_call,
-            UpdateConnectedAccountRequest(
-                organization_id=organization_id,
-                user_id=user_id,
-                connector=connector,
-                identifier=identifier,
-                connected_account=connected_account,
-                id=connected_account_id
-            ),
+            request,
         )
 
     def delete_connected_account(

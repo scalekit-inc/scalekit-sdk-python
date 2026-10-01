@@ -1,4 +1,5 @@
 from google.api import annotations_pb2 as _annotations_pb2
+from google.protobuf import field_mask_pb2 as _field_mask_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
 from protoc_gen_openapiv2.options import annotations_pb2 as _annotations_pb2_1
 from scalekit.v1.options import options_pb2 as _options_pb2
@@ -158,14 +159,16 @@ class CreateManualGatewayGroupResponse(_message.Message):
     def __init__(self, group: _Optional[_Union[GatewayGroup, _Mapping]] = ...) -> None: ...
 
 class UpdateManualGatewayGroupRequest(_message.Message):
-    __slots__ = ("group_id", "display_name", "description")
+    __slots__ = ("group_id", "display_name", "description", "update_mask")
     GROUP_ID_FIELD_NUMBER: _ClassVar[int]
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
+    UPDATE_MASK_FIELD_NUMBER: _ClassVar[int]
     group_id: str
     display_name: str
     description: str
-    def __init__(self, group_id: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ...) -> None: ...
+    update_mask: _field_mask_pb2.FieldMask
+    def __init__(self, group_id: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., update_mask: _Optional[_Union[_field_mask_pb2.FieldMask, _Mapping]] = ...) -> None: ...
 
 class UpdateManualGatewayGroupResponse(_message.Message):
     __slots__ = ("group",)

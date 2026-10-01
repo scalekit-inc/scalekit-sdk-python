@@ -6,7 +6,8 @@ from scalekit.v1.connected_accounts.connected_accounts_pb2 import (
     OauthToken,
     StaticAuth,
     GoogleDWDAuth,
-    TrustedIDPAuth
+    TrustedIDPAuth,
+    ScopeSelection
 )
 from google.protobuf import struct_pb2
 
@@ -21,6 +22,34 @@ class UpdateConnectedAccountRequest(BaseModel):
     user_id: Optional[str] = Field(None, description="User ID")
     connected_account_id: Optional[str] = Field(None, description="Connected account ID")
     api_config: Optional[Dict[str, Any]] = Field(None, description="Optional API configuration for the connected account")
+    scope_selection: Optional[Dict[str, Any]] = Field(
+        None,
+        description=(
+            "Scopes the end user selected for this connected account, as "
+            "{'scopes': [...], 'optional_scopes': [...]}. Applies when the customer is using "
+            "the hosted connect widget to connect accounts."
+        ),
+    )
+
+    def to_scope_selection_proto(self) -> Optional[ScopeSelection]:
+        """
+        Convert the ``scope_selection`` dict to a protobuf ScopeSelection object
+
+        :returns:
+            ScopeSelection protobuf object, or None when no selection was supplied
+        """
+        if self.scope_selection is None:
+            return None
+        if not isinstance(self.scope_selection, dict):
+            raise ValueError("scope_selection must be an object")
+
+        scopes = self.scope_selection.get("scopes") or []
+        optional_scopes = self.scope_selection.get("optional_scopes") or []
+        for name, value in (("scopes", scopes), ("optional_scopes", optional_scopes)):
+            if not isinstance(value, (list, tuple)) or not all(isinstance(v, str) for v in value):
+                raise ValueError(f"scope_selection.{name} must be a list of strings")
+
+        return ScopeSelection(scopes=list(scopes), optional_scopes=list(optional_scopes))
 
     def to_proto(self) -> UpdateConnectedAccount:
         """
