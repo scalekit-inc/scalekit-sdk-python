@@ -917,6 +917,7 @@ class ActionClient:
         user_id: Optional[str] = None,
         connected_account_id: Optional[str] = None,
         api_config: Optional[Dict[str, Any]] = None,
+        scope_selection: Optional[Dict[str, Any]] = None,
         **kwargs
     ) -> UpdateConnectedAccountResponse:
         """
@@ -936,6 +937,14 @@ class ActionClient:
         :type: str
         :param api_config: Optional API configuration for the connected account (optional)
         :type: Optional[Dict[str, Any]]
+        :param scope_selection: Scopes the end user selected for this connected account,
+            as ``{"scopes": [...], "optional_scopes": [...]}`` (optional). This applies when
+            the customer is using the hosted connect widget to connect accounts: it carries
+            the selection made in that widget. It is honoured only for OAUTH_M2M and
+            GOOGLE_DWD connections that allow scope selection; the connection's required
+            scopes are always added by the server on top of this selection. When omitted,
+            a previously saved selection is kept as-is.
+        :type: Optional[Dict[str, Any]]
 
         :returns:
             UpdateConnectedAccountResponse containing updated connected account details
@@ -954,11 +963,13 @@ class ActionClient:
             organization_id=organization_id,
             user_id=user_id,
             connected_account_id=connected_account_id,
-            api_config=api_config
+            api_config=api_config,
+            scope_selection=scope_selection
         )
 
         # Convert to protobuf
         connected_account_proto = request.to_proto()
+        scope_selection_proto = request.to_scope_selection_proto()
 
         # Call the existing connected_accounts method which returns (response, metadata) tuple
         result_tuple = self.connected_accounts.update_connected_account(
@@ -967,7 +978,8 @@ class ActionClient:
             connected_account=connected_account_proto,
             organization_id=organization_id,
             user_id=user_id,
-            connected_account_id=connected_account_id
+            connected_account_id=connected_account_id,
+            scope_selection=scope_selection_proto
         )
 
         # Extract the response[0] (the actual UpdateConnectedAccountResponse proto object)
@@ -1368,19 +1380,30 @@ class ActionMcp:
 
     def create_session_token(
         self,
-        mcp_config_id: str,
-        identifier: str,
+        mcp_config_id: Optional[str] = None,
+        identifier: str = "",
         expiry: Optional[timedelta] = None,
+        key_id: Optional[str] = None,
     ) -> CreateMcpSessionTokenResponse:
         """Create a short-lived session token for a user to access an MCP server.
 
-        The token is scoped to a specific MCP configuration and end-user. Pass it
-        as a ``Bearer`` token in the ``Authorization`` header when making requests
-        to the MCP server URL associated with the config.
+        The token is scoped to a specific MCP server and end-user. Pass it as a
+        ``Bearer`` token in the ``Authorization`` header when making requests to that
+        MCP server URL.
+
+        Exactly one of ``mcp_config_id`` or ``key_id`` must be supplied — they select
+        which MCP server the token is minted for, and a token is only accepted by the
+        server it was minted for:
+
+        - ``mcp_config_id`` mints a token for the virtual MCP server of an MCP
+          configuration (the server that aggregates the tools mapped in that config).
+        - ``key_id`` mints a token for the MCP server of a single AgentKit connection,
+          named by its connection name, e.g. ``"github-connect"``.
 
         Args:
-            mcp_config_id: Scalekit ID of the MCP configuration the token should
-                grant access to, e.g. ``"cfg_01abc123"``.
+            mcp_config_id: Scalekit ID of the MCP configuration whose virtual MCP
+                server the token should grant access to, e.g. ``"cfg_01abc123"``.
+                Mutually exclusive with ``key_id``.
             identifier: End-user identifier for whom the token is minted — typically
                 the same email or opaque ID used when calling ``ensure_instance``,
                 e.g. ``"alice@example.com"``.
@@ -1392,6 +1415,10 @@ class ActionMcp:
                 - ``timedelta(hours=8)``    — 8-hour token (work-day session)
                 - ``timedelta(days=1)``     — 24-hour token
 
+            key_id: AgentKit connection name whose MCP server the token should grant
+                access to, e.g. ``"github-connect"``. Mutually exclusive with
+                ``mcp_config_id``.
+
         Returns:
             CreateMcpSessionTokenResponse: Contains:
 
@@ -1399,29 +1426,42 @@ class ActionMcp:
             - ``expires_at`` (``datetime``) — UTC datetime when the token expires.
 
         Raises:
-            ValueError: If ``mcp_config_id`` or ``identifier`` is blank.
+            ValueError: If ``identifier`` is blank, or if both ``mcp_config_id`` and
+                ``key_id`` are supplied, or neither is supplied.
 
         Example::
 
             from datetime import timedelta
 
+            # Token for an MCP configuration's virtual MCP server
             resp = client.actions.mcp.create_session_token(
                 mcp_config_id="cfg_01abc123",
                 identifier="alice@example.com",
                 expiry=timedelta(hours=8),
             )
 
+            # Token for a single AgentKit connection's MCP server
+            resp = client.actions.mcp.create_session_token(
+                identifier="alice@example.com",
+                key_id="github-connect",
+            )
+
             headers = {"Authorization": f"Bearer {resp.token}"}
             # Use headers when calling the MCP server URL
         """
-        if not mcp_config_id:
-            raise ValueError("mcp_config_id is required")
+        if bool(mcp_config_id) == bool(key_id):
+            raise ValueError(
+                "Exactly one of mcp_config_id or key_id must be provided: "
+                "use mcp_config_id for an MCP configuration's virtual MCP server, "
+                "or key_id for an AgentKit connection's MCP server."
+            )
         if not identifier:
             raise ValueError("identifier is required")
         result_tuple = self._client().create_session_token(
             mcp_config_id=mcp_config_id,
             identifier=identifier,
             expiry=expiry,
+            key_id=key_id,
         )
         return CreateMcpSessionTokenResponse.from_proto(result_tuple[0])
 

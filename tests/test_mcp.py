@@ -1,3 +1,4 @@
+import os
 import uuid
 from datetime import datetime, timedelta, timezone
 
@@ -299,3 +300,61 @@ class TestMcp(BaseTest):
         finally:
             if created_config_id:
                 self.scalekit_client.mcp.delete_config(config_id=created_config_id)
+
+    def test_create_session_token_with_key_id(self):
+        """create_session_token mints a token for an AgentKit connection's MCP server."""
+        key_id = os.environ.get("SCALEKIT_TEST_MCP_CONNECTION_KEY_ID")
+        if not key_id:
+            self.skipTest(
+                "Set SCALEKIT_TEST_MCP_CONNECTION_KEY_ID to run the key_id session token test"
+            )
+
+        now = datetime.now(tz=timezone.utc)
+        token_response = self.scalekit_client.mcp.create_session_token(
+            identifier=self.test_user_identifier,
+            key_id=key_id,
+            expiry=timedelta(hours=2),
+        )
+        self.assertEqual(token_response[1].code().name, "OK")
+        self.assertTrue(token_response[0].token, "Expected a non-empty token string")
+        expires_at = token_response[0].expires_at.ToDatetime(tzinfo=timezone.utc)
+        self.assertGreater(
+            expires_at,
+            now + timedelta(hours=1, minutes=55),
+            "expires_at should be at least 1h55m from now for a 2-hour expiry",
+        )
+        self.assertLess(
+            expires_at,
+            now + timedelta(hours=2, minutes=5),
+            "expires_at should not exceed 2h5m from now for a 2-hour expiry",
+        )
+
+    def test_create_session_token_requires_exactly_one_target(self):
+        """create_session_token rejects both/neither of mcp_config_id and key_id client-side."""
+        with self.assertRaises(ValueError) as both_set:
+            self.scalekit_client.mcp.create_session_token(
+                mcp_config_id="cfg_from_caller",
+                identifier=self.test_user_identifier,
+                key_id="connection_from_caller",
+            )
+        self.assertIn(
+            "Exactly one of mcp_config_id or key_id must be provided",
+            str(both_set.exception),
+        )
+
+        with self.assertRaises(ValueError) as neither_set:
+            self.scalekit_client.mcp.create_session_token(
+                identifier=self.test_user_identifier,
+            )
+        self.assertIn(
+            "Exactly one of mcp_config_id or key_id must be provided",
+            str(neither_set.exception),
+        )
+
+    def test_create_session_token_requires_identifier(self):
+        """create_session_token rejects a blank identifier client-side."""
+        with self.assertRaises(ValueError) as blank_identifier:
+            self.scalekit_client.mcp.create_session_token(
+                mcp_config_id="cfg_from_caller",
+            )
+        self.assertIn("identifier is required", str(blank_identifier.exception))

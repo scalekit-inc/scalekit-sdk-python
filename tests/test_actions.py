@@ -1875,6 +1875,89 @@ class TestActionsMcpConnectedAccounts(BaseTest):
                 identifier="",
             )
 
+    def test_create_session_token_requires_exactly_one_target(self):
+        """Supplying both mcp_config_id and key_id raises ValueError client-side."""
+        with self.assertRaises(ValueError) as both_set:
+            self.actions_client.mcp.create_session_token(
+                mcp_config_id=self.config_id,
+                identifier=self.USER_IDENTIFIER,
+                key_id="connection_from_caller",
+            )
+        self.assertIn(
+            "Exactly one of mcp_config_id or key_id must be provided",
+            str(both_set.exception),
+        )
+
+
+class TestActionsScopeSelection(unittest.TestCase):
+    """Client-side conversion of the actions-facade scope_selection parameter.
+
+    These exercise UpdateConnectedAccountRequest.to_scope_selection_proto() only,
+    so they never reach the network and never need server-side test data.
+    """
+
+    def test_scope_selection_absent_yields_no_proto(self):
+        from scalekit.actions.models.requests.update_connected_account_request import UpdateConnectedAccountRequest
+
+        request = UpdateConnectedAccountRequest(
+            connection_name="slack",
+            identifier="alice@example.com",
+        )
+        self.assertIsNone(request.to_scope_selection_proto())
+
+    def test_scope_selection_converts_both_buckets(self):
+        from scalekit.actions.models.requests.update_connected_account_request import UpdateConnectedAccountRequest
+
+        request = UpdateConnectedAccountRequest(
+            connection_name="slack",
+            identifier="alice@example.com",
+            scope_selection={
+                "scopes": ["channels:read", "chat:write"],
+                "optional_scopes": ["search:read"],
+            },
+        )
+        proto = request.to_scope_selection_proto()
+        self.assertEqual(list(proto.scopes), ["channels:read", "chat:write"])
+        self.assertEqual(list(proto.optional_scopes), ["search:read"])
+
+    def test_scope_selection_omitted_bucket_becomes_empty(self):
+        from scalekit.actions.models.requests.update_connected_account_request import UpdateConnectedAccountRequest
+
+        request = UpdateConnectedAccountRequest(
+            connection_name="slack",
+            identifier="alice@example.com",
+            scope_selection={"scopes": ["channels:read"]},
+        )
+        proto = request.to_scope_selection_proto()
+        self.assertEqual(list(proto.scopes), ["channels:read"])
+        self.assertEqual(list(proto.optional_scopes), [])
+
+    def test_scope_selection_rejects_non_string_entries(self):
+        from scalekit.actions.models.requests.update_connected_account_request import UpdateConnectedAccountRequest
+
+        request = UpdateConnectedAccountRequest(
+            connection_name="slack",
+            identifier="alice@example.com",
+            scope_selection={"scopes": ["channels:read", 42]},
+        )
+        with self.assertRaises(ValueError) as ctx:
+            request.to_scope_selection_proto()
+        self.assertIn("scope_selection.scopes must be a list of strings", str(ctx.exception))
+
+    def test_scope_selection_rejects_non_list_bucket(self):
+        from scalekit.actions.models.requests.update_connected_account_request import UpdateConnectedAccountRequest
+
+        request = UpdateConnectedAccountRequest(
+            connection_name="slack",
+            identifier="alice@example.com",
+            scope_selection={"optional_scopes": "search:read"},
+        )
+        with self.assertRaises(ValueError) as ctx:
+            request.to_scope_selection_proto()
+        self.assertIn(
+            "scope_selection.optional_scopes must be a list of strings", str(ctx.exception)
+        )
+
 
 class TestConnectUserVerify(BaseTest):
     """Tests for verify_connected_account_user via the actions client."""

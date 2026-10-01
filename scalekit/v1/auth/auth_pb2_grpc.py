@@ -75,6 +75,11 @@ class AuthServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.UpdateLoginUserDetailsRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.UpdateLoginUserDetailsResponse.FromString,
                 )
+        self.GetLoginRequestDetails = channel.unary_unary(
+                '/scalekit.v1.auth.AuthService/GetLoginRequestDetails',
+                request_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.GetLoginRequestDetailsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.GetLoginRequestDetailsResponse.FromString,
+                )
 
 
 class AuthServiceServicer(object):
@@ -152,6 +157,12 @@ class AuthServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetLoginRequestDetails(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_AuthServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -214,6 +225,11 @@ def add_AuthServiceServicer_to_server(servicer, server):
                     servicer.UpdateLoginUserDetails,
                     request_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.UpdateLoginUserDetailsRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.UpdateLoginUserDetailsResponse.SerializeToString,
+            ),
+            'GetLoginRequestDetails': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetLoginRequestDetails,
+                    request_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.GetLoginRequestDetailsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.GetLoginRequestDetailsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -426,5 +442,22 @@ class AuthService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.auth.AuthService/UpdateLoginUserDetails',
             scalekit_dot_v1_dot_auth_dot_auth__pb2.UpdateLoginUserDetailsRequest.SerializeToString,
             scalekit_dot_v1_dot_auth_dot_auth__pb2.UpdateLoginUserDetailsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetLoginRequestDetails(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.auth.AuthService/GetLoginRequestDetails',
+            scalekit_dot_v1_dot_auth_dot_auth__pb2.GetLoginRequestDetailsRequest.SerializeToString,
+            scalekit_dot_v1_dot_auth_dot_auth__pb2.GetLoginRequestDetailsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

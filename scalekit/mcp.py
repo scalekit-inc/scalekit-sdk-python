@@ -284,30 +284,59 @@ class McpClient:
 
     def create_session_token(
         self,
-        mcp_config_id: str,
-        identifier: str,
+        mcp_config_id: Optional[str] = None,
+        identifier: str = "",
         expiry: Optional[timedelta] = None,
+        key_id: Optional[str] = None,
     ) -> CreateMcpSessionTokenResponse:
         """
         Create a short-lived session token for a user to authenticate against an MCP server.
 
-        :param mcp_config_id  : ID of the MCP configuration the session token is scoped to
+        Exactly one of ``mcp_config_id`` or ``key_id`` must be supplied — they select which
+        MCP server the token is minted for, and a token is only accepted by the server it was
+        minted for:
+
+        - ``mcp_config_id`` mints a token for the virtual MCP server of an MCP configuration
+          (the server that aggregates the tools mapped in that config).
+        - ``key_id`` mints a token for the MCP server of a single AgentKit connection, named by
+          its connection name (e.g. ``"github-connect"``).
+
+        :param mcp_config_id  : ID of the MCP configuration whose virtual MCP server the
+                                session token is scoped to. Mutually exclusive with ``key_id``.
         :type                 : ``` str ```
         :param identifier     : End-user identifier (e.g. email or opaque user ID) for whom
-                                the token is being minted
+                                the token is being minted (required)
         :type                 : ``` str ```
         :param expiry         : Lifetime of the token as a Python ``timedelta``. When omitted,
                                 the server-side default TTL is applied.
                                 Example: ``timedelta(hours=1)``
         :type                 : ``` timedelta ```
+        :param key_id         : AgentKit connection name (e.g. ``"github-connect"``) whose MCP
+                                server the session token is scoped to. Mutually exclusive with
+                                ``mcp_config_id``.
+        :type                 : ``` str ```
+
+        :raises ValueError    : If ``identifier`` is empty, or if both ``mcp_config_id`` and
+                                ``key_id`` are supplied, or neither is supplied.
 
         :returns:
             CreateMcpSessionTokenResponse — contains ``token`` (str) and ``expires_at`` (Timestamp)
         """
-        request = CreateMcpSessionTokenRequest(
-            mcp_config_id=mcp_config_id,
-            identifier=identifier,
-        )
+        if not identifier:
+            raise ValueError("identifier is required")
+
+        if bool(mcp_config_id) == bool(key_id):
+            raise ValueError(
+                "Exactly one of mcp_config_id or key_id must be provided: "
+                "use mcp_config_id for an MCP configuration's virtual MCP server, "
+                "or key_id for an AgentKit connection's MCP server."
+            )
+
+        request = CreateMcpSessionTokenRequest(identifier=identifier)
+        if mcp_config_id:
+            request.mcp_config_id = mcp_config_id
+        else:
+            request.key_id = key_id
         if expiry is not None:
             duration = Duration()
             total_seconds = int(expiry.total_seconds())

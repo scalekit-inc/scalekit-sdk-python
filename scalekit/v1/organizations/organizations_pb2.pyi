@@ -32,6 +32,12 @@ class SessionPolicyType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     SESSION_POLICY_TYPE_UNSPECIFIED: _ClassVar[SessionPolicyType]
     APPLICATION: _ClassVar[SessionPolicyType]
     CUSTOM: _ClassVar[SessionPolicyType]
+
+class BrandingSource(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    BRANDING_SOURCE_UNSPECIFIED: _ClassVar[BrandingSource]
+    BRANDING_SOURCE_ENVIRONMENT: _ClassVar[BrandingSource]
+    BRANDING_SOURCE_CUSTOM: _ClassVar[BrandingSource]
 FEATURE_UNSPECIFIED: Feature
 UNSPECIFIED: Feature
 dir_sync: Feature
@@ -39,6 +45,9 @@ sso: Feature
 SESSION_POLICY_TYPE_UNSPECIFIED: SessionPolicyType
 APPLICATION: SessionPolicyType
 CUSTOM: SessionPolicyType
+BRANDING_SOURCE_UNSPECIFIED: BrandingSource
+BRANDING_SOURCE_ENVIRONMENT: BrandingSource
+BRANDING_SOURCE_CUSTOM: BrandingSource
 
 class CreateOrganizationRequest(_message.Message):
     __slots__ = ("organization",)
@@ -324,6 +333,44 @@ class UpdateOrganizationSessionPolicyResponse(_message.Message):
     POLICY_FIELD_NUMBER: _ClassVar[int]
     policy: OrganizationSessionPolicySettings
     def __init__(self, policy: _Optional[_Union[OrganizationSessionPolicySettings, _Mapping]] = ...) -> None: ...
+
+class OrganizationBranding(_message.Message):
+    __slots__ = ("source", "customization_settings", "update_time")
+    SOURCE_FIELD_NUMBER: _ClassVar[int]
+    CUSTOMIZATION_SETTINGS_FIELD_NUMBER: _ClassVar[int]
+    UPDATE_TIME_FIELD_NUMBER: _ClassVar[int]
+    source: BrandingSource
+    customization_settings: _struct_pb2.Struct
+    update_time: _timestamp_pb2.Timestamp
+    def __init__(self, source: _Optional[_Union[BrandingSource, str]] = ..., customization_settings: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+
+class GetOrganizationBrandingRequest(_message.Message):
+    __slots__ = ("organization_id",)
+    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
+    organization_id: str
+    def __init__(self, organization_id: _Optional[str] = ...) -> None: ...
+
+class GetOrganizationBrandingResponse(_message.Message):
+    __slots__ = ("branding",)
+    BRANDING_FIELD_NUMBER: _ClassVar[int]
+    branding: OrganizationBranding
+    def __init__(self, branding: _Optional[_Union[OrganizationBranding, _Mapping]] = ...) -> None: ...
+
+class UpdateOrganizationBrandingRequest(_message.Message):
+    __slots__ = ("organization_id", "source", "customization_settings")
+    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
+    SOURCE_FIELD_NUMBER: _ClassVar[int]
+    CUSTOMIZATION_SETTINGS_FIELD_NUMBER: _ClassVar[int]
+    organization_id: str
+    source: BrandingSource
+    customization_settings: _struct_pb2.Struct
+    def __init__(self, organization_id: _Optional[str] = ..., source: _Optional[_Union[BrandingSource, str]] = ..., customization_settings: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
+
+class UpdateOrganizationBrandingResponse(_message.Message):
+    __slots__ = ("branding",)
+    BRANDING_FIELD_NUMBER: _ClassVar[int]
+    branding: OrganizationBranding
+    def __init__(self, branding: _Optional[_Union[OrganizationBranding, _Mapping]] = ...) -> None: ...
 
 class GetApplicationSessionPolicyRequest(_message.Message):
     __slots__ = ("organization_id",)

@@ -1207,6 +1207,7 @@ response = scalekit_client.connection.create_connection(
 <dd>
 
 **connection:** `CreateConnection` - Connection object with expected values
+- Hosted connect widget note: the scope-selection fields on the connection's OAuth / Google DWD config — `scope_selection_allowed: Optional[BoolValue]`, `required_scopes: List[str]` and, for OAuth, `required_optional_scopes: List[str]` — apply when the customer is using the hosted connect widget to connect accounts. They control which scopes the end user may pick in that widget; the required scopes are always added by the server regardless of the user's selection.
 
 </dd>
 </dl>
@@ -1617,6 +1618,7 @@ response = scalekit_client.connection.create_environment_connection(
 - `provider_key: str` - Provider identifier (e.g., `'HUBSPOT'`, `'GOOGLEDWD'`)
 - `type: ConnectionType` - Connection type (`ConnectionType.OAUTH` or `ConnectionType.GOOGLE_DWD`)
 - `key_id: Optional[str]` - Unique key identifier for the connection (required for GOOGLE_DWD)
+- Hosted connect widget note: the scope-selection fields on the connection's OAuth / Google DWD config — `scope_selection_allowed: Optional[BoolValue]`, `required_scopes: List[str]` and, for OAuth, `required_optional_scopes: List[str]` — apply when the customer is using the hosted connect widget to connect accounts. They control which scopes the end user may pick in that widget; the required scopes are always added by the server regardless of the user's selection.
 
 </dd>
 </dl>
@@ -1725,6 +1727,7 @@ conn = response[0].connection
 - `type: ConnectionType` - Connection type — must always be provided (`ConnectionType.OAUTH` or `ConnectionType.GOOGLE_DWD`)
 - `oauth_config: Optional[OAuthConnectionConfig]` - OAuth credentials to update (`client_id`, `client_secret`)
 - `google_dwd_config: Optional[GoogleDWDConfig]` - Google DWD config to update (`service_account_json`, `scopes`, `token_uri`)
+- Hosted connect widget note: the scope-selection fields on the connection's OAuth / Google DWD config — `scope_selection_allowed: Optional[BoolValue]`, `required_scopes: List[str]` and, for OAuth, `required_optional_scopes: List[str]` — apply when the customer is using the hosted connect widget to connect accounts. They control which scopes the end user may pick in that widget; the required scopes are always added by the server regardless of the user's selection.
 
 </dd>
 </dl>
@@ -7027,7 +7030,7 @@ response = scalekit_client.connected_accounts.create_connected_account(
 </dl>
 </details>
 
-<details><summary><code>client.connected_accounts.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connected_accounts.py">update_connected_account</a>(connector, identifier, connected_account, organization_id?, user_id?, connected_account_id?) -> UpdateConnectedAccountResponse</code></summary>
+<details><summary><code>client.connected_accounts.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connected_accounts.py">update_connected_account</a>(connector, identifier, connected_account, organization_id?, user_id?, connected_account_id?, scope_selection?) -> UpdateConnectedAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -7054,7 +7057,10 @@ Updates an existing connected account.
 <dd>
 
 ```python
-from scalekit.v1.connected_accounts.connected_accounts_pb2 import UpdateConnectedAccount
+from scalekit.v1.connected_accounts.connected_accounts_pb2 import (
+    ScopeSelection,
+    UpdateConnectedAccount,
+)
 
 account = UpdateConnectedAccount()
 
@@ -7063,7 +7069,11 @@ response = scalekit_client.connected_accounts.update_connected_account(
     'workspace_id',
     account,
     organization_id='org_123456',
-    user_id='usr_123456'
+    user_id='usr_123456',
+    scope_selection=ScopeSelection(
+        scopes=['https://www.googleapis.com/auth/drive.readonly'],
+        optional_scopes=['https://www.googleapis.com/auth/calendar.readonly']
+    )
 )
 ```
 </dd>
@@ -7120,6 +7130,14 @@ response = scalekit_client.connected_accounts.update_connected_account(
 <dd>
 
 **connected_account_id:** `Optional[str]` - ID of the connected account to update
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**scope_selection:** `Optional[ScopeSelection]` - Scopes the end user selected for this connected account. This applies when the customer is using the hosted connect widget to connect accounts: it carries the selection made in that widget. Honoured only for `OAUTH_M2M` and `GOOGLE_DWD` connections that allow scope selection; the connection's required scopes are always added by the server on top of this selection. When omitted, a previously saved selection is kept as-is.
 
 </dd>
 </dl>
@@ -7831,6 +7849,101 @@ for tool in response[0].tools:
 <dd>
 
 **top_k:** `Optional[int]` - Maximum number of ranked results to return. Defaults to 10, capped at 50.
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## MCP
+
+<details><summary><code>client.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/mcp.py">create_session_token</a>(mcp_config_id?, identifier, expiry?, key_id?) -> CreateMcpSessionTokenResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Creates a short-lived session token for an end user to authenticate against an MCP server. Exactly one of `mcp_config_id` or `key_id` must be provided — they select which MCP server the token is minted for, and a token is only accepted by the server it was minted for.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from datetime import timedelta
+
+# Token for an MCP configuration's virtual MCP server
+response = scalekit_client.mcp.create_session_token(
+    mcp_config_id='cfg_123456',
+    identifier='alice@example.com',
+    expiry=timedelta(hours=8)
+)
+print(response[0].token)
+
+# Token for a single AgentKit connection's MCP server
+response = scalekit_client.mcp.create_session_token(
+    identifier='alice@example.com',
+    key_id='github-connect'
+)
+print(response[0].token)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**identifier:** `str` - End-user identifier (e.g. email or opaque user ID) for whom the token is minted
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**mcp_config_id:** `Optional[str]` - ID of the MCP configuration whose virtual MCP server the token is scoped to. Mutually exclusive with `key_id`; exactly one of the two is required, otherwise a `ValueError` is raised client-side.
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**expiry:** `Optional[timedelta]` - Lifetime of the token. When omitted, the server-side default TTL is applied.
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**key_id:** `Optional[str]` - AgentKit connection name (e.g. `'github-connect'`) whose MCP server the token is scoped to. Mutually exclusive with `mcp_config_id`.
 
 </dd>
 </dl>

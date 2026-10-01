@@ -1,4 +1,6 @@
 
+import os
+
 from faker import Faker
 from basetest import BaseTest
 
@@ -7,6 +9,7 @@ from scalekit.v1.connected_accounts.connected_accounts_pb2 import (
     UpdateConnectedAccount,
     AuthorizationDetails,
     OauthToken,
+    ScopeSelection,
 )
 from google.protobuf import struct_pb2
 
@@ -480,3 +483,41 @@ class TestConnectedAccounts(BaseTest):
         custom_auth_header_field = response[0].connected_account.api_config.fields["custom_auth_header"]
         self.assertTrue(custom_auth_header_field.HasField("string_value"), "Custom auth header should be a string field")
         self.assertEqual(custom_auth_header_field.string_value, "Bearer", "Custom auth header value should match what we set")
+
+    def test_update_connected_account_with_scope_selection(self):
+        """ Method to test update connected account with a scope selection """
+        connector = os.environ.get("SCALEKIT_TEST_SCOPE_SELECTION_CONNECTOR")
+        identifier = os.environ.get("SCALEKIT_TEST_SCOPE_SELECTION_IDENTIFIER")
+        if not connector or not identifier:
+            self.skipTest(
+                "Set SCALEKIT_TEST_SCOPE_SELECTION_CONNECTOR and "
+                "SCALEKIT_TEST_SCOPE_SELECTION_IDENTIFIER to run the scope_selection test"
+            )
+
+        # Read the account's current OAuth scopes and re-submit them as the selection,
+        # so the test never invents scopes the connection does not actually offer.
+        existing_response = self.scalekit_client.connected_accounts.get_connected_account_by_identifier(
+            connector=connector,
+            identifier=identifier
+        )
+        self.assertEqual(existing_response[1].code().name, "OK")
+        existing_account = existing_response[0].connected_account
+        current_scopes = list(existing_account.authorization_details.oauth_token.scopes)
+        if not current_scopes:
+            self.skipTest(
+                f"Connected account '{identifier}' on connector '{connector}' has no OAuth "
+                "scopes to re-select"
+            )
+
+        update_response = self.scalekit_client.connected_accounts.update_connected_account(
+            connector=connector,
+            identifier=identifier,
+            connected_account=UpdateConnectedAccount(),
+            scope_selection=ScopeSelection(scopes=current_scopes)
+        )
+        self.assertEqual(update_response[1].code().name, "OK")
+        updated_account = update_response[0].connected_account
+        self.assertEqual(updated_account.identifier, identifier)
+        self.assertEqual(updated_account.connector, connector)
+        # The same account must be updated, not a new one created
+        self.assertEqual(updated_account.id, existing_account.id)

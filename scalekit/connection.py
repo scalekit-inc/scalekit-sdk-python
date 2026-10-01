@@ -117,6 +117,16 @@ class ConnectionClient:
         :param organization_id  : Organization id to create connection for
         :type                   : ``` str ```
         :param connection       : CreateConnection object with expected values for conn creation
+
+                                  Hosted connect widget note: the scope-selection fields on
+                                  the connection's OAuth / Google DWD config
+                                  (``scope_selection_allowed``, ``required_scopes`` and, for
+                                  OAuth, ``required_optional_scopes``) apply when the customer
+                                  is using the hosted connect widget to connect accounts. They
+                                  control which scopes the end user may pick in that widget;
+                                  ``required_scopes`` (and ``required_optional_scopes``) are
+                                  always added by the server regardless of the user's
+                                  selection.
         :type                   : ``` obj ```
 
         :returns:
@@ -168,6 +178,16 @@ class ConnectionClient:
         Method to create a new environment-level connection
 
         :param connection   : CreateConnection object with expected values for conn creation
+
+                                  Hosted connect widget note: the scope-selection fields on
+                                  the connection's OAuth / Google DWD config
+                                  (``scope_selection_allowed``, ``required_scopes`` and, for
+                                  OAuth, ``required_optional_scopes``) apply when the customer
+                                  is using the hosted connect widget to connect accounts. They
+                                  control which scopes the end user may pick in that widget;
+                                  ``required_scopes`` (and ``required_optional_scopes``) are
+                                  always added by the server regardless of the user's
+                                  selection.
         :type               : ``` obj ```
         :param flags        : Optional Flags (is_login, is_app)
         :type               : ``` obj ```
@@ -187,6 +207,16 @@ class ConnectionClient:
         :param connection_id    : Connection id to update
         :type                   : ``` str ```
         :param connection       : UpdateConnection object with fields to update
+
+                                  Hosted connect widget note: the scope-selection fields on
+                                  the connection's OAuth / Google DWD config
+                                  (``scope_selection_allowed``, ``required_scopes`` and, for
+                                  OAuth, ``required_optional_scopes``) apply when the customer
+                                  is using the hosted connect widget to connect accounts. They
+                                  control which scopes the end user may pick in that widget;
+                                  ``required_scopes`` (and ``required_optional_scopes``) are
+                                  always added by the server regardless of the user's
+                                  selection.
         :type                   : ``` obj ```
 
         :returns:
