@@ -6707,7 +6707,7 @@ scalekit_client.resources.revoke_user_consent(
 <dl>
 <dd>
 
-**client_id:** `str` - API client holding the consent (format: `m2m_...`)
+**client_id:** `str` - Resource client holding the consent (format: `m2m_...`)
 
 </dd>
 </dl>
