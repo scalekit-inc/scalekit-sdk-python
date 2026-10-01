@@ -9,6 +9,9 @@ from scalekit.actions.types import ToolRequest,ExecuteToolResponse,MagicLinkResp
     CreateCustomProviderResponse,UpdateCustomProviderResponse,ListProvidersResponse,DeleteCustomProviderResponse, \
     ListMcpConnectedAccountsResponse,CreateMcpSessionTokenResponse,McpConnectionAuthState
 from scalekit.actions.models.responses.create_connected_account_response import CreateConnectedAccountResponse
+from scalekit.actions.models.responses.search_connected_accounts_response import (
+    SearchConnectedAccountsResponse,
+)
 from scalekit.actions.models.requests.create_connected_account_request import CreateConnectedAccountRequest
 from scalekit.actions.models.requests.update_connected_account_request import UpdateConnectedAccountRequest
 from scalekit.actions.modifier import (
@@ -360,7 +363,72 @@ class ActionClient:
             connection_names=connection_names,
         )
         return ListConnectedAccountsResponse.from_proto(result_tuple[0])
-    
+
+    def search_connected_accounts(
+        self,
+        query: str,
+        *,
+        page_size: int | None = None,
+        page_token: str | None = None,
+        connection_id: str | None = None,
+    ) -> SearchConnectedAccountsResponse:
+        """Search the environment's connected accounts by a text query.
+
+        The query is matched case-insensitively against each connected account's
+        identifier, provider and connector, across every user in the environment.
+        If the query is a connected account ID (``ca_...``), the account with that
+        exact ID is also returned, alongside any text matches.
+        Use ``list_connected_accounts`` instead when you already know the exact
+        identifier or connection to filter by. Every argument after ``query`` is
+        keyword-only.
+
+        Args:
+            query: Text to search for, e.g. part of an email address or a provider
+                name such as ``"google"``. Required. Surrounding whitespace is
+                trimmed; the server accepts 3 to 200 characters after that and
+                rejects anything else.
+            page_size: Maximum number of connected accounts per page. The server
+                accepts up to 30 and uses its own default when omitted.
+            page_token: ``next_page_token`` or ``previous_page_token`` from a
+                previous response, to fetch the next or previous page.
+            connection_id: Only return connected accounts that belong to this
+                connection, e.g. ``"conn_123"``. Surrounding whitespace is
+                trimmed; a blank value applies no filter.
+
+        Returns:
+            SearchConnectedAccountsResponse with the matching connected accounts,
+            ``total_count`` across all pages, and ``next_page_token`` set when more
+            pages remain (``None`` on the last page).
+
+        Raises:
+            ValueError: If ``query`` is missing, empty or only whitespace. Raised
+                before any network call.
+            ScalekitBadRequestException: If the server rejects the request, e.g. a
+                query shorter than 3 characters or a ``page_size`` above 30.
+            ScalekitServerException: For any other server error.
+
+        Example:
+            result = client.actions.search_connected_accounts(query="gmail", page_size=10)
+            while True:
+                for account in result.connected_accounts:
+                    print(account.identifier, account.connector, account.status)
+                if not result.next_page_token:
+                    break
+                result = client.actions.search_connected_accounts(
+                    query="gmail", page_size=10, page_token=result.next_page_token
+                )
+        """
+        if not isinstance(query, str) or not query.strip():
+            raise ValueError("query is required")
+
+        result_tuple = self.connected_accounts.search_connected_accounts(
+            query=query.strip(),
+            page_size=page_size,
+            page_token=page_token,
+            connection_id=(connection_id.strip() or None) if connection_id else None,
+        )
+        return SearchConnectedAccountsResponse.from_proto(result_tuple[0])
+
     def delete_connected_account(
         self,
         connection_name: Optional[str] = None,

@@ -1,0 +1,14 @@
+kind: added
+body: |
+  `client.actions.search_connected_accounts(query, *, page_size=None, page_token=None, connection_id=None)` searches the environment's connected accounts by text, matched case-insensitively against identifier, provider and connector, with paging and an optional connection filter. It returns a `SearchConnectedAccountsResponse` with the same fields as `ListConnectedAccountsResponse`. `client.connected_accounts.search_connected_accounts` takes the same arguments and returns the raw `(response, call)` tuple. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/AGENTKIT.md#oauth-and-connected-accounts)
+
+  ```python
+  result = client.actions.search_connected_accounts(query="gmail", page_size=10)
+  for account in result.connected_accounts:
+      print(account.identifier, account.connector, account.status)
+  ```
+time: '2026-10-01T13:40:05.297687+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: SK-2118
+  Migration: ''

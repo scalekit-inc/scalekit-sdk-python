@@ -2,11 +2,12 @@ import unittest
 from datetime import timedelta
 
 from basetest import BaseTest
-from scalekit.common.exceptions import ScalekitNotFoundException
+from scalekit.common.exceptions import ScalekitBadRequestException, ScalekitNotFoundException
 from scalekit.actions.types import (
     ExecuteToolResponse,
     MagicLinkResponse,
     ListConnectedAccountsResponse,
+    SearchConnectedAccountsResponse,
     ListToolsResponse,
     DeleteConnectedAccountResponse,
     GetConnectedAccountAuthResponse,
@@ -171,6 +172,59 @@ class TestConnect(BaseTest):
         )
         self.assertIsNotNone(result)
         self.assertIsInstance(result, ListConnectedAccountsResponse)
+
+    def _setup_account_proto(self):
+        """The setUp account as a proto message (carries id and connection_id)."""
+        connected_accounts = self.scalekit_client.connected_accounts
+        response = connected_accounts.get_connected_account_details_by_identifier(
+            connector=self.test_connection_name,
+            identifier=self.test_identifier,
+        )
+        account = response[0].connected_account
+        if not account.connection_id:
+            self.skipTest("Setup connected account has no connection_id to filter by")
+        return account
+
+    def test_search_connected_accounts_finds_setup_account(self):
+        """actions.search_connected_accounts finds the setUp account within its connection."""
+        account = self._setup_account_proto()
+        result = self.scalekit_client.actions.search_connected_accounts(
+            query=self.test_identifier,
+            connection_id=account.connection_id,
+            page_size=30,
+        )
+        self.assertIsInstance(result, SearchConnectedAccountsResponse)
+        self.assertIn(
+            self.test_identifier,
+            [a.identifier for a in result.connected_accounts],
+        )
+        self.assertGreaterEqual(result.total_count or 0, 1)
+
+    def test_search_connected_accounts_low_level_returns_tuple(self):
+        """connected_accounts.search_connected_accounts returns (response, call) with the id."""
+        account = self._setup_account_proto()
+        response = self.scalekit_client.connected_accounts.search_connected_accounts(
+            query=self.test_identifier,
+            connection_id=account.connection_id,
+            page_size=30,
+        )
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertIn(account.id, [a.id for a in response[0].connected_accounts])
+
+    def test_search_connected_accounts_page_size(self):
+        """page_size bounds the page; next_page_token is set only when more matches remain."""
+        result = self.scalekit_client.actions.search_connected_accounts(
+            query=self.test_identifier,
+            page_size=1,
+        )
+        self.assertLessEqual(len(result.connected_accounts), 1)
+        if (result.total_count or 0) > 1:
+            self.assertIsNotNone(result.next_page_token)
+
+    def test_search_connected_accounts_short_query_rejected_by_server(self):
+        """A query shorter than 3 characters is rejected by the server as a bad request."""
+        with self.assertRaises(ScalekitBadRequestException):
+            self.scalekit_client.actions.search_connected_accounts(query="ab")
 
     def test_list_tools_method_exists(self):
         """Method to test list_tools method exists on the actions facade"""

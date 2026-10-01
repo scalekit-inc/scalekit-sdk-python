@@ -4,7 +4,10 @@ import unittest
 from unittest.mock import MagicMock
 
 from scalekit.actions.actions import ActionClient
-from scalekit.v1.connected_accounts.connected_accounts_pb2 import ListConnectedAccountsResponse
+from scalekit.v1.connected_accounts.connected_accounts_pb2 import (
+    ConnectedAccountForList,
+    ListConnectedAccountsResponse,
+)
 
 
 class TestListConnectedAccountsPagination(unittest.TestCase):
@@ -35,6 +38,30 @@ class TestListConnectedAccountsPagination(unittest.TestCase):
         result = self.actions.list_connected_accounts(page_size=1)
         self.assertEqual(result.next_page_token, "next-1")
         self.assertEqual(result.total_count, 42)
+
+    def test_accounts_include_id_connection_id_and_org_wide_flag(self):
+        self.connected_accounts.list_connected_accounts.return_value = (
+            ListConnectedAccountsResponse(
+                connected_accounts=[
+                    ConnectedAccountForList(
+                        identifier="user_123",
+                        id="ca_123",
+                        connection_id="conn_123",
+                        is_org_wide_credential=True,
+                    ),
+                    ConnectedAccountForList(identifier="user_456"),
+                ]
+            ),
+            None,
+        )
+        first, second = self.actions.list_connected_accounts().connected_accounts
+        self.assertEqual(first.id, "ca_123")
+        self.assertEqual(first.connection_id, "conn_123")
+        self.assertIs(first.is_org_wide_credential, True)
+        self.assertEqual(first.to_dict()["connection_id"], "conn_123")
+        self.assertIsNone(second.id)
+        self.assertIsNone(second.connection_id)
+        self.assertIs(second.is_org_wide_credential, False)
 
 
 if __name__ == "__main__":

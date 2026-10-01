@@ -41,6 +41,18 @@ class ConnectedAccountForList(BaseModel):
         None,
         description="Timestamp when the connected account was last used"
     )
+    id: Optional[str] = Field(
+        None,
+        description="Connected account ID (ca_...); pass it as connected_account_id"
+    )
+    connection_id: Optional[str] = Field(
+        None,
+        description="ID of the connection (conn_...) the connected account belongs to"
+    )
+    is_org_wide_credential: Optional[bool] = Field(
+        None,
+        description="Whether the account holds a credential shared across its organization"
+    )
 
     @classmethod
     def from_proto(cls, proto_account) -> 'ConnectedAccountForList':
@@ -74,7 +86,11 @@ class ConnectedAccountForList(BaseModel):
             token_expires_at=token_expires_at,
             updated_at=updated_at,
             connector=proto_account.connector if proto_account.connector else None,
-            last_used_at=last_used_at
+            last_used_at=last_used_at,
+            id=proto_account.id if proto_account.id else None,
+            connection_id=proto_account.connection_id if proto_account.connection_id else None,
+            # Plain proto3 bool (no presence): False is a value, not absence.
+            is_org_wide_credential=proto_account.is_org_wide_credential,
         )
 
     def to_dict(self) -> dict:
@@ -92,7 +108,10 @@ class ConnectedAccountForList(BaseModel):
             "token_expires_at": self.token_expires_at.isoformat() if self.token_expires_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
             "connector": self.connector,
-            "last_used_at": self.last_used_at.isoformat() if self.last_used_at else None
+            "last_used_at": self.last_used_at.isoformat() if self.last_used_at else None,
+            "id": self.id,
+            "connection_id": self.connection_id,
+            "is_org_wide_credential": self.is_org_wide_credential,
         }
 
     class Config:

@@ -1,5 +1,7 @@
 from typing import List, Optional
 
+import grpc
+
 from scalekit.core import CoreClient
 from scalekit.v1.connected_accounts.connected_accounts_pb2 import (
     CreateConnectedAccount,
@@ -13,6 +15,8 @@ from scalekit.v1.connected_accounts.connected_accounts_pb2 import (
     GetMagicLinkForConnectedAccountResponse,
     ListConnectedAccountsRequest,
     ListConnectedAccountsResponse,
+    SearchConnectedAccountsRequest,
+    SearchConnectedAccountsResponse,
     UpdateConnectedAccount,
     UpdateConnectedAccountRequest,
     UpdateConnectedAccountResponse,
@@ -89,6 +93,66 @@ class ConnectedAccountsClient:
         return self.core_client.grpc_exec(
             self.connected_accounts_service.ListConnectedAccounts.with_call,
             request,
+        )
+
+    def search_connected_accounts(
+        self,
+        query: str,
+        *,
+        page_size: int | None = None,
+        page_token: str | None = None,
+        connection_id: str | None = None,
+    ) -> tuple[SearchConnectedAccountsResponse, grpc.Call]:
+        """Search the environment's connected accounts by a text query.
+
+        The query is matched case-insensitively against each connected account's
+        identifier, provider and connector. If the query is a connected account ID
+        (``ca_...``), the account with that exact ID is also returned, alongside any
+        text matches. Results are paginated. Every argument after ``query`` is
+        keyword-only.
+
+        Args:
+            query: Text to search for. Required. Surrounding whitespace is
+                trimmed; the server accepts 3 to 200 characters after that and
+                rejects anything else.
+            page_size: Maximum number of connected accounts per page. The server
+                accepts up to 30 and uses its own default when omitted.
+            page_token: ``next_page_token`` or ``prev_page_token`` from a previous
+                response, to fetch the next or previous page.
+            connection_id: Only return connected accounts that belong to this
+                connection, e.g. ``"conn_123"``. Surrounding whitespace is
+                trimmed; a blank value applies no filter.
+
+        Returns:
+            A ``(response, call)`` tuple, like every other method on this client.
+            ``response`` is the ``SearchConnectedAccountsResponse`` proto message;
+            ``call`` carries the gRPC status and metadata.
+
+        Raises:
+            ValueError: If ``query`` is missing, empty or only whitespace. Raised
+                before any network call.
+            ScalekitBadRequestException: If the server rejects the request, e.g. a
+                query shorter than 3 characters or a ``page_size`` above 30.
+            ScalekitServerException: For any other server error.
+
+        Example:
+            response, _ = scalekit_client.connected_accounts.search_connected_accounts(
+                query="gmail",
+                page_size=10,
+            )
+            for account in response.connected_accounts:
+                print(account.identifier, account.connector)
+        """
+        if not isinstance(query, str) or not query.strip():
+            raise ValueError("query is required")
+        return self.core_client.grpc_exec(
+            self.connected_accounts_service.SearchConnectedAccounts.with_call,
+            SearchConnectedAccountsRequest(
+                query=query.strip(),
+                page_size=page_size,
+                page_token=page_token,
+                connection_id=(connection_id.strip() or None) if connection_id else None,
+            ),
         )
 
     def create_connected_account(

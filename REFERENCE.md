@@ -6840,6 +6840,98 @@ for account in response[0].connected_accounts:
 </dl>
 </details>
 
+<details><summary><code>client.connected_accounts.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connected_accounts.py">search_connected_accounts</a>(query, *, page_size?, page_token?, connection_id?) -> SearchConnectedAccountsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Searches the environment's connected accounts by a text query, matched case-insensitively against identifier, provider and connector. If the query is a connected account ID (`ca_...`), the account with that exact ID is also returned, alongside any text matches. Results are paginated. Raises `ValueError` before any network call when `query` is empty or only whitespace.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.connected_accounts.search_connected_accounts(
+    query='gmail',
+    page_size=10,
+    connection_id='conn_123'  # optional
+)
+
+for account in response[0].connected_accounts:
+    print(f'Account: {account.id} {account.identifier}')
+
+if response[0].next_page_token:
+    next_page = scalekit_client.connected_accounts.search_connected_accounts(
+        query='gmail',
+        page_size=10,
+        page_token=response[0].next_page_token
+    )
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**query:** `str` - Text to match against connected account identifiers, providers and connectors. Case-insensitive. Surrounding whitespace is trimmed; the server accepts 3-200 characters.
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_size:** `Optional[int]` - Keyword-only, like every parameter after `query`. Maximum number of results per page, up to 30
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_token:** `Optional[str]` - `next_page_token` or `prev_page_token` from a previous response, to fetch the next or previous page
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**connection_id:** `Optional[str]` - Only return connected accounts that belong to this connection. A blank value applies no filter.
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 <details><summary><code>client.connected_accounts.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connected_accounts.py">get_connected_account_by_identifier</a>(connector, identifier, organization_id?, user_id?, connected_account_id?) -> GetConnectedAccountByIdentifierResponse</code></summary>
 <dl>
 <dd>

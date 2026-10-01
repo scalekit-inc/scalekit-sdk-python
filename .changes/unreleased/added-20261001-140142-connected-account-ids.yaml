@@ -1,0 +1,15 @@
+kind: added
+body: |
+  Connected accounts returned by `client.actions.list_connected_accounts()` and `client.actions.search_connected_accounts()` now include `id`, `connection_id` and `is_org_wide_credential`, so a result can be passed straight to `get_connected_account_details(connected_account_id=...)`. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/AGENTKIT.md#oauth-and-connected-accounts)
+
+  ```python
+  page = client.actions.search_connected_accounts(query="alice@example.com")
+  for account in page.connected_accounts:
+      details = client.actions.get_connected_account_details(connected_account_id=account.id)
+      print(account.connection_id, details.connected_account.status)
+  ```
+time: '2026-10-01T14:01:42.596257+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: SK-2118
+  Migration: ''
