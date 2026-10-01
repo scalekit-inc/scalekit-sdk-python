@@ -1,4 +1,3 @@
-import os
 import uuid
 from datetime import datetime, timedelta, timezone
 
@@ -11,6 +10,11 @@ from scalekit.v1.mcp.mcp_pb2 import (
     ToolMapping,
     McpConfigConnectionToolMapping,
 )
+
+
+# Long-lived fixture in the SDK test environment; the "no-delete" suffix marks it
+# as one that must not be cleaned up by test teardown.
+TEST_MCP_CONNECTION_KEY_ID = "apifymcp-sdk-test-no-delete"
 
 
 class TestMcp(BaseTest):
@@ -303,11 +307,7 @@ class TestMcp(BaseTest):
 
     def test_create_session_token_with_key_id(self):
         """create_session_token mints a token for an AgentKit connection's MCP server."""
-        key_id = os.environ.get("SCALEKIT_TEST_MCP_CONNECTION_KEY_ID")
-        if not key_id:
-            self.skipTest(
-                "Set SCALEKIT_TEST_MCP_CONNECTION_KEY_ID to run the key_id session token test"
-            )
+        key_id = TEST_MCP_CONNECTION_KEY_ID
 
         now = datetime.now(tz=timezone.utc)
         token_response = self.scalekit_client.mcp.create_session_token(

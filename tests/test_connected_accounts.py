@@ -1,5 +1,4 @@
 
-import os
 
 from faker import Faker
 from basetest import BaseTest
@@ -12,6 +11,12 @@ from scalekit.v1.connected_accounts.connected_accounts_pb2 import (
     ScopeSelection,
 )
 from google.protobuf import struct_pb2
+
+
+# Long-lived fixtures in the SDK test environment; the "no-delete" suffix marks the
+# connection as one that must not be cleaned up by test teardown.
+TEST_SCOPE_SELECTION_CONNECTOR = "github-sdk-test-no-delete"
+TEST_SCOPE_SELECTION_IDENTIFIER = "john.doe@example.com"
 
 
 class TestConnectedAccounts(BaseTest):
@@ -486,13 +491,8 @@ class TestConnectedAccounts(BaseTest):
 
     def test_update_connected_account_with_scope_selection(self):
         """ Method to test update connected account with a scope selection """
-        connector = os.environ.get("SCALEKIT_TEST_SCOPE_SELECTION_CONNECTOR")
-        identifier = os.environ.get("SCALEKIT_TEST_SCOPE_SELECTION_IDENTIFIER")
-        if not connector or not identifier:
-            self.skipTest(
-                "Set SCALEKIT_TEST_SCOPE_SELECTION_CONNECTOR and "
-                "SCALEKIT_TEST_SCOPE_SELECTION_IDENTIFIER to run the scope_selection test"
-            )
+        connector = TEST_SCOPE_SELECTION_CONNECTOR
+        identifier = TEST_SCOPE_SELECTION_IDENTIFIER
 
         # Read the account's current OAuth scopes and re-submit them as the selection,
         # so the test never invents scopes the connection does not actually offer.
