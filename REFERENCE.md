@@ -309,6 +309,8 @@ if is_valid:
 
 **options:** `TokenValidationOptions` - Optional validation options for issuer, audience, and scopes
 
+`options.issuer` accepts a `str` or a `List[str]`. With a list, the token is valid if its `iss` claim exactly equals any entry, e.g. `TokenValidationOptions(issuer=[env_url, f"{env_url}/resources/res_123"])`. An unset, empty-string or empty-list issuer skips the issuer check.
+
 </dd>
 </dl>
 </dd>
@@ -5901,7 +5903,664 @@ scalekit_client.m2m_client.remove_organization_client_secret(
 
 ## Resources
 
-Access the consents your end users grant against a resource, such as an MCP server. A consent records that one end user allowed a specific API client to act on their behalf. Each consent identifies the user by `external_user_id` — the identifier your application supplied when the consent was granted.
+Manage the resource clients scoped to a resource (such as an MCP server), and access the consents your end users grant against one. A consent records that one end user allowed a specific resource client to act on their behalf. Each consent identifies the user by `external_user_id` — the identifier your application supplied when the consent was granted.
+
+<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">get_resource</a>(resource_id) -> GetResourceResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Retrieves a single resource by id.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.resources.get_resource('res_123456')
+print(response[0].resource)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**resource_id:** `str` - Resource to fetch (format: `res_...`)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">list_resources</a>(resource_type, page_size?, page_token?) -> ListResourcesResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists resources of a given type in the environment, with pagination.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from scalekit.v1.clients.clients_pb2 import ResourceType
+
+response = scalekit_client.resources.list_resources(
+    ResourceType.MCP_SERVER,
+    page_size=20,
+)
+
+for resource in response[0].resources:
+    print(resource)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**resource_type:** `ResourceType` - Resource type to filter by (e.g. `ResourceType.MCP_SERVER`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_size:** `Optional[int]` - Page size for pagination (max 30)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_token:** `Optional[str]` - Page token for pagination
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">create_resource_client</a>(resource_id, client) -> CreateResourceClientResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Creates a resource client.
+
+Returns the created `client` plus a `plain_secret` — the plaintext client secret, only available at creation time.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from scalekit.v1.clients.clients_pb2 import ResourceClient
+
+resource_response = scalekit_client.resources.get_resource('res_123456')
+allowed_scopes = [s.name for s in resource_response[0].resource.scopes if s.enabled]
+print(allowed_scopes)
+
+response = scalekit_client.resources.create_resource_client(
+    'res_123456',
+    ResourceClient(name='My Resource Client', scopes=allowed_scopes),
+)
+print(response[0].client.client_id, response[0].plain_secret)
+```
+
+`client` also accepts `description`, `custom_claims`, `expiry` and `redirect_uris` — see Parameters below.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**resource_id:** `str` - Resource to create the client for (format: `res_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**client:** `ResourceClient` (proto message from `scalekit.v1.clients.clients_pb2`) - Desired client properties
+- `name: str` - Human-readable name for the client. Defaults to "Resource Client" if omitted.
+- `description: str` - Optional description
+- `scopes: List[str]` - Scopes to grant. These scopes should be the same or subset of the scopes available for the resource.
+- `audience: List[str]` - Not settable through this SDK — audience is always server-determined. Passing a non-empty list raises `ValueError`.
+- `custom_claims: List[CustomClaim]` - Custom claims to embed in access tokens, as `CustomClaim(key, value)` messages. Keep this to the essentials, as it increases token size.
+- `expiry: int` - Access token lifetime in seconds. Defaults to the resource's configured expiry, or one day.
+- `redirect_uris: List[str]` - Allowed redirect URIs, for a pre-registered (non-DCR) client
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">get_resource_client</a>(resource_id, client_id) -> GetResourceClientResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Fetches a single resource client, along with the end-users who have granted it consent.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.resources.get_resource_client('res_123456', 'm2m_123456')
+
+print(response[0].client.name)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**resource_id:** `str` - Resource the client must belong to (format: `res_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**client_id:** `str` - Client id (format: `m2m_...`)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">list_resource_clients</a>(resource_id) -> ListResourceClientsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists resource clients.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.resources.list_resource_clients('res_123456')
+
+print(response[0].total_dcr_clients, response[0].total_static_clients)
+for c in response[0].clients:
+    print(c.client_id, c.name)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**resource_id:** `str` - Resource whose clients to list (format: `res_...`)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">update_resource_client</a>(resource_id, client_id, name?, description?, scopes?, custom_claims?, expiry?, redirect_uris?) -> UpdateResourceClientResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Updates a resource client.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+resource_response = scalekit_client.resources.get_resource('res_123456')
+allowed_scopes = [s.name for s in resource_response[0].resource.scopes if s.enabled]
+print(allowed_scopes)
+
+response = scalekit_client.resources.update_resource_client(
+    'res_123456',
+    'm2m_123456',
+    name='Updated Name',
+    scopes=allowed_scopes,
+)
+
+print(response[0].client.name, response[0].client.scopes)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**resource_id:** `str` - Resource the client must belong to (format: `res_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**client_id:** `str` - Client id to update (format: `m2m_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**name:** `Optional[str]` - Updated name, if changing it. An empty string is a no-op server-side, not a clear.
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**description:** `Optional[str]` - Updated description, if changing it. An empty string is a no-op server-side, not a clear.
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**scopes:** `Optional[List[str]]` - Updated scopes, if changing them (replaces existing; pass `[]` to clear). These scopes should be the same or subset of the scopes available for the resource.
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**custom_claims:** `Optional[List[CustomClaim]]` - Updated custom claims, if changing them, as `CustomClaim(key, value)` messages (replaces existing; pass `[]` to clear).
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**expiry:** `Optional[int]` - Updated access token lifetime in seconds, if changing it
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**redirect_uris:** `Optional[List[str]]` - Updated redirect URIs, if changing them (replaces existing; pass `[]` to clear)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">delete_resource_client</a>(resource_id, client_id) -> DeleteResourceClientResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Deletes resource clients. Raises if the client is missing or scoped to a different resource.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+scalekit_client.resources.delete_resource_client('res_123456', 'm2m_123456')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**resource_id:** `str` - Resource the client must belong to (format: `res_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**client_id:** `str` - Client id to delete (format: `m2m_...`)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">create_resource_client_secret</a>(resource_id, client_id) -> CreateClientSecretResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Creates a new secret for a resource client. Only 2 client secrets are recommended to exist at a given point in time - use `delete_resource_client_secret` to remove an existing one first if you need more.
+
+The plaintext client secret is only ever returned here, at creation time.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.resources.create_resource_client_secret('res_123456', 'm2m_123456')
+
+print(response[0].plain_secret, response[0].secret.id)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**resource_id:** `str` - Resource the client must belong to (format: `res_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**client_id:** `str` - Client id to create a secret for (format: `m2m_...`)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">delete_resource_client_secret</a>(resource_id, client_id, secret_id) -> Tuple[Empty, grpc.Call]</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Permanently deletes a secret from a resource client. A client must always keep at least 1 secret - calling this on a client's last remaining secret raises an error.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+scalekit_client.resources.delete_resource_client_secret('res_123456', 'm2m_123456', 'ksec_123456')
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**resource_id:** `str` - Resource the client must belong to (format: `res_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**client_id:** `str` - Client id the secret belongs to (format: `m2m_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**secret_id:** `str` - Secret id to delete (format: `sks_...`)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
 
 <details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">list_user_consents</a>(resource_id, search?, page_size?, page_token?, user_ids?) -> ListResourceUserConsentsResponse</code></summary>
 <dl>
@@ -5915,11 +6574,11 @@ Access the consents your end users grant against a resource, such as an MCP serv
 <dl>
 <dd>
 
-Lists the end-user consents granted against a resource, with pagination.
+Lists the end-user consents granted against a resource, with pagination. Use this to audit who authorized a client, and to find the `consent_id` you need before revoking.
 
-Each returned consent carries `id`, `external_user_id`, `client_id`, `client_name`, `scopes` and `granted_at`. The response also carries `total_size` plus `next_page_token` / `prev_page_token` cursors.
+Filter by user in one of two ways. Pass `user_ids` to match external user IDs exactly and case-sensitively. Pass `search` for a case-insensitive substring match. When you give both, `user_ids` wins and `search` is ignored.
 
-Filter by user in one of two ways. Pass `user_ids` to match specific external user IDs exactly and case-sensitively. Pass `search` for a case-insensitive substring match. When you give both, `user_ids` wins and `search` is ignored.
+Consents with `id`, `external_user_id`, `client_id`, `client_name`, `scopes`, and `granted_at`, plus `total_size` and the `next_page_token` / `prev_page_token` cursors.
 </dd>
 </dl>
 </dd>
@@ -6050,7 +6709,7 @@ scalekit_client.resources.revoke_user_consent(
 <dl>
 <dd>
 
-**client_id:** `str` - Client holding the consent (format: `m2m_...`)
+**client_id:** `str` - Resource client holding the consent (format: `m2m_...`)
 
 </dd>
 </dl>
@@ -6761,12 +7420,21 @@ response = scalekit_client.actions.providers.create_custom_provider(
 - `proxy_enabled: bool` - Whether to enable Scalekit request proxying. Defaults to `True`.
 - `description: str` - Short description of the provider. Defaults to empty string.
 - `auth_patterns: List[AuthPattern]` - Authentication options for users. Currently only a single element is supported — the list type is intentional for future multi-pattern support.
-  - `type: str` - Auth mechanism: `"OAUTH"`, `"BEARER"`, or `"API_KEY"`.
+  - `type: str` - Auth mechanism. Use `"OAUTH"`, `"BEARER"`, `"API_KEY"`, or `"NO_AUTH"` for custom connectors. Reading providers back can surface further types the managed catalogue uses (`"BASIC"`, `"OAUTH_M2M"`, `"GOOGLE_DWD"`, …), so any string is accepted.
   - `display_name: str` - Display name for this auth option.
   - `description: str` - Short description of this auth option.
   - `is_mcp: bool` - Set `True` for MCP server providers.
   - `oauth_config: Optional[OAuthConfig]` - Required when `type="OAUTH"`. `OAuthConfig(pkce_enabled=True)` by default.
-  - `fields: List[AuthField]` - Credential input fields for `BEARER` and `API_KEY` types.
+  - `fields: List[AuthField]` - Input fields shown during connection setup. Credentials for `BEARER` and `API_KEY`; `OAUTH` patterns use them for options collected before the browser flow (e.g. `access_type`).
+    - `field_name: str` - Machine-readable key for the field.
+    - `label: str` / `hint: str` - Label and helper text shown in the UI.
+    - `input_type: str` - How the input renders: `"text"` (default), `"password"`, `"select"`, `"textarea"`. Not a fixed set — the catalogue owns this vocabulary.
+    - `required: bool` - Whether the user must fill the field.
+    - `options: List[AuthFieldOption]` - Choices for a `"select"` field, each with `value`, `display_name`, `description`, and `default`.
+    - `is_path_param: bool` - The value is substituted into the request path rather than sent as a credential.
+    - `header_name: str` - On `API_KEY`, inject this field's value as this exact HTTP header (enables multiple-headers mode).
+  - `account_fields: List[AuthField]` - Inputs collected per connected account rather than once per connection.
+  - `allowed_proxy_domains: List[str]` - Domains proxied requests may be routed to.
 - `icon_src: str` - URL of the provider's icon image. Defaults to empty string.
 - `metadata: Dict[str, str]` - Arbitrary string key-value pairs attached to the provider. Keys 3-25 chars, values 1-256 chars, max 20 pairs. Defaults to empty dict.
 
@@ -6924,6 +7592,73 @@ for provider in response.providers:
 response = scalekit_client.actions.providers.list_providers(
     ListProvidersRequest(provider_type=ProviderType.ALL, page_size=100)
 )
+```
+
+Page through the whole catalog. Pass `page_token=None` (or omit it) for the
+first page, then feed back `next_page_token` until it comes back empty:
+
+```python
+page_token = None
+while True:
+    response = scalekit_client.actions.providers.list_providers(
+        ListProvidersRequest(
+            provider_type=ProviderType.ALL,
+            page_size=100,
+            page_token=page_token,
+        )
+    )
+    for provider in response.providers:
+        print(provider.identifier)
+
+    page_token = response.next_page_token
+    if not page_token:
+        break
+```
+
+Inspect what a provider asks the user for. `auth_patterns` is fully decoded, so
+there is no protobuf left to unpack — and a `select` field carries its choices
+in `options`:
+
+An `identifier` that matches nothing comes back as an empty list rather than an
+error, so check before indexing:
+
+```python
+response = scalekit_client.actions.providers.list_providers(
+    ListProvidersRequest(identifier="my-connector")
+)
+if not response.providers:
+    raise LookupError("No provider with identifier 'my-connector'")
+
+provider = response.providers[0]
+
+for pattern in provider.auth_patterns:
+    print(f"{pattern.type} — {pattern.display_name}")
+
+    for field in pattern.fields:
+        required = " (required)" if field.required else ""
+        print(f"  {field.field_name}: {field.input_type}{required}")
+
+        # Only populated when input_type == "select"
+        for option in field.options:
+            default = " [default]" if option.default else ""
+            print(f"    - {option.value} — {option.display_name}{default}")
+
+    if pattern.oauth_config:
+        print(f"  pkce_enabled={pattern.oauth_config.pkce_enabled}")
+```
+
+`input_type` and `pattern.type` are plain strings, not fixed enums — the
+vocabulary belongs to the provider catalog and grows over time. Compare against
+the values you care about and let anything else fall through rather than
+matching exhaustively:
+
+```python
+if field.input_type == "password":
+    ...  # mask the input
+elif field.input_type == "select":
+    ...  # render field.options
+else:
+    ...  # "text", "textarea", or something newer — render a plain input
 ```
 </dd>
 </dl>

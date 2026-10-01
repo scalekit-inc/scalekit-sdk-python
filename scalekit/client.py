@@ -1,7 +1,7 @@
 from __future__ import annotations
 import json
 from math import floor
-from typing import Any, Optional, Dict
+from typing import Any, Optional, Dict, List, Union
 from urllib.parse import urlencode
 
 import jwt
@@ -376,6 +376,19 @@ class ScalekitClient:
         except Exception:
             raise
 
+    @staticmethod
+    def _normalize_issuer(issuer: Optional[Union[str, List[str]]]) -> Optional[Union[str, List[str]]]:
+        """
+        Normalize the issuer option. None, "" and [] mean "skip the issuer check".
+        A non-empty list is always enforced, even if its entries are blank ([""]
+        matches no token), so config built from unset values fails closed instead
+        of silently skipping validation. A list matches if the token's iss equals
+        any entry. Matching is exact string equality.
+        """
+        if isinstance(issuer, (list, tuple, set)):
+            return list(issuer) or None
+        return issuer or None
+
     def validate_token(
         self, token: str, options: Optional[TokenValidationOptions] = None, audience: Optional[str] = None
     ) -> Dict[str, Any]:
@@ -395,8 +408,9 @@ class ScalekitClient:
         # Convert TokenValidationOptions to jwt decode options if provided
         jwt_options = {}
         if options:
-            if options.issuer:
-                jwt_options["issuer"] = options.issuer
+            issuer = self._normalize_issuer(options.issuer)
+            if issuer:
+                jwt_options["issuer"] = issuer
                 jwt_options["verify_iss"] = True
             if options.audience:
                 jwt_options["audience"] = options.audience

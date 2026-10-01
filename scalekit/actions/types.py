@@ -27,7 +27,13 @@ from .models.tool_input_output import ToolInput, ToolOutput
 from .models.tool_mapping import ToolMapping
 from .models.mcp_config import McpConfig, McpConfigConnectionToolMapping
 from .models.mcp_instance import McpInstance, McpInstanceConnectionAuthState
-from .models.custom_provider import AuthPattern, AuthField, OAuthConfig, Provider
+from .models.custom_provider import (
+    AuthPattern,
+    AuthField,
+    AuthFieldOption,
+    OAuthConfig,
+    Provider,
+)
 from .models.requests.create_custom_provider_request import CreateCustomProviderRequest
 from .models.requests.update_custom_provider_request import UpdateCustomProviderRequest
 from .models.requests.list_providers_request import ListProvidersRequest
@@ -77,6 +83,7 @@ __all__ = [
     'McpInstanceConnectionAuthState',
     'AuthPattern',
     'AuthField',
+    'AuthFieldOption',
     'OAuthConfig',
     'Provider',
     'CreateCustomProviderRequest',

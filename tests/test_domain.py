@@ -1,9 +1,18 @@
 
+import uuid
+
 from faker import Faker
 
 from basetest import BaseTest
 from scalekit.v1.organizations.organizations_pb2 import CreateOrganization
 from scalekit.v1.domains.domains_pb2 import DomainType
+
+
+def unique_domain_name():
+    """Random domain that can't collide with the backend's disposable/public
+    email-domain blocklist (a bare Faker().domain_name() occasionally does,
+    which fails create_domain with DISPOSABLE_OR_PUBLIC_EMAIL)."""
+    return f"{Faker().domain_word()}-{uuid.uuid4().hex[:8]}.com"
 
 
 class TestDomain(BaseTest):
@@ -18,7 +27,7 @@ class TestDomain(BaseTest):
         org_response = self.scalekit_client.organization.create_organization(organization=organization)
         self.org_id = org_response[0].organization.id
 
-        domain_name = Faker().domain_name()
+        domain_name = unique_domain_name()
         response = self.scalekit_client.domain.create_domain(organization_id=self.org_id, domain_name=domain_name)
         self.assertEqual(response[1].code().name, "OK")
         self.assertTrue(response[0] is not None)
@@ -31,7 +40,7 @@ class TestDomain(BaseTest):
         org_response = self.scalekit_client.organization.create_organization(organization=organization)
         self.org_id = org_response[0].organization.id
 
-        domain_name = Faker().domain_name()
+        domain_name = unique_domain_name()
         response = self.scalekit_client.domain.create_domain(
             organization_id=self.org_id, 
             domain_name=domain_name,
@@ -49,7 +58,7 @@ class TestDomain(BaseTest):
         org_response = self.scalekit_client.organization.create_organization(organization=organization)
         self.org_id = org_response[0].organization.id
 
-        domain_name = Faker().domain_name()
+        domain_name = unique_domain_name()
         response = self.scalekit_client.domain.create_domain(
             organization_id=self.org_id, 
             domain_name=domain_name,
@@ -67,7 +76,7 @@ class TestDomain(BaseTest):
         org_response = self.scalekit_client.organization.create_organization(organization=organization)
         self.org_id = org_response[0].organization.id
 
-        domain_name = Faker().domain_name()
+        domain_name = unique_domain_name()
         response = self.scalekit_client.domain.create_domain(
             organization_id=self.org_id, 
             domain_name=domain_name
@@ -85,7 +94,7 @@ class TestDomain(BaseTest):
         org_response = self.scalekit_client.organization.create_organization(organization=organization)
         self.org_id = org_response[0].organization.id
 
-        domain_name = Faker().domain_name()
+        domain_name = unique_domain_name()
         create_domain_response = self.scalekit_client.domain.create_domain(organization_id=self.org_id, domain_name=domain_name)
         domain_id = create_domain_response[0].domain.id
 
@@ -102,7 +111,7 @@ class TestDomain(BaseTest):
         org_response = self.scalekit_client.organization.create_organization(organization=organization)
         self.org_id = org_response[0].organization.id
 
-        domain_name = Faker().domain_name()
+        domain_name = unique_domain_name()
         create_domain_response = self.scalekit_client.domain.create_domain(
             organization_id=self.org_id, domain_name=domain_name)
         self.assertEqual(create_domain_response[1].code().name, "OK")
@@ -121,7 +130,7 @@ class TestDomain(BaseTest):
         org_response = self.scalekit_client.organization.create_organization(organization=organization)
         self.org_id = org_response[0].organization.id
 
-        domain_name = Faker().domain_name()
+        domain_name = unique_domain_name()
         create_domain_response = self.scalekit_client.domain.create_domain(
             organization_id=self.org_id, domain_name=domain_name, domain_type=DomainType.ORGANIZATION_DOMAIN)
         self.assertEqual(create_domain_response[1].code().name, "OK")
@@ -140,7 +149,7 @@ class TestDomain(BaseTest):
         org_response = self.scalekit_client.organization.create_organization(organization=organization)
         self.org_id = org_response[0].organization.id
 
-        domain_name = Faker().domain_name()
+        domain_name = unique_domain_name()
         create_domain_response = self.scalekit_client.domain.create_domain(
             organization_id=self.org_id, domain_name=domain_name, domain_type=DomainType.ALLOWED_EMAIL_DOMAIN)
 
@@ -158,7 +167,7 @@ class TestDomain(BaseTest):
         org_response = self.scalekit_client.organization.create_organization(organization=organization)
         self.org_id = org_response[0].organization.id
 
-        domain_name = Faker().domain_name()
+        domain_name = unique_domain_name()
         create_domain_response = self.scalekit_client.domain.create_domain(
             organization_id=self.org_id, domain_name=domain_name)
         domain_id = create_domain_response[0].domain.id

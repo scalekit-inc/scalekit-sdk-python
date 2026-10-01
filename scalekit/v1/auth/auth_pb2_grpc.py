@@ -30,9 +30,9 @@ class AuthServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.VerifyPasswordLessOtpRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.VerifyPasswordLessOtpResponse.FromString,
                 )
-        self.ResendPasswordless = channel.unary_unary(
-                '/scalekit.v1.auth.AuthService/ResendPasswordless',
-                request_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.ResendPasswordlessRequest.SerializeToString,
+        self.ResendAuthPasswordless = channel.unary_unary(
+                '/scalekit.v1.auth.AuthService/ResendAuthPasswordless',
+                request_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.ResendAuthPasswordlessRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
         self.ListUserOrganizations = channel.unary_unary(
@@ -98,7 +98,7 @@ class AuthServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def ResendPasswordless(self, request, context):
+    def ResendAuthPasswordless(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -170,9 +170,9 @@ def add_AuthServiceServicer_to_server(servicer, server):
                     request_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.VerifyPasswordLessOtpRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.VerifyPasswordLessOtpResponse.SerializeToString,
             ),
-            'ResendPasswordless': grpc.unary_unary_rpc_method_handler(
-                    servicer.ResendPasswordless,
-                    request_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.ResendPasswordlessRequest.FromString,
+            'ResendAuthPasswordless': grpc.unary_unary_rpc_method_handler(
+                    servicer.ResendAuthPasswordless,
+                    request_deserializer=scalekit_dot_v1_dot_auth_dot_auth__pb2.ResendAuthPasswordlessRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'ListUserOrganizations': grpc.unary_unary_rpc_method_handler(
@@ -277,7 +277,7 @@ class AuthService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def ResendPasswordless(request,
+    def ResendAuthPasswordless(request,
             target,
             options=(),
             channel_credentials=None,
@@ -287,8 +287,8 @@ class AuthService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.auth.AuthService/ResendPasswordless',
-            scalekit_dot_v1_dot_auth_dot_auth__pb2.ResendPasswordlessRequest.SerializeToString,
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.auth.AuthService/ResendAuthPasswordless',
+            scalekit_dot_v1_dot_auth_dot_auth__pb2.ResendAuthPasswordlessRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

@@ -130,12 +130,14 @@ class GetAuthCustomizationsRequest(_message.Message):
     def __init__(self) -> None: ...
 
 class PortalSettings(_message.Message):
-    __slots__ = ("custom_branding", "new_self_serve_sso_scim")
+    __slots__ = ("custom_branding", "new_self_serve_sso_scim", "mcp_consent_screen_v2")
     CUSTOM_BRANDING_FIELD_NUMBER: _ClassVar[int]
     NEW_SELF_SERVE_SSO_SCIM_FIELD_NUMBER: _ClassVar[int]
+    MCP_CONSENT_SCREEN_V2_FIELD_NUMBER: _ClassVar[int]
     custom_branding: bool
     new_self_serve_sso_scim: bool
-    def __init__(self, custom_branding: bool = ..., new_self_serve_sso_scim: bool = ...) -> None: ...
+    mcp_consent_screen_v2: bool
+    def __init__(self, custom_branding: bool = ..., new_self_serve_sso_scim: bool = ..., mcp_consent_screen_v2: bool = ...) -> None: ...
 
 class GetAuthCustomizationsResponse(_message.Message):
     __slots__ = ("customization_settings", "settings", "organization_customizations")
@@ -171,7 +173,7 @@ class OTPRequest(_message.Message):
     g_recaptcha_response: str
     def __init__(self, code_challenge: _Optional[str] = ..., g_recaptcha_response: _Optional[str] = ...) -> None: ...
 
-class ResendPasswordlessRequest(_message.Message):
+class ResendAuthPasswordlessRequest(_message.Message):
     __slots__ = ("g_recaptcha_response",)
     G_RECAPTCHA_RESPONSE_FIELD_NUMBER: _ClassVar[int]
     g_recaptcha_response: str
