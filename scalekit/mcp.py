@@ -90,6 +90,25 @@ class McpClient:
             CreateMcpConfigRequest(config=mcp_config),
         )
 
+    def get_config(self, config_id: str) -> GetMcpConfigResponse:
+        """
+        Method to fetch a single MCP Configuration by ID
+
+        ``GetMcpConfig`` has always existed on the service and over REST, but the
+        SDK exposed no getter -- so callers had to ``list_configs`` and filter,
+        which is what the published Mastra example does.
+
+        :param config_id          : ID of the MCP Configuration to fetch
+        :type                     : ``` str ```
+
+        :returns:
+            Get MCP Config Response
+        """
+        return self.core_client.grpc_exec(
+            self.mcp_service.GetMcpConfig.with_call,
+            GetMcpConfigRequest(config_id=config_id),
+        )
+
     def update_config(self,
                       config_id: str,
                       description: Optional[str] = None,
