@@ -53,11 +53,21 @@ Lists tools available in your workspace with optional filtering and pagination.
 ```python
 from scalekit.v1.tools.tools_pb2 import Filter
 
-response = scalekit_client.tools.list_tools(
+response, _ = scalekit_client.tools.list_tools(
     filter=Filter(query="calendar"),
     page_size=50,
 )
+
+# definition/metadata are google.protobuf.Struct — read them as dicts:
+for tool in response.tools:
+    print(tool.definition_dict["name"])
+    schema = tool.definition_dict["input_schema"]
 ```
+
+Use `definition_dict` / `metadata_dict` rather than
+`dict(tool.definition)`, which leaves nested levels such as
+`input_schema.properties` as raw protobuf objects — see
+[Reading the response](#-reading-the-response) under `execute_tool`.
 
 ### ⚙️ Parameters
 
@@ -84,10 +94,14 @@ Lists tools scoped to a specific connected-account identifier (for example works
 ```python
 from scalekit.v1.tools.tools_pb2 import ScopedToolFilter
 
-response = scalekit_client.tools.list_scoped_tools(
+response, _ = scalekit_client.tools.list_scoped_tools(
     "user@example.com",
     filter=ScopedToolFilter(),
 )
+
+# Note definition_dict is on the inner Tool, not the ScopedTool wrapper:
+for scoped_tool in response.tools:
+    print(scoped_tool.tool.definition_dict["name"])
 ```
 
 ### ⚙️ Parameters
@@ -158,7 +172,7 @@ Executes a named tool using credentials from a connected account.
 ### 🔌 Usage
 
 ```python
-response = scalekit_client.tools.execute_tool(
+response, _ = scalekit_client.tools.execute_tool(
     tool_name="gmail.messages.list",
     identifier="user@example.com",
     params={"maxResults": 10},
@@ -174,6 +188,53 @@ response = scalekit_client.tools.execute_tool(
 **params:** `Optional[dict]` — JSON-serializable tool arguments.
 
 **connected_account_id:** `Optional[str]` — Use a specific connected account by id.
+
+### 📤 Reading the response
+
+`execute_tool` returns gRPC's `(response, call)` 2-tuple, so unpack it before
+reading any field.
+
+The tool's payload is `response.data`, a `google.protobuf.Struct`. Use
+**`response.data_dict`** to read it as a native Python dict:
+
+```python
+import json
+
+response, _ = scalekit_client.tools.execute_tool(
+    tool_name="github_repo_get",
+    identifier="user@example.com",
+    params={"owner": "scalekit-inc", "repo": "scalekit-sdk-python"},
+)
+
+data = response.data_dict          # fully converted, nested levels included
+print(data["owner"]["login"])
+print(json.dumps(data))            # safe to serialize
+```
+
+> [!IMPORTANT]
+> Do not use `dict(response.data)`. A `Struct` implements the Mapping
+> protocol, so the top level looks converted, but every nested object and
+> list inside it is handed back as a raw protobuf object. A real
+> `github_repo_get` response leaves seven of them
+> (`owner`, `permissions`, `license`, `organization`, `topics`, …), and
+> `json.dumps(dict(response.data))` fails with
+> `TypeError: Object of type Struct is not JSON serializable`.
+
+Two properties of `data_dict` worth knowing:
+
+- It is `None` when the tool returned no data. An empty `{}` payload also
+  reads as `None`; use `response.HasField("data")` to tell those apart.
+- **Every number is a `float`.** A `Struct` stores numbers in a float64, so
+  an upstream `{"id": 795198641}` is already `795198641.0` before the SDK
+  sees it, and integers beyond 2\*\*53 are not round-trippable. This is not
+  specific to `data_dict` — `dict(response.data)` behaves identically.
+
+The same conversion is available on tool definitions as
+`tool.definition_dict` and `tool.metadata_dict` (see `list_tools`), and
+directly as `scalekit.struct_to_dict(some_struct)`. Prefer the standalone
+function if you rely on a type checker: the generated `tools_pb2.pyi` stubs
+declare `__slots__`, so tools like pyright cannot see the three properties
+and will report them as unknown attributes even though they work at runtime.
 
 </dd>
 </dl>

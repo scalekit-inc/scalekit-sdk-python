@@ -5,8 +5,19 @@ from mcp.types import Tool as McpBaseTool, ToolAnnotations
 def struct_to_dict(struct) -> Dict[str, Any]:
     """
     Convert protobuf Struct to Python dict
-    
-    :param struct: Protobuf Struct object
+
+    Despite the shared name, this is NOT the same operation as
+    scalekit.utils.proto.struct_to_dict and the two are deliberately not
+    consolidated. That one converts a google.protobuf.Struct; this one is
+    called on whole messages too -- google_adk.py passes an entire Tool
+    here to get {"provider": ..., "definition": {...}} -- which only
+    MessageToDict can do. It also returns {} rather than None for an
+    empty input, because both callers below go straight on to .get(...).
+
+    Use scalekit.utils.proto.struct_to_dict (or the .data_dict /
+    .definition_dict / .metadata_dict properties) for Struct fields.
+
+    :param struct: Protobuf Struct object, or any protobuf message
     :returns: Python dictionary representation
     """
     from google.protobuf.json_format import MessageToDict
