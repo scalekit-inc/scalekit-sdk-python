@@ -57,7 +57,7 @@ pip install scalekit-sdk-python
 
 ```py
 
-from scalekit import ScalekitClient
+from scalekit import ScalekitClient, AuthorizationUrlOptions
 
 sc = ScalekitClient(
   env_url, 
@@ -66,10 +66,13 @@ sc = ScalekitClient(
 )
 
 # Use the sc object to interact with the Scalekit API
+options = AuthorizationUrlOptions()
+options.state = "state"
+options.connection_id = "con_123456789"
+
 auth_url = sc.get_authorization_url(
   "https://acme-corp.com/redirect-uri",
-  state="state",
-  connection_id="con_123456789"
+  options
 )
 
 ```
@@ -80,9 +83,9 @@ To use the Scalekit Python SDK, you must have the following:
 
 | Component | Version |
 | --------- | ------- |
-| Python    | 3.8+    |
+| Python    | 3.10+   |
 
-> **Tip:** Although Python 3.8 meets the minimum requirement, using a more recent version (such as Python 3.9 or later) is advisable.
+> **Tip:** Although Python 3.10 meets the minimum requirement, using a more recent version (such as Python 3.11 or later) is advisable.
 
 
 ## Examples - SSO with FastAPI
@@ -91,7 +94,7 @@ Below is a simple code sample that showcases how to implement Single Sign-on usi
 
 ```py
 from fastapi import FastAPI, Request, Response
-from scalekit import ScalekitClient
+from scalekit import ScalekitClient, AuthorizationUrlOptions, CodeAuthenticationOptions
 import uvicorn
 
 app = FastAPI()
@@ -106,10 +109,12 @@ redirect_uri = "http://localhost:8000/auth/callback"
 
 @app.get("/auth/login")
 async def auth_login(request: Request):
+  options = AuthorizationUrlOptions()
+  options.state = "state"
+  options.connection_id = "con_123456789"
   auth_url = sc.get_authorization_url(
     redirect_uri,
-    state="state",
-    connection_id="con_123456789"
+    options
   )
   return Response(status_code=302, headers={"Location": auth_url})
 
@@ -118,7 +123,8 @@ async def auth_callback(request: Request):
   code = request.query_params.get("code")
   token = sc.authenticate_with_code(
     code, 
-    redirect_uri
+    redirect_uri,
+    CodeAuthenticationOptions()
   )
   response = JSONResponse(content=token)
   response.set_cookie("access_token", token["access_token"])
