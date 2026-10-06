@@ -1,10 +1,21 @@
 # Changelog
 
 All notable changes to this SDK are documented in this file. The format follows
-[Keep a Changelog](https://keepachangelog.com/en/1.1.0/) with the layout defined in the
-Scalekit release-notes standard, and versions follow [Semantic Versioning](https://semver.org/).
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
+[Semantic Versioning](https://semver.org/).
 
-Sections up to and including 2.19.1 were imported from [GitHub Releases](https://github.com/scalekit-inc/scalekit-sdk-python/releases). They keep their original wording and predate the release-notes standard.
+Sections up to and including 2.20.0 were imported from [GitHub Releases](https://github.com/scalekit-inc/scalekit-sdk-python/releases). They keep their original wording.
+
+## [2.20.0] - 2026-10-05
+
+### Changes
+
+- [SK-2030] fix: accept every auth-pattern shape the API serves (was Literal-constrained) ([#206](https://github.com/scalekit-inc/scalekit-sdk-python/pull/206))
+- [SK-2043] chore: update proto to v0.1.150.0 (v2.19.2) ([#207](https://github.com/scalekit-inc/scalekit-sdk-python/pull/207))
+- chore: add PyPI alias packages for scalekit and scalekit-sdk (SK-2063) ([#208](https://github.com/scalekit-inc/scalekit-sdk-python/pull/208))
+- fix: forward page_size and page_token in actions.list_connected_accounts ([#211](https://github.com/scalekit-inc/scalekit-sdk-python/pull/211))
+- Add Create/Update/Delete/List/Get to ResourceClient ([#204](https://github.com/scalekit-inc/scalekit-sdk-python/pull/204))
+- feat: accept multiple issuers in token validation (SK-2080) ([#212](https://github.com/scalekit-inc/scalekit-sdk-python/pull/212))
 
 ## [2.19.1] - 2026-09-11
 
@@ -459,6 +470,7 @@ Developers can now delete SSO connections and SCIM directories through the SDK.
 
 - First Release of the official Scalekit Python SDK
 
+[2.20.0]: https://github.com/scalekit-inc/scalekit-sdk-python/releases/tag/v2.20.0
 [2.19.1]: https://github.com/scalekit-inc/scalekit-sdk-python/releases/tag/v2.19.1
 [2.19.0]: https://github.com/scalekit-inc/scalekit-sdk-python/releases/tag/v2.19.0
 [2.18.0]: https://github.com/scalekit-inc/scalekit-sdk-python/releases/tag/v2.18.0
