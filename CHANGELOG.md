@@ -267,7 +267,7 @@ API Tokens
 - Feature connected accounts ([#73](https://github.com/scalekit-inc/scalekit-sdk-python/pull/73))
 - Add resend_invite method  @dhaneshbs in https://github.com/scalekit-inc/scalekit-sdk-python/pull/77
 - [SK-2059] Update Test Cases to utilize new error handling capability ([#76](https://github.com/scalekit-inc/scalekit-sdk-python/pull/76))
-- Add Langchain support for scalkit SDK ([#79](https://github.com/scalekit-inc/scalekit-sdk-python/pull/79))
+- Add Langchain support for Scalekit SDK ([#79](https://github.com/scalekit-inc/scalekit-sdk-python/pull/79))
 - Relax python-dotenv constraint to >=1.1.0 ([#83](https://github.com/scalekit-inc/scalekit-sdk-python/pull/83))
 - Add delete domain sdk method & domain_type parameter to create_domain method and update proto files ([#82](https://github.com/scalekit-inc/scalekit-sdk-python/pull/82))
 
