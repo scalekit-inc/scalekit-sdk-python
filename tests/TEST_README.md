@@ -3,7 +3,7 @@
 To run the test cases for this project, follow the steps below:
 
 ### Prerequisites
-1. Ensure you have Python 3.8 or higher installed.
+1. Ensure you have Python 3.10 or higher installed.
 2. Install the required dependencies by running:
    ```sh
    python3 setup.py install
