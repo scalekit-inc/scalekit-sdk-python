@@ -4,7 +4,7 @@ All notable changes to this SDK are documented in this file. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/).
 
-Sections up to and including 2.20.0 were imported from [GitHub Releases](https://github.com/scalekit-inc/scalekit-sdk-python/releases). They keep their original wording.
+Sections up to and including 2.20.0 were imported from [GitHub Releases](https://github.com/scalekit-inc/scalekit-sdk-python/releases). Their wording is kept, with small corrections.
 
 ## [2.20.0] - 2026-10-05
 
@@ -265,7 +265,7 @@ API Tokens
 ### Changes
 
 - Feature connected accounts ([#73](https://github.com/scalekit-inc/scalekit-sdk-python/pull/73))
-- Add resend_invite method  @dhaneshbs in https://github.com/scalekit-inc/scalekit-sdk-python/pull/77
+- Add resend_invite method ([#77](https://github.com/scalekit-inc/scalekit-sdk-python/pull/77))
 - [SK-2059] Update Test Cases to utilize new error handling capability ([#76](https://github.com/scalekit-inc/scalekit-sdk-python/pull/76))
 - Add Langchain support for Scalekit SDK ([#79](https://github.com/scalekit-inc/scalekit-sdk-python/pull/79))
 - Relax python-dotenv constraint to >=1.1.0 ([#83](https://github.com/scalekit-inc/scalekit-sdk-python/pull/83))
