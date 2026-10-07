@@ -18,6 +18,9 @@ setup(
         "grpcio-status>=1.81.0,<2.0",
         "protoc-gen-openapiv2>=0.0.1",
         "googleapis-common-protos>=1.75.0",
+        # Not imported by the SDK, but kept: docs and customer code call
+        # load_dotenv() relying on the SDK to install it.
+        "python-dotenv>=1.2.2,<2.0",
         "pydantic>=2.13.4",
         "mcp>=1.27.2",
     ],
@@ -28,9 +31,9 @@ setup(
         "flask": ["flask>=2.0"],
         "fastapi": ["fastapi>=0.100"],
         "django": ["django>=4.2"],
-        # Test-only dependencies (tests/basetest.py loads tests/.env; several
-        # tests generate fixtures with Faker). Installed by `make setup`.
-        "dev": ["Faker>=33.0.0,<41.0", "python-dotenv>=1.2.2,<2.0"],
+        # Test-only dependencies (several tests generate fixtures with Faker).
+        # Installed by `make setup`.
+        "dev": ["Faker>=33.0.0,<41.0"],
     },
     url="https://github.com/scalekit-inc/scalekit-sdk-python",
     license="MIT",
