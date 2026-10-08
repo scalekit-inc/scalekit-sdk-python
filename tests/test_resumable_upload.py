@@ -8,6 +8,8 @@ import json
 import logging
 import os
 import tempfile
+import threading
+import time
 import unittest
 from datetime import datetime, timedelta, timezone
 from email.utils import format_datetime
@@ -31,6 +33,7 @@ from scalekit.core import CoreClient
 KIB = 1024
 CHUNK = 256 * KIB
 CANARY = "canary-token-7f3a9c"
+ROTATED = "rotated-credential-2b81"
 UPLOAD_ID = "up-123"
 LOCATION = (
     f"https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&upload_id={UPLOAD_ID}"
@@ -923,6 +926,190 @@ class TestRedaction(UploadTestCase):
                 self.assertNotIn(CANARY, text)
         self.assertNotIn(CANARY, "\n".join(logs.output))
         self.assertTrue(any("retry 1 of 1" in line for line in logs.output))
+
+
+class TestReviewRound1(UploadTestCase):
+    """Behaviours pinned after review: each test fails if its rule is mutated."""
+
+    # (c) a 2xx other than 200/201 on a chunk is an HTTP error, never retried
+    def test_unexpected_2xx_on_chunk_is_upload_exception(self):
+        for status in (202, 204):
+            with self.subTest(status=status):
+                self.sleeps.clear()
+                fake = FakeTransport(started(), resp(status))
+                with self.assertRaises(ScalekitUploadException) as ctx:
+                    self.upload(fake, data=b"abc")
+                self.assertEqual(ctx.exception.status_code, status)
+                self.assertEqual(len(fake.chunks), 1)
+                self.assertEqual(self.sleeps, [])
+
+    # R3: single-flight refresh across threads sharing one client
+    def test_concurrent_scalekit_401_refreshes_once(self):
+        threads_count = 8
+        barrier = threading.Barrier(threads_count, timeout=10)
+        refresh_lock = threading.Lock()
+        refreshes = []
+
+        def refresh():
+            with refresh_lock:
+                refreshes.append(1)
+            time.sleep(0.05)
+            self.core.access_token = ROTATED
+
+        self.core._CoreClient__authenticate_client = refresh
+
+        def transport(method, url, params=None, data=None, headers=None, **kwargs):
+            if headers["authorization"] == f"Bearer {CANARY}":
+                barrier.wait()  # every thread holds a 401 before anyone refreshes
+                return resp(401, body=SCALEKIT_401)
+            return started() if method == "POST" else done()
+
+        results, errors = [], []
+
+        def worker():
+            try:
+                results.append(
+                    self.client.upload_resumable(
+                        "googledrive", "user_1", "/upload/drive/v3/files", data=b"abc"
+                    )
+                )
+            except ScalekitException as exc:
+                errors.append(exc)
+
+        with patch("scalekit.actions._resumable_upload.requests.request", transport):
+            workers = [threading.Thread(target=worker) for _ in range(threads_count)]
+            for w in workers:
+                w.start()
+            for w in workers:
+                w.join(timeout=20)
+        self.assertEqual(errors, [])
+        self.assertEqual(len(results), threads_count)
+        self.assertEqual(len(refreshes), 1)
+
+    def test_token_already_changed_by_another_caller_is_not_refreshed(self):
+        refreshes = []
+        self.core._CoreClient__authenticate_client = lambda: refreshes.append(1)
+
+        def rotated_while_in_flight(call):
+            self.core.access_token = ROTATED
+            return resp(401, body=SCALEKIT_401)
+
+        fake = FakeTransport(rotated_while_in_flight, started(), done())
+        self.upload(fake)
+        self.assertEqual(refreshes, [])
+        starts = [c for c in fake.calls if c["method"] == "POST"]
+        self.assertEqual(len(starts), 2)
+        self.assertEqual(starts[0]["headers"]["authorization"], f"Bearer {CANARY}")
+        self.assertEqual(starts[1]["headers"]["authorization"], f"Bearer {ROTATED}")
+
+    # non-retryable transport errors
+    def test_non_retryable_transport_error_on_chunk(self):
+        fake = FakeTransport(started(), requests.exceptions.TooManyRedirects("loop"))
+        with self.assertRaises(ScalekitUploadException) as ctx:
+            self.upload(fake, data=b"abc")
+        self.assertIsNone(ctx.exception.status_code)
+        self.assertIsInstance(ctx.exception.__cause__, requests.exceptions.TooManyRedirects)
+        self.assertEqual(len(fake.chunks), 1)
+        self.assertEqual(self.sleeps, [])
+
+    def test_chunked_encoding_error_is_retried_with_status_query(self):
+        fake = FakeTransport(
+            started(), requests.exceptions.ChunkedEncodingError("cut"), resp(201, body={"id": "f"})
+        )
+        self.assertEqual(self.upload(fake, data=b"abc"), {"id": "f"})
+        self.assertEqual(fake.ranges(), ["bytes 0-2/3", "bytes */3"])
+        self.assertEqual(len(self.sleeps), 1)
+
+    def test_every_retryable_status_triggers_status_query_and_resume(self):
+        for status in (408, 429, 500, 502, 503, 504):
+            with self.subTest(status=status):
+                self.sleeps.clear()
+                fake = FakeTransport(started(), resp(status), incomplete(None), done())
+                self.upload(fake, data=b"abc")
+                self.assertEqual(fake.ranges(), ["bytes 0-2/3", "bytes */3", "bytes 0-2/3"])
+                self.assertEqual(len(self.sleeps), 1)
+
+    # a stream returning more than asked must not produce oversized chunks
+    def test_stream_that_over_returns_keeps_chunks_bounded(self):
+        class IgnoresSize(io.RawIOBase):
+            def __init__(self, payload):
+                self._data = io.BytesIO(payload)
+
+            def readable(self):
+                return True
+
+            def read(self, size=-1):
+                return self._data.read()  # returns everything left, whatever size is
+
+        payload = os.urandom(3 * CHUNK + 5)
+        total = len(payload)
+        fake = FakeTransport(
+            started(),
+            incomplete(CHUNK - 1),
+            incomplete(2 * CHUNK - 1),
+            incomplete(3 * CHUNK - 1),
+            done(),
+        )
+        self.upload(fake, data=IgnoresSize(payload))
+        self.assertTrue(all(len(c["data"]) <= CHUNK for c in fake.chunks))
+        self.assertEqual(b"".join(c["data"] for c in fake.chunks), payload)
+        self.assertEqual(
+            fake.ranges(),
+            [
+                f"bytes 0-{CHUNK - 1}/*",
+                f"bytes {CHUNK}-{2 * CHUNK - 1}/*",
+                f"bytes {2 * CHUNK}-{3 * CHUNK - 1}/*",
+                f"bytes {3 * CHUNK}-{total - 1}/{total}",
+            ],
+        )
+
+    # header values are checked locally
+    def test_line_breaks_in_connection_name_or_identifier(self):
+        for kwargs in (
+            {"connection_name": "googledrive\r\nX-Evil: 1"},
+            {"identifier": "user\n1"},
+        ):
+            with self.subTest(**kwargs):
+                fake = FakeTransport()
+                with self.assertRaises(ValueError):
+                    self.upload(fake, **kwargs)
+                self.assertEqual(fake.calls, [])
+
+    # the requests error kept as __cause__ must not carry the Authorization header
+    def test_cause_chain_carries_no_token(self):
+        def prepared():
+            return requests.Request(
+                "PUT",
+                "https://env.example.com/proxy/x",
+                headers={"authorization": f"Bearer {CANARY}"},
+            ).prepare()
+
+        def redirect_error():
+            r = resp(302)
+            r.request = prepared()
+            return requests.exceptions.TooManyRedirects("loop", response=r)
+
+        cases = [
+            [requests.exceptions.ReadTimeout("slow", request=prepared())],
+            [started(), redirect_error()],
+            [
+                started(),
+                requests.exceptions.ConnectionError("reset", request=prepared()),
+                requests.exceptions.ConnectionError("reset", request=prepared()),
+            ],
+        ]
+        for script in cases:
+            with self.subTest(script=script):
+                with self.assertRaises(ScalekitUploadException) as ctx:
+                    self.upload(FakeTransport(*script), data=b"abc", max_retries=1)
+                cause = ctx.exception.__cause__
+                self.assertIsInstance(cause, requests.RequestException)
+                self.assertIsNone(cause.request)
+                dumped = [repr(cause), repr(cause.args), repr(vars(cause))]
+                if cause.response is not None:
+                    self.assertIsNone(cause.response.request)
+                    dumped.append(repr(vars(cause.response)))
+                self.assertNotIn(CANARY, " ".join(dumped))
 
 
 class TestExports(unittest.TestCase):

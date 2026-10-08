@@ -429,7 +429,7 @@ class _ScalekitUploadErrorBase(ScalekitException):
 class ScalekitUploadException(_ScalekitUploadErrorBase):
     """A resumable upload failed with an HTTP error, a timeout or a connection error.
 
-    Raised for a non-2xx answer to the session-start request, a non-retryable
+    Raised for a 4xx or 5xx answer to the session-start request, a non-retryable
     error on a chunk (for example 403), and a retryable failure (408, 429,
     5xx, timeout, connection error) that persisted after every retry.
     ``status_code`` is ``None`` when no response arrived; the underlying

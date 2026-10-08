@@ -88,11 +88,27 @@ class _Core(Protocol):
     def get_headers(self, headers: dict[str, str] | None = None) -> dict[str, str]: ...
 
 
+def _drop_prepared_request(exc: requests.RequestException) -> None:
+    """Detach the sent request (and its Authorization header) from a requests error.
+
+    The error is kept as ``__cause__`` of the SDK exception, and error trackers
+    serialise the cause chain, so it must not carry the Scalekit access token.
+    """
+    try:
+        exc.request = None
+        response = exc.response
+        if response is not None:
+            response.request = None  # type: ignore[assignment]
+    except AttributeError:
+        pass
+
+
 class _TransportError(Exception):
     """No HTTP response: a timeout, a connection failure or another requests error."""
 
     def __init__(self, original: requests.RequestException, *, retryable: bool) -> None:
-        super().__init__(str(original))
+        super().__init__(type(original).__name__)
+        _drop_prepared_request(original)
         self.original = original
         self.retryable = retryable
         if isinstance(original, requests.exceptions.Timeout):
@@ -145,11 +161,16 @@ def _normalize_method(method: object) -> str:
     return text
 
 
-def _normalize_content_type(content_type: object) -> str:
-    text = _require_text("content_type", content_type)
+def _require_header_value(name: str, value: object) -> str:
+    """A non-empty str that can be sent as an HTTP header value."""
+    text = _require_text(name, value)
     if "\r" in text or "\n" in text:
-        raise ValueError("content_type must not contain line breaks.")
+        raise ValueError(f"{name} must not contain line breaks.")
     return text
+
+
+def _normalize_content_type(content_type: object) -> str:
+    return _require_header_value("content_type", content_type)
 
 
 def _normalize_chunk_size(chunk_size: object) -> int:
@@ -304,9 +325,11 @@ class _Source:
         parts: list[bytes] = []
         needed = size
         if self._lookahead and needed > 0:
-            parts.append(self._lookahead)
-            needed -= len(self._lookahead)
-            self._lookahead = b""
+            # Never hand out more than asked for, even when a stream returned
+            # more than it was asked for earlier: chunks must not exceed chunk_size.
+            taken, self._lookahead = self._lookahead[:needed], self._lookahead[needed:]
+            parts.append(taken)
+            needed -= len(taken)
         while needed > 0 and not self._exhausted:
             chunk = self._read(needed)
             if not chunk:
@@ -801,8 +824,8 @@ def upload_resumable(
     on_progress: ProgressCallback | None,
 ) -> dict[str, Any]:
     """Validate the arguments, then run the upload. See ``ActionClient.upload_resumable``."""
-    _require_text("connection_name", connection_name)
-    _require_text("identifier", identifier)
+    _require_header_value("connection_name", connection_name)
+    _require_header_value("identifier", identifier)
     normalized_path = _normalize_path(path)
     normalized_method = _normalize_method(method)
     normalized_content_type = _normalize_content_type(content_type)

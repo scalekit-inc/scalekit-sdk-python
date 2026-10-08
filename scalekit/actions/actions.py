@@ -719,6 +719,8 @@ class ActionClient:
                 or the stream length does not match ``total_bytes``.
             TypeError: An argument has the wrong type, for example ``data`` is a
                 ``str`` or a text-mode file.
+            OSError: ``data`` is a path that cannot be opened (for example
+                ``FileNotFoundError``), or reading your stream failed. Raised as is.
             ScalekitUploadSessionExpiredException: The upload session expired or
                 was cancelled (HTTP 404 or 410 after it started). Start a new
                 upload. Subclass of ``ScalekitUploadException``.
