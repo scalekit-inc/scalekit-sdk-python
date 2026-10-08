@@ -5,16 +5,17 @@ Skipped unless these are set (tests/.env is loaded like BaseTest does):
   TEST_AGENTKIT_UPLOAD_IDENTIFIER   identifier of a connected Google Drive account
   TEST_AGENTKIT_UPLOAD_CONNECTION   connection name (default "googledrive")
 
-Every file is named sdk-upload-test-python-<run>-* and deleted afterwards. Untitled
-files created during the run (left behind when the provider creates a file but
-the response is lost) are swept as well.
+Every file is named sdk-upload-test-python-<run>-* and deleted afterwards. An
+"Untitled" file (left behind when the provider creates a file but the response
+is lost) is swept only if it was created after the run started and its size
+matches one of this run's payloads, so other files on a shared Drive are kept.
 """
 
 import io
 import os
 import unittest
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 from scalekit import ScalekitClient
 from scalekit.actions.types import UploadProgress
@@ -76,20 +77,26 @@ class TestResumableUploadLive(unittest.TestCase):
         cls.actions = cls.client.actions
         cls.run_id = uuid.uuid4().hex[:10]
         cls.prefix = f"sdk-upload-test-python-{cls.run_id}"
-        # Small margin for clock skew between this machine and the provider.
-        cls.started_at = datetime.now(timezone.utc) - timedelta(seconds=30)
+        cls.started_at = datetime.now(timezone.utc)
+        cls.payload_sizes = set()
 
     @classmethod
     def tearDownClass(cls):
         if not hasattr(cls, "actions"):
             return
+        for file_id, _ in cls._find(f"name contains '{cls.prefix}' and trashed = false"):
+            cls._delete(file_id)
         since = cls.started_at.strftime("%Y-%m-%dT%H:%M:%SZ")
-        for query in (
-            f"name contains '{cls.prefix}' and trashed = false",
-            f"name = 'Untitled' and createdTime > '{since}' and trashed = false",
-        ):
-            for file_id in cls._find(query):
+        untitled = f"name = 'Untitled' and createdTime > '{since}' and trashed = false"
+        for file_id, size in cls._find(untitled):
+            if size is not None and size in cls.payload_sizes:
                 cls._delete(file_id)
+
+    @classmethod
+    def _payload(cls, data):
+        """Record a payload's size for the orphan sweep, and return it."""
+        cls.payload_sizes.add(len(data))
+        return data
 
     # -- Drive helpers (through the plain proxy request) ---------------------
 
@@ -99,11 +106,14 @@ class TestResumableUploadLive(unittest.TestCase):
             cls.connection,
             cls.identifier,
             "/drive/v3/files",
-            query_params={"q": query, "fields": "files(id)", "pageSize": 100},
+            query_params={"q": query, "fields": "files(id,size)", "pageSize": 100},
         )
         if response.status_code != 200:
             return []
-        return [f["id"] for f in response.json().get("files", [])]
+        return [
+            (f["id"], int(f["size"]) if "size" in f else None)
+            for f in response.json().get("files", [])
+        ]
 
     @classmethod
     def _delete(cls, file_id):
@@ -136,7 +146,7 @@ class TestResumableUploadLive(unittest.TestCase):
     # -- the shared live set ---------------------------------------------------
 
     def test_known_size_in_256_kib_chunks(self):
-        payload = os.urandom(600 * KIB)
+        payload = self._payload(os.urandom(600 * KIB))
         progress = []
         result = self._upload(
             "known.bin",
@@ -153,7 +163,7 @@ class TestResumableUploadLive(unittest.TestCase):
         self.assertEqual(int(self._metadata(result["id"])["size"]), total)
 
     def test_non_seekable_stream_of_unknown_size(self):
-        payload = os.urandom(700_000)
+        payload = self._payload(os.urandom(700_000))
         progress = []
         result = self._upload(
             "stream.bin",
@@ -167,13 +177,13 @@ class TestResumableUploadLive(unittest.TestCase):
 
     def test_zero_bytes(self):
         progress = []
-        result = self._upload("empty.bin", b"", on_progress=progress.append)
+        result = self._upload("empty.bin", self._payload(b""), on_progress=progress.append)
         self.assertEqual(progress, [UploadProgress(0, 0)])
         self.assertEqual(int(self._metadata(result["id"]).get("size", "0")), 0)
 
     def test_patch_replaces_content(self):
-        created = self._upload("replace.bin", b"first version")
-        replacement = os.urandom(300 * KIB)
+        created = self._upload("replace.bin", self._payload(b"first version"))
+        replacement = self._payload(os.urandom(300 * KIB))
         result = self.actions.upload_resumable(
             self.connection,
             self.identifier,
@@ -191,7 +201,7 @@ class TestResumableUploadLive(unittest.TestCase):
                 self.connection,
                 self.identifier,
                 "/upload/drive/v3/files/doesnotexist",
-                data=b"never stored",
+                data=self._payload(b"never stored"),
                 method="PATCH",
             )
         # The session never started, so this is not a session-expired error.

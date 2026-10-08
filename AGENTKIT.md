@@ -819,13 +819,15 @@ Proxied REST call via `{env_url}/proxy` with `connection_name` and `identifier` 
 
 ### 📝 Description
 
-Uploads content of any size to Google Drive, Cloud Storage or YouTube through the Scalekit proxy, using Google's resumable upload protocol. The content is sent in chunks (4 MiB by default) and at most one chunk is held in memory. A chunk that fails with a timeout, a connection error or HTTP 408, 429, 500, 502, 503 or 504 is resumed from what the server stored instead of restarting (exponential backoff with jitter, or `Retry-After` on 429 and 503, capped at 30 seconds). The request that starts the session is never retried, because a retry would open a second session; the only exception is a single resend after the SDK refreshes an expired Scalekit access token (a 401 from Scalekit itself, not from Google). Returns the created or updated resource as a dict, for example the Drive file (`{}` when the final response is empty).
+Uploads content of any size to Google Drive, Cloud Storage or YouTube through the Scalekit proxy, using Google's resumable upload protocol. The content is sent in chunks (4 MiB by default) and read about one chunk at a time; resending the rest of a chunk briefly copies it. A chunk that fails with a timeout, a connection error or HTTP 408, 429, 500, 502, 503 or 504 is resumed from what the server stored instead of restarting (exponential backoff with jitter, or `Retry-After` on 429 and 503, capped at 30 seconds). The request that starts the session is never retried, because a retry would open a second session; the only exception is a single resend after the SDK refreshes an expired Scalekit access token (a 401 from Scalekit itself, not from Google). Returns the created or updated resource as a dict, for example the Drive file (`{}` when the final response is empty).
 
 Errors (all in `scalekit.common.exceptions`):
 
 - `ScalekitUploadSessionExpiredException` (subclass of `ScalekitUploadException`): the session expired or was cancelled (HTTP 404 or 410 after it started). Start a new upload; the SDK never restarts one on its own.
 - `ScalekitUploadException`: the session-start request failed, a chunk failed with a non-retryable status (such as 403), or a retryable failure persisted after `max_retries` retries. `status_code` is `None` when no response arrived.
-- `ScalekitUploadProtocolException`: the server's answer does not follow the protocol (for example, no `upload_id` in the session-start response).
+- `ScalekitUploadProtocolException`: the server's answer does not follow the protocol (for example, no `upload_id` in the session-start response, or every byte confirmed without the upload completing).
+
+If the Scalekit access token cannot be refreshed after a 401 from Scalekit, the client's own authentication error (for example `ScalekitUnauthorizedException`) is raised unchanged, as with `request`; it is not a `ScalekitUploadException`.
 
 Each carries `status_code`, `headers`, `body`, `upload_id` and `bytes_committed`. Invalid arguments raise `ValueError` or `TypeError` before any network call. A path that cannot be opened raises `OSError` (for example `FileNotFoundError`), and errors from reading your stream propagate unchanged. The call blocks; in async code use `await asyncio.to_thread(...)`.
 

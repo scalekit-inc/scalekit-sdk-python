@@ -24,6 +24,8 @@ from scalekit.actions.actions import ActionClient
 from scalekit.actions.types import UploadProgress
 from scalekit.common.exceptions import (
     ScalekitException,
+    ScalekitServerException,
+    ScalekitUnauthorizedException,
     ScalekitUploadException,
     ScalekitUploadProtocolException,
     ScalekitUploadSessionExpiredException,
@@ -218,6 +220,15 @@ class TestValidation(UploadTestCase):
         self.assert_rejected(ValueError, timeout=float("inf"))
         self.assert_rejected(ValueError, total_bytes=-1)
         self.assert_rejected(ValueError, data=b"abc", total_bytes=4)
+
+    def test_blank_header_values(self):
+        for kwargs in (
+            {"connection_name": "   "},
+            {"identifier": "\t "},
+            {"content_type": " "},
+        ):
+            with self.subTest(**kwargs):
+                self.assert_rejected(ValueError, **kwargs)
 
     def test_content_type(self):
         self.assert_rejected(ValueError, content_type="")
@@ -431,16 +442,37 @@ class TestTokenRefresh(UploadTestCase):
         self.assertEqual(len(refreshes), 1)
         self.assertEqual(len(fake.calls), 1)
 
-    def test_refresh_failure_raises_upload_exception(self):
+    def test_refresh_failure_propagates_the_client_error_unchanged(self):
+        auth_error = ScalekitServerException.promote(resp(401, body="invalid_client"))
+        self.assertIsInstance(auth_error, ScalekitUnauthorizedException)
+
         def refresh():
-            raise ScalekitException("token endpoint down")
+            raise auth_error
 
         self.core._CoreClient__authenticate_client = refresh
-        fake = FakeTransport(resp(401, body=SCALEKIT_401))
-        with self.assertRaises(ScalekitUploadException) as ctx:
-            self.upload(fake)
-        self.assertEqual(ctx.exception.status_code, 401)
-        self.assertIsInstance(ctx.exception.__cause__, ScalekitException)
+        for script in (
+            [resp(401, body=SCALEKIT_401)],  # on the session-start request
+            [started(), resp(401, body=SCALEKIT_401)],  # on a chunk
+        ):
+            with self.subTest(calls=len(script)):
+                fake = FakeTransport(*script)
+                with self.assertRaises(ScalekitUnauthorizedException) as ctx:
+                    self.upload(fake)
+                self.assertIs(ctx.exception, auth_error)
+                self.assertNotIsInstance(ctx.exception, ScalekitUploadException)
+                self.assertEqual(len(fake.calls), len(script))
+
+    def test_plus_json_media_type_counts_as_json(self):
+        refreshes = self.refresh_to("fresh-credential")
+        for media_type in ("application/problem+json", "application/vnd.api+json; charset=utf-8"):
+            with self.subTest(media_type=media_type):
+                refreshes.clear()
+                self.core.access_token = CANARY
+                unauthorized = resp(401, {"Content-Type": media_type}, json.dumps(SCALEKIT_401))
+                fake = FakeTransport(unauthorized, started(), done())
+                self.upload(fake)
+                self.assertEqual(len(refreshes), 1)
+                self.assertEqual(fake.calls[1]["method"], "POST")
 
 
 class TestChunks(UploadTestCase):
@@ -1196,7 +1228,8 @@ class TestStalledProgress(UploadTestCase):
         self.assertEqual(len(self.sleeps), 2)
 
     def test_resend_from_lower_offset_inside_the_chunk(self):
-        payload = os.urandom(2 * CHUNK)
+        payload = os.urandom(2 * CHUNK + 5)
+        total = len(payload)
         fake = FakeTransport(
             started(),
             incomplete(CHUNK - 1),  # high-water mark CHUNK
@@ -1205,8 +1238,9 @@ class TestStalledProgress(UploadTestCase):
             done(),
         )
         self.upload(fake, data=payload, chunk_size=2 * CHUNK)
-        self.assertEqual(fake.ranges()[2], f"bytes {CHUNK // 2}-{2 * CHUNK - 1}/{2 * CHUNK}")
-        self.assertEqual(fake.chunks[2]["data"], payload[CHUNK // 2 :])
+        self.assertEqual(fake.ranges()[2], f"bytes {CHUNK // 2}-{2 * CHUNK - 1}/{total}")
+        self.assertEqual(fake.chunks[2]["data"], payload[CHUNK // 2 : 2 * CHUNK])
+        self.assertEqual(fake.ranges()[3], f"bytes {2 * CHUNK}-{total - 1}/{total}")
         self.assertEqual(len(self.sleeps), 1)
 
     def test_alternating_offsets_inside_a_chunk_run_out_of_retries(self):
@@ -1229,6 +1263,45 @@ class TestStalledProgress(UploadTestCase):
         self.assertEqual(
             progress, [UploadProgress(a + 1, 2 * CHUNK), UploadProgress(b + 1, 2 * CHUNK)]
         )
+
+
+class TestFinalChunkFullyConfirmed(UploadTestCase):
+    """A 308 that confirms every byte of the final chunk is a protocol error at once."""
+
+    def assert_protocol_error_now(self, script, data, expected_sleeps=0):
+        progress = []
+        fake = FakeTransport(*script)
+        with self.assertRaises(ScalekitUploadProtocolException) as ctx:
+            self.upload(fake, data=data, on_progress=progress.append)
+        self.assertEqual(ctx.exception.status_code, 308)
+        # No closing request, no retry after the 308, no completion progress.
+        self.assertEqual(len(fake.calls), len(script))
+        self.assertEqual(len(self.sleeps), expected_sleeps)
+        return progress
+
+    def test_single_chunk(self):
+        progress = self.assert_protocol_error_now([started(), incomplete(2)], b"abc")
+        self.assertEqual(progress, [])
+
+    def test_last_of_several_chunks(self):
+        total = 2 * CHUNK + 5
+        progress = self.assert_protocol_error_now(
+            [started(), incomplete(CHUNK - 1), incomplete(2 * CHUNK - 1), incomplete(total - 1)],
+            os.urandom(total),
+        )
+        self.assertEqual(progress, [UploadProgress(CHUNK, total), UploadProgress(2 * CHUNK, total)])
+
+    def test_after_a_status_query(self):
+        progress = self.assert_protocol_error_now(
+            [started(), requests.exceptions.ReadTimeout("slow"), incomplete(2)],
+            b"abc",
+            expected_sleeps=1,  # for the timeout that led to the status query
+        )
+        self.assertEqual(progress, [])
+
+    def test_zero_bytes(self):
+        progress = self.assert_protocol_error_now([started(), incomplete(None)], b"")
+        self.assertEqual(progress, [])
 
 
 class TestExports(unittest.TestCase):

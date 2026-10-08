@@ -28,7 +28,6 @@ import requests
 
 from scalekit.actions.models.upload_progress import UploadProgress
 from scalekit.common.exceptions import (
-    ScalekitException,
     ScalekitUploadException,
     ScalekitUploadProtocolException,
     ScalekitUploadSessionExpiredException,
@@ -182,8 +181,10 @@ def _normalize_method(method: object) -> str:
 
 
 def _require_header_value(name: str, value: object) -> str:
-    """A non-empty str that can be sent as an HTTP header value."""
+    """A non-blank str that can be sent as an HTTP header value."""
     text = _require_text(name, value)
+    if not text.strip():
+        raise ValueError(f"{name} must not be blank.")
     if "\r" in text or "\n" in text:
         raise ValueError(f"{name} must not contain line breaks.")
     return text
@@ -417,8 +418,10 @@ def _retry_delay(attempt: int, response: requests.Response | None) -> float:
 
 def _is_scalekit_unauthorized(response: requests.Response) -> bool:
     """A 401 issued by Scalekit itself, as opposed to one from the provider."""
-    content_type = response.headers.get("Content-Type", "")
-    if content_type.split(";", 1)[0].strip().lower() != "application/json":
+    media_type = response.headers.get("Content-Type", "").split(";", 1)[0].strip().lower()
+    if media_type != "application/json" and not (
+        media_type.startswith("application/") and media_type.endswith("+json")
+    ):
         return False
     try:
         payload = json.loads(response.content)
@@ -529,22 +532,17 @@ class _ResumableUpload:
         params: list[tuple[str, str]],
         headers: dict[str, str],
         body: bytes | None,
-        phase: str,
     ) -> requests.Response:
-        """Send once; resend once after a token refresh for a Scalekit-issued 401."""
+        """Send once; resend once after a token refresh for a Scalekit-issued 401.
+
+        A failed refresh raises the client's own authentication error unchanged,
+        as ``ActionClient.request`` does.
+        """
         token_used = self._core.access_token
         response = self._request_once(method, params, headers, body)
         if response.status_code != 401 or not _is_scalekit_unauthorized(response):
             return response
-        try:
-            refreshed = self._refresh_token(token_used)
-        except (ScalekitException, ValueError, KeyError) as exc:
-            raise self._http_error(
-                ScalekitUploadException,
-                response,
-                f"The Scalekit access token could not be refreshed after HTTP 401 on the {phase}.",
-            ) from exc
-        if not refreshed:
+        if not self._refresh_token(token_used):
             return response
         return self._request_once(method, params, headers, body)
 
@@ -598,7 +596,7 @@ class _ResumableUpload:
         phase = "session-start request"
         # Never retried: a second start request would open a second session.
         try:
-            response = self._send(self._method, params, headers, self._metadata_body, phase)
+            response = self._send(self._method, params, headers, self._metadata_body)
         except _TransportError as exc:
             raise self._transport_error(exc, phase) from exc.original
         status = response.status_code
@@ -755,7 +753,7 @@ class _ResumableUpload:
                     "Content-Type": self._content_type,
                 }
             try:
-                response = self._send("PUT", params, headers, body, phase)
+                response = self._send("PUT", params, headers, body)
             except _TransportError as exc:
                 if not exc.retryable:
                     raise self._transport_error(exc, phase) from exc.original
@@ -775,7 +773,17 @@ class _ResumableUpload:
             if status == _RESUME_INCOMPLETE:
                 # Resend from the offset the server reports, even if it is below
                 # an earlier report (still inside the current chunk).
-                self._committed = self._committed_from(response)
+                committed = self._committed_from(response)
+                if self._final and committed == self._chunk_start + len(self._chunk):
+                    # Every byte, including the last, is stored, yet the server did
+                    # not complete the upload. A conforming server never does this.
+                    raise self._http_error(
+                        ScalekitUploadProtocolException,
+                        response,
+                        f"The server stored all {committed} bytes but did not complete "
+                        f"the upload (HTTP {status} on the {phase}).",
+                    )
+                self._committed = committed
                 if self._committed > self._high:
                     # Only new data resets the retry budget, so a server that
                     # alternates between offsets cannot keep the upload alive forever.

@@ -651,9 +651,10 @@ class ActionClient:
         (``/upload/youtube/v3/videos``). The connected account's credentials
         are added by the proxy, as with :meth:`request`.
 
-        The content is sent in chunks (4 MiB by default), and at most one chunk
-        is held in memory. When a chunk fails with a timeout, a connection
-        error or HTTP 408, 429, 500, 502, 503 or 504, the SDK waits
+        The content is sent in chunks (4 MiB by default) and read about one
+        chunk at a time; resending the rest of a chunk briefly copies it.
+        When a chunk fails with a timeout, a connection error or HTTP 408,
+        429, 500, 502, 503 or 504, the SDK waits
         (exponential backoff with jitter, or the server's ``Retry-After`` on
         429 and 503, capped at 30 seconds), asks the server how much it has
         stored, and resumes from there instead of restarting. The request that
@@ -733,7 +734,13 @@ class ActionClient:
                 ``bytes_committed``.
             ScalekitUploadProtocolException: The server's answer does not follow
                 the resumable upload protocol, for example no ``upload_id`` in
-                the session-start response.
+                the session-start response, or every byte confirmed without the
+                upload completing.
+            ScalekitException: The Scalekit access token could not be refreshed
+                after a 401 from Scalekit. This is the client's own
+                authentication error (for example ``ScalekitUnauthorizedException``),
+                raised unchanged as by :meth:`request`; it is not a
+                ``ScalekitUploadException``.
 
         Example:
             >>> from pathlib import Path
