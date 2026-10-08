@@ -504,21 +504,32 @@ class TestChunks(UploadTestCase):
             ],
         )
 
-    def test_partial_commit_resends_the_rest(self):
+    def test_partial_commit_resends_the_rest_of_the_chunk(self):
         payload = os.urandom(4 * CHUNK)
-        fake = FakeTransport(started(), incomplete(CHUNK - 1), incomplete(3 * CHUNK - 1), done())
-        self.upload(fake, data=payload, chunk_size=2 * CHUNK)
+        progress = []
+        fake = FakeTransport(started(), incomplete(CHUNK - 1), incomplete(2 * CHUNK - 1), done())
+        self.upload(fake, data=payload, chunk_size=2 * CHUNK, on_progress=progress.append)
         total = 4 * CHUNK
         self.assertEqual(
             fake.ranges(),
             [
                 f"bytes 0-{2 * CHUNK - 1}/{total}",
-                f"bytes {CHUNK}-{3 * CHUNK - 1}/{total}",
-                f"bytes {3 * CHUNK}-{total - 1}/{total}",
+                f"bytes {CHUNK}-{2 * CHUNK - 1}/{total}",
+                f"bytes {2 * CHUNK}-{total - 1}/{total}",
             ],
         )
-        self.assertEqual(fake.chunks[1]["data"], payload[CHUNK : 3 * CHUNK])
-        self.assertEqual(fake.chunks[2]["data"], payload[3 * CHUNK :])
+        self.assertEqual(fake.chunks[1]["data"], payload[CHUNK : 2 * CHUNK])
+        self.assertEqual(fake.chunks[2]["data"], payload[2 * CHUNK :])
+        # Partial progress is new data: it is reported and costs no retry.
+        self.assertEqual(self.sleeps, [])
+        self.assertEqual(
+            progress,
+            [
+                UploadProgress(CHUNK, total),
+                UploadProgress(2 * CHUNK, total),
+                UploadProgress(total, total),
+            ],
+        )
 
     def test_unknown_total_uses_star_until_the_end(self):
         payload = os.urandom(2 * CHUNK + 7)
@@ -750,6 +761,7 @@ class TestRetries(UploadTestCase):
             incomplete(CHUNK - 1),
             resp(503, {"Retry-After": "7"}),
             incomplete(CHUNK + 1000 - 1),  # status query: part of chunk 2 stored
+            incomplete(2 * CHUNK - 1),
             done(),
         )
         progress = []
@@ -760,12 +772,13 @@ class TestRetries(UploadTestCase):
                 f"bytes 0-{CHUNK - 1}/{total}",
                 f"bytes {CHUNK}-{2 * CHUNK - 1}/{total}",
                 f"bytes */{total}",
-                f"bytes {CHUNK + 1000}-{total - 1}/{total}",
+                f"bytes {CHUNK + 1000}-{2 * CHUNK - 1}/{total}",
+                f"bytes {2 * CHUNK}-{total - 1}/{total}",
             ],
         )
         self.assertEqual(fake.chunks[2]["data"], b"")
         self.assertNotIn("Content-Type", fake.chunks[2]["headers"])
-        self.assertEqual(fake.chunks[3]["data"], payload[CHUNK + 1000 :])
+        self.assertEqual(fake.chunks[3]["data"], payload[CHUNK + 1000 : 2 * CHUNK])
         self.assertEqual(self.sleeps, [7.0])
         self.assertIn(UploadProgress(CHUNK + 1000, total), progress)
 
@@ -1110,6 +1123,112 @@ class TestEdgeCases(UploadTestCase):
                     self.assertIsNone(cause.response.request)
                     dumped.append(repr(vars(cause.response)))
                 self.assertNotIn(CANARY, " ".join(dumped))
+
+
+class TestPathSafety(UploadTestCase):
+    """Paths with spaces or control characters never reach the network."""
+
+    def test_control_characters_and_spaces_rejected(self):
+        for path in (
+            "/upload/.\t./.\t./x",
+            "/upload/.\n./x",
+            "/upload/..\r/x",
+            "/upload/a b",
+            "/upload/a\x00b",
+            "/upload/a\x7fb",
+        ):
+            with self.subTest(path=path):
+                fake = FakeTransport()
+                with self.assertRaises(ValueError):
+                    self.upload(fake, path=path)
+                self.assertEqual(fake.calls, [])
+
+    def test_built_url_stays_under_proxy(self):
+        self.assertEqual(
+            ru._proxy_url("https://env.example.com/", "/upload/drive/v3/files"),
+            "https://env.example.com/proxy/upload/drive/v3/files",
+        )
+        for path in ("/../oauth/token", "/%2e%2e/oauth/token", "/a/./b"):
+            with self.subTest(path=path), self.assertRaises(ValueError):
+                ru._proxy_url("https://env.example.com", path)
+
+    def test_every_request_uses_the_proxy_path(self):
+        fake = FakeTransport(started(), incomplete(CHUNK - 1), done())
+        self.upload(fake, data=os.urandom(CHUNK + 1))
+        for call in fake.calls:
+            self.assertEqual(call["url"], "https://env.example.com/proxy/upload/drive/v3/files")
+
+
+class TestStalledProgress(UploadTestCase):
+    """A 308 that stores no new data costs one retry; only new data resets the budget."""
+
+    def test_stalled_308_resends_directly_from_reported_offset(self):
+        payload = os.urandom(2 * CHUNK)
+        fake = FakeTransport(
+            started(),
+            incomplete(CHUNK // 2 - 1),  # new data: no retry used
+            incomplete(CHUNK // 2 - 1),  # stalled: retry 1, resend directly
+            incomplete(CHUNK - 1),
+            done(),
+        )
+        self.upload(fake, data=payload, chunk_size=2 * CHUNK, max_retries=1)
+        half = CHUNK // 2
+        self.assertEqual(
+            fake.ranges(),
+            [
+                f"bytes 0-{2 * CHUNK - 1}/{2 * CHUNK}",
+                f"bytes {half}-{2 * CHUNK - 1}/{2 * CHUNK}",
+                f"bytes {half}-{2 * CHUNK - 1}/{2 * CHUNK}",
+                f"bytes {CHUNK}-{2 * CHUNK - 1}/{2 * CHUNK}",
+            ],
+        )
+        # No status query (empty body) anywhere, and exactly one backoff.
+        self.assertTrue(all(c["data"] for c in fake.chunks))
+        self.assertEqual(len(self.sleeps), 1)
+
+    def test_stalled_308_exhausts_retries_with_protocol_error(self):
+        fake = FakeTransport(started(), incomplete(None), incomplete(None), incomplete(None))
+        with self.assertRaises(ScalekitUploadProtocolException) as ctx:
+            self.upload(fake, data=os.urandom(2 * CHUNK), max_retries=2)
+        self.assertEqual(ctx.exception.status_code, 308)
+        self.assertEqual(len(fake.chunks), 3)
+        self.assertTrue(all(c["data"] for c in fake.chunks))
+        self.assertEqual(len(self.sleeps), 2)
+
+    def test_resend_from_lower_offset_inside_the_chunk(self):
+        payload = os.urandom(2 * CHUNK)
+        fake = FakeTransport(
+            started(),
+            incomplete(CHUNK - 1),  # high-water mark CHUNK
+            incomplete(CHUNK // 2 - 1),  # lower, still inside the chunk: retry, resend from there
+            incomplete(2 * CHUNK - 1),
+            done(),
+        )
+        self.upload(fake, data=payload, chunk_size=2 * CHUNK)
+        self.assertEqual(fake.ranges()[2], f"bytes {CHUNK // 2}-{2 * CHUNK - 1}/{2 * CHUNK}")
+        self.assertEqual(fake.chunks[2]["data"], payload[CHUNK // 2 :])
+        self.assertEqual(len(self.sleeps), 1)
+
+    def test_alternating_offsets_inside_a_chunk_run_out_of_retries(self):
+        a, b = CHUNK // 2 - 1, CHUNK - 1
+        script = [started()] + [incomplete(a if i % 2 == 0 else b) for i in range(10)]
+        progress = []
+        fake = FakeTransport(*script)
+        with self.assertRaises(ScalekitUploadProtocolException):
+            self.upload(
+                fake,
+                data=os.urandom(2 * CHUNK),
+                chunk_size=2 * CHUNK,
+                max_retries=3,
+                on_progress=progress.append,
+            )
+        # Two new high-water marks (a+1, then b+1) reset the budget; after that the
+        # alternation stores nothing new, so 3 retries are used and the 4th stall fails.
+        self.assertEqual(len(fake.chunks), 6)
+        self.assertEqual(len(self.sleeps), 3)
+        self.assertEqual(
+            progress, [UploadProgress(a + 1, 2 * CHUNK), UploadProgress(b + 1, 2 * CHUNK)]
+        )
 
 
 class TestExports(unittest.TestCase):

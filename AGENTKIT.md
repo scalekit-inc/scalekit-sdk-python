@@ -860,7 +860,7 @@ except ScalekitUploadSessionExpiredException:
 
 **identifier:** `str` — Identifier of the connected account.
 
-**path:** `str` — Provider upload path: `/upload/drive/v3/files` (Drive), `/upload/drive/v3/files/<fileId>` with `method="PATCH"` to replace a file's content, `/upload/storage/v1/b/<bucket>/o` (Cloud Storage) or `/upload/youtube/v3/videos` (YouTube). A leading `/` is added when missing. Must not contain `?`, `#`, or `.`/`..` segments.
+**path:** `str` — Provider upload path: `/upload/drive/v3/files` (Drive), `/upload/drive/v3/files/<fileId>` with `method="PATCH"` to replace a file's content, `/upload/storage/v1/b/<bucket>/o` (Cloud Storage) or `/upload/youtube/v3/videos` (YouTube). A leading `/` is added when missing. Must not contain `?`, `#`, spaces, control characters, or `.`/`..` segments.
 
 **data:** `bytes | bytearray | memoryview | IO[bytes] | os.PathLike[str]` — The content. A binary stream is read from its current position. A path (for example `pathlib.Path`) is opened and closed by the SDK. Errors raised while reading your stream propagate unchanged.
 
@@ -876,7 +876,7 @@ except ScalekitUploadSessionExpiredException:
 
 **chunk_size:** `int` — Bytes per chunk, a positive multiple of 262144 (256 KiB). Default 4 MiB.
 
-**max_retries:** `int` — Retries in a row allowed for one chunk, counting chunk resends and status queries (default 3). The count resets whenever the server stores more data. `0` disables retries.
+**max_retries:** `int` — Retries in a row allowed for one chunk, counting chunk resends, status queries and answers that store no new data (default 3). The count resets only when the server confirms data beyond the highest offset so far. `0` disables retries.
 
 **timeout:** `Optional[float]` — Timeout in seconds for each HTTP request. Defaults to the client's tool-call timeout (60 seconds).
 

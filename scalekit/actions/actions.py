@@ -670,8 +670,9 @@ class ActionClient:
             path: Provider upload path, for example ``"/upload/drive/v3/files"``,
                 or ``"/upload/drive/v3/files/<fileId>"`` with ``method="PATCH"``
                 to replace an existing file's content. A leading ``/`` is added
-                when missing. It must not contain ``?``, ``#``, or ``.``/``..``
-                segments; pass query parameters in ``query_params``.
+                when missing. It must not contain ``?``, ``#``, spaces, control
+                characters, or ``.``/``..`` segments; pass query parameters in
+                ``query_params``.
             data: The content. One of: ``bytes``, ``bytearray`` or
                 ``memoryview``; a binary file object or stream, read from its
                 current position; or a path (``os.PathLike``, such as
@@ -700,8 +701,9 @@ class ActionClient:
                 Defaults to 4 MiB. Larger chunks need fewer requests; smaller
                 chunks keep each request short.
             max_retries: How many times in a row one chunk may be retried
-                (counting chunk resends and status queries) before the upload
-                fails. The count resets whenever the server stores more data.
+                (counting chunk resends, status queries and answers that store
+                no new data) before the upload fails. The count resets only when
+                the server confirms data beyond the highest offset so far.
                 ``0`` disables retries. Defaults to 3.
             timeout: Timeout in seconds for each HTTP request. Defaults to the
                 client's tool-call timeout (60 seconds).

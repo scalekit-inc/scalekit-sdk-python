@@ -55,6 +55,9 @@ _SESSION_GONE_STATUSES = frozenset({404, 410})
 _RETRYABLE_STATUSES = frozenset({408, 429, 500, 502, 503, 504})
 _RETRY_AFTER_STATUSES = frozenset({429, 503})
 _RANGE_RE = re.compile(r"bytes=0-(\d+)")
+# Control characters and spaces. URL parsers may drop some of them (for example
+# urlsplit removes tab, CR and LF), which could turn ".<TAB>." into "..".
+_UNSAFE_PATH_CHARS_RE = re.compile(r"[\x00-\x20\x7f]")
 _DELTA_SECONDS_RE = re.compile(r"-?\d+")
 
 # A Scalekit-issued 401 is refreshed and resent once. The lock makes the
@@ -145,6 +148,8 @@ def _require_int(name: str, value: object, *, minimum: int) -> int:
 
 def _normalize_path(path: object) -> str:
     text = _require_text("path", path)
+    if _UNSAFE_PATH_CHARS_RE.search(text):
+        raise ValueError(f"path must not contain spaces or control characters; got {text!r}.")
     if "?" in text or "#" in text:
         raise ValueError(
             "path must not contain '?' or '#'. Pass query parameters in query_params, "
@@ -155,6 +160,18 @@ def _normalize_path(path: object) -> str:
     if any(segment in (".", "..") for segment in unquote(text).split("/")):
         raise ValueError(f"path must not contain '.' or '..' segments; got {text!r}.")
     return text
+
+
+def _proxy_url(env_url: str, path: str) -> str:
+    """Build the proxy URL for ``path`` and check it stays under ``/proxy/``."""
+    base = env_url.rstrip("/")
+    url = base + "/proxy" + path
+    prefix = urlsplit(base).path + "/proxy/"
+    url_path = urlsplit(url).path
+    segments = unquote(url_path).split("/")
+    if not url_path.startswith(prefix) or any(seg in (".", "..") for seg in segments):
+        raise ValueError(f"path {path!r} does not resolve to a location under /proxy/.")
+    return url
 
 
 def _normalize_method(method: object) -> str:
@@ -430,7 +447,7 @@ class _ResumableUpload:
         *,
         connection_name: str,
         identifier: str,
-        path: str,
+        url: str,
         method: str,
         reader: _Reader,
         total: int | None,
@@ -443,7 +460,7 @@ class _ResumableUpload:
         on_progress: ProgressCallback | None,
     ) -> None:
         self._core = core
-        self._url = core.env_url.rstrip("/") + "/proxy" + path
+        self._url = url
         # The same proxy headers as ActionClient.request.
         self._proxy_headers = {
             "connection_name": connection_name,
@@ -461,15 +478,20 @@ class _ResumableUpload:
         self._timeout = timeout
         self._on_progress = on_progress
         self._upload_id: str | None = None
-        # The chunk not yet committed. _start is always the committed offset.
-        self._buffer = b""
-        self._start = 0
+        # The current chunk covers [_chunk_start, _chunk_start + len(_chunk)) and
+        # is kept until the server has committed all of it. _committed is the
+        # server's latest committed offset (inside the chunk); _high is the
+        # highest offset it has ever confirmed.
+        self._chunk = b""
+        self._chunk_start = 0
+        self._committed = 0
+        self._high = 0
         self._final = False
 
     def run(self) -> dict[str, Any]:
         # Read the first chunk before starting the session, so content that
         # fits in one chunk gets X-Upload-Content-Length.
-        self._fill()
+        self._next_chunk()
         upload_id = self._start_session()
         return self._send_chunks(upload_id)
 
@@ -537,7 +559,7 @@ class _ResumableUpload:
     # -- errors ------------------------------------------------------------
 
     def _where(self) -> str:
-        details = f"bytes_committed={self._start}"
+        details = f"bytes_committed={self._committed}"
         if self._upload_id is not None:
             details = f"upload_id={self._upload_id}, {details}"
         return details
@@ -554,14 +576,14 @@ class _ResumableUpload:
             headers=dict(response.headers),
             body=_response_text(response),
             upload_id=self._upload_id,
-            bytes_committed=self._start,
+            bytes_committed=self._committed,
         )
 
     def _transport_error(self, exc: _TransportError, phase: str) -> ScalekitUploadException:
         return ScalekitUploadException(
             f"The {phase} {exc.description} ({self._where()})",
             upload_id=self._upload_id,
-            bytes_committed=self._start,
+            bytes_committed=self._committed,
         )
 
     # -- session start -----------------------------------------------------
@@ -605,16 +627,15 @@ class _ResumableUpload:
 
     # -- chunks ------------------------------------------------------------
 
-    def _fill(self) -> None:
-        """Top the buffer up to one chunk, and find out whether it ends the content."""
-        if self._final:
-            return
-        position = self._start + len(self._buffer)
-        wanted = self._chunk_size - len(self._buffer)
+    def _next_chunk(self) -> None:
+        """Read the next chunk, and find out whether it ends the content."""
+        self._chunk_start += len(self._chunk)
+        position = self._chunk_start
+        wanted = self._chunk_size
         if self._total is not None:
             wanted = min(wanted, self._total - position)
         data = self._source.read(wanted) if wanted > 0 else b""
-        self._buffer += data
+        self._chunk = data
         position += len(data)
         if self._total is not None:
             if len(data) < wanted:
@@ -649,7 +670,7 @@ class _ResumableUpload:
         logger.info(
             "Resumable upload: %s at offset %d; retry %d of %d in %.2fs",
             reason,
-            self._start,
+            self._committed,
             failures,
             self._max_retries,
             delay,
@@ -670,13 +691,13 @@ class _ResumableUpload:
                     f"The server sent a malformed Range header: {header!r}.",
                 )
             committed = int(match.group(1)) + 1
-        sent_end = self._start + len(self._buffer)
-        if committed < self._start or committed > sent_end:
+        chunk_end = self._chunk_start + len(self._chunk)
+        if committed < self._chunk_start or committed > chunk_end:
             raise self._http_error(
                 ScalekitUploadProtocolException,
                 response,
-                f"The server reported {committed} bytes committed, outside the expected "
-                f"range {self._start}-{sent_end}.",
+                f"The server reported {committed} bytes committed, outside the current "
+                f"chunk {self._chunk_start}-{chunk_end}.",
             )
         return committed
 
@@ -705,8 +726,7 @@ class _ResumableUpload:
                 response,
                 "The final upload response is not a JSON object.",
             )
-        self._start = self._total
-        self._buffer = b""
+        self._committed = self._high = self._total
         self._report(self._total, self._total)
         return result
 
@@ -715,9 +735,12 @@ class _ResumableUpload:
         failures = 0
         query = False
         while True:
+            if not self._final and self._committed == self._chunk_start + len(self._chunk):
+                self._next_chunk()
             total_text = str(self._total) if self._total is not None else "*"
+            pending = self._chunk[self._committed - self._chunk_start :]
             headers: dict[str, str]
-            if query or not self._buffer:
+            if query or not pending:
                 # A status query, or the closing request once every byte is committed
                 # (and the only request of a zero-length upload).
                 phase = "status query" if query else "final upload request"
@@ -725,10 +748,10 @@ class _ResumableUpload:
                 headers = {"Content-Range": f"bytes */{total_text}"}
             else:
                 phase = "chunk upload"
-                body = self._buffer
-                last = self._start + len(body) - 1
+                body = pending
+                last = self._committed + len(body) - 1
                 headers = {
-                    "Content-Range": f"bytes {self._start}-{last}/{total_text}",
+                    "Content-Range": f"bytes {self._committed}-{last}/{total_text}",
                     "Content-Type": self._content_type,
                 }
             try:
@@ -750,29 +773,34 @@ class _ResumableUpload:
             if status in _COMPLETE_STATUSES:
                 return self._complete(response)
             if status == _RESUME_INCOMPLETE:
-                committed = self._committed_from(response)
-                if committed > self._start:
-                    self._buffer = self._buffer[committed - self._start :]
-                    self._start = committed
+                # Resend from the offset the server reports, even if it is below
+                # an earlier report (still inside the current chunk).
+                self._committed = self._committed_from(response)
+                if self._committed > self._high:
+                    # Only new data resets the retry budget, so a server that
+                    # alternates between offsets cannot keep the upload alive forever.
+                    self._high = self._committed
                     failures = 0
                     query = False
-                    self._report(committed, self._total)
-                    self._fill()
+                    self._report(self._committed, self._total)
                     continue
                 if query:
-                    # The status query says where to resume; resend from there.
+                    # The failure that led to this status query was already counted.
                     query = False
                     continue
+                # A 308 that stores no new data counts as one retry; it already
+                # carries the offset, so the chunk is resent without a status query.
                 failures = self._back_off(
                     failures,
                     self._http_error(
                         ScalekitUploadProtocolException,
                         response,
-                        "The server kept accepting chunks without storing any data.",
+                        f"The server stopped storing new data (highest offset confirmed: "
+                        f"{self._high}).",
                     ),
                     None,
                     None,
-                    "no data committed",
+                    "no new data committed",
                 )
                 continue
             if status in _SESSION_GONE_STATUSES:
@@ -829,7 +857,7 @@ def upload_resumable(
     """Validate the arguments, then run the upload. See ``ActionClient.upload_resumable``."""
     _require_header_value("connection_name", connection_name)
     _require_header_value("identifier", identifier)
-    normalized_path = _normalize_path(path)
+    url = _proxy_url(core.env_url, _normalize_path(path))
     normalized_method = _normalize_method(method)
     normalized_content_type = _normalize_content_type(content_type)
     normalized_chunk_size = _normalize_chunk_size(chunk_size)
@@ -850,7 +878,7 @@ def upload_resumable(
             core,
             connection_name=connection_name,
             identifier=identifier,
-            path=normalized_path,
+            url=url,
             method=normalized_method,
             reader=reader,
             total=total,
