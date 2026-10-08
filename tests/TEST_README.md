@@ -4,9 +4,9 @@ To run the test cases for this project, follow the steps below:
 
 ### Prerequisites
 1. Ensure you have Python 3.10 or higher installed.
-2. Install the required dependencies by running:
+2. Install the SDK with its framework and test dependencies (or run `make setup`, which does the same in a virtual environment):
    ```sh
-   python3 setup.py install
+   python3 -m pip install -e ".[flask,fastapi,django,dev]"
    ```
 
 ### Setting Up Environment Variables
