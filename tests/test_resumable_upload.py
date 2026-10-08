@@ -928,10 +928,10 @@ class TestRedaction(UploadTestCase):
         self.assertTrue(any("retry 1 of 1" in line for line in logs.output))
 
 
-class TestReviewRound1(UploadTestCase):
-    """Behaviours pinned after review: each test fails if its rule is mutated."""
+class TestEdgeCases(UploadTestCase):
+    """Retry classification, single-flight refresh, stream bounds and redaction."""
 
-    # (c) a 2xx other than 200/201 on a chunk is an HTTP error, never retried
+    # a 2xx other than 200/201 on a chunk is an HTTP error
     def test_unexpected_2xx_on_chunk_is_upload_exception(self):
         for status in (202, 204):
             with self.subTest(status=status):
@@ -943,7 +943,7 @@ class TestReviewRound1(UploadTestCase):
                 self.assertEqual(len(fake.chunks), 1)
                 self.assertEqual(self.sleeps, [])
 
-    # R3: single-flight refresh across threads sharing one client
+    # single-flight refresh across threads sharing one client
     def test_concurrent_scalekit_401_refreshes_once(self):
         threads_count = 8
         barrier = threading.Barrier(threads_count, timeout=10)

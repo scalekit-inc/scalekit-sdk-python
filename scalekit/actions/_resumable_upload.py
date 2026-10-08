@@ -21,7 +21,7 @@ from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
-from typing import IO, Any, Protocol, Union
+from typing import IO, Any, Protocol, Union, cast
 from urllib.parse import parse_qs, unquote, urlsplit
 
 import requests
@@ -89,16 +89,19 @@ class _Core(Protocol):
 
 
 def _drop_prepared_request(exc: requests.RequestException) -> None:
-    """Detach the sent request (and its Authorization header) from a requests error.
+    """Detach this upload's sent request (and its Authorization header) from a requests error.
 
-    The error is kept as ``__cause__`` of the SDK exception, and error trackers
-    serialise the cause chain, so it must not carry the Scalekit access token.
+    The error from a proxy request made by this upload is kept as ``__cause__``
+    of the SDK exception, and error trackers serialise causes, so it must not
+    carry the Scalekit access token. This covers only the upload's own proxy
+    requests: when a token refresh fails, the error from the token endpoint is
+    chained exactly as the core client raises it.
     """
     try:
         exc.request = None
         response = exc.response
         if response is not None:
-            response.request = None  # type: ignore[assignment]
+            cast(Any, response).request = None
     except AttributeError:
         pass
 
