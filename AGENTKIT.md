@@ -827,9 +827,11 @@ Errors (all in `scalekit.common.exceptions`):
 - `ScalekitUploadException`: the session-start request failed, a chunk failed with a non-retryable status (such as 403), or a retryable failure persisted after `max_retries` retries. `status_code` is `None` when no response arrived.
 - `ScalekitUploadProtocolException`: the server's answer does not follow the protocol (for example, no `upload_id` in the session-start response, or every byte confirmed without the upload completing).
 
+These three upload exceptions carry `status_code`, `headers`, `body`, `upload_id` and `bytes_committed`.
+
 If the Scalekit access token cannot be refreshed after a 401 from Scalekit, the client's own authentication error (for example `ScalekitUnauthorizedException`) is raised unchanged, as with `request`; it is not a `ScalekitUploadException`.
 
-Each carries `status_code`, `headers`, `body`, `upload_id` and `bytes_committed`. Invalid arguments raise `ValueError` or `TypeError` before any network call. A path that cannot be opened raises `OSError` (for example `FileNotFoundError`), and errors from reading your stream propagate unchanged. The call blocks; in async code use `await asyncio.to_thread(...)`.
+Invalid arguments raise `ValueError` or `TypeError` before any network call. A path that cannot be opened raises `OSError` (for example `FileNotFoundError`), and errors from reading your stream propagate unchanged. The call blocks; in async code use `await asyncio.to_thread(...)`.
 
 ### 🔌 Usage
 
