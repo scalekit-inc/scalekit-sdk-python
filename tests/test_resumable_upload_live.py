@@ -5,7 +5,7 @@ Skipped unless these are set (tests/.env is loaded like BaseTest does):
   TEST_AGENTKIT_UPLOAD_IDENTIFIER   identifier of a connected Google Drive account
   TEST_AGENTKIT_UPLOAD_CONNECTION   connection name (default "googledrive")
 
-Every file is named sdk-parity-python-<run>-* and deleted afterwards. Untitled
+Every file is named sdk-upload-test-python-<run>-* and deleted afterwards. Untitled
 files created during the run (left behind when the provider creates a file but
 the response is lost) are swept as well.
 """
@@ -75,7 +75,7 @@ class TestResumableUploadLive(unittest.TestCase):
         cls.client = ScalekitClient(env_url, client_id, client_secret)
         cls.actions = cls.client.actions
         cls.run_id = uuid.uuid4().hex[:10]
-        cls.prefix = f"sdk-parity-python-{cls.run_id}"
+        cls.prefix = f"sdk-upload-test-python-{cls.run_id}"
         # Small margin for clock skew between this machine and the provider.
         cls.started_at = datetime.now(timezone.utc) - timedelta(seconds=30)
 
