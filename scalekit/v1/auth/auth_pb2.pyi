@@ -257,6 +257,52 @@ class UpdateLoginUserDetailsResponse(_message.Message):
     auth_request_id: str
     def __init__(self, auth_request_id: _Optional[str] = ...) -> None: ...
 
+class GetLoginRequestDetailsRequest(_message.Message):
+    __slots__ = ("login_request_id",)
+    LOGIN_REQUEST_ID_FIELD_NUMBER: _ClassVar[int]
+    login_request_id: str
+    def __init__(self, login_request_id: _Optional[str] = ...) -> None: ...
+
+class GetLoginRequestDetailsResponse(_message.Message):
+    __slots__ = ("auth_request", "client", "resource")
+    AUTH_REQUEST_FIELD_NUMBER: _ClassVar[int]
+    CLIENT_FIELD_NUMBER: _ClassVar[int]
+    RESOURCE_FIELD_NUMBER: _ClassVar[int]
+    auth_request: AuthRequestDetails
+    client: AuthRequestClient
+    resource: AuthRequestResource
+    def __init__(self, auth_request: _Optional[_Union[AuthRequestDetails, _Mapping]] = ..., client: _Optional[_Union[AuthRequestClient, _Mapping]] = ..., resource: _Optional[_Union[AuthRequestResource, _Mapping]] = ...) -> None: ...
+
+class AuthRequestDetails(_message.Message):
+    __slots__ = ("id", "scopes")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    SCOPES_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    scopes: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, id: _Optional[str] = ..., scopes: _Optional[_Iterable[str]] = ...) -> None: ...
+
+class AuthRequestClient(_message.Message):
+    __slots__ = ("client_id", "sk_client_id", "client_name", "is_dcr", "is_cimd")
+    CLIENT_ID_FIELD_NUMBER: _ClassVar[int]
+    SK_CLIENT_ID_FIELD_NUMBER: _ClassVar[int]
+    CLIENT_NAME_FIELD_NUMBER: _ClassVar[int]
+    IS_DCR_FIELD_NUMBER: _ClassVar[int]
+    IS_CIMD_FIELD_NUMBER: _ClassVar[int]
+    client_id: str
+    sk_client_id: str
+    client_name: str
+    is_dcr: bool
+    is_cimd: bool
+    def __init__(self, client_id: _Optional[str] = ..., sk_client_id: _Optional[str] = ..., client_name: _Optional[str] = ..., is_dcr: bool = ..., is_cimd: bool = ...) -> None: ...
+
+class AuthRequestResource(_message.Message):
+    __slots__ = ("id", "name")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    name: str
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ...) -> None: ...
+
 class User(_message.Message):
     __slots__ = ("sub", "email", "given_name", "family_name", "email_verified", "phone_number", "phone_number_verified", "name", "preferred_username", "picture", "gender", "locale", "groups", "custom_attributes", "organization_external_id", "roles", "organization_external_name", "login_failed")
     SUB_FIELD_NUMBER: _ClassVar[int]
@@ -296,6 +342,14 @@ class User(_message.Message):
     organization_external_name: str
     login_failed: bool
     def __init__(self, sub: _Optional[str] = ..., email: _Optional[str] = ..., given_name: _Optional[str] = ..., family_name: _Optional[str] = ..., email_verified: bool = ..., phone_number: _Optional[str] = ..., phone_number_verified: bool = ..., name: _Optional[str] = ..., preferred_username: _Optional[str] = ..., picture: _Optional[str] = ..., gender: _Optional[str] = ..., locale: _Optional[str] = ..., groups: _Optional[_Iterable[str]] = ..., custom_attributes: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., organization_external_id: _Optional[str] = ..., roles: _Optional[_Iterable[str]] = ..., organization_external_name: _Optional[str] = ..., login_failed: bool = ...) -> None: ...
+
+class GetAuthStateRequest(_message.Message):
+    __slots__ = ("organization_id", "prompt")
+    ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
+    PROMPT_FIELD_NUMBER: _ClassVar[int]
+    organization_id: str
+    prompt: str
+    def __init__(self, organization_id: _Optional[str] = ..., prompt: _Optional[str] = ...) -> None: ...
 
 class GetAuthStateResponse(_message.Message):
     __slots__ = ("auth_state", "user", "login_hint")

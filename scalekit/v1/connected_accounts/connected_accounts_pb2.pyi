@@ -185,20 +185,22 @@ class CreateConnectedAccountResponse(_message.Message):
     def __init__(self, connected_account: _Optional[_Union[ConnectedAccount, _Mapping]] = ...) -> None: ...
 
 class UpdateConnectedAccountRequest(_message.Message):
-    __slots__ = ("organization_id", "user_id", "connector", "identifier", "id", "connected_account")
+    __slots__ = ("organization_id", "user_id", "connector", "identifier", "id", "connected_account", "scope_selection")
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     USER_ID_FIELD_NUMBER: _ClassVar[int]
     CONNECTOR_FIELD_NUMBER: _ClassVar[int]
     IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
     ID_FIELD_NUMBER: _ClassVar[int]
     CONNECTED_ACCOUNT_FIELD_NUMBER: _ClassVar[int]
+    SCOPE_SELECTION_FIELD_NUMBER: _ClassVar[int]
     organization_id: str
     user_id: str
     connector: str
     identifier: str
     id: str
     connected_account: UpdateConnectedAccount
-    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., connector: _Optional[str] = ..., identifier: _Optional[str] = ..., id: _Optional[str] = ..., connected_account: _Optional[_Union[UpdateConnectedAccount, _Mapping]] = ...) -> None: ...
+    scope_selection: ScopeSelection
+    def __init__(self, organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., connector: _Optional[str] = ..., identifier: _Optional[str] = ..., id: _Optional[str] = ..., connected_account: _Optional[_Union[UpdateConnectedAccount, _Mapping]] = ..., scope_selection: _Optional[_Union[ScopeSelection, _Mapping]] = ...) -> None: ...
 
 class UpdateConnectedAccountResponse(_message.Message):
     __slots__ = ("connected_account",)
@@ -461,6 +463,20 @@ class DisconnectConnectedAccountResponse(_message.Message):
 class GetRedirectUrlRequest(_message.Message):
     __slots__ = ()
     def __init__(self) -> None: ...
+
+class ScopeSelection(_message.Message):
+    __slots__ = ("scopes", "optional_scopes")
+    SCOPES_FIELD_NUMBER: _ClassVar[int]
+    OPTIONAL_SCOPES_FIELD_NUMBER: _ClassVar[int]
+    scopes: _containers.RepeatedScalarFieldContainer[str]
+    optional_scopes: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, scopes: _Optional[_Iterable[str]] = ..., optional_scopes: _Optional[_Iterable[str]] = ...) -> None: ...
+
+class CreateRedirectUrlRequest(_message.Message):
+    __slots__ = ("scope_selection",)
+    SCOPE_SELECTION_FIELD_NUMBER: _ClassVar[int]
+    scope_selection: ScopeSelection
+    def __init__(self, scope_selection: _Optional[_Union[ScopeSelection, _Mapping]] = ...) -> None: ...
 
 class GetRedirectUrlResponse(_message.Message):
     __slots__ = ("redirect_url",)

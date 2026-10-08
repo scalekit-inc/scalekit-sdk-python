@@ -606,7 +606,7 @@ class OIDCConnectionConfig(_message.Message):
     def __init__(self, issuer: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., discovery_endpoint: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., authorize_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., token_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., user_info_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., jwks_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_id: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_secret: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., scopes: _Optional[_Iterable[_Union[OIDCScope, str]]] = ..., token_auth_type: _Optional[_Union[TokenAuthType, str]] = ..., redirect_uri: _Optional[str] = ..., pkce_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., idp_logout_required: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., post_logout_redirect_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., backchannel_logout_redirect_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., sync_user_profile_on_login: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., jit_provisioning_with_sso_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ...) -> None: ...
 
 class OAuthConnectionConfig(_message.Message):
-    __slots__ = ("authorize_uri", "token_uri", "user_info_uri", "client_id", "client_secret", "scopes", "redirect_uri", "pkce_enabled", "prompt", "use_platform_creds", "access_type", "custom_scope_name", "sync_user_profile_on_login", "token_access_type", "tenant_id", "is_cimd", "app_name", "optional_scopes", "extensions", "token_endpoint_auth_method", "googleads_developer_token")
+    __slots__ = ("authorize_uri", "token_uri", "user_info_uri", "client_id", "client_secret", "scopes", "redirect_uri", "pkce_enabled", "prompt", "use_platform_creds", "access_type", "custom_scope_name", "sync_user_profile_on_login", "token_access_type", "tenant_id", "is_cimd", "app_name", "optional_scopes", "extensions", "token_endpoint_auth_method", "googleads_developer_token", "scope_selection_allowed", "required_scopes", "required_optional_scopes")
     AUTHORIZE_URI_FIELD_NUMBER: _ClassVar[int]
     TOKEN_URI_FIELD_NUMBER: _ClassVar[int]
     USER_INFO_URI_FIELD_NUMBER: _ClassVar[int]
@@ -628,6 +628,9 @@ class OAuthConnectionConfig(_message.Message):
     EXTENSIONS_FIELD_NUMBER: _ClassVar[int]
     TOKEN_ENDPOINT_AUTH_METHOD_FIELD_NUMBER: _ClassVar[int]
     GOOGLEADS_DEVELOPER_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    SCOPE_SELECTION_ALLOWED_FIELD_NUMBER: _ClassVar[int]
+    REQUIRED_SCOPES_FIELD_NUMBER: _ClassVar[int]
+    REQUIRED_OPTIONAL_SCOPES_FIELD_NUMBER: _ClassVar[int]
     authorize_uri: _wrappers_pb2.StringValue
     token_uri: _wrappers_pb2.StringValue
     user_info_uri: _wrappers_pb2.StringValue
@@ -649,7 +652,10 @@ class OAuthConnectionConfig(_message.Message):
     extensions: OauthExtensions
     token_endpoint_auth_method: _wrappers_pb2.StringValue
     googleads_developer_token: _wrappers_pb2.StringValue
-    def __init__(self, authorize_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., token_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., user_info_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_id: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_secret: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., scopes: _Optional[_Iterable[str]] = ..., redirect_uri: _Optional[str] = ..., pkce_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., prompt: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., use_platform_creds: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., access_type: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., custom_scope_name: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., sync_user_profile_on_login: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., token_access_type: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., tenant_id: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., is_cimd: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., app_name: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., optional_scopes: _Optional[_Union[OptionalScopes, _Mapping]] = ..., extensions: _Optional[_Union[OauthExtensions, _Mapping]] = ..., token_endpoint_auth_method: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., googleads_developer_token: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ...) -> None: ...
+    scope_selection_allowed: _wrappers_pb2.BoolValue
+    required_scopes: _containers.RepeatedScalarFieldContainer[str]
+    required_optional_scopes: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, authorize_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., token_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., user_info_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_id: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_secret: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., scopes: _Optional[_Iterable[str]] = ..., redirect_uri: _Optional[str] = ..., pkce_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., prompt: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., use_platform_creds: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., access_type: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., custom_scope_name: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., sync_user_profile_on_login: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., token_access_type: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., tenant_id: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., is_cimd: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., app_name: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., optional_scopes: _Optional[_Union[OptionalScopes, _Mapping]] = ..., extensions: _Optional[_Union[OauthExtensions, _Mapping]] = ..., token_endpoint_auth_method: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., googleads_developer_token: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., scope_selection_allowed: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., required_scopes: _Optional[_Iterable[str]] = ..., required_optional_scopes: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class OauthExtensions(_message.Message):
     __slots__ = ("smart", "extra_authorize_params")
@@ -683,14 +689,18 @@ class OptionalScopes(_message.Message):
     def __init__(self, scopes: _Optional[_Iterable[str]] = ..., field_name: _Optional[str] = ...) -> None: ...
 
 class GoogleDWDConfig(_message.Message):
-    __slots__ = ("service_account_json", "scopes", "token_uri")
+    __slots__ = ("service_account_json", "scopes", "token_uri", "scope_selection_allowed", "required_scopes")
     SERVICE_ACCOUNT_JSON_FIELD_NUMBER: _ClassVar[int]
     SCOPES_FIELD_NUMBER: _ClassVar[int]
     TOKEN_URI_FIELD_NUMBER: _ClassVar[int]
+    SCOPE_SELECTION_ALLOWED_FIELD_NUMBER: _ClassVar[int]
+    REQUIRED_SCOPES_FIELD_NUMBER: _ClassVar[int]
     service_account_json: _wrappers_pb2.StringValue
     scopes: _containers.RepeatedScalarFieldContainer[str]
     token_uri: _wrappers_pb2.StringValue
-    def __init__(self, service_account_json: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., scopes: _Optional[_Iterable[str]] = ..., token_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ...) -> None: ...
+    scope_selection_allowed: _wrappers_pb2.BoolValue
+    required_scopes: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, service_account_json: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., scopes: _Optional[_Iterable[str]] = ..., token_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., scope_selection_allowed: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., required_scopes: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class PasswordLessConfig(_message.Message):
     __slots__ = ("type", "frequency", "validity", "enforce_same_browser_origin", "code_challenge_length", "code_challenge_type", "regenerate_passwordless_credentials_on_resend")

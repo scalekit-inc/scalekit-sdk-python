@@ -376,14 +376,18 @@ class McpConfigConnectionToolMapping(_message.Message):
     def __init__(self, connection_id: _Optional[str] = ..., connection_name: _Optional[str] = ..., provider: _Optional[str] = ..., tools: _Optional[_Iterable[str]] = ..., connected_account_id: _Optional[str] = ..., connected_account_status: _Optional[str] = ...) -> None: ...
 
 class CreateMcpSessionTokenRequest(_message.Message):
-    __slots__ = ("mcp_config_id", "identifier", "expiry")
+    __slots__ = ("mcp_config_id", "identifier", "expiry", "key_id", "access_level")
     MCP_CONFIG_ID_FIELD_NUMBER: _ClassVar[int]
     IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
     EXPIRY_FIELD_NUMBER: _ClassVar[int]
+    KEY_ID_FIELD_NUMBER: _ClassVar[int]
+    ACCESS_LEVEL_FIELD_NUMBER: _ClassVar[int]
     mcp_config_id: str
     identifier: str
     expiry: _duration_pb2.Duration
-    def __init__(self, mcp_config_id: _Optional[str] = ..., identifier: _Optional[str] = ..., expiry: _Optional[_Union[_duration_pb2.Duration, _Mapping]] = ...) -> None: ...
+    key_id: str
+    access_level: str
+    def __init__(self, mcp_config_id: _Optional[str] = ..., identifier: _Optional[str] = ..., expiry: _Optional[_Union[_duration_pb2.Duration, _Mapping]] = ..., key_id: _Optional[str] = ..., access_level: _Optional[str] = ...) -> None: ...
 
 class CreateMcpSessionTokenResponse(_message.Message):
     __slots__ = ("token", "expires_at")

@@ -1371,6 +1371,7 @@ class ActionMcp:
         mcp_config_id: str,
         identifier: str,
         expiry: Optional[timedelta] = None,
+        access_level: Optional[str] = None,
     ) -> CreateMcpSessionTokenResponse:
         """Create a short-lived session token for a user to access an MCP server.
 
@@ -1391,6 +1392,10 @@ class ActionMcp:
                 - ``timedelta(minutes=30)`` — 30-minute token
                 - ``timedelta(hours=8)``    — 8-hour token (work-day session)
                 - ``timedelta(days=1)``     — 24-hour token
+            access_level: Tools the token can use. ``"READ_ONLY"`` limits it to
+                tools annotated read-only: other tools are left out of the tool
+                list and refused when called. ``"FULL"``, or omitting it, exposes
+                every tool the configuration exposes.
 
         Returns:
             CreateMcpSessionTokenResponse: Contains:
@@ -1422,6 +1427,7 @@ class ActionMcp:
             mcp_config_id=mcp_config_id,
             identifier=identifier,
             expiry=expiry,
+            access_level=access_level,
         )
         return CreateMcpSessionTokenResponse.from_proto(result_tuple[0])
 

@@ -287,6 +287,7 @@ class McpClient:
         mcp_config_id: str,
         identifier: str,
         expiry: Optional[timedelta] = None,
+        access_level: Optional[str] = None,
     ) -> CreateMcpSessionTokenResponse:
         """
         Create a short-lived session token for a user to authenticate against an MCP server.
@@ -300,6 +301,11 @@ class McpClient:
                                 the server-side default TTL is applied.
                                 Example: ``timedelta(hours=1)``
         :type                 : ``` timedelta ```
+        :param access_level   : Tools the token can use. ``"READ_ONLY"`` limits it to tools
+                                annotated read-only: other tools are left out of the tool
+                                list and refused when called. ``"FULL"``, or omitting it,
+                                exposes every tool the configuration exposes.
+        :type                 : ``` str ```
 
         :returns:
             CreateMcpSessionTokenResponse — contains ``token`` (str) and ``expires_at`` (Timestamp)
@@ -308,6 +314,8 @@ class McpClient:
             mcp_config_id=mcp_config_id,
             identifier=identifier,
         )
+        if access_level is not None:
+            request.access_level = access_level
         if expiry is not None:
             duration = Duration()
             total_seconds = int(expiry.total_seconds())
