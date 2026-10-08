@@ -1,11 +1,13 @@
 
 import enum
+from collections.abc import Mapping
 
 import grpc
 from grpc import StatusCode
 from http import HTTPStatus
 from grpc_status import rpc_status
 from requests.models import Response
+from requests.structures import CaseInsensitiveDict
 from scalekit.v1.errdetails.errdetails_pb2 import ErrorInfo
 
 
@@ -371,3 +373,94 @@ class ScalekitToolForbiddenException(ScalekitToolException, ScalekitForbiddenExc
     """ Provider returned 403/forbidden during tool execution """
     def __init__(self, error: Response | grpc.RpcError):
         ScalekitToolException.__init__(self, error)
+
+
+class _ScalekitUploadErrorBase(ScalekitException):
+    """Shared fields of the resumable-upload errors. Not part of the public API.
+
+    The response fields describe the provider's (or the proxy's) reply. They
+    never include the request headers, so the Scalekit access token is never
+    stored on the exception.
+    """
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        status_code: int | None = None,
+        headers: Mapping[str, str] | None = None,
+        body: str | None = None,
+        upload_id: str | None = None,
+        bytes_committed: int = 0,
+    ) -> None:
+        super().__init__(message)
+        self._status_code = status_code
+        self._headers: CaseInsensitiveDict[str] = CaseInsensitiveDict(headers or {})
+        self._body = body
+        self._upload_id = upload_id
+        self._bytes_committed = bytes_committed
+
+    @property
+    def status_code(self) -> int | None:
+        """HTTP status of the failed response, or ``None`` when no response arrived."""
+        return self._status_code
+
+    @property
+    def headers(self) -> Mapping[str, str]:
+        """Headers of the failed response, case-insensitive (empty when no response arrived)."""
+        return self._headers.copy()
+
+    @property
+    def body(self) -> str | None:
+        """Body of the failed response as text, or ``None`` when no response arrived."""
+        return self._body
+
+    @property
+    def upload_id(self) -> str | None:
+        """Google's upload session ID, or ``None`` when the session was never started."""
+        return self._upload_id
+
+    @property
+    def bytes_committed(self) -> int:
+        """Bytes the server had confirmed as stored when the upload failed."""
+        return self._bytes_committed
+
+
+class ScalekitUploadException(_ScalekitUploadErrorBase):
+    """A resumable upload failed with an HTTP error, a timeout or a connection error.
+
+    Raised for a non-2xx answer to the session-start request, a non-retryable
+    error on a chunk (for example 403), and a retryable failure (408, 429,
+    5xx, timeout, connection error) that persisted after every retry.
+    ``status_code`` is ``None`` when no response arrived; the underlying
+    ``requests`` exception is then available as ``__cause__``.
+
+    Example:
+        >>> try:
+        ...     client.actions.upload_resumable(
+        ...         "googledrive", "user_123", "/upload/drive/v3/files", data=b"hello"
+        ...     )
+        ... except ScalekitUploadException as e:
+        ...     print(e.status_code, e.upload_id, e.bytes_committed)
+    """
+
+
+class ScalekitUploadSessionExpiredException(ScalekitUploadException):
+    """The upload session is gone (HTTP 404 or 410 on a chunk or status query).
+
+    Google upload sessions expire after about a week, and a session can also
+    be cancelled. The upload cannot be resumed: start a new upload. The SDK
+    never restarts one on its own, so it never re-sends data to a new session
+    without the caller deciding to.
+    """
+
+
+class ScalekitUploadProtocolException(_ScalekitUploadErrorBase):
+    """The server's answer does not follow Google's resumable upload protocol.
+
+    Examples: a session-start response without an ``upload_id`` in its
+    ``Location`` header, a malformed or out-of-range ``Range`` header, an
+    unexpected redirect, or a final response whose body is not a JSON object.
+    Retrying the same call is unlikely to help. This is deliberately not a
+    subclass of :class:`ScalekitUploadException`.
+    """
