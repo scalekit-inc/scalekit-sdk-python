@@ -1,6 +1,6 @@
 kind: added
 body: |
-  `scalekit.verify_trigger_event(body, headers=..., secret=...)` and `client.actions.triggers.verify_event(...)` verify the signature of a trigger event delivered to your endpoint and return it as a typed `TriggerEvent`; the standalone function needs no client. Any failure raises `WebhookVerificationError`, and a correctly signed body that is not a valid trigger event raises the new subclass `ScalekitTriggerEventParseException`. Delivery is at least once, so deduplicate on `dedupe_key` plus the connected account. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/v2.21.0/AGENTKIT.md#trigger-events)
+  `scalekit.verify_trigger_event(body, headers=..., secret=...)` and `client.actions.triggers.verify_event(...)` verify the signature of a trigger event delivered to your endpoint and return it as a typed `TriggerEvent`; the standalone function needs no client. Any verification failure raises `WebhookVerificationError`, and a correctly signed body that is not a valid trigger event raises the new subclass `ScalekitTriggerEventParseException`. Delivery is at least once, so deduplicate on `dedupe_key` plus the connected account. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/v2.21.0/AGENTKIT.md#trigger-events)
 
   ```python
   import os
