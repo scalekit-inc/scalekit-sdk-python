@@ -219,6 +219,11 @@ class TestParse(unittest.TestCase):
             "2026-10-01 07:00:45Z",
             "2026-13-01T07:00:45Z",
             "2026-10-01T07:00:45+24:00",
+            "2026-10-01T07:00:45+05:60",  # offset minute 60 is not normalised to +06:00
+            "2026-10-01T07:00:45-00:99",
+            "0000-01-01T00:00:00Z",  # year 0000 is outside 0001-9999
+            "0001-01-01T00:00:00+00:01",  # in UTC, before 0001-01-01
+            "9999-12-31T23:59:59-00:01",  # in UTC, after 9999-12-31
             "yesterday",
             "\uff12\uff10\uff12\uff16-10-01T07:00:45Z",  # full-width digits
             True,
@@ -239,9 +244,17 @@ class TestParse(unittest.TestCase):
             "2026-10-01T02:00:45.5-05:00": datetime(
                 2026, 10, 1, 7, 0, 45, 500000, tzinfo=timezone.utc
             ),
+            # Truncated to microseconds, not rounded.
             "2026-10-01T07:00:45.123456789+00:00": datetime(
                 2026, 10, 1, 7, 0, 45, 123456, tzinfo=timezone.utc
             ),
+            "2026-10-01T07:00:45.9999999Z": datetime(
+                2026, 10, 1, 7, 0, 45, 999999, tzinfo=timezone.utc
+            ),
+            "2026-10-01T12:59:45+05:59": datetime(2026, 10, 1, 7, 0, 45, tzinfo=timezone.utc),
+            "0001-01-01T00:00:00Z": datetime(1, 1, 1, tzinfo=timezone.utc),
+            "0001-01-01T00:01:00+00:01": datetime(1, 1, 1, tzinfo=timezone.utc),
+            "9999-12-31T23:59:59Z": datetime(9999, 12, 31, 23, 59, 59, tzinfo=timezone.utc),
         }
         for raw, expected in cases.items():
             data = json.loads(load("valid_account.json"))
@@ -260,6 +273,16 @@ class TestParse(unittest.TestCase):
         for body in (b"[]", b'"x"', b"null", b"42"):
             with self.subTest(body=body), self.assertRaises(ScalekitTriggerEventParseException):
                 verify(body)
+
+    def test_body_starting_with_bom_is_a_parse_error(self):
+        raw = load("valid_account.json")
+        for body in (b"\xef\xbb\xbf" + raw, "\ufeff" + raw.decode("utf-8")):
+            with (
+                self.subTest(body_type=type(body).__name__),
+                self.assertRaises(ScalekitTriggerEventParseException) as ctx,
+            ):
+                verify(body)  # correctly signed, BOM included
+            self.assertEqual(str(ctx.exception), "Invalid trigger event: body is not valid JSON")
 
     def test_nan_literal_rejected(self):
         data = load("valid_account.json").replace(b'"size": 42', b'"size": NaN')
@@ -453,6 +476,129 @@ class TestSignature(unittest.TestCase):
             verify_trigger_event(body, sign(body), SECRET)
 
 
+class MultiHeaders:
+    """Headers with repeated names, like Werkzeug/Starlette: get() is the first value."""
+
+    def __init__(self, pairs: list[tuple[str, str]]):
+        self._pairs = pairs
+
+    def get(self, key, default=None):
+        return next((v for k, v in self._pairs if k.lower() == key.lower()), default)
+
+    def items(self):
+        return list(self._pairs)
+
+
+class TestDuplicateHeaders(unittest.TestCase):
+    def setUp(self):
+        self.body = load("valid_account.json")
+        self.signed = sign(self.body)
+        self.wrong_sig = sign(self.body, secret=OTHER_SECRET)["webhook-signature"]
+
+    def pairs(self, **overrides: list[str]) -> MultiHeaders:
+        pairs = []
+        for name, value in self.signed.items():
+            for item in overrides.get(name.replace("-", "_"), [value]):
+                pairs.append((name, item))
+        return MultiHeaders(pairs)
+
+    def assert_verifies(self, headers) -> None:
+        event = verify_trigger_event(self.body, headers=headers, secret=SECRET)
+        self.assertEqual(event.dedupe_key, "dk_123")
+
+    def assert_rejected(self, headers, message: str) -> None:
+        with self.assertRaises(WebhookVerificationError) as ctx:
+            verify_trigger_event(self.body, headers=headers, secret=SECRET)
+        self.assertNotIsInstance(ctx.exception, ScalekitTriggerEventParseException)
+        self.assertEqual(str(ctx.exception), message)
+
+    def test_every_signature_value_is_a_candidate(self):
+        valid = self.signed["webhook-signature"]
+        self.assert_verifies(self.pairs(webhook_signature=[self.wrong_sig, valid]))
+        self.assert_verifies(self.pairs(webhook_signature=[valid, self.wrong_sig]))
+        mixed_case = {
+            **self.signed,
+            "webhook-signature": self.wrong_sig,
+            "Webhook-Signature": valid,
+        }
+        self.assert_verifies(mixed_case)
+
+    def test_only_wrong_signature_values_is_invalid_signature(self):
+        headers = self.pairs(webhook_signature=[self.wrong_sig, self.wrong_sig])
+        self.assert_rejected(headers, "Invalid signature")
+
+    def test_different_ids_are_rejected(self):
+        message = "Multiple webhook-id headers with different values"
+        self.assert_rejected(self.pairs(webhook_id=[MSG_ID, "msg_other"]), message)
+        self.assert_rejected({**self.signed, "webhook-id": f"{MSG_ID}, msg_other"}, message)
+        self.assert_rejected({**self.signed, "Webhook-Id": "msg_other"}, message)
+        # Values are not trimmed: only "," and the spaces/tabs after it separate them.
+        self.assert_rejected({**self.signed, "webhook-id": f"{MSG_ID} ,{MSG_ID}"}, message)
+
+    def test_different_timestamps_are_rejected(self):
+        ts = self.signed["webhook-timestamp"]
+        other = str(int(ts) + 1)
+        message = "Multiple webhook-timestamp headers with different values"
+        self.assert_rejected(self.pairs(webhook_timestamp=[ts, other]), message)
+        self.assert_rejected({**self.signed, "webhook-timestamp": f"{ts}, {other}"}, message)
+        self.assert_rejected({**self.signed, "WEBHOOK-TIMESTAMP": other}, message)
+
+    def test_identical_duplicates_are_accepted(self):
+        ts = self.signed["webhook-timestamp"]
+        self.assert_verifies(self.pairs(webhook_id=[MSG_ID, MSG_ID], webhook_timestamp=[ts, ts]))
+        self.assert_verifies({**self.signed, "webhook-id": f"{MSG_ID}, {MSG_ID}"})
+        self.assert_verifies({**self.signed, "webhook-timestamp": f"{ts},{ts}"})
+        self.assert_verifies({**self.signed, "webhook-timestamp": f"{ts},\t {ts}"})
+        self.assert_verifies({**self.signed, "Webhook-Id": MSG_ID})
+        # Empty parts left by a trailing "," are ignored.
+        self.assert_verifies({**self.signed, "webhook-id": f"{MSG_ID},"})
+
+    def test_werkzeug_repeated_headers(self):
+        try:
+            from werkzeug.datastructures import Headers
+        except ImportError:
+            self.skipTest("werkzeug not installed")
+        pairs = [*self.signed.items(), ("Webhook-Id", "msg_other")]
+        self.assert_rejected(Headers(pairs), "Multiple webhook-id headers with different values")
+        pairs = [*self.signed.items(), ("Webhook-Signature", self.wrong_sig)]
+        self.assert_verifies(Headers(pairs))
+
+    def test_timestamp_must_be_plain_digits(self):
+        ts = self.signed["webhook-timestamp"]
+        for bad in (
+            "-1",
+            "+1",
+            "1.5",
+            " 1",
+            "1e9",
+            "",
+            f"{ts}.0",
+            f" {ts}",
+            f"{ts} ",
+            f"{ts}\n",
+            ", ",  # present, but every part is empty
+            "0x10",
+            "\uff11\uff12",  # full-width digits
+            "\u0661",  # Arabic-Indic digit one
+        ):
+            with self.subTest(timestamp=bad):
+                self.assert_rejected(
+                    {**self.signed, "webhook-timestamp": bad}, "Invalid Signature Headers"
+                )
+
+    def test_absent_timestamp_is_still_missing_headers(self):
+        headers = dict(self.signed)
+        del headers["webhook-timestamp"]
+        self.assert_rejected(headers, "Missing required headers")
+
+    def test_missing_headers_are_reported_before_a_bad_timestamp(self):
+        headers = {**self.signed, "webhook-timestamp": "1.5"}
+        del headers["webhook-id"]
+        self.assert_rejected(headers, "Missing required headers")
+        headers = {**self.signed, "webhook-id": "", "webhook-timestamp": ""}
+        self.assert_rejected(headers, "Missing required headers")
+
+
 class TestClientEntryPoint(unittest.TestCase):
     def setUp(self):
         self.actions = ActionClient(tools_client=None, connected_accounts_client=None)
@@ -563,6 +709,17 @@ class TestExistingWebhookVerifiersUnchanged(unittest.TestCase):
         headers["webhook-timestamp"] = f"{ts}.9"  # parsed as float, signed over floor()
         self.assertIs(self.client.verify_webhook_payload(SECRET, headers, self.body), True)
 
+    def test_trigger_header_rules_do_not_apply(self):
+        # Exact-name lookup only: a differently cased duplicate is ignored, not rejected.
+        headers = {**sign(self.body), "Webhook-Id": "msg_other"}
+        self.assertIs(self.client.verify_webhook_payload(SECRET, headers, self.body), True)
+        # float() timestamp parsing: surrounding whitespace and "+" are still accepted.
+        ts = sign(self.body)["webhook-timestamp"]
+        for value in (f" {ts}", f"+{ts}"):
+            headers = {**sign(self.body), "webhook-timestamp": value}
+            with self.subTest(timestamp=value):
+                self.assertIs(self.client.verify_webhook_payload(SECRET, headers, self.body), True)
+
     def test_malformed_secret_raises_raw_binascii_error(self):
         with self.assertRaises(binascii.Error) as ctx:
             self.client.verify_webhook_payload(MALFORMED_SECRET, sign(self.body), self.body)
@@ -576,6 +733,10 @@ class TestExistingWebhookVerifiersUnchanged(unittest.TestCase):
     def test_empty_header_counts_as_missing(self):
         headers = sign(self.body)
         headers["webhook-id"] = ""
+        with self.assertRaises(WebhookVerificationError) as ctx:
+            self.client.verify_webhook_payload(SECRET, headers, self.body)
+        self.assertEqual(str(ctx.exception), "Missing required headers")
+        headers = {**sign(self.body), "webhook-timestamp": ""}  # trigger path: bad headers
         with self.assertRaises(WebhookVerificationError) as ctx:
             self.client.verify_webhook_payload(SECRET, headers, self.body)
         self.assertEqual(str(ctx.exception), "Missing required headers")

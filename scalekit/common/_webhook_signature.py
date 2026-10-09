@@ -12,6 +12,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import hmac
+import re
 from datetime import datetime, timedelta, timezone
 from math import floor
 
@@ -19,6 +20,8 @@ from scalekit.common.exceptions import WebhookVerificationError
 
 WEBHOOK_TOLERANCE = timedelta(minutes=5)
 WEBHOOK_SIGNATURE_VERSION = "v1"
+# Unix seconds as plain ASCII digits: no sign, fraction, exponent or whitespace.
+_DIGITS_ONLY = re.compile(r"[0-9]+")
 
 
 def compute_signature(secret: bytes, data: str) -> str:
@@ -59,6 +62,7 @@ def verify_payload_signature(
     tolerance: timedelta = WEBHOOK_TOLERANCE,
     signature_version: str = WEBHOOK_SIGNATURE_VERSION,
     skip_malformed_signatures: bool = False,
+    strict_timestamp: bool = False,
 ) -> bool:
     """Verify a ``whsec_`` HMAC signature over ``"{id}.{timestamp}.{payload}"``.
 
@@ -69,11 +73,21 @@ def verify_payload_signature(
     version, invalid base64 or the wrong decoded length is skipped, so a later valid
     candidate still verifies.
 
+    With ``strict_timestamp=True`` (trigger path only) an empty ``webhook_timestamp``
+    is not "missing" (only ``None`` is), and the value must be ASCII digits;
+    anything else raises "Invalid Signature Headers". With ``False`` the historical
+    ``float()`` parsing is kept.
+
     Raises:
         WebhookVerificationError: Missing headers, a secret without ``_``, a stale or
             future timestamp, or no matching signature.
     """
-    if not webhook_id or not webhook_timestamp or not webhook_signature:
+    if (
+        not webhook_id
+        or not webhook_signature
+        or webhook_timestamp is None
+        or (not strict_timestamp and not webhook_timestamp)
+    ):
         raise WebhookVerificationError("Missing required headers")
 
     secret_parts = secret.split("_")
@@ -82,6 +96,8 @@ def verify_payload_signature(
 
     secret_bytes = base64.b64decode(secret_parts[1])
 
+    if strict_timestamp and _DIGITS_ONLY.fullmatch(webhook_timestamp) is None:
+        raise WebhookVerificationError("Invalid Signature Headers")
     timestamp = verify_timestamp(webhook_timestamp, tolerance=tolerance)
 
     timestamp_str = str(floor(timestamp.replace(tzinfo=timezone.utc).timestamp()))

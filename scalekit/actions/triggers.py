@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Iterable
 from typing import Protocol
 
@@ -39,17 +40,58 @@ class HeadersLike(Protocol):
         ...
 
 
-def _header(headers: HeadersLike, name: str) -> str | None:
-    """Look a header up by exact name, then case-insensitively."""
-    value = headers.get(name)
-    if value is None:
-        for key, candidate in headers.items():
-            if isinstance(key, str) and key.lower() == name:
-                value = candidate
-                break
-    if value is not None and not isinstance(value, str):
-        raise TypeError(f"headers[{name!r}] must be a str, got {type(value).__name__}")
-    return value
+# Separator a server or proxy puts between repeated header values it joins into one
+# line: "," plus the spaces or tabs after it. Values are not otherwise trimmed, so
+# " 1" stays " 1" (and fails the timestamp check).
+_VALUE_SEPARATOR = re.compile(r",[ \t]*")
+
+
+def _header_values(headers: HeadersLike, name: str) -> list[str]:
+    """Every value of header ``name`` (lower-case), matched case-insensitively.
+
+    ``items()`` yields repeated headers once per value on Werkzeug and Starlette;
+    ``get()`` is the fallback for objects whose ``items()`` does not list the header.
+    """
+    found: list[object] = [
+        value for key, value in headers.items() if isinstance(key, str) and key.lower() == name
+    ]
+    if not found:
+        fallback = headers.get(name)
+        if fallback is not None:
+            found.append(fallback)
+    values: list[str] = []
+    for value in found:
+        if not isinstance(value, str):
+            raise TypeError(f"headers[{name!r}] must be a str, got {type(value).__name__}")
+        values.append(value)
+    return values
+
+
+def _single_header(headers: HeadersLike, name: str) -> str | None:
+    """A header that must have one value; identical repeats are accepted.
+
+    Repeated headers arrive as separate values or joined with ``", "``, so each value
+    is split on ``","`` (and the spaces after it) before the values are compared;
+    empty parts are ignored. Returns ``None`` when the header is absent and ``""``
+    when it is present but empty.
+    """
+    values = _header_values(headers, name)
+    if not values:
+        return None
+    distinct: list[str] = []
+    for value in values:
+        for part in _VALUE_SEPARATOR.split(value):
+            if part and part not in distinct:
+                distinct.append(part)
+    if len(distinct) > 1:
+        raise WebhookVerificationError(f"Multiple {name} headers with different values")
+    return distinct[0] if distinct else ""
+
+
+def _joined_header(headers: HeadersLike, name: str) -> str | None:
+    """``webhook-signature``: every value holds candidates; join them with ``" "``."""
+    values = _header_values(headers, name)
+    return " ".join(values) if values else None
 
 
 def _reject_constant(name: str) -> None:
@@ -82,8 +124,12 @@ def verify_trigger_event(
     request headers. The signature is checked first: the ``webhook-signature`` header
     must hold a ``v1`` HMAC-SHA256 of ``"{webhook-id}.{webhook-timestamp}.{body}"``
     keyed with your ``whsec_`` secret, and ``webhook-timestamp`` must be within five
-    minutes of now. Header names are matched case-insensitively. Only then is the body
-    parsed. This is a local check: no network call and no client credentials.
+    minutes of now. Header names are matched case-insensitively. Every
+    ``webhook-signature`` value is a candidate; ``webhook-id`` and
+    ``webhook-timestamp`` may repeat only with identical values (also when joined with
+    ``","``), and ``webhook-timestamp`` must be Unix seconds as plain digits. Only then
+    is the body parsed. This is a local check: no network call and no client
+    credentials.
 
     Delivery is at least once, so the same event can arrive more than once. Use
     ``event.dedupe_key`` plus the connected account your handler acts as as the
@@ -101,12 +147,15 @@ def verify_trigger_event(
         The parsed, immutable event.
 
     Raises:
-        WebhookVerificationError: Missing signature headers, a malformed secret, a
+        WebhookVerificationError: Missing signature headers, a ``webhook-id`` or
+            ``webhook-timestamp`` repeated with different values, a timestamp that is
+            not plain digits, a malformed secret, a
             timestamp outside the five-minute window, no signature candidate that
             matches (malformed candidates are skipped, so a later valid one still
             verifies), or a body that is not valid UTF-8. Respond ``400``.
         ScalekitTriggerEventParseException: The signature is valid but the body is not
-            a valid trigger event. Subclass of ``WebhookVerificationError``.
+            a valid trigger event (including a body that starts with a byte order
+            mark). Subclass of ``WebhookVerificationError``.
         TypeError: ``body`` is not ``str``/``bytes``, ``secret`` is not a ``str``, or a
             signature header value is not a ``str``.
 
@@ -135,14 +184,19 @@ def verify_trigger_event(
     if not isinstance(secret, str):
         raise TypeError(f"secret must be a str, got {type(secret).__name__}")
 
+    webhook_id = _single_header(headers, _ID_HEADER)
+    webhook_timestamp = _single_header(headers, _TIMESTAMP_HEADER)
+    webhook_signature = _joined_header(headers, _SIGNATURE_HEADER)
+
     try:
         verify_payload_signature(
             secret,
-            _header(headers, _ID_HEADER),
-            _header(headers, _TIMESTAMP_HEADER),
-            _header(headers, _SIGNATURE_HEADER),
+            webhook_id,
+            webhook_timestamp,
+            webhook_signature,
             text,
             skip_malformed_signatures=True,
+            strict_timestamp=True,
         )
     except WebhookVerificationError:
         raise
@@ -152,6 +206,9 @@ def verify_trigger_event(
         # signature candidates are skipped, so they end as "Invalid signature".
         raise WebhookVerificationError("Malformed webhook secret or webhook headers") from exc
 
+    if text.startswith("\ufeff"):
+        # JSON text must not start with a byte order mark (RFC 8259 section 8.1).
+        raise ScalekitTriggerEventParseException("Invalid trigger event: body is not valid JSON")
     try:
         data = json.loads(text, parse_constant=_reject_constant)
     except (ValueError, RecursionError) as exc:  # RecursionError: absurdly deep nesting

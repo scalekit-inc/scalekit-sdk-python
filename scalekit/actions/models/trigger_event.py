@@ -47,8 +47,9 @@ _E = TypeVar("_E", bound=Enum)
 _RFC3339 = re.compile(
     r"(?P<year>[0-9]{4})-(?P<month>[0-9]{2})-(?P<day>[0-9]{2})[Tt]"
     r"(?P<hour>[0-9]{2}):(?P<minute>[0-9]{2}):(?P<second>[0-9]{2})(?:\.(?P<fraction>[0-9]+))?"
-    r"(?:(?P<utc>[Zz])|(?P<sign>[+-])(?P<off_hour>[0-9]{2}):(?P<off_minute>[0-9]{2}))",
+    r"(?:(?P<utc>[Zz])|(?P<sign>[+-])(?P<off_hour>[0-9]{2}):(?P<off_minute>[0-5][0-9]))",
 )
+_MIN_YEAR, _MAX_YEAR = 1, 9999
 
 
 def _enum_or_raw(enum_cls: type[_E], value: object, field: str) -> _E | str:
@@ -62,8 +63,9 @@ def _enum_or_raw(enum_cls: type[_E], value: object, field: str) -> _E | str:
 
 def _parse_rfc3339(value: str) -> datetime:
     match = _RFC3339.fullmatch(value)
-    if match is None:
+    if match is None or not _MIN_YEAR <= int(match["year"]) <= _MAX_YEAR:
         raise ValueError("occurred_at must be an RFC 3339 timestamp with a UTC offset")
+    # Python datetimes hold microseconds: digits past the sixth are truncated.
     fraction = (match["fraction"] or "")[:6].ljust(6, "0")
     if match["utc"]:
         tz = timezone.utc
@@ -80,6 +82,8 @@ def _parse_rfc3339(value: str) -> datetime:
         int(fraction),
         tzinfo=tz,
     )
+    # Raises OverflowError when the UTC instant falls outside years 0001-9999,
+    # for example "0001-01-01T00:00:00+01:00"; the caller reports it as a parse error.
     return parsed.astimezone(timezone.utc)
 
 
@@ -115,6 +119,7 @@ class TriggerEvent(BaseModel):
         resource_type: Type of the changed resource in the third-party app.
         resource_id: ID of the changed resource; ``None`` when the event has none.
         occurred_at: When the change happened (timezone-aware UTC), or ``None``.
+            Fractional seconds are truncated to microseconds.
         detection_mode: ``DetectionMode`` member, or the raw string for an unknown value.
         payload_state: ``PayloadState`` member, or the raw string for an unknown value.
         payload: The resource data as parsed JSON (``dict``, ``list``, ``str``, number,

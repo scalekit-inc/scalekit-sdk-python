@@ -834,17 +834,17 @@ Access via `client.connect.mcp` / `client.actions.mcp`. Requires `McpClient` to 
 
 ### Trigger events
 
-<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">verify_event</a>(body, *, headers, secret) -> TriggerEvent</code></summary>
+<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">verify_event</a>(body, /, *, headers, secret) -> TriggerEvent</code></summary>
 <dl><dd>
 
-Verifies the signature of a trigger event Scalekit delivered to your endpoint, then parses it into an immutable [`TriggerEvent`](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/models/trigger_event.py). The same function is available without a client as `scalekit.verify_trigger_event(body, *, headers, secret)`; both are local checks (no network call), so they are safe inside `async def` handlers.
+Verifies the signature of a trigger event Scalekit delivered to your endpoint, then parses it into an immutable [`TriggerEvent`](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/models/trigger_event.py). The same function is available without a client as `scalekit.verify_trigger_event(body, /, *, headers, secret)`; both are local checks (no network call), so they are safe inside `async def` handlers.
 
-- The signature is checked first: `webhook-signature` must be a `v1` HMAC-SHA256 of `"{webhook-id}.{webhook-timestamp}.{body}"` keyed with your `whsec_` secret, and `webhook-timestamp` must be within five minutes of now. Header names match case-insensitively.
+- The signature is checked first: `webhook-signature` must be a `v1` HMAC-SHA256 of `"{webhook-id}.{webhook-timestamp}.{body}"` keyed with your `whsec_` secret, and `webhook-timestamp` must be within five minutes of now, given as Unix seconds in plain digits. Header names match case-insensitively. Every `webhook-signature` value is a candidate; a repeated `webhook-id` or `webhook-timestamp` must repeat the same value.
 - Any failure raises `WebhookVerificationError`. A correctly signed body that is not a valid trigger event raises `ScalekitTriggerEventParseException`, a subclass, so one `except WebhookVerificationError` answering `400` covers both.
 - Delivery is at least once. Use `dedupe_key` plus the connected account you act as as the idempotency key.
 - Branch on `delivery_scope`: `DeliveryScope.ACCOUNT` events carry `connected_account_id`; `DeliveryScope.CONNECTION` events apply to the whole connection and have `connected_account_id == ""`.
 - When `payload_state` is `PayloadState.REFERENCE`, `payload` is `None`: fetch the resource by `resource_type` and `resource_id`.
-- Enum fields hold the enum member for known values and the raw `str` for newer ones; fields this SDK version does not know are kept in `event.model_extra`. `occurred_at` is a timezone-aware UTC `datetime` or `None`.
+- Enum fields hold the enum member for known values and the raw `str` for newer ones; fields this SDK version does not know are kept in `event.model_extra`. `occurred_at` is a timezone-aware UTC `datetime` or `None`; fractional seconds are truncated to microseconds.
 
 ```python
 import os
