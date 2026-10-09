@@ -10,7 +10,6 @@ header handling exactly as they are.
 from __future__ import annotations
 
 import base64
-import binascii
 import hashlib
 import hmac
 from datetime import datetime, timedelta, timezone
@@ -100,7 +99,9 @@ def verify_payload_signature(
                 continue
             try:
                 signature = base64.b64decode(signature_parts[1], validate=True)
-            except binascii.Error:
+            except ValueError:
+                # binascii.Error (bad base64) is a ValueError subclass; non-ASCII text
+                # raises a plain ValueError.
                 continue
             if len(signature) != len(computed_signature):
                 continue

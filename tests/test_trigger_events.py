@@ -10,6 +10,7 @@ import hashlib
 import hmac
 import importlib.util
 import json
+import os
 import tempfile
 import time
 import unittest
@@ -386,7 +387,14 @@ class TestSignature(unittest.TestCase):
         body = load("valid_account.json")
         headers = sign(body)
         valid = headers["webhook-signature"]
-        malformed = ["v1,AAAA", "v1,!!!!", "v1,AAA", "v1", "v2," + self._right_hmac(body, headers)]
+        malformed = [
+            "v1,AAAA",
+            "v1,!!!!",
+            "v1,AAA",
+            "v1,\u00e9\u00e9\u00e9\u00e9",
+            "v1",
+            "v2," + self._right_hmac(body, headers),
+        ]
         for candidate in malformed:
             with self.subTest(candidate=candidate):
                 headers["webhook-signature"] = f"{candidate} {valid}"
@@ -398,7 +406,14 @@ class TestSignature(unittest.TestCase):
     def test_only_malformed_candidates_is_invalid_signature(self):
         body = load("valid_account.json")
         headers = sign(body)
-        for value in ("v1,AAAA", "v1,!!!!", "v1,AAA", "v1", "v1,AAAA v1,!!!! v1"):
+        for value in (
+            "v1,AAAA",
+            "v1,!!!!",
+            "v1,AAA",
+            "v1,\u00e9\u00e9\u00e9\u00e9",
+            "v1",
+            "v1,AAAA v1,!!!! v1",
+        ):
             with self.subTest(signature=value):
                 headers["webhook-signature"] = value
                 with self.assertRaises(WebhookVerificationError) as ctx:
@@ -676,7 +691,10 @@ class TestDocumentedSnippetTypeChecks(unittest.TestCase):
         """Type-check ``source``; return only the errors reported for it."""
         from mypy import api
 
-        with tempfile.TemporaryDirectory() as tmp:
+        repo_root = str(Path(__file__).resolve().parent.parent)
+        # MYPYPATH wins over site-packages, so this checks the checkout under test
+        # whatever the working directory or installed scalekit.
+        with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {"MYPYPATH": repo_root}):
             path = Path(tmp) / "snippet.py"
             path.write_text(source, encoding="utf-8")
             stdout, stderr, _ = api.run(
@@ -684,6 +702,7 @@ class TestDocumentedSnippetTypeChecks(unittest.TestCase):
                     "--check-untyped-defs",
                     "--follow-imports=silent",
                     "--no-error-summary",
+                    "--show-absolute-path",  # cwd-independent paths for the filter below
                     "--cache-dir=/dev/null",
                     str(path),
                 ]
