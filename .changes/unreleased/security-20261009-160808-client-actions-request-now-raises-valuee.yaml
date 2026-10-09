@@ -1,10 +1,10 @@
 kind: security
 body: |
-  `client.actions.request()` could send the client's bearer token and the `connection_name` and `identifier` headers outside the proxy prefix (`/proxy/` under the environment URL) when `path` resolved outside it or a proxied API redirected outside it. It now raises `ValueError` before sending anything when `path` could be routed outside the prefix: for example through `..` segments in literal, percent-encoded or backslash form, or `v1/users`, which without a leading `/` would become `/proxyv1/users`. With an `http://` environment URL, this also covers the URL a forward proxy would receive, even when none is configured. A redirect outside the prefix is still followed, but without those credentials. Any other path or redirect is sent exactly as before.
+  `client.actions.request(...)` and `client.connect.request(...)` could send the client's bearer token and the `connection_name` and `identifier` headers outside `<environment URL>/proxy/` when `path` resolved outside that prefix or a proxied API redirected outside it. They now raise `ValueError` before sending anything when `path` could be routed outside the prefix: for example through `..` segments, including percent-encoded or backslash forms, or `v1/users`, which without a leading `/` would be sent to `/proxyv1/users`. With an `http://` environment URL, the check also covers the URL a forward proxy would receive, whether or not one is configured. A redirect outside the prefix is still followed, but without those credentials. Every other path and redirect is sent exactly as before.
 
   - **Affected versions:** `>=2.4.17, <2.20.1`
   - **Patched versions:** `2.20.1`
-  - **Action:** upgrade if you build `path` from untrusted input or call APIs that can redirect.
+  - **Action:** upgrade. This matters most if you build `path` from untrusted input, such as values supplied by end users or by an AI agent, or call APIs whose responses you do not control. If a call now raises `ValueError` for a path such as `v1/users`, add the leading `/`.
 time: '2026-10-09T16:08:08.484400+00:00'
 custom:
   Breaking: 'No'
