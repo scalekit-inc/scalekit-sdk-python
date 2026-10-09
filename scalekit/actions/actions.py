@@ -550,8 +550,10 @@ class ActionClient:
             It is appended to ``{env_url}/proxy`` and sent as given. A path
             that resolves outside the proxy prefix (for example through
             ``..`` segments, including percent-encoded or backslash forms)
-            raises ``ValueError`` before any request is sent. Redirects are
-            followed as before, but a redirect to a location outside the proxy
+            raises ``ValueError`` before any request is sent. With an
+            ``http://`` env URL this also covers the URL a forward proxy would
+            receive, even when none is configured. Redirects are followed as
+            before, but a redirect to a location outside the proxy
             prefix is sent without the client's bearer token and without the
             ``connection_name`` and ``identifier`` headers.
         :type path: str

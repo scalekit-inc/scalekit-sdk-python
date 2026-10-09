@@ -14,12 +14,16 @@ It never rewrites a URL: a request that passes is sent exactly as built.
 
 from __future__ import annotations
 
+import contextlib
 import re
 from collections.abc import Callable
 from typing import cast
 from urllib.parse import unquote
 
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.exceptions import LocationParseError
+from urllib3.util import parse_url
 
 _PROXY_PREFIX = "/proxy/"
 
@@ -40,6 +44,11 @@ _session_should_strip_auth = cast(
     "Callable[[requests.Session, str, str], bool]",
     requests.Session.should_strip_auth,
 )
+# Only asked for request-targets (request_url); it never sends anything.
+_URL_ADAPTER = HTTPAdapter()
+
+# A proxy for every URL: request_url uses only whether one applies and its scheme.
+_ANY_FORWARD_PROXY = {"all": "http://forward-proxy.invalid"}
 
 _OUTSIDE_PROXY_MESSAGE = (
     "path must resolve under the proxy prefix: start it with '/' and do not let '..' "
@@ -52,7 +61,11 @@ def ensure_under_proxy_prefix(env_url: str, url: str) -> None:
 
     The check starts from the path ``requests`` actually sends for ``url``
     (``requests`` and ``urllib3`` may already have removed dot segments or
-    decoded ``%2e``). That path is percent-decoded once and cleaned as Go
+    decoded ``%2e``). For a URL that is not ``https``, a forward proxy may be
+    used: ``requests`` then hands ``urllib3`` the absolute URL, and both
+    rebuild it (dropping an empty ``;`` parameter, removing dot segments
+    again), so that path is checked as well.
+    Each path is percent-decoded once and cleaned as Go
     routers clean it (``clean_path``): runs of ``/`` collapse and dot
     segments are resolved. This is done twice, as is and with ``\`` treated as
     ``/``, and each result must equal ``<base>/proxy`` or start with
@@ -76,7 +89,8 @@ def ensure_under_proxy_prefix(env_url: str, url: str) -> None:
         ...
         ValueError: path must resolve under the proxy prefix: ...
     """
-    if not _path_is_under_prefix(env_url, _wire_path(url)):
+    prepared = requests.Request(method="GET", url=url).prepare()
+    if not all(_path_is_under_prefix(env_url, sent) for sent in _sent_paths(prepared)):
         raise ValueError(_OUTSIDE_PROXY_MESSAGE)
 
 
@@ -116,10 +130,9 @@ class ProxySession(requests.Session):
         url = prepared_request.url
         if not url or _session_should_strip_auth(self, self._prefix_url, url):
             return False
-        # requests sets a hop's URL directly, without urllib3's URL parser, so
-        # urllib3 still re-encodes its path when sending.
-        sent = _as_sent(prepared_request.path_url.split("?", 1)[0])
-        return _path_is_under_prefix(self._env_url, sent)
+        return all(
+            _path_is_under_prefix(self._env_url, sent) for sent in _sent_paths(prepared_request)
+        )
 
 
 def _path_is_under_prefix(env_url: str, sent: str) -> bool:
@@ -141,6 +154,37 @@ def _path_is_under_prefix(env_url: str, sent: str) -> bool:
     return True
 
 
+def _sent_paths(prepared: requests.PreparedRequest) -> list[str]:
+    """Return the path of every request line ``prepared`` may be sent with.
+
+    ``requests`` decides the request-target (``HTTPAdapter.request_url``), and
+    this asks it for both cases: without a proxy (also a SOCKS proxy or an
+    ``https`` tunnel) and through a forward proxy, whether or not one is
+    configured. ``urllib3`` then writes the target as follows.
+
+    * A path (``/...``) is sent as is, except that ``urllib3`` may re-encode a
+      redirect hop's path (``_as_sent``); for a first request ``requests``
+      already did, and ``_as_sent`` changes nothing.
+    * An absolute URL (through a forward proxy, for any URL that is not
+      ``https``) is sent as ``urllib3.util.parse_url`` rebuilds it. That
+      removes dot segments again and treats ``%2F`` as part of a segment;
+      ``requests`` may already have dropped an empty ``;`` parameter from the
+      last segment, which can leave a ``..`` behind.
+    """
+    paths: list[str] = []
+    for proxies in (None, _ANY_FORWARD_PROXY):
+        target = _URL_ADAPTER.request_url(prepared, proxies)
+        if target.startswith("/"):
+            paths.append(_as_sent(target.split("?", 1)[0]))
+            continue
+        # Like urllib3's urlopen, parse any other target as an absolute URL.
+        # If that fails here, the send fails the same way before writing
+        # anything, so there is no further path to check.
+        with contextlib.suppress(LocationParseError):
+            paths.append(parse_url(target).path or "/")
+    return paths
+
+
 def _wire_path(url: str) -> str:
     """Return the path (without the query) that ``requests`` sends for ``url``.
 
@@ -152,7 +196,7 @@ def _wire_path(url: str) -> str:
 
 
 def _as_sent(path: str) -> str:
-    """Return a redirect hop's ``path`` as ``urllib3`` writes it in the request line.
+    """Return ``path`` as ``urllib3`` writes it in an origin-form request line.
 
     When any ``%`` in the path does not start a valid ``%XX`` escape, ``urllib3``
     encodes every ``%`` as ``%25``, so the server decodes ``%2F`` back to the

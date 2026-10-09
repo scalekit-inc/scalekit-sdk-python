@@ -6,6 +6,7 @@ SDK meant to send. No credentials or network access beyond loopback are needed.
 """
 
 import http.server
+import os
 import threading
 import unittest
 from unittest import mock
@@ -85,12 +86,12 @@ class _ProxyServerTestCase(unittest.TestCase):
         tools.core_client = core
         return ActionClient(tools_client=tools, connected_accounts_client=mock.MagicMock()), core
 
-    def assert_rejected(self, env_url, path, method="GET"):
+    def assert_rejected(self, env_url, path, method="GET", **kwargs):
         with self.subTest(env_url=env_url, path=path, method=method):
             self.server.received.clear()
             client, core = self._client(env_url)
             with self.assertRaises(ValueError) as ctx:
-                client.request("googledrive", "user@example.com", path, method=method)
+                client.request("googledrive", "user@example.com", path, method=method, **kwargs)
             self.assertIn("proxy prefix", str(ctx.exception))
             self.assertNotIn(path, str(ctx.exception))
             self.assertEqual(self.server.received, [], "nothing may reach the server")
@@ -423,6 +424,82 @@ class TestRedirectsKeepCredentialsInsideProxy(_ProxyServerTestCase):
         self.assert_credentials(self.server.hops[0][2], present=True)
         self.assert_credentials(self.server.hops[1][2], present=True)
         self.assert_credentials(self.server.hops[2][2], present=False)
+
+
+_PROXIED_ENV = "http://scalekit-env.invalid"
+
+
+class TestRequestThroughForwardProxy(_ProxyServerTestCase):
+    """With an ``http://`` env URL, a forward proxy gets the absolute URL.
+
+    ``self.server`` plays the forward proxy: it records the absolute-form
+    request-target and answers itself, so the env host is never resolved.
+    ``urllib3`` re-parses that URL before sending and removes dot segments a
+    second time, in which ``%2F`` does not split a segment.
+    """
+
+    def _proxies(self):
+        return {"proxies": {"http": self.origin}}
+
+    def test_escape_after_reparse_is_rejected_before_sending(self):
+        for env_url, path in [
+            # Sent directly as /proxy/a%2Fb/../../outside, which the server routes
+            # under the prefix; re-parsed for the proxy it becomes /outside.
+            (_PROXIED_ENV, "/a%2Fb/%2e%2e/%2e%2e/outside"),
+            (_PROXIED_ENV, "/a%2fb%2Fc/%2E%2E/%2e%2e/outside"),
+            # requests drops an empty ";" parameter from the last segment, which
+            # leaves a ".." for the re-parse.
+            (_PROXIED_ENV, "/..;"),
+            (_PROXIED_ENV, "/%2e%2e;?alt=json"),
+            (_PROXIED_ENV + "/base", "/a%2Fb%2Fc/%2e%2e/%2e%2e/%2e%2e/outside"),
+        ]:
+            self.assert_rejected(env_url, path, **self._proxies())
+
+    def test_in_prefix_paths_are_sent_unchanged(self):
+        for path, target in [
+            ("/gmail/v1/users/me/profile", "/proxy/gmail/v1/users/me/profile"),
+            ("%2Fgmail/v1/users/me", "/proxy%2Fgmail/v1/users/me"),
+            ("/", "/proxy/"),
+            ("?alt=json", "/proxy?alt=json"),
+            ("/a%2Fb/c", "/proxy/a%2Fb/c"),
+            ("/a%2Fb/%2e%2e/c", "/proxy/c"),
+            ("/x/..;", "/proxy/"),
+        ]:
+            self.assert_sent(_PROXIED_ENV, path, _PROXIED_ENV + target, **self._proxies())
+
+    def test_redirect_hop(self):
+        # A relative Location is resolved by urljoin before it is sent, so the
+        # re-parse only matters for an absolute one.
+        start = _PROXIED_ENV + "/proxy/start"
+        for location, target, present in [
+            (_PROXIED_ENV + "/proxy/a%2Fb/%2e%2e/%2e%2e/outside", "/outside", False),
+            ("/proxy/drive/v3/files", "/proxy/drive/v3/files", True),
+            ("/proxy/a%2Fb/%2e%2e/c", "/proxy/c", True),
+        ]:
+            with self.subTest(location=location):
+                self.server.reset()
+                self.server.redirects[start] = (302, location)
+                client, _ = self._client(_PROXIED_ENV)
+                response = client.request(
+                    "googledrive", "user@example.com", "/start", **self._proxies()
+                )
+
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual([h[1] for h in self.server.hops], [start, _PROXIED_ENV + target])
+                for name in _CREDENTIAL_HEADERS:
+                    self.assertIn(name, self.server.hops[0][2])
+                    self.assertEqual(name in self.server.hops[1][2], present, name)
+
+    def test_proxy_from_environment(self):
+        proxy_env = {"HTTP_PROXY": self.origin, "http_proxy": self.origin}
+        with mock.patch.dict(os.environ, proxy_env):
+            # patch.dict restores the whole environment on exit, these included.
+            for name in ("NO_PROXY", "no_proxy", "ALL_PROXY", "all_proxy"):
+                os.environ.pop(name, None)
+            self.assert_rejected(_PROXIED_ENV, "/a%2Fb/%2e%2e/%2e%2e/outside")
+            self.assert_sent(
+                _PROXIED_ENV, "%2Fgmail/v1/users/me", _PROXIED_ENV + "/proxy%2Fgmail/v1/users/me"
+            )
 
 
 class TestCleanPath(unittest.TestCase):
