@@ -333,7 +333,12 @@ class McpClient:
 
         Args:
             connection_name: Name of the connection whose MCP server the token
-                grants access to, e.g. ``"GMAIL"``.
+                grants access to, e.g. ``"GMAIL"``. Pass the name exactly as
+                stored, including case (copy it from the connection's name in
+                the dashboard or from its MCP server URL): the connection is
+                found case-insensitively, but the token is valid only for the
+                URL built from the stored name, so a token minted with
+                different casing is refused by that URL.
             identifier: End-user identifier whose connected account on this
                 connection the token acts as, e.g. ``"alice@example.com"``.
                 1 to 255 characters.
@@ -354,8 +359,10 @@ class McpClient:
             ScalekitNotFoundException: No active connection has this name.
             ScalekitBadRequestException: ``identifier``, ``expiry`` or
                 ``access_level`` is invalid, the connection is not an
-                AgentKit connection, or ``identifier`` has no active connected
-                account on the connection.
+                AgentKit connection, or, depending on the environment's
+                configuration, ``identifier`` has no active connected account
+                on the connection (otherwise a token is minted and the account
+                is reported as not connected when tools are called).
 
         Example::
 
