@@ -1372,8 +1372,8 @@ class ActionMcp:
         self,
         mcp_config_id: str,
         identifier: str,
-        expiry: timedelta | None = None,
-        access_level: str | None = None,
+        expiry: Optional[timedelta] = None,
+        access_level: Optional[str] = None,
     ) -> CreateMcpSessionTokenResponse: ...
 
     @overload
@@ -1382,18 +1382,18 @@ class ActionMcp:
         *,
         connection_name: str,
         identifier: str,
-        expiry: timedelta | None = None,
-        access_level: str | None = None,
+        expiry: Optional[timedelta] = None,
+        access_level: Optional[str] = None,
     ) -> CreateMcpSessionTokenResponse: ...
 
     def create_session_token(
         self,
-        mcp_config_id: str | None = None,
-        identifier: str | None = None,
-        expiry: timedelta | None = None,
-        access_level: str | None = None,
+        mcp_config_id: Optional[str] = None,
+        identifier: Optional[str] = None,
+        expiry: Optional[timedelta] = None,
+        access_level: Optional[str] = None,
         *,
-        connection_name: str | None = None,
+        connection_name: Optional[str] = None,
     ) -> CreateMcpSessionTokenResponse:
         """Create a short-lived session token for a user to access an MCP server.
 

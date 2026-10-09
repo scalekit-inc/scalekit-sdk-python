@@ -942,7 +942,7 @@ Returns authorization state for connectors used by the instance; optional fresh 
 </dd></dl>
 </details>
 
-<details><summary><code>client.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/mcp.py">create_session_token</a>(mcp_config_id?, identifier, expiry?, access_level?, *, connection_name?) -> CreateMcpSessionTokenResponse</code></summary>
+<details><summary><code>client.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/mcp.py">create_session_token</a>(mcp_config_id?, identifier, expiry?, access_level?, *, connection_name?) -> (CreateMcpSessionTokenResponse, grpc.Call)</code></summary>
 <dl><dd>
 
 ### 📝 Description

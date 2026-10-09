@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import List, NamedTuple, Optional, overload
+from typing import List, NamedTuple, Optional, Tuple, overload
 
 import grpc
 from google.protobuf.duration_pb2 import Duration
@@ -18,9 +18,9 @@ class _SessionTokenTarget(NamedTuple):
 
 
 def _resolve_session_token_target(
-    mcp_config_id: str | None,
-    connection_name: str | None,
-    identifier: str | None,
+    mcp_config_id: Optional[str],
+    connection_name: Optional[str],
+    identifier: Optional[str],
 ) -> _SessionTokenTarget:
     """Check the session-token arguments before any request is sent.
 
@@ -326,9 +326,9 @@ class McpClient:
         self,
         mcp_config_id: str,
         identifier: str,
-        expiry: timedelta | None = None,
-        access_level: str | None = None,
-    ) -> tuple[CreateMcpSessionTokenResponse, grpc.Call]: ...
+        expiry: Optional[timedelta] = None,
+        access_level: Optional[str] = None,
+    ) -> Tuple[CreateMcpSessionTokenResponse, grpc.Call]: ...
 
     @overload
     def create_session_token(
@@ -336,19 +336,19 @@ class McpClient:
         *,
         connection_name: str,
         identifier: str,
-        expiry: timedelta | None = None,
-        access_level: str | None = None,
-    ) -> tuple[CreateMcpSessionTokenResponse, grpc.Call]: ...
+        expiry: Optional[timedelta] = None,
+        access_level: Optional[str] = None,
+    ) -> Tuple[CreateMcpSessionTokenResponse, grpc.Call]: ...
 
     def create_session_token(
         self,
-        mcp_config_id: str | None = None,
-        identifier: str | None = None,
-        expiry: timedelta | None = None,
-        access_level: str | None = None,
+        mcp_config_id: Optional[str] = None,
+        identifier: Optional[str] = None,
+        expiry: Optional[timedelta] = None,
+        access_level: Optional[str] = None,
         *,
-        connection_name: str | None = None,
-    ) -> tuple[CreateMcpSessionTokenResponse, grpc.Call]:
+        connection_name: Optional[str] = None,
+    ) -> Tuple[CreateMcpSessionTokenResponse, grpc.Call]:
         """Create a short-lived session token for a user to access an MCP server.
 
         Pass exactly one of ``mcp_config_id`` or ``connection_name``; the
@@ -430,9 +430,9 @@ class McpClient:
     def _mint_session_token(
         self,
         request: CreateMcpSessionTokenRequest,
-        expiry: timedelta | None,
-        access_level: str | None,
-    ) -> tuple[CreateMcpSessionTokenResponse, grpc.Call]:
+        expiry: Optional[timedelta],
+        access_level: Optional[str],
+    ) -> Tuple[CreateMcpSessionTokenResponse, grpc.Call]:
         """Set the optional fields shared by both session-token targets and send the request."""
         if access_level is not None:
             request.access_level = access_level
