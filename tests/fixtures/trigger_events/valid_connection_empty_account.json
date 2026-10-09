@@ -1,0 +1,18 @@
+{
+  "version": "1",
+  "trigger_type": "example.item.created",
+  "subscription_id": "sub_123",
+  "delivery_scope": "connection",
+  "connection_id": "conn_123",
+  "connected_account_id": "",
+  "resource_type": "channel",
+  "resource_id": "",
+  "occurred_at": "2026-10-01T07:00:45Z",
+  "detection_mode": "poll",
+  "payload_state": "full",
+  "payload": {
+    "channel": "general"
+  },
+  "dedupe_key": "dk_456",
+  "correlation_id": "corr_456"
+}

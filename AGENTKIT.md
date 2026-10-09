@@ -774,6 +774,7 @@ print(f'Magic Link: {response[0].magic_link}')
 - **`langchain`** — Lazy `LangChain` helper (requires `langchain` installed).
 - **`google`** — Lazy Google ADK helper (requires `google-adk` installed).
 - **`mcp`** — [`ActionMcp`](#actionmcp-helper) for MCP operations that return parsed response wrappers.
+- **`triggers`** — [`ActionTriggers`](#trigger-events) to verify and parse trigger events delivered to your endpoint.
 
 ### Tool execution
 
@@ -830,6 +831,64 @@ The `ActionClient` also exposes `list_configs`, `create_config`, `update_config`
 ### `ActionMcp` helper
 
 Access via `client.connect.mcp` / `client.actions.mcp`. Requires `McpClient` to be initialized on the parent `ScalekitClient`. Methods include `list_configs`, `create_config` (builds `McpConfig` from `name` / `description` / mappings), `update_config`, `delete_config`, `ensure_instance`, `update_instance`, `get_instance`, `list_instances`, `delete_instance`, and `get_instance_auth_state`, returning parsed wrapper types instead of raw gRPC tuples.
+
+### Trigger events
+
+<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">verify_event</a>(body, /, *, headers, secret) -> TriggerEvent</code></summary>
+<dl><dd>
+
+Verifies the signature of a trigger event Scalekit delivered to your endpoint, then parses it into an immutable [`TriggerEvent`](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/models/trigger_event.py). The same function is available without a client as `scalekit.verify_trigger_event(body, /, *, headers, secret)`; both are local checks (no network call), so they are safe inside `async def` handlers.
+
+- The signature is checked first: `webhook-signature` must be a `v1` HMAC-SHA256 of `"{webhook-id}.{webhook-timestamp}.{body}"` keyed with your `whsec_` secret, and `webhook-timestamp` must be within five minutes of now, given as Unix seconds in plain digits. Header names match case-insensitively. Every `webhook-signature` value is a candidate; a repeated `webhook-id` or `webhook-timestamp` must repeat the same value.
+- Any verification failure raises `WebhookVerificationError`. A correctly signed body that is not a valid trigger event raises `ScalekitTriggerEventParseException`, a subclass, so one `except WebhookVerificationError` answering `400` covers both. Raises `TypeError` when called with arguments of the wrong type.
+- Delivery is at least once. Use `dedupe_key` plus the connected account you act as as the idempotency key.
+- Branch on `delivery_scope`: `DeliveryScope.ACCOUNT` events carry `connected_account_id`; `DeliveryScope.CONNECTION` events apply to the whole connection and have `connected_account_id == ""`.
+- When `payload_state` is `PayloadState.REFERENCE`, `payload` is `None`: fetch the resource by `resource_type` and `resource_id`.
+- Enum fields hold the enum member for known values and the raw `str` for newer ones; fields this SDK version does not know are kept in `event.model_extra`. `occurred_at` is a timezone-aware UTC `datetime` or `None`; fractional seconds are truncated to microseconds.
+
+```python
+import os
+from flask import Flask, request
+from scalekit import DeliveryScope, PayloadState, verify_trigger_event
+from scalekit.common.exceptions import WebhookVerificationError
+
+app = Flask(__name__)
+
+@app.post("/scalekit/triggers")
+def scalekit_trigger():
+    try:
+        event = verify_trigger_event(
+            request.get_data(),  # raw body, before any JSON parsing
+            headers=request.headers,
+            secret=os.environ["SCALEKIT_TRIGGER_SECRET"],
+        )
+    except WebhookVerificationError:  # bad signature, stale timestamp, or malformed event
+        return "", 400
+
+    if event.delivery_scope == DeliveryScope.ACCOUNT:
+        account_ids = [event.connected_account_id]
+    elif event.delivery_scope == DeliveryScope.CONNECTION:
+        account_ids = accounts_for_connection(event.connection_id)  # your lookup
+    else:
+        return "", 204  # a scope this code does not handle yet
+
+    for account_id in account_ids:
+        if already_processed(event.dedupe_key, account_id):  # redeliveries are expected
+            continue
+        data = (
+            fetch_resource(account_id, event.resource_type, event.resource_id)
+            if event.payload_state == PayloadState.REFERENCE
+            else event.payload
+        )
+        handle(account_id, event.trigger_type, data)
+        mark_processed(event.dedupe_key, account_id)
+    return "", 204
+```
+
+**Parameters:** `body: str | bytes` (positional) - the raw request body · `headers: HeadersLike` - the request headers (`request.headers` from Flask/Werkzeug, Starlette/FastAPI or Django, or a `dict`/`Mapping`) · `secret: str` - the trigger signing secret (`whsec_...`).
+
+</dd></dl>
+</details>
 
 
 ## MCP (`McpClient`)

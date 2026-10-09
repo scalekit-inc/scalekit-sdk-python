@@ -16,6 +16,7 @@ from scalekit.actions.modifier import (
     apply_pre_modifiers, apply_post_modifiers
 )
 from scalekit.common.exceptions import ScalekitNotFoundException
+from scalekit.actions.triggers import ActionTriggers
 from scalekit.v1.tools.tools_pb2 import Filter
 from google.protobuf.wrappers_pb2 import BoolValue
 
@@ -48,6 +49,7 @@ class ActionClient:
         self._mcp_actions = None
         self._providers_client = providers_client
         self._providers_actions = None
+        self._triggers_actions: ActionTriggers | None = None
         self._modifiers: List[Modifier] = []
         self._google = None
         self._langchain = None
@@ -96,6 +98,18 @@ class ActionClient:
         if self._mcp_actions is None:
             self._mcp_actions = ActionMcp(self)
         return self._mcp_actions
+
+    @property
+    def triggers(self) -> ActionTriggers:
+        """Verify and parse trigger events delivered to your endpoint (local, no network).
+
+        Example:
+            >>> event = client.actions.triggers.verify_event(
+            ...     body, headers=request.headers, secret=secret)
+        """
+        if self._triggers_actions is None:
+            self._triggers_actions = ActionTriggers()
+        return self._triggers_actions
 
     @property
     def providers(self) -> "ActionProviders":

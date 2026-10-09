@@ -465,6 +465,98 @@ async def webhook_handler(request):
 </dl>
 </details>
 
+<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">verify_event</a>(body, /, *, headers, secret) -> TriggerEvent</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Verifies a trigger event's signature (`whsec_` secret, `v1` HMAC-SHA256, five-minute timestamp window, case-insensitive header names), then parses the body into an immutable `TriggerEvent`. Also available without a client as `scalekit.verify_trigger_event(body, /, *, headers, secret)`. `occurred_at` is a timezone-aware UTC `datetime`; fractional seconds are truncated to microseconds. Raises `WebhookVerificationError` on any verification failure; a correctly signed but malformed event raises its subclass `ScalekitTriggerEventParseException`. Raises `TypeError` when called with arguments of the wrong type. Delivery is at least once: deduplicate on `dedupe_key` plus the connected account you act as. Full example: [AGENTKIT.md → Trigger events](AGENTKIT.md#trigger-events).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from scalekit import DeliveryScope, PayloadState
+from scalekit.common.exceptions import WebhookVerificationError
+
+try:
+    event = scalekit_client.actions.triggers.verify_event(
+        request.get_data(),  # raw body
+        headers=request.headers,
+        secret=os.environ["SCALEKIT_TRIGGER_SECRET"],
+    )
+except WebhookVerificationError:  # bad signature, stale timestamp or malformed event
+    return "", 400
+
+if event.payload_state == PayloadState.REFERENCE:
+    print("fetch", event.resource_type, event.resource_id)  # payload is None
+if event.delivery_scope == DeliveryScope.ACCOUNT:
+    print("one account:", event.connected_account_id, event.dedupe_key)
+elif event.delivery_scope == DeliveryScope.CONNECTION:
+    print("whole connection:", event.connection_id, event.dedupe_key)  # connected_account_id == ""
+else:
+    print("unknown delivery scope, skipped:", event.delivery_scope)  # added after this SDK version
+return "", 204
+```
+
+Full Flask handler with deduplication: [AGENTKIT.md → Trigger events](AGENTKIT.md#trigger-events).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**body:** `str | bytes` - The raw request body (positional only)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**headers:** `HeadersLike` - The request headers (keyword only): `request.headers` from Flask/Werkzeug, Starlette/FastAPI or Django, or a `dict`/`Mapping`
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**secret:** `str` - The trigger signing secret, starting with `whsec_` (keyword only)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 <details><summary><code>client.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/client.py">refresh_access_token</a>(refresh_token) -> dict</code></summary>
 <dl>
 <dd>
