@@ -68,14 +68,25 @@ HTTP_STATUS = {
 
 class ScalekitException(Exception):
     """ Base class for all scalekit exceptions """
-    def __init__(self, error):
+    def __init__(self, error: object) -> None:
         super().__init__(error)
 
 
 class WebhookVerificationError(ScalekitException):
     """ Exception raised for webhook verification failure """
-    def __init__(self, error):
+    def __init__(self, error: object) -> None:
         super().__init__(error)
+
+
+class ScalekitTriggerEventParseException(WebhookVerificationError):
+    """Raised when a correctly signed trigger event body is not a valid trigger event.
+
+    The signature was verified, but the body is not a JSON object, a required field
+    is missing, or a field has the wrong type. It subclasses
+    ``WebhookVerificationError``, so a handler that answers ``400`` on
+    ``WebhookVerificationError`` covers both cases. The message never contains the
+    request body or the secret; the underlying error is kept as ``__cause__``.
+    """
 
 
 class ScalekitValidateTokenFailureException(ScalekitException):

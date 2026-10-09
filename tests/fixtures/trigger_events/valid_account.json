@@ -1,0 +1,24 @@
+{
+  "version": "1",
+  "trigger_type": "example.item.created",
+  "subscription_id": "sub_123",
+  "delivery_scope": "account",
+  "connection_id": "conn_123",
+  "connected_account_id": "ca_123",
+  "resource_type": "message",
+  "resource_id": "msg_123",
+  "occurred_at": "2026-10-01T12:30:45.123+05:30",
+  "detection_mode": "webhook",
+  "payload_state": "full",
+  "payload": {
+    "subject": "Hello",
+    "labels": [
+      "INBOX",
+      "UNREAD"
+    ],
+    "size": 42,
+    "starred": false
+  },
+  "dedupe_key": "dk_123",
+  "correlation_id": "corr_123"
+}

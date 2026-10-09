@@ -1,0 +1,22 @@
+kind: added
+body: |
+  `scalekit.verify_trigger_event(body, *, headers, secret)` and `client.actions.triggers.verify_event(...)` verify a trigger event's signature (same `whsec_` scheme and five-minute window as webhooks, case-insensitive header names) and return a typed, immutable `TriggerEvent`. Any failure raises `WebhookVerificationError`; a correctly signed but malformed event raises the new subclass `ScalekitTriggerEventParseException`. Delivery is at least once, so deduplicate on `dedupe_key` plus the connected account. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/AGENTKIT.md#trigger-events)
+
+  ```python
+  from scalekit import DeliveryScope, PayloadState, verify_trigger_event
+  from scalekit.common.exceptions import WebhookVerificationError
+
+  try:
+      event = verify_trigger_event(raw_body, headers=request.headers, secret=trigger_secret)
+  except WebhookVerificationError:
+      return "", 400
+  if event.delivery_scope == DeliveryScope.ACCOUNT and not seen(event.dedupe_key, event.connected_account_id):
+      data = event.payload
+      if event.payload_state == PayloadState.REFERENCE:
+          data = fetch(event.resource_type, event.resource_id)
+  ```
+time: '2026-10-09T16:58:09.231716+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: SK-2311
+  Migration: ''
