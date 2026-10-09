@@ -10,7 +10,7 @@ import threading
 import unittest
 from unittest import mock
 
-from scalekit.actions._proxy_path import remove_dot_segments
+from scalekit.actions._proxy_path import clean_path
 from scalekit.actions.actions import ActionClient
 
 _AUTH_HEADER = "Bearer test-token"
@@ -107,44 +107,69 @@ class _ProxyServerTestCase(unittest.TestCase):
 
 
 class TestRequestRejectsPathsOutsideProxy(_ProxyServerTestCase):
-    """Without the check, each path is sent (or read by a server) outside ``/proxy/``."""
+    """Without the check, each path is sent (or routed by a server) outside ``/proxy/``."""
 
     def test_literal_dot_segments(self):
-        # requests/urllib3 resolve these before sending: the wire target is /api/... .
-        for path in ["/x/../../api/v1/organizations", "/../api", "/..", "/a;b/../../c"]:
+        # requests/urllib3 resolve these before sending: the wire target is /outside.
+        for path in ["/x/../../outside", "/../outside", "/..", "/a;b/../../outside"]:
             self.assert_rejected(self.origin, path)
 
     def test_percent_encoded_dot_segments(self):
-        # Sent as /proxy/x/../../api; a server that normalises the path leaves /proxy/.
-        for path in ["/x/%2e%2e/%2e%2e/api", "/x/%2E%2e/%2e%2E/api", "/%2e%2e/api"]:
+        # Sent as /proxy/x/../../outside; a server that cleans the path leaves /proxy/.
+        for path in ["/x/%2e%2e/%2e%2e/outside", "/x/%2E%2e/%2e%2E/outside", "/%2e%2e/outside"]:
             self.assert_rejected(self.origin, path)
 
     def test_percent_encoded_slash_joined_dots(self):
-        # Sent as /proxy/x%2F..%2F..%2Fapi; decoded once it is /proxy/x/../../api.
-        for path in ["/x%2f..%2f..%2fapi", "/x/..%2f..%2fapi"]:
+        # Sent as /proxy/x%2F..%2F..%2Foutside; decoded once it is /proxy/x/../../outside.
+        for path in ["/x%2f..%2f..%2foutside", "/x/..%2f..%2foutside"]:
+            self.assert_rejected(self.origin, path)
+
+    def test_empty_segments_collapse_before_dot_segments(self):
+        # Servers clean "//" to "/" first, so the ".." removes "proxy" itself:
+        # /proxy//../outside and /proxy///../outside both clean to /outside.
+        for path in [
+            "//..%2foutside/x",
+            "/%2f..%2foutside/x",
+            "//x/%2e%2e/%2e%2e/outside",
+            "/%2F/..%2F..%2Foutside",
+        ]:
             self.assert_rejected(self.origin, path)
 
     def test_backslash_dot_segments(self):
-        # Sent as /proxy/x%5C..%5C..%5Capi; servers that treat '\' as '/' leave /proxy/.
-        for path in ["/x\\..\\..\\api", "/x/..%5c..%5capi"]:
+        # Sent as /proxy/x%5C..%5C..%5Coutside; servers that treat '\' as '/' leave /proxy/.
+        for path in ["/x\\..\\..\\outside", "/x/..%5c..%5coutside"]:
             self.assert_rejected(self.origin, path)
+
+    def test_backslash_inside_a_segment_name(self):
+        # Decoded: /proxy/../proxy\/x. Treating '\' as '/' would give /proxy/x, but a
+        # server that keeps '\' routes it as /proxy\/x, outside the prefix.
+        self.assert_rejected(self.origin, "/..%2fproxy%5c/x")
 
     def test_control_characters_do_not_hide_a_real_escape(self):
-        self.assert_rejected(self.origin, "/x/.\t./../../../api")
+        self.assert_rejected(self.origin, "/x/.\t./../../../outside")
 
-    def test_path_that_never_enters_proxy_prefix(self):
-        # Without a leading '/', the path is glued onto "proxy": /proxygmail/... .
-        # A bare query targets /proxy itself. Neither is under /proxy/.
-        for path in ["gmail/v1/users/me/profile", "?alt=json"]:
+    def test_sibling_of_the_proxy_prefix(self):
+        # These clean to /proxyx and /proxy-other: next to the prefix, not under it.
+        for path in ["/..%2fproxyx", "/..%2fproxy-other"]:
             self.assert_rejected(self.origin, path)
+
+    def test_invalid_escape_keeps_encoded_slash_literal(self):
+        # With an invalid escape in the path, urllib3 sends every '%' as '%25', so
+        # the server reads "%2F" as text: /proxy%2Fx%2. is a sibling of /proxy/.
+        for path in ["%2Fx%2.", "%2Fgmail/v1/users/me%"]:
+            self.assert_rejected(self.origin, path)
+
+    def test_path_without_leading_slash(self):
+        # The path is glued onto "proxy" and goes to /proxygmail/..., outside the prefix.
+        self.assert_rejected(self.origin, "gmail/v1/users/me/profile")
 
     def test_rejected_for_every_method(self):
         for method in ["POST", "put", "DELETE"]:
-            self.assert_rejected(self.origin, "/x/../../api/v1/organizations", method=method)
+            self.assert_rejected(self.origin, "/x/../../outside", method=method)
 
     def test_rejected_before_the_401_retry(self):
         self.server.statuses.extend([401, 200])
-        self.assert_rejected(self.origin, "/x/%2e%2e/%2e%2e/api")
+        self.assert_rejected(self.origin, "/x/%2e%2e/%2e%2e/outside")
 
 
 class TestRequestSendsInPrefixPathsUnchanged(_ProxyServerTestCase):
@@ -154,6 +179,9 @@ class TestRequestSendsInPrefixPathsUnchanged(_ProxyServerTestCase):
         self.assert_sent(
             self.origin, "/gmail/v1/users/me/profile", "/proxy/gmail/v1/users/me/profile"
         )
+
+    def test_root_path(self):
+        self.assert_sent(self.origin, "/", "/proxy/")
 
     def test_space_is_percent_encoded(self):
         self.assert_sent(self.origin, "/a b/c", "/proxy/a%20b/c")
@@ -165,6 +193,22 @@ class TestRequestSendsInPrefixPathsUnchanged(_ProxyServerTestCase):
     def test_encoded_slash_inside_a_segment(self):
         self.assert_sent(self.origin, "/a%2Fb/c", "/proxy/a%2Fb/c")
 
+    def test_encoded_leading_slash(self):
+        # Sent as /proxy%2Fgmail/...; decoded once it is /proxy/gmail/..., which is
+        # under the prefix.
+        self.assert_sent(self.origin, "%2Fgmail/v1/users/me", "/proxy%2Fgmail/v1/users/me")
+
+    def test_paths_that_clean_to_exactly_the_proxy_prefix(self):
+        # These leave the prefix and come back to exactly /proxy, where no proxy
+        # route matches. They are sent as before rather than rejected.
+        self.assert_sent(self.origin, "/..%2fproxy", "/proxy/..%2Fproxy")
+        self.assert_sent(self.origin, "/x%2f..", "/proxy/x%2F..")
+        self.assert_sent(self.origin, "?alt=json", "/proxy?alt=json")
+
+    def test_invalid_escape_inside_prefix(self):
+        # urllib3 re-encodes '%' here too, but the path stays under /proxy/.
+        self.assert_sent(self.origin, "/x%2./y", "/proxy/x%252./y")
+
     def test_trailing_newline(self):
         self.assert_sent(self.origin, "/gmail/v1\n", "/proxy/gmail/v1%0A")
 
@@ -172,13 +216,13 @@ class TestRequestSendsInPrefixPathsUnchanged(_ProxyServerTestCase):
         # requests percent-encodes TAB, LF and CR, so ".\t." reaches the server as
         # ".%09." and decodes to ".<TAB>.": an ordinary segment, not "..". The path
         # stays under /proxy/, so it is sent unchanged.
-        self.assert_sent(self.origin, "/x/.\t./.\t./api", "/proxy/x/.%09./.%09./api")
-        self.assert_sent(self.origin, "/x/.\n./.\n./api", "/proxy/x/.%0A./.%0A./api")
-        self.assert_sent(self.origin, "/x/.\r./.\r./api", "/proxy/x/.%0D./.%0D./api")
+        self.assert_sent(self.origin, "/x/.\t./.\t./y", "/proxy/x/.%09./.%09./y")
+        self.assert_sent(self.origin, "/x/.\n./.\n./y", "/proxy/x/.%0A./.%0A./y")
+        self.assert_sent(self.origin, "/x/.\r./.\r./y", "/proxy/x/.%0D./.%0D./y")
 
     def test_double_encoded_dots_decode_once(self):
         # One decode yields "%2e%2e", which is not a dot segment.
-        self.assert_sent(self.origin, "/x/%252e%252e/api", "/proxy/x/%252e%252e/api")
+        self.assert_sent(self.origin, "/x/%252e%252e/y", "/proxy/x/%252e%252e/y")
 
     def test_dots_in_query_string_are_not_path(self):
         self.assert_sent(self.origin, "/search?q=a/../../b", "/proxy/search?q=a/../../b")
@@ -211,7 +255,14 @@ class TestRequestWithBasePathInEnvUrl(_ProxyServerTestCase):
 
     def test_escape_above_base_proxy_is_rejected(self):
         env_url = self.origin + "/base"
-        for path in ["/../x", "/%2e%2e/x", "/../../proxy/x", "/x/../../../base/x"]:
+        for path in [
+            "/../x",
+            "/%2e%2e/x",
+            "/../../proxy/x",
+            "/x/../../../base/x",
+            "//..%2fx",
+            "/..%2fproxyx",
+        ]:
             self.assert_rejected(env_url, path)
 
     def test_paths_under_base_proxy_are_sent_unchanged(self):
@@ -221,6 +272,7 @@ class TestRequestWithBasePathInEnvUrl(_ProxyServerTestCase):
             )
             self.assert_sent(env_url, "/a/../b", "/base/proxy/b")
             self.assert_sent(env_url, "/a b/c", "/base/proxy/a%20b/c")
+            self.assert_sent(env_url, "/..%2fproxy", "/base/proxy/..%2Fproxy")
 
 
 _CREDENTIAL_HEADERS = ("authorization", "connection_name", "identifier")
@@ -261,12 +313,15 @@ class TestRedirectsKeepCredentialsInsideProxy(_ProxyServerTestCase):
 
     def test_same_host_redirect_outside_prefix_drops_credentials(self):
         for location, target in [
-            ("/api/v1/organizations", "/api/v1/organizations"),
-            (self.origin + "/api/v1/organizations", "/api/v1/organizations"),
-            ("/proxy/x/../../api", "/api"),
-            (self.origin + "/proxy/x/%2e%2e/%2e%2e/api", "/proxy/x/../../api"),
-            ("/proxy/x%2f..%2f..%2fapi", "/proxy/x%2F..%2F..%2Fapi"),
-            ("/proxy", "/proxy"),
+            ("/outside", "/outside"),
+            (self.origin + "/outside", "/outside"),
+            ("/proxy/x/../../outside", "/outside"),
+            (self.origin + "/proxy/x/%2e%2e/%2e%2e/outside", "/proxy/x/../../outside"),
+            ("/proxy/x%2f..%2f..%2foutside", "/proxy/x%2F..%2F..%2Foutside"),
+            ("/proxy//..%2fx", "/proxy//..%2Fx"),
+            (self.origin + "/proxy//x/%2e%2e/%2e%2e/outside", "/proxy//x/../../outside"),
+            ("/proxyx", "/proxyx"),
+            ("/proxy%2F%2.", "/proxy%252F%252."),
         ]:
             with self.subTest(location=location):
                 self.server.reset()
@@ -288,6 +343,8 @@ class TestRedirectsKeepCredentialsInsideProxy(_ProxyServerTestCase):
             (self.origin + "/proxy/drive/v3/about", "/proxy/drive/v3/about"),
             ("sibling", "/proxy/sibling"),
             ("/proxy/a/../b", "/proxy/b"),
+            ("/proxy%2Fdrive/v3/files", "/proxy%2Fdrive/v3/files"),
+            ("/proxy/x%2./y", "/proxy/x%252./y"),
         ]:
             with self.subTest(location=location):
                 self.server.reset()
@@ -313,24 +370,24 @@ class TestRedirectsKeepCredentialsInsideProxy(_ProxyServerTestCase):
         self.assert_credentials(self.other.hops[0][2], present=False)
 
     def test_method_preserving_redirect_outside_prefix(self):
-        self.server.redirects["/proxy/start"] = (307, "/api/v1/organizations")
+        self.server.redirects["/proxy/start"] = (307, "/outside")
         response, _ = self._request(method="POST", body={"name": "x"})
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             [h[:2] for h in self.server.hops],
-            [("POST", "/proxy/start"), ("POST", "/api/v1/organizations")],
+            [("POST", "/proxy/start"), ("POST", "/outside")],
         )
         self.assert_credentials(self.server.hops[1][2], present=False)
 
     def test_credentials_stay_dropped_after_leaving_prefix(self):
-        self.server.redirects["/proxy/start"] = (302, "/api/a")
-        self.server.redirects["/api/a"] = (302, "/proxy/back")
+        self.server.redirects["/proxy/start"] = (302, "/outside/a")
+        self.server.redirects["/outside/a"] = (302, "/proxy/back")
         response, _ = self._request()
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
-            [h[1] for h in self.server.hops], ["/proxy/start", "/api/a", "/proxy/back"]
+            [h[1] for h in self.server.hops], ["/proxy/start", "/outside/a", "/proxy/back"]
         )
         self.assert_credentials(self.server.hops[1][2], present=False)
         self.assert_credentials(self.server.hops[2][2], present=False)
@@ -341,6 +398,7 @@ class TestRedirectsKeepCredentialsInsideProxy(_ProxyServerTestCase):
             ("/base/proxy/other", True),
             ("/proxy/other", False),
             ("/base/x", False),
+            ("/base/proxy//..%2Fx", False),
         ]:
             with self.subTest(location=location):
                 self.server.reset()
@@ -353,39 +411,45 @@ class TestRedirectsKeepCredentialsInsideProxy(_ProxyServerTestCase):
 
     def test_401_retry_then_redirect_outside_prefix(self):
         self.server.statuses.append(401)
-        self.server.redirects["/proxy/start"] = (302, "/api/v1/organizations")
+        self.server.redirects["/proxy/start"] = (302, "/outside")
         response, core = self._request()
 
         self.assertEqual(response.status_code, 200)
         core._CoreClient__authenticate_client.assert_called_once_with()
         self.assertEqual(
             [h[1] for h in self.server.hops],
-            ["/proxy/start", "/proxy/start", "/api/v1/organizations"],
+            ["/proxy/start", "/proxy/start", "/outside"],
         )
         self.assert_credentials(self.server.hops[0][2], present=True)
         self.assert_credentials(self.server.hops[1][2], present=True)
         self.assert_credentials(self.server.hops[2][2], present=False)
 
 
-class TestRemoveDotSegments(unittest.TestCase):
-    """The server-side model follows RFC 3986 section 5.2.4."""
+class TestCleanPath(unittest.TestCase):
+    """The server-side model cleans paths as Go routers do."""
 
-    def test_rfc_3986_examples(self):
+    def test_clean_path(self):
         cases = {
+            "": "/",
+            "/": "/",
+            "//": "/",
+            "/a//b": "/a/b",
+            "/a/b/": "/a/b/",
+            "/a/./b/.": "/a/b",
             "/a/b/c/./../../g": "/a/g",
-            "mid/content=5/../6": "mid/6",
-            "/a/b/c/..": "/a/b/",
-            "/a/b/c/.": "/a/b/c/",
+            "/proxy//../x": "/x",
+            "/proxy//../x/./y/": "/x/y/",
             "/../g": "/g",
-            "/./g": "/g",
+            "/..": "/",
+            "/proxy/x/..": "/proxy",
+            "/proxy/x/../": "/proxy/",
             "/g..": "/g..",
             "/..g": "/..g",
-            "/": "/",
-            "": "",
+            "a/b": "/a/b",
         }
         for path, expected in cases.items():
             with self.subTest(path=path):
-                self.assertEqual(remove_dot_segments(path), expected)
+                self.assertEqual(clean_path(path), expected)
 
 
 if __name__ == "__main__":
