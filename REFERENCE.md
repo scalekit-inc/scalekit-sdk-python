@@ -501,14 +501,21 @@ try:
         headers=request.headers,
         secret=os.environ["SCALEKIT_TRIGGER_SECRET"],
     )
-except WebhookVerificationError:
+except WebhookVerificationError:  # bad signature, stale timestamp or malformed event
     return "", 400
 
-if event.delivery_scope == DeliveryScope.ACCOUNT:
-    print(event.connected_account_id, event.dedupe_key)
 if event.payload_state == PayloadState.REFERENCE:
-    print("fetch", event.resource_type, event.resource_id)
+    print("fetch", event.resource_type, event.resource_id)  # payload is None
+if event.delivery_scope == DeliveryScope.ACCOUNT:
+    print("one account:", event.connected_account_id, event.dedupe_key)
+elif event.delivery_scope == DeliveryScope.CONNECTION:
+    print("whole connection:", event.connection_id, event.dedupe_key)  # connected_account_id == ""
+else:
+    print("unknown delivery scope, skipped:", event.delivery_scope)  # added after this SDK version
+return "", 204
 ```
+
+Full Flask handler with deduplication: [AGENTKIT.md → Trigger events](AGENTKIT.md#trigger-events).
 </dd>
 </dl>
 </dd>

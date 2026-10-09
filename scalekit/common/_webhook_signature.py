@@ -22,6 +22,30 @@ WEBHOOK_TOLERANCE = timedelta(minutes=5)
 WEBHOOK_SIGNATURE_VERSION = "v1"
 # Unix seconds as plain ASCII digits: no sign, fraction, exponent or whitespace.
 _DIGITS_ONLY = re.compile(r"[0-9]+")
+# Standard base64 alphabet with padding only at the end.
+_STRICT_BASE64 = re.compile(r"[A-Za-z0-9+/]*={0,2}")
+
+
+def _strict_secret_key(secret: str) -> bytes:
+    """Decode the key after the first ``_`` of a ``whsec_`` secret, strictly.
+
+    The key must be non-empty, padded standard base64 (no URL-safe characters, no
+    missing padding, nothing after the padding) and decode to at least one byte, so
+    a typo can never verify events signed with an empty HMAC key.
+
+    Raises:
+        WebhookVerificationError: "Invalid secret". The message never contains the secret.
+    """
+    key = secret.split("_", 1)[1]
+    if not key or len(key) % 4 != 0 or _STRICT_BASE64.fullmatch(key) is None:
+        raise WebhookVerificationError("Invalid secret")
+    try:
+        key_bytes = base64.b64decode(key, validate=True)
+    except ValueError as exc:  # binascii.Error; unreachable after the grammar check
+        raise WebhookVerificationError("Invalid secret") from exc
+    if not key_bytes:
+        raise WebhookVerificationError("Invalid secret")
+    return key_bytes
 
 
 def compute_signature(secret: bytes, data: str) -> str:
@@ -63,6 +87,7 @@ def verify_payload_signature(
     signature_version: str = WEBHOOK_SIGNATURE_VERSION,
     skip_malformed_signatures: bool = False,
     strict_timestamp: bool = False,
+    strict_secret: bool = False,
 ) -> bool:
     """Verify a ``whsec_`` HMAC signature over ``"{id}.{timestamp}.{payload}"``.
 
@@ -77,6 +102,11 @@ def verify_payload_signature(
     is not "missing" (only ``None`` is), and the value must be ASCII digits;
     anything else raises "Invalid Signature Headers". With ``False`` the historical
     ``float()`` parsing is kept.
+
+    With ``strict_secret=True`` (trigger path only) the key after the first ``_`` must
+    be strict padded standard base64 that decodes to at least one byte; anything else
+    raises "Invalid secret". With ``False`` the historical lenient decoding is kept
+    (which turns ``whsec_``, ``whsec_!!!!`` or ``whsec_====`` into an empty key).
 
     Raises:
         WebhookVerificationError: Missing headers, a secret without ``_``, a stale or
@@ -94,7 +124,10 @@ def verify_payload_signature(
     if len(secret_parts) < 2:
         raise WebhookVerificationError("Invalid secret")
 
-    secret_bytes = base64.b64decode(secret_parts[1])
+    if strict_secret:
+        secret_bytes = _strict_secret_key(secret)
+    else:
+        secret_bytes = base64.b64decode(secret_parts[1])
 
     if strict_timestamp and _DIGITS_ONLY.fullmatch(webhook_timestamp) is None:
         raise WebhookVerificationError("Invalid Signature Headers")

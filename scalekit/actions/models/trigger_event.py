@@ -63,6 +63,8 @@ def _enum_or_raw(enum_cls: type[_E], value: object, field: str) -> _E | str:
 
 def _parse_rfc3339(value: str) -> datetime:
     match = _RFC3339.fullmatch(value)
+    # The year bound is defensive: datetime() rejects year 0000 too, but the
+    # contract (0001-9999) should not depend on that.
     if match is None or not _MIN_YEAR <= int(match["year"]) <= _MAX_YEAR:
         raise ValueError("occurred_at must be an RFC 3339 timestamp with a UTC offset")
     # Python datetimes hold microseconds: digits past the sixth are truncated.

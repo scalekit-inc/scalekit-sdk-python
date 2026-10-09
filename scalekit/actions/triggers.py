@@ -149,15 +149,17 @@ def verify_trigger_event(
     Raises:
         WebhookVerificationError: Missing signature headers, a ``webhook-id`` or
             ``webhook-timestamp`` repeated with different values, a timestamp that is
-            not plain digits, a malformed secret, a
+            not plain digits, a secret whose key after ``whsec_`` is not non-empty
+            padded standard base64 ("Invalid secret"), a
             timestamp outside the five-minute window, no signature candidate that
             matches (malformed candidates are skipped, so a later valid one still
             verifies), or a body that is not valid UTF-8. Respond ``400``.
         ScalekitTriggerEventParseException: The signature is valid but the body is not
             a valid trigger event (including a body that starts with a byte order
             mark). Subclass of ``WebhookVerificationError``.
-        TypeError: ``body`` is not ``str``/``bytes``, ``secret`` is not a ``str``, or a
-            signature header value is not a ``str``.
+        TypeError: ``headers`` has no callable ``items()`` and ``get()``, ``body`` is
+            not ``str``/``bytes``, ``secret`` is not a ``str``, or a signature header
+            value is not a ``str``.
 
     Example:
         >>> from scalekit import verify_trigger_event
@@ -168,6 +170,11 @@ def verify_trigger_event(
         ... except WebhookVerificationError:
         ...     abort(400)
     """
+    if not (callable(getattr(headers, "items", None)) and callable(getattr(headers, "get", None))):
+        raise TypeError(
+            "headers must be a request-headers object or mapping with items() and get(), "
+            f"got {type(headers).__name__}"
+        )
     if isinstance(body, bytes):
         try:
             text = body.decode("utf-8")
@@ -197,17 +204,20 @@ def verify_trigger_event(
             text,
             skip_malformed_signatures=True,
             strict_timestamp=True,
+            strict_secret=True,
         )
     except WebhookVerificationError:
         raise
     except ValueError as exc:
-        # binascii.Error (malformed base64 in the secret) and UnicodeEncodeError
-        # (header text that is not valid UTF-8) are ValueError subclasses. Malformed
-        # signature candidates are skipped, so they end as "Invalid signature".
+        # UnicodeEncodeError (header text that is not valid UTF-8) is a ValueError
+        # subclass. A malformed secret is already "Invalid secret" (strict_secret), and
+        # malformed signature candidates are skipped, so they end as "Invalid signature".
         raise WebhookVerificationError("Malformed webhook secret or webhook headers") from exc
 
     if text.startswith("\ufeff"):
         # JSON text must not start with a byte order mark (RFC 8259 section 8.1).
+        # Defensive: json.loads rejects it too, but this keeps the rule independent of
+        # the stdlib decoder.
         raise ScalekitTriggerEventParseException("Invalid trigger event: body is not valid JSON")
     try:
         data = json.loads(text, parse_constant=_reject_constant)

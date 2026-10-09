@@ -394,12 +394,69 @@ class TestSignature(unittest.TestCase):
             verify_trigger_event('{"a": "\ud800"}', headers=sign("{}"), secret=SECRET)
         self.assertIsInstance(ctx.exception.__cause__, UnicodeEncodeError)
 
-    def test_malformed_secret_is_wrapped(self):
+    def test_malformed_secret_is_invalid_secret(self):
         body = load("valid_account.json")
         with self.assertRaises(WebhookVerificationError) as ctx:
             verify_trigger_event(body, headers=sign(body), secret=MALFORMED_SECRET)
-        self.assertIsInstance(ctx.exception.__cause__, binascii.Error)
+        self.assertEqual(str(ctx.exception), "Invalid secret")
         self.assertNotIn(MALFORMED_SECRET, str(ctx.exception))
+
+    def test_secret_that_decodes_to_an_empty_key_is_rejected(self):
+        # Leniently decoded, these give an empty HMAC key; an event signed with the empty
+        # key must not verify.
+        body = load("valid_account.json")
+        for weak in ("whsec_", "whsec_!!!!", "whsec_===="):
+            with self.subTest(secret=weak), self.assertRaises(WebhookVerificationError) as ctx:
+                verify_trigger_event(body, headers=sign(body, secret=weak), secret=weak)
+            self.assertEqual(str(ctx.exception), "Invalid secret")
+            self.assertNotIsInstance(ctx.exception, ScalekitTriggerEventParseException)
+
+    def test_secret_must_be_strict_padded_standard_base64(self):
+        body = load("valid_account.json")
+        headers = sign(body)  # signed with the same key bytes, standard encoding
+        key = SECRET.split("_", 1)[1]
+        self.assertTrue(key.endswith("="))
+        url_key_bytes = b"\xfb\xff\xbf" * 11  # standard base64 "+/+/", URL-safe "-_-_"
+        url_safe = "whsec_" + base64.urlsafe_b64encode(url_key_bytes).decode()
+        self.assertTrue(set("-_") & set(url_safe.split("_", 1)[1]))
+        cases = {
+            "unpadded": (SECRET.rstrip("="), headers),
+            "url-safe": (
+                url_safe,
+                sign(body, secret="whsec_" + base64.b64encode(url_key_bytes).decode()),
+            ),
+            "junk after padding": (SECRET + "AAAA", headers),
+            "padding in the middle": ("whsec_AA==" + key, headers),
+            "whitespace": (SECRET + " ", headers),
+            # The key is everything after the first "_", so a suffix is not ignored.
+            "underscore suffix": (SECRET + "_extra", headers),
+            "underscore suffix after valid key": (SECRET + "_", headers),
+        }
+        for label, (secret, signed) in cases.items():
+            with self.subTest(label), self.assertRaises(WebhookVerificationError) as ctx:
+                verify_trigger_event(body, headers=signed, secret=secret)
+            self.assertEqual(str(ctx.exception), "Invalid secret")
+
+    def test_one_byte_key_is_accepted(self):
+        body = load("valid_account.json")
+        secret = "whsec_" + base64.b64encode(b"k").decode()  # "aw=="
+        event = verify_trigger_event(body, headers=sign(body, secret=secret), secret=secret)
+        self.assertEqual(event.dedupe_key, "dk_123")
+
+    def test_error_order_missing_headers_then_secret_then_timestamp(self):
+        body = load("valid_account.json")
+        headers = {**sign(body), "webhook-timestamp": "1.5"}
+        del headers["webhook-id"]
+        with self.assertRaises(WebhookVerificationError) as ctx:
+            verify_trigger_event(body, headers=headers, secret="whsec_")
+        self.assertEqual(str(ctx.exception), "Missing required headers")
+        headers = {**sign(body), "webhook-timestamp": "1.5"}
+        with self.assertRaises(WebhookVerificationError) as ctx:
+            verify_trigger_event(body, headers=headers, secret="whsec_")
+        self.assertEqual(str(ctx.exception), "Invalid secret")
+        with self.assertRaises(WebhookVerificationError) as ctx:
+            verify_trigger_event(body, headers=headers, secret=SECRET)
+        self.assertEqual(str(ctx.exception), "Invalid Signature Headers")
 
     def _right_hmac(self, body: bytes, headers: dict) -> str:
         return sign(body, timestamp=int(headers["webhook-timestamp"]))["webhook-signature"].split(
@@ -468,6 +525,16 @@ class TestSignature(unittest.TestCase):
         with self.assertRaises(TypeError):
             verify_trigger_event(body, headers=headers, secret=SECRET)
 
+    def test_headers_without_items_and_get_raise_type_error(self):
+        body = load("valid_account.json")
+        pairs = list(sign(body).items())
+        for headers in (None, "abc", pairs):
+            with self.subTest(headers=type(headers).__name__):
+                with self.assertRaises(TypeError) as ctx:
+                    verify_trigger_event(body, headers=headers, secret=SECRET)
+                self.assertNotIsInstance(ctx.exception, AttributeError)
+                self.assertIn("headers", str(ctx.exception))
+
     def test_body_is_positional_only_and_options_keyword_only(self):
         body = load("valid_account.json")
         with self.assertRaises(TypeError):
@@ -534,6 +601,14 @@ class TestDuplicateHeaders(unittest.TestCase):
         self.assert_rejected({**self.signed, "Webhook-Id": "msg_other"}, message)
         # Values are not trimmed: only "," and the spaces/tabs after it separate them.
         self.assert_rejected({**self.signed, "webhook-id": f"{MSG_ID} ,{MSG_ID}"}, message)
+
+    def test_newline_after_comma_is_not_a_separator(self):
+        # Only "," plus spaces/tabs separates repeated values (",[ \t]*").
+        ts = self.signed["webhook-timestamp"]
+        self.assert_rejected(
+            {**self.signed, "webhook-timestamp": f"{ts},\n{ts}"},
+            "Multiple webhook-timestamp headers with different values",
+        )
 
     def test_different_timestamps_are_rejected(self):
         ts = self.signed["webhook-timestamp"]
@@ -719,6 +794,19 @@ class TestExistingWebhookVerifiersUnchanged(unittest.TestCase):
             headers = {**sign(self.body), "webhook-timestamp": value}
             with self.subTest(timestamp=value):
                 self.assertIs(self.client.verify_webhook_payload(SECRET, headers, self.body), True)
+
+    def test_lenient_secret_decoding_is_unchanged(self):
+        # Kept for compatibility: the legacy verifiers decode the key leniently, so these
+        # secrets act as an empty key. Only the trigger path rejects them.
+        for weak in ("whsec_", "whsec_!!!!", "whsec_===="):
+            with self.subTest(secret=weak):
+                headers = sign(self.body, secret=weak)
+                self.assertIs(self.client.verify_webhook_payload(weak, headers, self.body), True)
+        # Legacy split("_"): anything after a second "_" is ignored.
+        headers = sign(self.body)
+        self.assertIs(
+            self.client.verify_webhook_payload(SECRET + "_extra", headers, self.body), True
+        )
 
     def test_malformed_secret_raises_raw_binascii_error(self):
         with self.assertRaises(binascii.Error) as ctx:
