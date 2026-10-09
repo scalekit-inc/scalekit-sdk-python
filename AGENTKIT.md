@@ -829,7 +829,7 @@ The `ActionClient` also exposes `list_configs`, `create_config`, `update_config`
 
 ### `ActionMcp` helper
 
-Access via `client.connect.mcp` / `client.actions.mcp`. Requires `McpClient` to be initialized on the parent `ScalekitClient`. Methods include `list_configs`, `create_config` (builds `McpConfig` from `name` / `description` / mappings), `update_config`, `delete_config`, `ensure_instance`, `update_instance`, `get_instance`, `list_instances`, `delete_instance`, `get_instance_auth_state`, and `create_connection_session_token`, returning parsed wrapper types instead of raw gRPC tuples.
+Access via `client.connect.mcp` / `client.actions.mcp`. Requires `McpClient` to be initialized on the parent `ScalekitClient`. Methods include `list_configs`, `create_config` (builds `McpConfig` from `name` / `description` / mappings), `update_config`, `delete_config`, `ensure_instance`, `update_instance`, `get_instance`, `list_instances`, `delete_instance`, `get_instance_auth_state`, and `create_session_token`, returning parsed wrapper types instead of raw gRPC tuples.
 
 
 ## MCP (`McpClient`)
@@ -942,28 +942,39 @@ Returns authorization state for connectors used by the instance; optional fresh 
 </dd></dl>
 </details>
 
-<details><summary><code>client.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/mcp.py">create_connection_session_token</a>(connection_name, identifier, *, expiry?, access_level?) -> CreateMcpSessionTokenResponse</code></summary>
+<details><summary><code>client.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/mcp.py">create_session_token</a>(mcp_config_id?, identifier, expiry?, access_level?, *, connection_name?) -> CreateMcpSessionTokenResponse</code></summary>
 <dl><dd>
 
 ### 📝 Description
 
-Mints a short-lived session token for one connection's MCP server (`<environment_url>/mcp/v3/connections/<connection_name>`), which serves every tool of that connection. The token works only on that server. `expiry` (a `timedelta`, 60 seconds to 24 hours, default 1 hour) and `access_level` (`"FULL"` or `"READ_ONLY"`) are keyword-only. `"READ_ONLY"` limits the token to tools annotated read-only. `connection_name` is matched without regard to case; the token is issued for the connection's MCP server URL built from its stored name, so connect to that URL using the stored name exactly as it appears (the URL is case-sensitive), e.g. copied from the dashboard. Raises `ScalekitNotFoundException` when no active connection has that name, and `ScalekitBadRequestException` when `identifier`, `expiry` or `access_level` is invalid, the connection is not an AgentKit connection, or, depending on the environment's configuration, `identifier` has no active connected account on the connection (otherwise a token is minted and the account is reported as not connected when tools are called).
+Mints a short-lived session token for an end user. Pass exactly one of `mcp_config_id` or `connection_name` (keyword-only); the token works only on the MCP server of that target:
+
+- `mcp_config_id`: the MCP configuration's server, at the config's `mcp_server_url`, serving the tools the configuration exposes.
+- `connection_name`: the connection's own MCP server, at `<environment_url>/mcp/v3/connections/<connection_name>`, serving every tool of that connection with no MCP configuration. The name is matched without regard to case, but the URL path is case-sensitive: connect using the name exactly as stored, e.g. copied from the dashboard.
+
+`identifier` (1 to 255 characters) is required: the user of the configuration's instance, or the user whose connected account on the connection is used. `expiry` is a `timedelta` from 60 seconds to 24 hours (default 1 hour). `access_level` is `"FULL"` (default) or `"READ_ONLY"`, which limits the token to tools annotated read-only: other tools are left out of the tool list and refused when called.
+
+Raises `ValueError` before any request when both or neither of `mcp_config_id` and `connection_name` are given, the one given is blank, or `identifier` is missing or empty. Raises `ScalekitNotFoundException` when no active connection has that name, and `ScalekitBadRequestException` for any other invalid request, e.g. an invalid `identifier`, `expiry` or `access_level`, or a connection that is not an AgentKit connection. Depending on the environment's configuration, a connection token also requires `identifier` to have an active connected account on the connection; otherwise a token is minted and the account is reported as not connected when tools are called.
 
 ### 🔌 Usage
 
 ```python
 from datetime import timedelta
 
-response, _ = scalekit_client.mcp.create_connection_session_token(
-    "gmail",
-    "user_123",
+# MCP configuration (positional arguments keep working)
+response, _ = scalekit_client.mcp.create_session_token("cfg_01abc123", "user_123")
+
+# A connection's MCP server, read-only tools for 15 minutes
+response, _ = scalekit_client.mcp.create_session_token(
+    connection_name="gmail",
+    identifier="user_123",
     expiry=timedelta(minutes=15),
     access_level="READ_ONLY",
 )
 headers = {"Authorization": f"Bearer {response.token}"}
 ```
 
-`client.connect.mcp.create_connection_session_token(...)` / `client.actions.mcp.create_connection_session_token(...)` take the same arguments and return a parsed `CreateMcpSessionTokenResponse` with `token` and `expires_at` (a naive `datetime` in UTC).
+`client.connect.mcp.create_session_token(...)` / `client.actions.mcp.create_session_token(...)` take the same arguments and return a parsed `CreateMcpSessionTokenResponse` with `token` and `expires_at` (a naive `datetime` in UTC).
 
 </dd></dl>
 </details>

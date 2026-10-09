@@ -1,7 +1,9 @@
-"""Offline tests: session tokens for a connection's MCP server.
+"""Offline tests: create_session_token for an MCP configuration or a connection.
 
-create_connection_session_token targets the connection by name (``key_id`` on the
-wire) and never sets ``mcp_config_id``: the server requires exactly one of the two.
+``create_session_token`` targets either an MCP configuration (``mcp_config_id``)
+or a connection's MCP server (``connection_name``, sent as ``key_id`` on the
+wire). The server requires exactly one of the two, so the SDK rejects both or
+neither before any request, and never sets the other field.
 """
 
 import unittest
@@ -15,8 +17,29 @@ from scalekit.common.exceptions import ScalekitNotFoundException
 from scalekit.mcp import McpClient
 from scalekit.v1.mcp.mcp_pb2 import CreateMcpSessionTokenResponse
 
+# Argument combinations that must fail before any request, on both facades.
+INVALID_TARGETS = {
+    "neither": {"identifier": "u1"},
+    "both": {"mcp_config_id": "cfg_1", "connection_name": "GMAIL", "identifier": "u1"},
+    "both, config empty": {"mcp_config_id": "", "connection_name": "GMAIL", "identifier": "u1"},
+    "explicit None config": {"mcp_config_id": None, "identifier": "u1"},
+    "empty config": {"mcp_config_id": "", "identifier": "u1"},
+    "whitespace config": {"mcp_config_id": "  ", "identifier": "u1"},
+    "empty connection": {"connection_name": "", "identifier": "u1"},
+    "whitespace connection": {"connection_name": " \t", "identifier": "u1"},
+    "config, missing identifier": {"mcp_config_id": "cfg_1"},
+    "config, empty identifier": {"mcp_config_id": "cfg_1", "identifier": ""},
+    "connection, missing identifier": {"connection_name": "GMAIL"},
+    "connection, None identifier": {"connection_name": "GMAIL", "identifier": None},
+    "connection, empty identifier": {"connection_name": "GMAIL", "identifier": ""},
+}
 
-class TestMcpClientConnectionSessionToken(unittest.TestCase):
+
+def _not_found():
+    return ScalekitNotFoundException.__new__(ScalekitNotFoundException)
+
+
+class TestMcpClientSessionTokenTargets(unittest.TestCase):
     def setUp(self):
         self.core_client = MagicMock()
         self.core_client.grpc_exec.return_value = (CreateMcpSessionTokenResponse(token="tok"), None)
@@ -27,68 +50,26 @@ class TestMcpClientConnectionSessionToken(unittest.TestCase):
     def _sent_request(self):
         return self.core_client.grpc_exec.call_args.args[1]
 
-    def test_targets_connection_not_config(self):
-        self.mcp.create_connection_session_token("GMAIL", "u1")
+    # Back-compat: every existing config-token call shape keeps working.
+
+    def test_positional_config_and_identifier(self):
+        self.mcp.create_session_token("cfg_1", "user_123")
         request = self._sent_request()
-        self.assertEqual(request.key_id, "GMAIL")
-        self.assertEqual(request.mcp_config_id, "")
-        self.assertEqual(request.identifier, "u1")
-
-    def test_calls_create_mcp_session_token_rpc(self):
-        self.mcp.create_connection_session_token("GMAIL", "u1")
-        self.assertIs(
-            self.core_client.grpc_exec.call_args.args[0],
-            self.mcp.mcp_service.CreateMcpSessionToken.with_call,
-        )
-
-    def test_returns_grpc_exec_result(self):
-        result = self.mcp.create_connection_session_token("GMAIL", "u1")
-        self.assertIs(result, self.core_client.grpc_exec.return_value)
-
-    def test_omitted_optionals_stay_unset(self):
-        self.mcp.create_connection_session_token("GMAIL", "u1")
-        request = self._sent_request()
+        self.assertEqual(request.mcp_config_id, "cfg_1")
+        self.assertEqual(request.identifier, "user_123")
+        self.assertEqual(request.key_id, "")
         self.assertFalse(request.HasField("expiry"))
         self.assertEqual(request.access_level, "")
 
-    def test_forwards_expiry_in_seconds(self):
-        self.mcp.create_connection_session_token("GMAIL", "u1", expiry=timedelta(minutes=15))
+    def test_positional_expiry_and_access_level(self):
+        self.mcp.create_session_token("cfg_1", "user_123", timedelta(minutes=5), "READ_ONLY")
         request = self._sent_request()
-        self.assertTrue(request.HasField("expiry"))
-        self.assertEqual(request.expiry.seconds, 900)
+        self.assertEqual(request.mcp_config_id, "cfg_1")
+        self.assertEqual(request.expiry.seconds, 300)
+        self.assertEqual(request.access_level, "READ_ONLY")
+        self.assertEqual(request.key_id, "")
 
-    def test_expiry_drops_fractional_seconds(self):
-        self.mcp.create_connection_session_token(
-            "GMAIL", "u1", expiry=timedelta(seconds=90, milliseconds=500)
-        )
-        request = self._sent_request()
-        self.assertEqual(request.expiry.seconds, 90)
-        self.assertEqual(request.expiry.nanos, 0)
-
-    def test_forwards_access_levels(self):
-        for level in ("READ_ONLY", "FULL"):
-            with self.subTest(level=level):
-                self.mcp.create_connection_session_token("GMAIL", "u1", access_level=level)
-                self.assertEqual(self._sent_request().access_level, level)
-
-    def test_does_not_validate_access_level_client_side(self):
-        # The server is the authority on accepted values; the SDK passes them through.
-        self.mcp.create_connection_session_token("GMAIL", "u1", access_level="read_only")
-        self.assertEqual(self._sent_request().access_level, "read_only")
-
-    def test_optionals_are_keyword_only(self):
-        with self.assertRaises(TypeError):
-            self.mcp.create_connection_session_token("GMAIL", "u1", timedelta(hours=1))
-        self.core_client.grpc_exec.assert_not_called()
-
-    def test_server_error_propagates(self):
-        self.core_client.grpc_exec.side_effect = ScalekitNotFoundException.__new__(
-            ScalekitNotFoundException
-        )
-        with self.assertRaises(ScalekitNotFoundException):
-            self.mcp.create_connection_session_token("missing", "u1")
-
-    def test_config_token_still_targets_config(self):
+    def test_keyword_config(self):
         self.mcp.create_session_token(
             mcp_config_id="cfg_1", identifier="u1", expiry=timedelta(minutes=5)
         )
@@ -97,53 +78,211 @@ class TestMcpClientConnectionSessionToken(unittest.TestCase):
         self.assertEqual(request.key_id, "")
         self.assertEqual(request.expiry.seconds, 300)
 
+    # Connection tokens.
 
-class TestActionsConnectionSessionToken(unittest.TestCase):
+    def test_connection_sent_as_key_id_not_config(self):
+        self.mcp.create_session_token(connection_name="GMAIL", identifier="u1")
+        request = self._sent_request()
+        self.assertEqual(request.key_id, "GMAIL")
+        self.assertEqual(request.mcp_config_id, "")
+        self.assertEqual(request.identifier, "u1")
+
+    def test_connection_name_sent_as_given(self):
+        # The server matches names without regard to case; the SDK does not rewrite them.
+        self.mcp.create_session_token(connection_name="gMail", identifier="u1")
+        self.assertEqual(self._sent_request().key_id, "gMail")
+
+    def test_connection_with_positional_identifier(self):
+        self.mcp.create_session_token(None, "u1", connection_name="GMAIL")
+        request = self._sent_request()
+        self.assertEqual(request.key_id, "GMAIL")
+        self.assertEqual(request.identifier, "u1")
+
+    def test_calls_create_mcp_session_token_rpc(self):
+        self.mcp.create_session_token(connection_name="GMAIL", identifier="u1")
+        self.assertIs(
+            self.core_client.grpc_exec.call_args.args[0],
+            self.mcp.mcp_service.CreateMcpSessionToken.with_call,
+        )
+
+    def test_returns_grpc_exec_result(self):
+        result = self.mcp.create_session_token(connection_name="GMAIL", identifier="u1")
+        self.assertIs(result, self.core_client.grpc_exec.return_value)
+
+    def test_connection_omitted_optionals_stay_unset(self):
+        self.mcp.create_session_token(connection_name="GMAIL", identifier="u1")
+        request = self._sent_request()
+        self.assertFalse(request.HasField("expiry"))
+        self.assertEqual(request.access_level, "")
+
+    def test_connection_forwards_expiry_in_seconds(self):
+        self.mcp.create_session_token(
+            connection_name="GMAIL", identifier="u1", expiry=timedelta(minutes=15)
+        )
+        request = self._sent_request()
+        self.assertTrue(request.HasField("expiry"))
+        self.assertEqual(request.expiry.seconds, 900)
+
+    def test_expiry_drops_fractional_seconds(self):
+        self.mcp.create_session_token(
+            connection_name="GMAIL", identifier="u1", expiry=timedelta(seconds=90, milliseconds=500)
+        )
+        request = self._sent_request()
+        self.assertEqual(request.expiry.seconds, 90)
+        self.assertEqual(request.expiry.nanos, 0)
+
+    def test_connection_forwards_access_levels(self):
+        for level in ("READ_ONLY", "FULL"):
+            with self.subTest(level=level):
+                self.mcp.create_session_token(
+                    connection_name="GMAIL", identifier="u1", access_level=level
+                )
+                self.assertEqual(self._sent_request().access_level, level)
+
+    def test_does_not_validate_access_level_client_side(self):
+        # The server is the authority on accepted values; the SDK passes them through.
+        self.mcp.create_session_token(
+            connection_name="GMAIL", identifier="u1", access_level="read_only"
+        )
+        self.assertEqual(self._sent_request().access_level, "read_only")
+
+    def test_connection_name_is_keyword_only(self):
+        # Five positionals would put connection_name in the slot after access_level.
+        with self.assertRaises(TypeError):
+            self.mcp.create_session_token(None, "u1", None, None, "GMAIL")
+        self.core_client.grpc_exec.assert_not_called()
+
+    # Validation happens before any request.
+
+    def test_invalid_targets_rejected_before_request(self):
+        for case, kwargs in INVALID_TARGETS.items():
+            with self.subTest(case=case):
+                with self.assertRaises(ValueError):
+                    self.mcp.create_session_token(**kwargs)
+        self.core_client.grpc_exec.assert_not_called()
+
+    def test_error_messages_name_the_problem(self):
+        with self.assertRaisesRegex(ValueError, "not both"):
+            self.mcp.create_session_token(
+                mcp_config_id="cfg_1", connection_name="GMAIL", identifier="u1"
+            )
+        with self.assertRaisesRegex(ValueError, "mcp_config_id or connection_name is required"):
+            self.mcp.create_session_token(identifier="u1")
+        with self.assertRaisesRegex(ValueError, "connection_name must not be blank"):
+            self.mcp.create_session_token(connection_name=" ", identifier="u1")
+        with self.assertRaisesRegex(ValueError, "mcp_config_id must not be blank"):
+            self.mcp.create_session_token("", "u1")
+        with self.assertRaisesRegex(ValueError, "identifier is required"):
+            self.mcp.create_session_token(connection_name="GMAIL", identifier="")
+
+    def test_server_error_propagates(self):
+        self.core_client.grpc_exec.side_effect = _not_found()
+        with self.assertRaises(ScalekitNotFoundException):
+            self.mcp.create_session_token(connection_name="missing", identifier="u1")
+
+
+class TestActionsSessionTokenTargets(unittest.TestCase):
     def setUp(self):
         expires_at = Timestamp(seconds=1_800_000_000)
         self.mcp_client = MagicMock()
-        self.mcp_client.create_connection_session_token.return_value = (
+        self.mcp_client.create_session_token.return_value = (
             CreateMcpSessionTokenResponse(token="tok", expires_at=expires_at),
             None,
         )
         self.actions = ActionClient(MagicMock(), MagicMock(), mcp_client=self.mcp_client)
 
-    def test_forwards_all_arguments(self):
-        self.actions.mcp.create_connection_session_token(
-            "GMAIL", "u1", expiry=timedelta(hours=2), access_level="READ_ONLY"
-        )
-        call = self.mcp_client.create_connection_session_token.call_args
-        self.assertEqual(call.args, ("GMAIL", "u1"))
-        self.assertEqual(call.kwargs, {"expiry": timedelta(hours=2), "access_level": "READ_ONLY"})
-        self.mcp_client.create_session_token.assert_not_called()
+    def _forwarded(self):
+        call = self.mcp_client.create_session_token.call_args
+        self.assertEqual(call.args, ())
+        return call.kwargs
 
-    def test_omitted_optionals_forward_none(self):
-        self.actions.mcp.create_connection_session_token(connection_name="GMAIL", identifier="u1")
-        call = self.mcp_client.create_connection_session_token.call_args
-        self.assertIsNone(call.kwargs["expiry"])
-        self.assertIsNone(call.kwargs["access_level"])
+    def test_positional_config_back_compat(self):
+        self.actions.mcp.create_session_token("cfg_1", "user_123", timedelta(minutes=5), "FULL")
+        self.assertEqual(
+            self._forwarded(),
+            {
+                "mcp_config_id": "cfg_1",
+                "identifier": "user_123",
+                "expiry": timedelta(minutes=5),
+                "access_level": "FULL",
+            },
+        )
+
+    def test_keyword_config_does_not_forward_connection_name(self):
+        self.actions.mcp.create_session_token(mcp_config_id="cfg_1", identifier="u1")
+        kwargs = self._forwarded()
+        self.assertEqual(kwargs["mcp_config_id"], "cfg_1")
+        self.assertNotIn("connection_name", kwargs)
+
+    def test_connection_forwards_all_arguments(self):
+        self.actions.mcp.create_session_token(
+            connection_name="GMAIL",
+            identifier="u1",
+            expiry=timedelta(hours=2),
+            access_level="READ_ONLY",
+        )
+        self.assertEqual(
+            self._forwarded(),
+            {
+                "connection_name": "GMAIL",
+                "identifier": "u1",
+                "expiry": timedelta(hours=2),
+                "access_level": "READ_ONLY",
+            },
+        )
+
+    def test_connection_omitted_optionals_forward_none(self):
+        self.actions.mcp.create_session_token(connection_name="GMAIL", identifier="u1")
+        kwargs = self._forwarded()
+        self.assertIsNone(kwargs["expiry"])
+        self.assertIsNone(kwargs["access_level"])
+        self.assertNotIn("mcp_config_id", kwargs)
 
     def test_returns_parsed_response(self):
-        result = self.actions.mcp.create_connection_session_token("GMAIL", "u1")
+        result = self.actions.mcp.create_session_token(connection_name="GMAIL", identifier="u1")
         self.assertEqual(result.token, "tok")
         self.assertEqual(result.expires_at, Timestamp(seconds=1_800_000_000).ToDatetime())
 
-    def test_blank_connection_name_rejected_before_call(self):
-        with self.assertRaises(ValueError):
-            self.actions.mcp.create_connection_session_token("", "u1")
-        self.mcp_client.create_connection_session_token.assert_not_called()
-
-    def test_blank_identifier_rejected_before_call(self):
-        with self.assertRaises(ValueError):
-            self.actions.mcp.create_connection_session_token("GMAIL", "")
-        self.mcp_client.create_connection_session_token.assert_not_called()
+    def test_invalid_targets_rejected_before_call(self):
+        for case, kwargs in INVALID_TARGETS.items():
+            with self.subTest(case=case):
+                with self.assertRaises(ValueError):
+                    self.actions.mcp.create_session_token(**kwargs)
+        self.mcp_client.create_session_token.assert_not_called()
 
     def test_server_error_propagates(self):
-        self.mcp_client.create_connection_session_token.side_effect = (
-            ScalekitNotFoundException.__new__(ScalekitNotFoundException)
-        )
+        self.mcp_client.create_session_token.side_effect = _not_found()
         with self.assertRaises(ScalekitNotFoundException):
-            self.actions.mcp.create_connection_session_token("missing", "u1")
+            self.actions.mcp.create_session_token(connection_name="missing", identifier="u1")
+
+
+class TestEndToEndThroughBothFacades(unittest.TestCase):
+    """The actions facade drives the real McpClient: the wire request is right."""
+
+    def setUp(self):
+        self.core_client = MagicMock()
+        self.core_client.grpc_exec.return_value = (CreateMcpSessionTokenResponse(token="tok"), None)
+        mcp = McpClient.__new__(McpClient)
+        mcp.core_client = self.core_client
+        mcp.mcp_service = MagicMock()
+        self.actions = ActionClient(MagicMock(), MagicMock(), mcp_client=mcp)
+
+    def _sent_request(self):
+        return self.core_client.grpc_exec.call_args.args[1]
+
+    def test_connection_token_wire_request(self):
+        result = self.actions.mcp.create_session_token(
+            connection_name="GMAIL", identifier="u1", access_level="READ_ONLY"
+        )
+        request = self._sent_request()
+        self.assertEqual((request.key_id, request.mcp_config_id), ("GMAIL", ""))
+        self.assertEqual(request.access_level, "READ_ONLY")
+        self.assertEqual(result.token, "tok")
+
+    def test_config_token_wire_request(self):
+        self.actions.mcp.create_session_token("cfg_1", "u1")
+        request = self._sent_request()
+        self.assertEqual((request.key_id, request.mcp_config_id), ("", "cfg_1"))
 
 
 if __name__ == "__main__":

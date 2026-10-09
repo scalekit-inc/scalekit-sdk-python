@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Optional, Any, List, Dict, Union
+from typing import Optional, Any, List, Dict, Union, overload
 import requests
 from scalekit.actions.types import ToolRequest,ExecuteToolResponse,MagicLinkResponse,ListConnectedAccountsResponse,ListToolsResponse,DeleteConnectedAccountResponse,GetConnectedAccountAuthResponse,GetConnectedAccountDetailsResponse,ToolInput, \
     UpdateConnectedAccountResponse,CreateMcpConfigResponse,ListMcpConfigsResponse,UpdateMcpConfigResponse,DeleteMcpConfigResponse, \
@@ -16,6 +16,7 @@ from scalekit.actions.modifier import (
     apply_pre_modifiers, apply_post_modifiers
 )
 from scalekit.common.exceptions import ScalekitNotFoundException
+from scalekit.mcp import _resolve_session_token_target
 from scalekit.v1.tools.tools_pb2 import Filter
 from google.protobuf.wrappers_pb2 import BoolValue
 
@@ -1366,28 +1367,59 @@ class ActionMcp:
         )
         return ListMcpConnectedAccountsResponse.from_proto(result_tuple[0])
 
+    @overload
     def create_session_token(
         self,
         mcp_config_id: str,
         identifier: str,
-        expiry: Optional[timedelta] = None,
-        access_level: Optional[str] = None,
+        expiry: timedelta | None = None,
+        access_level: str | None = None,
+    ) -> CreateMcpSessionTokenResponse: ...
+
+    @overload
+    def create_session_token(
+        self,
+        *,
+        connection_name: str,
+        identifier: str,
+        expiry: timedelta | None = None,
+        access_level: str | None = None,
+    ) -> CreateMcpSessionTokenResponse: ...
+
+    def create_session_token(
+        self,
+        mcp_config_id: str | None = None,
+        identifier: str | None = None,
+        expiry: timedelta | None = None,
+        access_level: str | None = None,
+        *,
+        connection_name: str | None = None,
     ) -> CreateMcpSessionTokenResponse:
         """Create a short-lived session token for a user to access an MCP server.
 
-        The token is scoped to a specific MCP configuration and end-user. Pass it
-        as a ``Bearer`` token in the ``Authorization`` header when making requests
-        to the MCP server URL associated with the config.
+        Pass exactly one of ``mcp_config_id`` or ``connection_name``; the
+        token works only on the MCP server of that target:
+
+        - ``mcp_config_id``: the MCP configuration's server, at the config's
+          ``mcp_server_url``. It serves the tools the configuration exposes.
+        - ``connection_name``: the connection's own MCP server, at
+          ``<environment_url>/mcp/v3/connections/<connection_name>``. It
+          serves every tool of that connection, with no MCP configuration.
+
+        Send the token as a ``Bearer`` token in the ``Authorization`` header
+        when calling that URL.
 
         Args:
-            mcp_config_id: Scalekit ID of the MCP configuration the token should
-                grant access to, e.g. ``"cfg_01abc123"``.
-            identifier: End-user identifier for whom the token is minted — typically
-                the same email or opaque ID used when calling ``ensure_instance``,
-                e.g. ``"alice@example.com"``.
+            mcp_config_id: Scalekit ID of the MCP configuration the token
+                grants access to, e.g. ``"cfg_01abc123"``.
+            identifier: End-user identifier the token acts as. For a
+                configuration, typically the same email or opaque ID used when
+                calling ``ensure_instance``, e.g. ``"alice@example.com"``; for
+                a connection, the user whose connected account on it is used.
+                1 to 255 characters. Required.
             expiry: Requested lifetime for the token as a Python ``timedelta``.
-                When omitted, the server-side default TTL is applied (typically
-                1 hour). Example values:
+                The server accepts 60 seconds to 24 hours and applies 1 hour
+                when omitted. Fractions of a second are dropped. Example values:
 
                 - ``timedelta(minutes=30)`` — 30-minute token
                 - ``timedelta(hours=8)``    — 8-hour token (work-day session)
@@ -1395,75 +1427,12 @@ class ActionMcp:
             access_level: Tools the token can use. ``"READ_ONLY"`` limits it to
                 tools annotated read-only: other tools are left out of the tool
                 list and refused when called. ``"FULL"``, or omitting it, exposes
-                every tool the configuration exposes.
-
-        Returns:
-            CreateMcpSessionTokenResponse: Contains:
-
-            - ``token`` (``str``) — opaque bearer token string.
-            - ``expires_at`` (``datetime``) — UTC datetime when the token expires.
-
-        Raises:
-            ValueError: If ``mcp_config_id`` or ``identifier`` is blank.
-
-        Example::
-
-            from datetime import timedelta
-
-            resp = client.actions.mcp.create_session_token(
-                mcp_config_id="cfg_01abc123",
-                identifier="alice@example.com",
-                expiry=timedelta(hours=8),
-            )
-
-            headers = {"Authorization": f"Bearer {resp.token}"}
-            # Use headers when calling the MCP server URL
-        """
-        if not mcp_config_id:
-            raise ValueError("mcp_config_id is required")
-        if not identifier:
-            raise ValueError("identifier is required")
-        result_tuple = self._client().create_session_token(
-            mcp_config_id=mcp_config_id,
-            identifier=identifier,
-            expiry=expiry,
-            access_level=access_level,
-        )
-        return CreateMcpSessionTokenResponse.from_proto(result_tuple[0])
-
-    def create_connection_session_token(
-        self,
-        connection_name: str,
-        identifier: str,
-        *,
-        expiry: timedelta | None = None,
-        access_level: str | None = None,
-    ) -> CreateMcpSessionTokenResponse:
-        """Create a short-lived session token for a connection's MCP server.
-
-        A connection's MCP server serves every tool of one connection at
-        ``<environment_url>/mcp/v3/connections/<connection_name>``. Pass the
-        token as a ``Bearer`` token in the ``Authorization`` header when calling
-        that URL. The token works only on that server; use
-        ``create_session_token`` to mint a token for an MCP configuration.
-
-        Args:
+                every tool of the target. Values are case-sensitive.
             connection_name: Name of the connection whose MCP server the token
-                grants access to, e.g. ``"gmail"``. Matched without regard to
-                case. The token is issued for the connection's MCP server URL
-                built from its stored name; connect to that URL using the
-                stored name exactly as it appears (the URL is case-sensitive),
-                e.g. copied from the dashboard.
-            identifier: End-user identifier whose connected account on this
-                connection the token acts as, e.g. ``"user_123"``.
-                1 to 255 characters.
-            expiry: Requested lifetime for the token. The server accepts
-                60 seconds to 24 hours and applies 1 hour when omitted.
-                Fractions of a second are dropped.
-            access_level: Tools the token can use. ``"READ_ONLY"`` limits it to
-                tools annotated read-only: other tools are left out of the tool
-                list and refused when called. ``"FULL"``, or omitting it,
-                exposes every tool of the connection. Values are case-sensitive.
+                grants access to, e.g. ``"gmail"``. Keyword-only. Matched
+                without regard to case, but the server URL path is
+                case-sensitive: connect using the name exactly as stored, e.g.
+                copied from the dashboard.
 
         Returns:
             CreateMcpSessionTokenResponse: Contains:
@@ -1473,37 +1442,57 @@ class ActionMcp:
               token expires.
 
         Raises:
-            ValueError: If ``connection_name`` or ``identifier`` is blank.
-            ScalekitNotFoundException: No active connection has this name.
-            ScalekitBadRequestException: ``identifier``, ``expiry`` or
-                ``access_level`` is invalid, the connection is not an
-                AgentKit connection, or, depending on the environment's
-                configuration, ``identifier`` has no active connected account
-                on the connection (otherwise a token is minted and the account
-                is reported as not connected when tools are called).
+            ValueError: Both or neither of ``mcp_config_id`` and
+                ``connection_name`` are given, the one given is blank, or
+                ``identifier`` is missing or empty. Raised before any request.
+            ScalekitNotFoundException: No active connection has
+                ``connection_name``.
+            ScalekitBadRequestException: Any other invalid request, e.g. an
+                invalid ``identifier``, ``expiry`` or ``access_level``, or a
+                connection that is not an AgentKit connection. Depending on
+                the environment's configuration, a connection token also
+                requires ``identifier`` to have an active connected account on
+                the connection; otherwise a token is minted and the account is
+                reported as not connected when tools are called.
 
         Example::
 
             from datetime import timedelta
 
-            resp = client.actions.mcp.create_connection_session_token(
-                "gmail",
-                "user_123",
+            # MCP configuration
+            resp = client.actions.mcp.create_session_token(
+                mcp_config_id="cfg_01abc123",
+                identifier="alice@example.com",
+                expiry=timedelta(hours=8),
+            )
+
+            # A connection's MCP server, read-only tools for 15 minutes
+            resp = client.actions.mcp.create_session_token(
+                connection_name="gmail",
+                identifier="user_123",
                 expiry=timedelta(minutes=15),
                 access_level="READ_ONLY",
             )
+
             headers = {"Authorization": f"Bearer {resp.token}"}
+            # Use headers when calling the MCP server URL
         """
-        if not connection_name:
-            raise ValueError("connection_name is required")
-        if not identifier:
-            raise ValueError("identifier is required")
-        result_tuple = self._client().create_connection_session_token(
-            connection_name,
-            identifier,
-            expiry=expiry,
-            access_level=access_level,
-        )
+        target = _resolve_session_token_target(mcp_config_id, connection_name, identifier)
+        client = self._client()
+        if target.is_connection:
+            result_tuple = client.create_session_token(
+                connection_name=target.name,
+                identifier=target.identifier,
+                expiry=expiry,
+                access_level=access_level,
+            )
+        else:
+            result_tuple = client.create_session_token(
+                mcp_config_id=target.name,
+                identifier=target.identifier,
+                expiry=expiry,
+                access_level=access_level,
+            )
         return CreateMcpSessionTokenResponse.from_proto(result_tuple[0])
 
 
