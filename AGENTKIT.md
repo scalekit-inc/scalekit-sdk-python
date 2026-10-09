@@ -947,7 +947,7 @@ Returns authorization state for connectors used by the instance; optional fresh 
 
 ### 📝 Description
 
-Mints a short-lived session token for one connection's MCP server (`<environment_url>/mcp/v3/connections/<connection_name>`), which serves every tool of that connection. The token works only on that server. `expiry` (a `timedelta`, 60 seconds to 24 hours, default 1 hour) and `access_level` (`"FULL"` or `"READ_ONLY"`) are keyword-only. `"READ_ONLY"` limits the token to tools annotated read-only. `connection_name` is matched without regard to case; the token is issued for the connection's MCP server URL built from its stored name, so connect to that URL using the stored name exactly as it appears (the URL is case-sensitive), e.g. copied from the dashboard. Raises `ScalekitNotFoundException` when no active connection has that name.
+Mints a short-lived session token for one connection's MCP server (`<environment_url>/mcp/v3/connections/<connection_name>`), which serves every tool of that connection. The token works only on that server. `expiry` (a `timedelta`, 60 seconds to 24 hours, default 1 hour) and `access_level` (`"FULL"` or `"READ_ONLY"`) are keyword-only. `"READ_ONLY"` limits the token to tools annotated read-only. `connection_name` is matched without regard to case; the token is issued for the connection's MCP server URL built from its stored name, so connect to that URL using the stored name exactly as it appears (the URL is case-sensitive), e.g. copied from the dashboard. Raises `ScalekitNotFoundException` when no active connection has that name, and `ScalekitBadRequestException` when `identifier`, `expiry` or `access_level` is invalid, the connection is not an AgentKit connection, or, depending on the environment's configuration, `identifier` has no active connected account on the connection (otherwise a token is minted and the account is reported as not connected when tools are called).
 
 ### 🔌 Usage
 
@@ -955,9 +955,9 @@ Mints a short-lived session token for one connection's MCP server (`<environment
 from datetime import timedelta
 
 response, _ = scalekit_client.mcp.create_connection_session_token(
-    "GMAIL",
-    "alice@example.com",
-    expiry=timedelta(minutes=30),
+    "gmail",
+    "user_123",
+    expiry=timedelta(minutes=15),
     access_level="READ_ONLY",
 )
 headers = {"Authorization": f"Bearer {response.token}"}

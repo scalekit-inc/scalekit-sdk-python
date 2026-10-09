@@ -333,13 +333,13 @@ class McpClient:
 
         Args:
             connection_name: Name of the connection whose MCP server the token
-                grants access to, e.g. ``"GMAIL"``. Matched without regard to
+                grants access to, e.g. ``"gmail"``. Matched without regard to
                 case. The token is issued for the connection's MCP server URL
                 built from its stored name; connect to that URL using the
                 stored name exactly as it appears (the URL is case-sensitive),
                 e.g. copied from the dashboard.
             identifier: End-user identifier whose connected account on this
-                connection the token acts as, e.g. ``"alice@example.com"``.
+                connection the token acts as, e.g. ``"user_123"``.
                 1 to 255 characters.
             expiry: Lifetime of the token. The server accepts 60 seconds to
                 24 hours and applies 1 hour when omitted. Fractions of a second
@@ -368,9 +368,9 @@ class McpClient:
             from datetime import timedelta
 
             response, _ = client.mcp.create_connection_session_token(
-                "GMAIL",
-                "alice@example.com",
-                expiry=timedelta(minutes=30),
+                "gmail",
+                "user_123",
+                expiry=timedelta(minutes=15),
                 access_level="READ_ONLY",
             )
             headers = {"Authorization": f"Bearer {response.token}"}

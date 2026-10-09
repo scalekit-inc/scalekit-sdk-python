@@ -1,14 +1,14 @@
 kind: added
 body: |
-  `client.actions.mcp.create_connection_session_token(connection_name, identifier, *, expiry=None, access_level=None)` mints a session token for a connection's MCP server, which serves every tool of that one connection, the same way `create_session_token` does for an MCP configuration. Pass `access_level="READ_ONLY"` to limit the token to read-only tools. The low-level `client.mcp.create_connection_session_token` takes the same arguments. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/AGENTKIT.md#mcp-mcpclient)
+  `client.actions.mcp.create_connection_session_token(connection_name, identifier, *, expiry=None, access_level=None)` mints a session token for a connection's own MCP server (`<environment URL>/mcp/v3/connections/<connection name>`), which serves all of that connection's tools without an MCP configuration; `access_level="READ_ONLY"` limits the token to read-only tools. The URL path is case-sensitive, so connect with the connection's name exactly as stored. `client.mcp.create_connection_session_token` takes the same arguments and returns the raw `(response, call)` tuple. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/AGENTKIT.md#mcp-mcpclient)
 
   ```python
   from datetime import timedelta
 
   resp = client.actions.mcp.create_connection_session_token(
-      "GMAIL",
-      "alice@example.com",
-      expiry=timedelta(minutes=30),
+      "gmail",
+      "user_123",
+      expiry=timedelta(minutes=15),
       access_level="READ_ONLY",
   )
   headers = {"Authorization": f"Bearer {resp.token}"}
