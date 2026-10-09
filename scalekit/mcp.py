@@ -403,8 +403,9 @@ class McpClient:
                 connection that is not an AgentKit connection. Depending on
                 the environment's configuration, a connection token also
                 requires ``identifier`` to have an active connected account on
-                the connection; otherwise a token is minted and the account is
-                reported as not connected when tools are called.
+                the connection; otherwise the server creates a pending
+                connected account for ``identifier``, a token is minted, and
+                the account is reported as not connected when tools are called.
 
         Example::
 
