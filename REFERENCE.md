@@ -477,7 +477,7 @@ async def webhook_handler(request):
 <dl>
 <dd>
 
-Verifies a trigger event's signature (`whsec_` secret, `v1` HMAC-SHA256, five-minute timestamp window, case-insensitive header names), then parses the body into an immutable `TriggerEvent`. Also available without a client as `scalekit.verify_trigger_event(body, /, *, headers, secret)`. `occurred_at` is a timezone-aware UTC `datetime`; fractional seconds are truncated to microseconds. Raises `WebhookVerificationError` on any failure; a correctly signed but malformed event raises its subclass `ScalekitTriggerEventParseException`. Delivery is at least once: deduplicate on `dedupe_key` plus the connected account you act as. Full example: [AGENTKIT.md → Trigger events](AGENTKIT.md#trigger-events).
+Verifies a trigger event's signature (`whsec_` secret, `v1` HMAC-SHA256, five-minute timestamp window, case-insensitive header names), then parses the body into an immutable `TriggerEvent`. Also available without a client as `scalekit.verify_trigger_event(body, /, *, headers, secret)`. `occurred_at` is a timezone-aware UTC `datetime`; fractional seconds are truncated to microseconds. Raises `WebhookVerificationError` on any verification failure; a correctly signed but malformed event raises its subclass `ScalekitTriggerEventParseException`. Raises `TypeError` when called with arguments of the wrong type. Delivery is at least once: deduplicate on `dedupe_key` plus the connected account you act as. Full example: [AGENTKIT.md → Trigger events](AGENTKIT.md#trigger-events).
 </dd>
 </dl>
 </dd>

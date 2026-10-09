@@ -525,6 +525,16 @@ class TestSignature(unittest.TestCase):
         with self.assertRaises(TypeError):
             verify_trigger_event(body, headers=headers, secret=SECRET)
 
+    def test_argument_type_errors_win_over_invalid_utf8_body(self):
+        bad_body = b'{"version": "\xff"}'
+        with self.assertRaises(TypeError):
+            verify_trigger_event(bad_body, headers=sign(b"{}"), secret=None)
+        headers = {**sign(b"{}"), "webhook-id": 5}
+        with self.assertRaises(TypeError):
+            verify_trigger_event(bad_body, headers=headers, secret=SECRET)
+        with self.assertRaises(TypeError):
+            verify_trigger_event(bad_body, headers=None, secret=SECRET)
+
     def test_headers_without_items_and_get_raise_type_error(self):
         body = load("valid_account.json")
         pairs = list(sign(body).items())

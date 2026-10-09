@@ -175,25 +175,27 @@ def verify_trigger_event(
             "headers must be a request-headers object or mapping with items() and get(), "
             f"got {type(headers).__name__}"
         )
+    if not isinstance(body, (str, bytes)):
+        raise TypeError(f"body must be str or bytes, got {type(body).__name__}")
+    if not isinstance(secret, str):
+        raise TypeError(f"secret must be a str, got {type(secret).__name__}")
+    # Argument type errors win over request-content errors: the header readers raise
+    # TypeError for non-str values, so they run before the body is decoded.
+    webhook_id = _single_header(headers, _ID_HEADER)
+    webhook_timestamp = _single_header(headers, _TIMESTAMP_HEADER)
+    webhook_signature = _joined_header(headers, _SIGNATURE_HEADER)
+
     if isinstance(body, bytes):
         try:
             text = body.decode("utf-8")
         except UnicodeDecodeError as exc:
             raise WebhookVerificationError("Trigger event body is not valid UTF-8") from exc
-    elif isinstance(body, str):
+    else:
         text = body
         try:
             text.encode("utf-8")
         except UnicodeEncodeError as exc:
             raise WebhookVerificationError("Trigger event body is not valid UTF-8") from exc
-    else:
-        raise TypeError(f"body must be str or bytes, got {type(body).__name__}")
-    if not isinstance(secret, str):
-        raise TypeError(f"secret must be a str, got {type(secret).__name__}")
-
-    webhook_id = _single_header(headers, _ID_HEADER)
-    webhook_timestamp = _single_header(headers, _TIMESTAMP_HEADER)
-    webhook_signature = _joined_header(headers, _SIGNATURE_HEADER)
 
     try:
         verify_payload_signature(
