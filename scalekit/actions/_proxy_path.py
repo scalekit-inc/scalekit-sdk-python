@@ -79,7 +79,7 @@ def ensure_under_proxy_prefix(env_url: str, url: str) -> None:
             ``env_url.rstrip("/") + "/proxy" + path``.
 
     Raises:
-        ValueError: If either server view falls outside the proxy prefix. The
+        ValueError: If any server view falls outside the proxy prefix. The
             message does not include the path.
 
     Example:

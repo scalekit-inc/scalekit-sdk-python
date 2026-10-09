@@ -15,6 +15,11 @@ from scalekit.actions._proxy_path import clean_path
 from scalekit.actions.actions import ActionClient
 
 _AUTH_HEADER = "Bearer test-token"
+_PROXY_ENV_KEYS = tuple(
+    name
+    for base in ("http_proxy", "https_proxy", "all_proxy", "no_proxy")
+    for name in (base, base.upper())
+)
 
 
 class _RecordingServer(http.server.ThreadingHTTPServer):
@@ -77,6 +82,12 @@ class _ProxyServerTestCase(unittest.TestCase):
 
     def setUp(self):
         self.server.reset()
+        # Talk to the loopback server directly even when the runner sets a proxy.
+        env = mock.patch.dict(os.environ)
+        env.start()
+        self.addCleanup(env.stop)
+        for key in _PROXY_ENV_KEYS:
+            os.environ.pop(key, None)
 
     def _client(self, env_url):
         core = mock.MagicMock()
