@@ -1,0 +1,8 @@
+kind: security
+body: |
+  `client.actions.request()` now raises `ValueError`, before sending anything, when `path` would resolve outside the proxy prefix. Previously, a `path` containing `..` segments, including percent-encoded or backslash forms, could reach other endpoints on the environment host with the client's credentials. Every other path is sent unchanged. Affects 2.5.0 through 2.20.0. Upgrade if you build `path` from untrusted input.
+time: '2026-10-09T16:08:08.484400+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: SK-2310
+  Migration: ''

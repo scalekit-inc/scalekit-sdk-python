@@ -15,6 +15,7 @@ from scalekit.actions.modifier import (
     Modifier, ModifierType, ToolNames,
     apply_pre_modifiers, apply_post_modifiers
 )
+from scalekit.actions._proxy_path import ensure_under_proxy_prefix
 from scalekit.common.exceptions import ScalekitNotFoundException
 from scalekit.v1.tools.tools_pb2 import Filter
 from google.protobuf.wrappers_pb2 import BoolValue
@@ -545,7 +546,11 @@ class ActionClient:
         :type connection_name: str
         :param identifier: Connected account identifier (required)
         :type identifier: str
-        :param path: API path to call, e.g. "/v1.0/me/messages" (required)
+        :param path: API path to call, e.g. "/v1.0/me/messages" (required).
+            It is appended to ``{env_url}/proxy`` and sent as given. A path
+            that resolves outside the proxy prefix (for example through
+            ``..`` segments, including percent-encoded or backslash forms)
+            raises ``ValueError`` before any request is sent.
         :type path: str
         :param method: HTTP method — GET, POST, PUT, PATCH, DELETE, etc. (default: GET)
         :type method: str
@@ -580,6 +585,9 @@ class ActionClient:
 
         core = self.tools.core_client
         url = core.env_url.rstrip("/") + "/proxy" + path
+        # Checked once, before any credentials are attached: the 401 retry
+        # below re-sends this same url.
+        ensure_under_proxy_prefix(core.env_url, url)
 
         params = query_params or {}
 

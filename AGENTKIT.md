@@ -810,6 +810,8 @@ Create, upsert, or update accounts using dict-based auth payloads converted to p
 
 Proxied REST call via `{env_url}/proxy` with `connection_name` and `identifier` headers. Returns a `requests.Response`.
 
+A `path` that resolves outside the proxy prefix (for example through `..` segments, including percent-encoded or backslash forms) raises `ValueError` before any request is sent.
+
 </dd></dl>
 </details>
 
