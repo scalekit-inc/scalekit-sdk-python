@@ -10,6 +10,7 @@ header handling exactly as they are.
 from __future__ import annotations
 
 import base64
+import binascii
 import hashlib
 import hmac
 from datetime import datetime, timedelta, timezone
@@ -58,11 +59,16 @@ def verify_payload_signature(
     *,
     tolerance: timedelta = WEBHOOK_TOLERANCE,
     signature_version: str = WEBHOOK_SIGNATURE_VERSION,
+    skip_malformed_signatures: bool = False,
 ) -> bool:
     """Verify a ``whsec_`` HMAC signature over ``"{id}.{timestamp}.{payload}"``.
 
-    Returns ``True`` or raises. A malformed base64 secret or signature raises
-    ``binascii.Error`` unchanged (historical behaviour of the public verifiers).
+    Returns ``True`` or raises. A malformed base64 secret raises ``binascii.Error``.
+    With ``skip_malformed_signatures=False`` (the historical behaviour of the public
+    verifiers, which must not change) a malformed base64 signature candidate raises
+    ``binascii.Error`` too. With ``True``, a candidate that has no comma, another
+    version, invalid base64 or the wrong decoded length is skipped, so a later valid
+    candidate still verifies.
 
     Raises:
         WebhookVerificationError: Missing headers, a secret without ``_``, a stale or
@@ -89,10 +95,19 @@ def verify_payload_signature(
             continue
 
         version = signature_parts[0]
-        signature = base64.b64decode(signature_parts[1])
-
-        if version != signature_version:
-            continue
+        if skip_malformed_signatures:
+            if version != signature_version:
+                continue
+            try:
+                signature = base64.b64decode(signature_parts[1], validate=True)
+            except binascii.Error:
+                continue
+            if len(signature) != len(computed_signature):
+                continue
+        else:
+            signature = base64.b64decode(signature_parts[1])
+            if version != signature_version:
+                continue
 
         if hmac.compare_digest(signature, computed_signature):
             return True

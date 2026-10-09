@@ -377,13 +377,42 @@ class TestSignature(unittest.TestCase):
         self.assertIsInstance(ctx.exception.__cause__, binascii.Error)
         self.assertNotIn(MALFORMED_SECRET, str(ctx.exception))
 
-    def test_malformed_signature_header_is_wrapped(self):
+    def _right_hmac(self, body: bytes, headers: dict) -> str:
+        return sign(body, timestamp=int(headers["webhook-timestamp"]))["webhook-signature"].split(
+            ",", 1
+        )[1]
+
+    def test_malformed_candidates_are_skipped_before_a_valid_one(self):
         body = load("valid_account.json")
         headers = sign(body)
-        headers["webhook-signature"] = "v1,abc"
+        valid = headers["webhook-signature"]
+        malformed = ["v1,AAAA", "v1,!!!!", "v1,AAA", "v1", "v2," + self._right_hmac(body, headers)]
+        for candidate in malformed:
+            with self.subTest(candidate=candidate):
+                headers["webhook-signature"] = f"{candidate} {valid}"
+                event = verify_trigger_event(body, headers=headers, secret=SECRET)
+                self.assertEqual(event.dedupe_key, "dk_123")
+        headers["webhook-signature"] = " ".join([*malformed, valid])
+        self.assertEqual(verify_trigger_event(body, headers=headers, secret=SECRET).version, "1")
+
+    def test_only_malformed_candidates_is_invalid_signature(self):
+        body = load("valid_account.json")
+        headers = sign(body)
+        for value in ("v1,AAAA", "v1,!!!!", "v1,AAA", "v1", "v1,AAAA v1,!!!! v1"):
+            with self.subTest(signature=value):
+                headers["webhook-signature"] = value
+                with self.assertRaises(WebhookVerificationError) as ctx:
+                    verify_trigger_event(body, headers=headers, secret=SECRET)
+                self.assertNotIsInstance(ctx.exception, ScalekitTriggerEventParseException)
+                self.assertEqual(str(ctx.exception), "Invalid signature")
+
+    def test_right_hmac_with_other_version_is_rejected(self):
+        body = load("valid_account.json")
+        headers = sign(body)
+        headers["webhook-signature"] = "v2," + self._right_hmac(body, headers)
         with self.assertRaises(WebhookVerificationError) as ctx:
             verify_trigger_event(body, headers=headers, secret=SECRET)
-        self.assertIsInstance(ctx.exception.__cause__, binascii.Error)
+        self.assertEqual(str(ctx.exception), "Invalid signature")
 
     def test_secret_without_prefix(self):
         body = load("valid_account.json")
@@ -549,6 +578,20 @@ class TestExistingWebhookVerifiersUnchanged(unittest.TestCase):
             self.client.verify_interceptor_payload(OTHER_SECRET, interceptor, self.body)
         self.assertEqual(str(ctx.exception), "Invalid signature")
 
+    def test_malformed_candidate_before_valid_one_still_raises(self):
+        headers = sign(self.body)
+        headers["webhook-signature"] = "v1,AAA " + headers["webhook-signature"]
+        with self.assertRaises(binascii.Error):
+            self.client.verify_webhook_payload(SECRET, headers, self.body)
+        with self.assertRaises(binascii.Error):
+            self.client.verify_interceptor_payload(SECRET, headers, self.body)
+
+    def test_garbage_candidate_decodes_leniently_as_before(self):
+        # Legacy decoding drops non-base64 characters, so "v1,!!!!" is skipped, not raised.
+        headers = sign(self.body)
+        headers["webhook-signature"] = "v1,!!!! " + headers["webhook-signature"]
+        self.assertIs(self.client.verify_webhook_payload(SECRET, headers, self.body), True)
+
     def test_does_not_parse_body(self):
         # The legacy verifiers only check the signature; any signed body is accepted.
         body = b"not json at all"
@@ -674,8 +717,12 @@ class TestDeepPayload(unittest.TestCase):
         end = data.index('"dedupe_key"')
         return (data[:start] + payload_json + ",\n  " + data[end:]).encode("utf-8")
 
-    def test_payload_nested_1000_levels_parses(self):
-        depth = 1000
+    # 500 levels: well past pydantic's JsonValue limit (~255) and within what the stdlib
+    # JSON decoder accepts on every supported Python (3.10/3.11 fail at ~1000).
+    DEPTH = 500
+
+    def test_payload_nested_500_levels_parses(self):
+        depth = self.DEPTH
         body = self._with_payload('{"a": ' * depth + "1" + "}" * depth)
         event = verify(body)
         node = event.payload
@@ -683,8 +730,8 @@ class TestDeepPayload(unittest.TestCase):
             node = node["a"]
         self.assertEqual(node, 1)
 
-    def test_payload_nested_lists_1000_levels_parses(self):
-        body = self._with_payload("[" * 1000 + "]" * 1000)
+    def test_payload_nested_lists_500_levels_parses(self):
+        body = self._with_payload("[" * self.DEPTH + "]" * self.DEPTH)
         self.assertIsInstance(verify(body).payload, list)
 
     def test_absurd_nesting_is_a_parse_error_not_recursion_error(self):

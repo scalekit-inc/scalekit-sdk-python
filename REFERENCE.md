@@ -530,7 +530,7 @@ if event.payload_state == PayloadState.REFERENCE:
 <dl>
 <dd>
 
-**headers:** `HeadersLike` - The request headers (keyword only): `request.headers` from Flask, Django, Starlette/FastAPI or aiohttp, or a `dict`
+**headers:** `HeadersLike` - The request headers (keyword only): `request.headers` from Flask/Werkzeug, Starlette/FastAPI or Django, or a `dict`/`Mapping`
 
 </dd>
 </dl>

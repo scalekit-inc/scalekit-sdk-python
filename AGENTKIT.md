@@ -875,15 +875,17 @@ def scalekit_trigger():
     for account_id in account_ids:
         if already_processed(event.dedupe_key, account_id):  # redeliveries are expected
             continue
-        data = event.payload
-        if event.payload_state == PayloadState.REFERENCE:
-            data = fetch_resource(account_id, event.resource_type, event.resource_id)
+        data = (
+            fetch_resource(account_id, event.resource_type, event.resource_id)
+            if event.payload_state == PayloadState.REFERENCE
+            else event.payload
+        )
         handle(account_id, event.trigger_type, data)
         mark_processed(event.dedupe_key, account_id)
     return "", 204
 ```
 
-**Parameters:** `body: str | bytes` (positional) - the raw request body · `headers: HeadersLike` - the request headers (`request.headers` from Flask, Django, Starlette/FastAPI or aiohttp, or a `dict`) · `secret: str` - the trigger signing secret (`whsec_...`).
+**Parameters:** `body: str | bytes` (positional) - the raw request body · `headers: HeadersLike` - the request headers (`request.headers` from Flask/Werkzeug, Starlette/FastAPI or Django, or a `dict`/`Mapping`) · `secret: str` - the trigger signing secret (`whsec_...`).
 
 </dd></dl>
 </details>

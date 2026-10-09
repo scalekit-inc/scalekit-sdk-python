@@ -11,9 +11,8 @@ body: |
   except WebhookVerificationError:
       return "", 400
   if event.delivery_scope == DeliveryScope.ACCOUNT and not seen(event.dedupe_key, event.connected_account_id):
-      data = event.payload
-      if event.payload_state == PayloadState.REFERENCE:
-          data = fetch(event.resource_type, event.resource_id)
+      reference = event.payload_state == PayloadState.REFERENCE
+      data = fetch(event.resource_type, event.resource_id) if reference else event.payload
   ```
 time: '2026-10-09T16:58:09.231716+00:00'
 custom:

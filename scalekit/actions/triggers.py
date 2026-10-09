@@ -25,10 +25,9 @@ _SIGNATURE_HEADER = "webhook-signature"
 class HeadersLike(Protocol):
     """Any request-headers object: ``get(name)`` plus ``items()``.
 
-    Satisfied by ``dict[str, str]`` and by the header objects of common frameworks:
-    Flask/Werkzeug ``request.headers``, Django ``request.headers``, Starlette/FastAPI
-    ``request.headers`` and aiohttp ``request.headers``. Pass the object as is; no
-    conversion to ``dict`` is needed.
+    Satisfied by ``dict[str, str]``, any ``Mapping[str, str]``, and the
+    ``request.headers`` objects of Flask/Werkzeug, Starlette/FastAPI and Django. Pass
+    the object as is; no conversion to ``dict`` is needed.
     """
 
     def get(self, key: str, /) -> str | None:
@@ -94,17 +93,18 @@ def verify_trigger_event(
 
     Args:
         body: The raw request body, as ``bytes`` (UTF-8) or ``str``.
-        headers: The request headers, for example ``request.headers`` from Flask,
-            Django, Starlette/FastAPI or aiohttp, or a ``dict``.
+        headers: The request headers: ``request.headers`` from Flask/Werkzeug,
+            Starlette/FastAPI or Django, or a ``dict``/``Mapping``.
         secret: The trigger signing secret (starts with ``whsec_``).
 
     Returns:
         The parsed, immutable event.
 
     Raises:
-        WebhookVerificationError: Missing signature headers, a malformed secret or
-            signature, a timestamp outside the five-minute window, a signature that
-            does not match, or a body that is not valid UTF-8. Respond ``400``.
+        WebhookVerificationError: Missing signature headers, a malformed secret, a
+            timestamp outside the five-minute window, no signature candidate that
+            matches (malformed candidates are skipped, so a later valid one still
+            verifies), or a body that is not valid UTF-8. Respond ``400``.
         ScalekitTriggerEventParseException: The signature is valid but the body is not
             a valid trigger event. Subclass of ``WebhookVerificationError``.
         TypeError: ``body`` is not ``str``/``bytes``, ``secret`` is not a ``str``, or a
@@ -142,15 +142,15 @@ def verify_trigger_event(
             _header(headers, _TIMESTAMP_HEADER),
             _header(headers, _SIGNATURE_HEADER),
             text,
+            skip_malformed_signatures=True,
         )
     except WebhookVerificationError:
         raise
     except ValueError as exc:
-        # binascii.Error (malformed base64 in the secret or signature header) and
-        # UnicodeEncodeError (non-UTF-8 header text) are ValueError subclasses.
-        raise WebhookVerificationError(
-            "Malformed webhook secret or webhook-signature header"
-        ) from exc
+        # binascii.Error (malformed base64 in the secret) and UnicodeEncodeError
+        # (header text that is not valid UTF-8) are ValueError subclasses. Malformed
+        # signature candidates are skipped, so they end as "Invalid signature".
+        raise WebhookVerificationError("Malformed webhook secret or webhook headers") from exc
 
     try:
         data = json.loads(text, parse_constant=_reject_constant)
