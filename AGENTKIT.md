@@ -829,7 +829,7 @@ The `ActionClient` also exposes `list_configs`, `create_config`, `update_config`
 
 ### `ActionMcp` helper
 
-Access via `client.connect.mcp` / `client.actions.mcp`. Requires `McpClient` to be initialized on the parent `ScalekitClient`. Methods include `list_configs`, `create_config` (builds `McpConfig` from `name` / `description` / mappings), `update_config`, `delete_config`, `ensure_instance`, `update_instance`, `get_instance`, `list_instances`, `delete_instance`, and `get_instance_auth_state`, returning parsed wrapper types instead of raw gRPC tuples.
+Access via `client.connect.mcp` / `client.actions.mcp`. Requires `McpClient` to be initialized on the parent `ScalekitClient`. Methods include `list_configs`, `create_config` (builds `McpConfig` from `name` / `description` / mappings), `update_config`, `delete_config`, `ensure_instance`, `update_instance`, `get_instance`, `list_instances`, `delete_instance`, `get_instance_auth_state`, and `create_connection_session_token`, returning parsed wrapper types instead of raw gRPC tuples.
 
 
 ## MCP (`McpClient`)
@@ -938,6 +938,32 @@ Deletes an instance.
 ### 📝 Description
 
 Returns authorization state for connectors used by the instance; optional fresh auth links.
+
+</dd></dl>
+</details>
+
+<details><summary><code>client.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/mcp.py">create_connection_session_token</a>(connection_name, identifier, *, expiry?, access_level?) -> CreateMcpSessionTokenResponse</code></summary>
+<dl><dd>
+
+### 📝 Description
+
+Mints a short-lived session token for one connection's MCP server (`<environment_url>/mcp/v3/connections/<connection_name>`), which serves every tool of that connection. The token works only on that server. `expiry` (a `timedelta`, 60 seconds to 24 hours, default 1 hour) and `access_level` (`"FULL"` or `"READ_ONLY"`) are keyword-only. `"READ_ONLY"` limits the token to tools annotated read-only. Raises `ScalekitNotFoundException` when no active connection has that name.
+
+### 🔌 Usage
+
+```python
+from datetime import timedelta
+
+response, _ = scalekit_client.mcp.create_connection_session_token(
+    "GMAIL",
+    "alice@example.com",
+    expiry=timedelta(minutes=30),
+    access_level="READ_ONLY",
+)
+headers = {"Authorization": f"Bearer {response.token}"}
+```
+
+`client.connect.mcp.create_connection_session_token(...)` / `client.actions.mcp.create_connection_session_token(...)` take the same arguments and return a parsed `CreateMcpSessionTokenResponse` with `token` and `expires_at` (`datetime`).
 
 </dd></dl>
 </details>

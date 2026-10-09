@@ -4,6 +4,8 @@ from datetime import datetime, timedelta, timezone
 from faker import Faker
 from basetest import BaseTest
 
+from scalekit.common.exceptions import ScalekitNotFoundException
+
 from scalekit.v1.mcp.mcp_pb2 import (
     Mcp,
     McpConfig,
@@ -299,3 +301,26 @@ class TestMcp(BaseTest):
         finally:
             if created_config_id:
                 self.scalekit_client.mcp.delete_config(config_id=created_config_id)
+
+    def test_create_connection_session_token(self):
+        """create_connection_session_token mints a token for a connection's MCP server."""
+        now = datetime.now(tz=timezone.utc)
+        token_response = self.scalekit_client.mcp.create_connection_session_token(
+            "GMAIL",
+            self.test_connected_account_identifier,
+            expiry=timedelta(minutes=10),
+            access_level="READ_ONLY",
+        )
+        self.assertEqual(token_response[1].code().name, "OK")
+        self.assertTrue(token_response[0].token, "Expected a non-empty token string")
+        expires_at = token_response[0].expires_at.ToDatetime(tzinfo=timezone.utc)
+        self.assertGreater(expires_at, now + timedelta(minutes=5))
+        self.assertLess(expires_at, now + timedelta(minutes=15))
+
+    def test_create_connection_session_token_unknown_connection(self):
+        """An unknown connection name raises ScalekitNotFoundException."""
+        with self.assertRaises(ScalekitNotFoundException):
+            self.scalekit_client.mcp.create_connection_session_token(
+                f"py-test-missing-{uuid.uuid4().hex[:8]}",
+                self.test_user_identifier,
+            )

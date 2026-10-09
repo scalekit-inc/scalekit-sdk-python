@@ -1431,6 +1431,74 @@ class ActionMcp:
         )
         return CreateMcpSessionTokenResponse.from_proto(result_tuple[0])
 
+    def create_connection_session_token(
+        self,
+        connection_name: str,
+        identifier: str,
+        *,
+        expiry: timedelta | None = None,
+        access_level: str | None = None,
+    ) -> CreateMcpSessionTokenResponse:
+        """Create a short-lived session token for a connection's MCP server.
+
+        A connection's MCP server serves every tool of one connection at
+        ``<environment_url>/mcp/v3/connections/<connection_name>``. Pass the
+        token as a ``Bearer`` token in the ``Authorization`` header when calling
+        that URL. The token works only on that server; use
+        ``create_session_token`` to mint a token for an MCP configuration.
+
+        Args:
+            connection_name: Name of the connection whose MCP server the token
+                grants access to, e.g. ``"GMAIL"``.
+            identifier: End-user identifier whose connected account on this
+                connection the token acts as, e.g. ``"alice@example.com"``.
+                1 to 255 characters.
+            expiry: Requested lifetime for the token. The server accepts
+                60 seconds to 24 hours and applies 1 hour when omitted.
+                Fractions of a second are dropped.
+            access_level: Tools the token can use. ``"READ_ONLY"`` limits it to
+                tools annotated read-only: other tools are left out of the tool
+                list and refused when called. ``"FULL"``, or omitting it,
+                exposes every tool of the connection. Values are case-sensitive.
+
+        Returns:
+            CreateMcpSessionTokenResponse: Contains:
+
+            - ``token`` (``str``) — opaque bearer token string.
+            - ``expires_at`` (``datetime``) — UTC datetime when the token expires.
+
+        Raises:
+            ValueError: If ``connection_name`` or ``identifier`` is blank.
+            ScalekitNotFoundException: No active connection has this name.
+            ScalekitBadRequestException: ``identifier``, ``expiry`` or
+                ``access_level`` is invalid, the connection is not an
+                AgentKit connection, or ``identifier`` has no active connected
+                account on the connection.
+
+        Example::
+
+            from datetime import timedelta
+
+            resp = client.actions.mcp.create_connection_session_token(
+                "GMAIL",
+                "alice@example.com",
+                expiry=timedelta(minutes=30),
+                access_level="READ_ONLY",
+            )
+            headers = {"Authorization": f"Bearer {resp.token}"}
+        """
+        if not connection_name:
+            raise ValueError("connection_name is required")
+        if not identifier:
+            raise ValueError("identifier is required")
+        result_tuple = self._client().create_connection_session_token(
+            connection_name,
+            identifier,
+            expiry=expiry,
+            access_level=access_level,
+        )
+        return CreateMcpSessionTokenResponse.from_proto(result_tuple[0])
+
 
 class ActionProviders:
     """Typed action layer over ProvidersClient for custom provider CRUD.

@@ -314,6 +314,74 @@ class McpClient:
             mcp_config_id=mcp_config_id,
             identifier=identifier,
         )
+        return self._mint_session_token(request, expiry, access_level)
+
+    def create_connection_session_token(
+        self,
+        connection_name: str,
+        identifier: str,
+        *,
+        expiry: timedelta | None = None,
+        access_level: str | None = None,
+    ) -> CreateMcpSessionTokenResponse:
+        """Create a short-lived session token for a connection's MCP server.
+
+        A connection's MCP server serves every tool of one connection at
+        ``<environment_url>/mcp/v3/connections/<connection_name>``. The token
+        works only on that server; use ``create_session_token`` to mint a token
+        for an MCP configuration instead.
+
+        Args:
+            connection_name: Name of the connection whose MCP server the token
+                grants access to, e.g. ``"GMAIL"``.
+            identifier: End-user identifier whose connected account on this
+                connection the token acts as, e.g. ``"alice@example.com"``.
+                1 to 255 characters.
+            expiry: Lifetime of the token. The server accepts 60 seconds to
+                24 hours and applies 1 hour when omitted. Fractions of a second
+                are dropped.
+            access_level: Tools the token can use. ``"READ_ONLY"`` limits it to
+                tools annotated read-only: other tools are left out of the tool
+                list and refused when called. ``"FULL"``, or omitting it,
+                exposes every tool of the connection. Values are case-sensitive.
+
+        Returns:
+            CreateMcpSessionTokenResponse: ``token`` (str) and ``expires_at``
+            (Timestamp). Like the other methods of this client, the call
+            returns the ``(response, call)`` tuple.
+
+        Raises:
+            ScalekitNotFoundException: No active connection has this name.
+            ScalekitBadRequestException: ``identifier``, ``expiry`` or
+                ``access_level`` is invalid, the connection is not an
+                AgentKit connection, or ``identifier`` has no active connected
+                account on the connection.
+
+        Example::
+
+            from datetime import timedelta
+
+            response, _ = client.mcp.create_connection_session_token(
+                "GMAIL",
+                "alice@example.com",
+                expiry=timedelta(minutes=30),
+                access_level="READ_ONLY",
+            )
+            headers = {"Authorization": f"Bearer {response.token}"}
+        """
+        request = CreateMcpSessionTokenRequest(
+            key_id=connection_name,
+            identifier=identifier,
+        )
+        return self._mint_session_token(request, expiry, access_level)
+
+    def _mint_session_token(
+        self,
+        request: CreateMcpSessionTokenRequest,
+        expiry: timedelta | None,
+        access_level: str | None,
+    ) -> CreateMcpSessionTokenResponse:
+        """Set the optional fields shared by both session-token targets and send the request."""
         if access_level is not None:
             request.access_level = access_level
         if expiry is not None:
