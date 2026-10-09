@@ -8,11 +8,14 @@ import base64
 import binascii
 import hashlib
 import hmac
+import importlib.util
 import json
+import tempfile
 import time
 import unittest
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from unittest.mock import patch
 
 from pydantic import ValidationError
 
@@ -550,6 +553,169 @@ class TestExistingWebhookVerifiersUnchanged(unittest.TestCase):
         # The legacy verifiers only check the signature; any signed body is accepted.
         body = b"not json at all"
         self.assertIs(self.client.verify_webhook_payload(SECRET, sign(body), body), True)
+
+
+def _signed_environ(body: bytes) -> dict:
+    environ = {"REQUEST_METHOD": "POST", "CONTENT_TYPE": "application/json"}
+    for name, value in sign(body).items():
+        environ["HTTP_" + name.upper().replace("-", "_")] = value
+    return environ
+
+
+class TestFrameworkHeaders(unittest.TestCase):
+    """Real header objects from the supported frameworks (installed via the SDK extras)."""
+
+    def setUp(self):
+        self.body = load("valid_account.json")
+
+    def check(self, headers):
+        event = verify_trigger_event(self.body, headers=headers, secret=SECRET)
+        self.assertEqual(event.dedupe_key, "dk_123")
+
+    def test_werkzeug_headers_and_environ_headers(self):
+        try:
+            from werkzeug.datastructures import EnvironHeaders, Headers
+        except ImportError:
+            self.skipTest("werkzeug not installed")
+        self.check(Headers(list(sign(self.body).items())))
+        self.check(EnvironHeaders(_signed_environ(self.body)))  # Flask request.headers
+
+    def test_starlette_headers(self):
+        try:
+            from starlette.datastructures import Headers
+        except ImportError:
+            self.skipTest("starlette not installed")
+        self.check(Headers(headers=sign(self.body)))  # FastAPI request.headers
+
+    def test_django_http_headers(self):
+        try:
+            from django.http.request import HttpHeaders
+        except ImportError:
+            self.skipTest("django not installed")
+        self.check(HttpHeaders(_signed_environ(self.body)))  # Django request.headers
+
+
+_FLASK_SNIPPET_STUBS = """
+def accounts_for_connection(connection_id: str) -> list[str]:
+    raise NotImplementedError
+def already_processed(dedupe_key: str, account_id: str) -> bool:
+    raise NotImplementedError
+def mark_processed(dedupe_key: str, account_id: str) -> None:
+    raise NotImplementedError
+def fetch_resource(account_id: str, resource_type: str, resource_id: str | None) -> object:
+    raise NotImplementedError
+def handle(account_id: str, trigger_type: str, data: object) -> None:
+    raise NotImplementedError
+"""
+
+_EXTRA_HEADER_TYPES = """
+from typing import Mapping
+from werkzeug.datastructures import EnvironHeaders, Headers
+from starlette.datastructures import Headers as StarletteHeaders
+from scalekit import ScalekitClient, TriggerEvent
+
+def all_header_types(client: ScalekitClient, a: Headers, b: EnvironHeaders,
+                     c: StarletteHeaders, d: dict[str, str], e: Mapping[str, str]) -> None:
+    for h in (a, b, c, d, e):
+        event: TriggerEvent = verify_trigger_event(b"{}", headers=h, secret="whsec_x")
+        event = client.actions.triggers.verify_event("{}", headers=h, secret="whsec_x")
+"""
+
+
+@unittest.skipUnless(importlib.util.find_spec("mypy"), "mypy not installed")
+@unittest.skipUnless(importlib.util.find_spec("flask"), "flask not installed")
+@unittest.skipUnless(importlib.util.find_spec("starlette"), "starlette not installed")
+class TestDocumentedSnippetTypeChecks(unittest.TestCase):
+    """mypy accepts the AGENTKIT.md Flask example and every supported header type."""
+
+    @staticmethod
+    def _mypy(source: str) -> list[str]:
+        """Type-check ``source``; return only the errors reported for it."""
+        from mypy import api
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "snippet.py"
+            path.write_text(source, encoding="utf-8")
+            stdout, stderr, _ = api.run(
+                [
+                    "--check-untyped-defs",
+                    "--follow-imports=silent",
+                    "--no-error-summary",
+                    "--cache-dir=/dev/null",
+                    str(path),
+                ]
+            )
+            return [line for line in (stdout + stderr).splitlines() if line.startswith(str(path))]
+
+    def test_flask_example_and_header_types(self):
+        doc = (Path(__file__).resolve().parent.parent / "AGENTKIT.md").read_text(encoding="utf-8")
+        section = doc[doc.index("### Trigger events") :]
+        snippet = section[
+            section.index("```python\n") + 10 : section.index(
+                "```", section.index("```python\n") + 10
+            )
+        ]
+        errors = self._mypy(_FLASK_SNIPPET_STUBS + snippet + _EXTRA_HEADER_TYPES)
+        self.assertEqual(errors, [])
+
+    def test_check_detects_a_wrong_header_type(self):
+        errors = self._mypy(
+            "from scalekit import verify_trigger_event\n"
+            "verify_trigger_event(b'{}', headers=['webhook-id'], secret='whsec_x')\n"
+        )
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("HeadersLike", errors[0])
+
+
+class TestDeepPayload(unittest.TestCase):
+    def _with_payload(self, payload_json: str) -> bytes:
+        data = load("valid_account.json").decode("utf-8")
+        start = data.index('"payload": ') + len('"payload": ')
+        end = data.index('"dedupe_key"')
+        return (data[:start] + payload_json + ",\n  " + data[end:]).encode("utf-8")
+
+    def test_payload_nested_1000_levels_parses(self):
+        depth = 1000
+        body = self._with_payload('{"a": ' * depth + "1" + "}" * depth)
+        event = verify(body)
+        node = event.payload
+        for _ in range(depth):
+            node = node["a"]
+        self.assertEqual(node, 1)
+
+    def test_payload_nested_lists_1000_levels_parses(self):
+        body = self._with_payload("[" * 1000 + "]" * 1000)
+        self.assertIsInstance(verify(body).payload, list)
+
+    def test_absurd_nesting_is_a_parse_error_not_recursion_error(self):
+        body = self._with_payload("[" * 200_000 + "]" * 200_000)
+        with self.assertRaises(ScalekitTriggerEventParseException) as ctx:
+            verify(body)
+        self.assertIsInstance(ctx.exception.__cause__, RecursionError)
+
+
+class TestLegacyToleranceGlobal(unittest.TestCase):
+    """Patching scalekit.client.webhook_tolerance_in_seconds still changes the legacy window."""
+
+    def setUp(self):
+        self.client = ScalekitClient.__new__(ScalekitClient)
+        self.body = load("valid_account.json")
+
+    def test_widened_window_accepts_older_timestamp(self):
+        headers = sign(self.body, timestamp=int(time.time()) - 6 * 60)
+        with self.assertRaises(WebhookVerificationError):
+            self.client.verify_webhook_payload(SECRET, headers, self.body)
+        with patch("scalekit.client.webhook_tolerance_in_seconds", timedelta(minutes=10)):
+            self.assertIs(self.client.verify_webhook_payload(SECRET, headers, self.body), True)
+            self.assertIs(self.client.verify_interceptor_payload(SECRET, headers, self.body), True)
+
+    def test_narrowed_window_rejects_recent_timestamp(self):
+        headers = sign(self.body, timestamp=int(time.time()) - 60)
+        self.assertIs(self.client.verify_webhook_payload(SECRET, headers, self.body), True)
+        with patch("scalekit.client.webhook_tolerance_in_seconds", timedelta(seconds=30)):
+            with self.assertRaises(WebhookVerificationError) as ctx:
+                self.client.verify_webhook_payload(SECRET, headers, self.body)
+            self.assertEqual(str(ctx.exception), "Message timestamp too old")
 
 
 if __name__ == "__main__":

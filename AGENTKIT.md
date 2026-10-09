@@ -883,7 +883,7 @@ def scalekit_trigger():
     return "", 204
 ```
 
-**Parameters:** `body: str | bytes` (positional) - the raw request body · `headers: Mapping[str, str]` - the request headers · `secret: str` - the trigger signing secret (`whsec_...`).
+**Parameters:** `body: str | bytes` (positional) - the raw request body · `headers: HeadersLike` - the request headers (`request.headers` from Flask, Django, Starlette/FastAPI or aiohttp, or a `dict`) · `secret: str` - the trigger signing secret (`whsec_...`).
 
 </dd></dl>
 </details>

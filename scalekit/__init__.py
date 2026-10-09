@@ -7,7 +7,7 @@ from scalekit.actions.models.trigger_event import (
     PayloadState,
     TriggerEvent,
 )
-from scalekit.actions.triggers import verify_trigger_event
+from scalekit.actions.triggers import HeadersLike, verify_trigger_event
 
 __all__ = [
     'ScalekitClient',
@@ -15,6 +15,7 @@ __all__ = [
     'CodeAuthenticationOptions',
     'DeliveryScope',
     'DetectionMode',
+    'HeadersLike',
     'PayloadState',
     'TriggerEvent',
     'verify_trigger_event',

@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import json
-from collections.abc import Mapping
+from collections.abc import Iterable
+from typing import Protocol
 
 from pydantic import ValidationError
 
@@ -14,14 +15,32 @@ from scalekit.common.exceptions import (
     WebhookVerificationError,
 )
 
-__all__ = ["ActionTriggers", "verify_trigger_event"]
+__all__ = ["ActionTriggers", "HeadersLike", "verify_trigger_event"]
 
 _ID_HEADER = "webhook-id"
 _TIMESTAMP_HEADER = "webhook-timestamp"
 _SIGNATURE_HEADER = "webhook-signature"
 
 
-def _header(headers: Mapping[str, str], name: str) -> str | None:
+class HeadersLike(Protocol):
+    """Any request-headers object: ``get(name)`` plus ``items()``.
+
+    Satisfied by ``dict[str, str]`` and by the header objects of common frameworks:
+    Flask/Werkzeug ``request.headers``, Django ``request.headers``, Starlette/FastAPI
+    ``request.headers`` and aiohttp ``request.headers``. Pass the object as is; no
+    conversion to ``dict`` is needed.
+    """
+
+    def get(self, key: str, /) -> str | None:
+        """Return the value of header ``key``, or ``None`` when it is absent."""
+        ...
+
+    def items(self) -> Iterable[tuple[str, str]]:
+        """Return ``(name, value)`` pairs for every header."""
+        ...
+
+
+def _header(headers: HeadersLike, name: str) -> str | None:
     """Look a header up by exact name, then case-insensitively."""
     value = headers.get(name)
     if value is None:
@@ -55,7 +74,7 @@ def verify_trigger_event(
     body: str | bytes,
     /,
     *,
-    headers: Mapping[str, str],
+    headers: HeadersLike,
     secret: str,
 ) -> TriggerEvent:
     """Verify a trigger event's signature, then parse it into a ``TriggerEvent``.
@@ -75,7 +94,8 @@ def verify_trigger_event(
 
     Args:
         body: The raw request body, as ``bytes`` (UTF-8) or ``str``.
-        headers: The request headers, for example ``request.headers``.
+        headers: The request headers, for example ``request.headers`` from Flask,
+            Django, Starlette/FastAPI or aiohttp, or a ``dict``.
         secret: The trigger signing secret (starts with ``whsec_``).
 
     Returns:
@@ -134,7 +154,7 @@ def verify_trigger_event(
 
     try:
         data = json.loads(text, parse_constant=_reject_constant)
-    except ValueError as exc:
+    except (ValueError, RecursionError) as exc:  # RecursionError: absurdly deep nesting
         raise ScalekitTriggerEventParseException(
             "Invalid trigger event: body is not valid JSON"
         ) from exc
@@ -160,7 +180,7 @@ class ActionTriggers:
         body: str | bytes,
         /,
         *,
-        headers: Mapping[str, str],
+        headers: HeadersLike,
         secret: str,
     ) -> TriggerEvent:
         """Verify a trigger event's signature, then parse it into a ``TriggerEvent``.

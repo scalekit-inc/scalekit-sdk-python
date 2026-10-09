@@ -5,9 +5,9 @@ from __future__ import annotations
 import re
 from datetime import datetime, timedelta, timezone
 from enum import Enum
-from typing import TypeVar
+from typing import Any, TypeVar
 
-from pydantic import BaseModel, ConfigDict, JsonValue, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, StrictStr, field_validator
 from pydantic_core import PydanticCustomError
 
 __all__ = ["DeliveryScope", "DetectionMode", "PayloadState", "TriggerEvent"]
@@ -117,9 +117,11 @@ class TriggerEvent(BaseModel):
         occurred_at: When the change happened (timezone-aware UTC), or ``None``.
         detection_mode: ``DetectionMode`` member, or the raw string for an unknown value.
         payload_state: ``PayloadState`` member, or the raw string for an unknown value.
-        payload: The resource data as parsed JSON; ``None`` for reference payloads.
+        payload: The resource data as parsed JSON (``dict``, ``list``, ``str``, number,
+            ``bool``); ``None`` for reference payloads.
         dedupe_key: Stable key for this change; identical across redeliveries.
-        correlation_id: ID to quote when you report a delivery problem.
+        correlation_id: Links work that follows from this event back to it; carry it
+            through to anything your handler triggers.
 
     Example:
         >>> event = scalekit.verify_trigger_event(body, headers=headers, secret=secret)
@@ -140,7 +142,10 @@ class TriggerEvent(BaseModel):
     occurred_at: datetime | None = None
     detection_mode: DetectionMode | str
     payload_state: PayloadState | str
-    payload: JsonValue = None
+    # The parsed JSON value exactly as json.loads produced it (dict, list, str, int,
+    # float, bool or None). Typed Any rather than JsonValue so that payloads of any
+    # nesting depth are accepted without re-validation.
+    payload: Any = None
     dedupe_key: StrictStr
     correlation_id: StrictStr
 
