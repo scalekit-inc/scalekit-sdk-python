@@ -6,6 +6,16 @@ All notable changes to this SDK are documented in this file. The format follows
 
 Sections up to and including 2.20.0 were imported from [GitHub Releases](https://github.com/scalekit-inc/scalekit-sdk-python/releases). Their wording is kept, with small corrections.
 
+## [2.20.1] - 2026-10-09
+
+### Security
+
+- `client.actions.request(...)` and `client.connect.request(...)` could send the client's bearer token and the `connection_name` and `identifier` headers outside `<environment URL>/proxy/` when `path` resolved outside that prefix or a proxied API redirected outside it. They now raise `ValueError` before sending anything when `path` could be routed outside the prefix: for example through `..` segments, including percent-encoded or backslash forms, or `v1/users`, which without a leading `/` would be sent to `/proxyv1/users`. With an `http://` environment URL, the check also covers the URL a forward proxy would receive, whether or not one is configured. A redirect outside the prefix is still followed, but without those credentials. Every other path and redirect is sent exactly as before.
+
+  - **Affected versions:** `>=2.4.17, <2.20.1`
+  - **Patched versions:** `2.20.1`
+  - **Action:** upgrade. This matters most if you build `path` from untrusted input, such as values supplied by end users or by an AI agent, or call APIs whose responses you do not control. If a call now raises `ValueError` for a path such as `v1/users`, add the leading `/`.
+
 ## [2.20.0] - 2026-10-05
 
 ### Changes
@@ -470,6 +480,7 @@ Developers can now delete SSO connections and SCIM directories through the SDK.
 
 - First Release of the official Scalekit Python SDK
 
+[2.20.1]: https://github.com/scalekit-inc/scalekit-sdk-python/compare/v2.20.0...v2.20.1
 [2.20.0]: https://github.com/scalekit-inc/scalekit-sdk-python/releases/tag/v2.20.0
 [2.19.1]: https://github.com/scalekit-inc/scalekit-sdk-python/releases/tag/v2.19.1
 [2.19.0]: https://github.com/scalekit-inc/scalekit-sdk-python/releases/tag/v2.19.0
