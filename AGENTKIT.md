@@ -947,7 +947,7 @@ Returns authorization state for connectors used by the instance; optional fresh 
 
 ### 📝 Description
 
-Mints a short-lived session token for one connection's MCP server (`<environment_url>/mcp/v3/connections/<connection_name>`), which serves every tool of that connection. The token works only on that server. `expiry` (a `timedelta`, 60 seconds to 24 hours, default 1 hour) and `access_level` (`"FULL"` or `"READ_ONLY"`) are keyword-only. `"READ_ONLY"` limits the token to tools annotated read-only. Pass `connection_name` exactly as stored, including case (copy it from the dashboard or the connection's MCP server URL); a token minted with different casing is refused by that URL. Raises `ScalekitNotFoundException` when no active connection has that name.
+Mints a short-lived session token for one connection's MCP server (`<environment_url>/mcp/v3/connections/<connection_name>`), which serves every tool of that connection. The token works only on that server. `expiry` (a `timedelta`, 60 seconds to 24 hours, default 1 hour) and `access_level` (`"FULL"` or `"READ_ONLY"`) are keyword-only. `"READ_ONLY"` limits the token to tools annotated read-only. `connection_name` is matched without regard to case; the token is issued for the connection's MCP server URL built from its stored name, so connect to that URL using the stored name exactly as it appears (the URL is case-sensitive), e.g. copied from the dashboard. Raises `ScalekitNotFoundException` when no active connection has that name.
 
 ### 🔌 Usage
 

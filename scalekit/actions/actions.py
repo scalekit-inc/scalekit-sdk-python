@@ -1449,12 +1449,11 @@ class ActionMcp:
 
         Args:
             connection_name: Name of the connection whose MCP server the token
-                grants access to, e.g. ``"GMAIL"``. Pass the name exactly as
-                stored, including case (copy it from the connection's name in
-                the dashboard or from its MCP server URL): the connection is
-                found case-insensitively, but the token is valid only for the
-                URL built from the stored name, so a token minted with
-                different casing is refused by that URL.
+                grants access to, e.g. ``"GMAIL"``. Matched without regard to
+                case. The token is issued for the connection's MCP server URL
+                built from its stored name; connect to that URL using the
+                stored name exactly as it appears (the URL is case-sensitive),
+                e.g. copied from the dashboard.
             identifier: End-user identifier whose connected account on this
                 connection the token acts as, e.g. ``"alice@example.com"``.
                 1 to 255 characters.
