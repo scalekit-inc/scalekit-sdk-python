@@ -1,6 +1,6 @@
 kind: security
 body: |
-  `client.actions.request()` now raises `ValueError`, before sending anything, when `path` would resolve outside the proxy prefix. Previously, a `path` containing `..` segments, including percent-encoded or backslash forms, could reach other endpoints on the environment host with the client's credentials. Every other path is sent unchanged. Affects 2.5.0 through 2.20.0. Upgrade if you build `path` from untrusted input.
+  `client.actions.request()` no longer sends the client's credentials outside the proxy prefix. A `path` that would resolve outside the prefix, for example through `..` segments or their percent-encoded or backslash forms, now raises `ValueError` before anything is sent. So does a `path` without a leading `/` or with only a query string; such paths never reached a proxy route. If a proxied response redirects outside the proxy prefix, the redirect is still followed, but without the bearer token or the `connection_name` and `identifier` headers. Every other path and redirect behaves as before. Affects 2.5.0 through 2.20.0. Upgrade if you build `path` from untrusted input or call APIs that can redirect.
 time: '2026-10-09T16:08:08.484400+00:00'
 custom:
   Breaking: 'No'

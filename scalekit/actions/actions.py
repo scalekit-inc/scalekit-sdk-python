@@ -15,7 +15,7 @@ from scalekit.actions.modifier import (
     Modifier, ModifierType, ToolNames,
     apply_pre_modifiers, apply_post_modifiers
 )
-from scalekit.actions._proxy_path import ensure_under_proxy_prefix
+from scalekit.actions._proxy_path import ProxySession, ensure_under_proxy_prefix
 from scalekit.common.exceptions import ScalekitNotFoundException
 from scalekit.v1.tools.tools_pb2 import Filter
 from google.protobuf.wrappers_pb2 import BoolValue
@@ -550,7 +550,10 @@ class ActionClient:
             It is appended to ``{env_url}/proxy`` and sent as given. A path
             that resolves outside the proxy prefix (for example through
             ``..`` segments, including percent-encoded or backslash forms)
-            raises ``ValueError`` before any request is sent.
+            raises ``ValueError`` before any request is sent. Redirects are
+            followed as before, but a redirect to a location outside the proxy
+            prefix is sent without the client's bearer token and without the
+            ``connection_name`` and ``identifier`` headers.
         :type path: str
         :param method: HTTP method — GET, POST, PUT, PATCH, DELETE, etc. (default: GET)
         :type method: str
@@ -603,31 +606,35 @@ class ActionClient:
         # add default timeout and allow override via kwargs
         timeout = kwargs.pop("timeout", 30)
 
-        response = requests.request(
-            method=method.upper(),
-            url=url,
-            params=params,
-            json=body if raw_body is None else None,
-            data=raw_body or form_data,
-            headers=req_headers,
-            timeout=timeout,
-            **kwargs,
-        )
+        # A fresh session per send, as requests.request() uses; ProxySession
+        # also keeps the credentials off redirects that leave the proxy prefix.
+        with ProxySession(core.env_url) as session:
+            response = session.request(
+                method=method.upper(),
+                url=url,
+                params=params,
+                json=body if raw_body is None else None,
+                data=raw_body or form_data,
+                headers=req_headers,
+                timeout=timeout,
+                **kwargs,
+            )
 
         if response.status_code == 401:
             # retry once if unauthorized after refreshing token
             core._CoreClient__authenticate_client()
             req_headers = core.get_headers(proxy_headers)
-            response = requests.request(
-                method=method.upper(),
-                url=url,
-                params=params,
-                json=body if raw_body is None else None,
-                data=raw_body if raw_body is not None else form_data,
-                headers=req_headers,
-                timeout=timeout,
-                **kwargs,
-            )
+            with ProxySession(core.env_url) as session:
+                response = session.request(
+                    method=method.upper(),
+                    url=url,
+                    params=params,
+                    json=body if raw_body is None else None,
+                    data=raw_body if raw_body is not None else form_data,
+                    headers=req_headers,
+                    timeout=timeout,
+                    **kwargs,
+                )
         return response
 
 

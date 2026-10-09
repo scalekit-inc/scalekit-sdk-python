@@ -22,7 +22,15 @@ class _RecordingServer(http.server.ThreadingHTTPServer):
     def __init__(self) -> None:
         super().__init__(("127.0.0.1", 0), _RecordingHandler)
         self.received = []  # (method, request-target, Authorization header)
-        self.statuses = []  # statuses to answer with, in order; then 200
+        self.hops = []  # (method, request-target, {lower-cased header: value})
+        self.statuses = []  # statuses to answer with, in order; then routes or 200
+        self.redirects = {}  # request-target -> (status, Location)
+
+    def reset(self):
+        self.received.clear()
+        self.hops.clear()
+        self.statuses.clear()
+        self.redirects.clear()
 
 
 class _RecordingHandler(http.server.BaseHTTPRequestHandler):
@@ -31,8 +39,16 @@ class _RecordingHandler(http.server.BaseHTTPRequestHandler):
         if length:
             self.rfile.read(length)
         self.server.received.append((self.command, self.path, self.headers.get("Authorization")))
+        self.server.hops.append(
+            (self.command, self.path, {k.lower(): v for k, v in self.headers.items()})
+        )
         status = self.server.statuses.pop(0) if self.server.statuses else 200
+        location = None
+        if status == 200 and self.path in self.server.redirects:
+            status, location = self.server.redirects[self.path]
         self.send_response(status)
+        if location is not None:
+            self.send_header("Location", location)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", "2")
         self.end_headers()
@@ -59,8 +75,7 @@ class _ProxyServerTestCase(unittest.TestCase):
         cls.thread.join(timeout=5)
 
     def setUp(self):
-        self.server.received.clear()
-        self.server.statuses.clear()
+        self.server.reset()
 
     def _client(self, env_url):
         core = mock.MagicMock()
@@ -206,6 +221,150 @@ class TestRequestWithBasePathInEnvUrl(_ProxyServerTestCase):
             )
             self.assert_sent(env_url, "/a/../b", "/base/proxy/b")
             self.assert_sent(env_url, "/a b/c", "/base/proxy/a%20b/c")
+
+
+_CREDENTIAL_HEADERS = ("authorization", "connection_name", "identifier")
+
+
+class TestRedirectsKeepCredentialsInsideProxy(_ProxyServerTestCase):
+    """Redirects are followed as before; credentials never go outside ``/proxy/``."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.other = _RecordingServer()  # same host, different port: another origin
+        cls.other_origin = f"http://127.0.0.1:{cls.other.server_port}"
+        cls.other_thread = threading.Thread(target=cls.other.serve_forever, daemon=True)
+        cls.other_thread.start()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.other.shutdown()
+        cls.other.server_close()
+        cls.other_thread.join(timeout=5)
+        super().tearDownClass()
+
+    def setUp(self):
+        super().setUp()
+        self.other.reset()
+
+    def _request(self, env_url=None, path="/start", **kwargs):
+        client, core = self._client(env_url or self.origin)
+        return client.request("googledrive", "user@example.com", path, **kwargs), core
+
+    def assert_credentials(self, headers, *, present):
+        for name in _CREDENTIAL_HEADERS:
+            if present:
+                self.assertIn(name, headers)
+            else:
+                self.assertNotIn(name, headers)
+
+    def test_same_host_redirect_outside_prefix_drops_credentials(self):
+        for location, target in [
+            ("/api/v1/organizations", "/api/v1/organizations"),
+            (self.origin + "/api/v1/organizations", "/api/v1/organizations"),
+            ("/proxy/x/../../api", "/api"),
+            (self.origin + "/proxy/x/%2e%2e/%2e%2e/api", "/proxy/x/../../api"),
+            ("/proxy/x%2f..%2f..%2fapi", "/proxy/x%2F..%2F..%2Fapi"),
+            ("/proxy", "/proxy"),
+        ]:
+            with self.subTest(location=location):
+                self.server.reset()
+                self.server.redirects["/proxy/start"] = (302, location)
+                response, _ = self._request()
+
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual([h[1] for h in self.server.hops], ["/proxy/start", target])
+                self.assert_credentials(self.server.hops[0][2], present=True)
+                self.assert_credentials(self.server.hops[1][2], present=False)
+                # The response the caller gets is unchanged, including the record
+                # of what the first hop sent.
+                self.assertEqual([r.status_code for r in response.history], [302])
+                self.assertEqual(response.history[0].request.headers["Authorization"], _AUTH_HEADER)
+
+    def test_redirect_inside_prefix_keeps_credentials(self):
+        for location, target in [
+            ("/proxy/drive/v3/files", "/proxy/drive/v3/files"),
+            (self.origin + "/proxy/drive/v3/about", "/proxy/drive/v3/about"),
+            ("sibling", "/proxy/sibling"),
+            ("/proxy/a/../b", "/proxy/b"),
+        ]:
+            with self.subTest(location=location):
+                self.server.reset()
+                self.server.redirects["/proxy/start"] = (302, location)
+                response, _ = self._request()
+
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(
+                    self.server.received,
+                    [("GET", "/proxy/start", _AUTH_HEADER), ("GET", target, _AUTH_HEADER)],
+                )
+                self.assert_credentials(self.server.hops[1][2], present=True)
+
+    def test_redirect_to_another_origin_drops_credentials(self):
+        # requests already drops Authorization when the port changes; the
+        # connection headers are now dropped as well.
+        self.server.redirects["/proxy/start"] = (302, self.other_origin + "/proxy/anything")
+        response, _ = self._request()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual([h[1] for h in self.server.hops], ["/proxy/start"])
+        self.assertEqual([h[1] for h in self.other.hops], ["/proxy/anything"])
+        self.assert_credentials(self.other.hops[0][2], present=False)
+
+    def test_method_preserving_redirect_outside_prefix(self):
+        self.server.redirects["/proxy/start"] = (307, "/api/v1/organizations")
+        response, _ = self._request(method="POST", body={"name": "x"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            [h[:2] for h in self.server.hops],
+            [("POST", "/proxy/start"), ("POST", "/api/v1/organizations")],
+        )
+        self.assert_credentials(self.server.hops[1][2], present=False)
+
+    def test_credentials_stay_dropped_after_leaving_prefix(self):
+        self.server.redirects["/proxy/start"] = (302, "/api/a")
+        self.server.redirects["/api/a"] = (302, "/proxy/back")
+        response, _ = self._request()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            [h[1] for h in self.server.hops], ["/proxy/start", "/api/a", "/proxy/back"]
+        )
+        self.assert_credentials(self.server.hops[1][2], present=False)
+        self.assert_credentials(self.server.hops[2][2], present=False)
+
+    def test_base_path_in_env_url(self):
+        env_url = self.origin + "/base"
+        for location, present in [
+            ("/base/proxy/other", True),
+            ("/proxy/other", False),
+            ("/base/x", False),
+        ]:
+            with self.subTest(location=location):
+                self.server.reset()
+                self.server.redirects["/base/proxy/start"] = (302, location)
+                response, _ = self._request(env_url=env_url)
+
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual([h[1] for h in self.server.hops], ["/base/proxy/start", location])
+                self.assert_credentials(self.server.hops[1][2], present=present)
+
+    def test_401_retry_then_redirect_outside_prefix(self):
+        self.server.statuses.append(401)
+        self.server.redirects["/proxy/start"] = (302, "/api/v1/organizations")
+        response, core = self._request()
+
+        self.assertEqual(response.status_code, 200)
+        core._CoreClient__authenticate_client.assert_called_once_with()
+        self.assertEqual(
+            [h[1] for h in self.server.hops],
+            ["/proxy/start", "/proxy/start", "/api/v1/organizations"],
+        )
+        self.assert_credentials(self.server.hops[0][2], present=True)
+        self.assert_credentials(self.server.hops[1][2], present=True)
+        self.assert_credentials(self.server.hops[2][2], present=False)
 
 
 class TestRemoveDotSegments(unittest.TestCase):
