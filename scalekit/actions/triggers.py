@@ -268,6 +268,7 @@ class ActionTriggers:
             WebhookVerificationError: The signature, timestamp or encoding check failed.
             ScalekitTriggerEventParseException: The signature is valid but the body is
                 not a valid trigger event (subclass of ``WebhookVerificationError``).
+            TypeError: An argument has the wrong type.
 
         Example:
             >>> event = client.actions.triggers.verify_event(
