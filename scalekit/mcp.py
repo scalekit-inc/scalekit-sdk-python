@@ -1,5 +1,6 @@
+import enum
 from datetime import timedelta
-from typing import List, NamedTuple, Optional, Tuple, overload
+from typing import List, Optional, overload
 
 import grpc
 from google.protobuf.duration_pb2 import Duration
@@ -9,42 +10,42 @@ from scalekit.v1.mcp.mcp_pb2 import *
 from scalekit.v1.mcp.mcp_pb2_grpc import McpServiceStub
 
 
-class _SessionTokenTarget(NamedTuple):
-    """Validated target of a session-token request."""
+class _Unset(enum.Enum):
+    """Type of ``_UNSET``: marks an argument the caller did not pass."""
 
-    name: str
-    identifier: str
-    is_connection: bool
+    UNSET = enum.auto()
 
 
-def _resolve_session_token_target(
-    mcp_config_id: Optional[str],
-    connection_name: Optional[str],
-    identifier: Optional[str],
-) -> _SessionTokenTarget:
-    """Check the session-token arguments before any request is sent.
+_UNSET = _Unset.UNSET
+
+
+def _check_connection_token_args(
+    mcp_config_id: str | None | _Unset,
+    connection_name: str,
+    identifier: str | None,
+) -> str:
+    """Check the arguments of a connection session token before any request.
+
+    Only the connection form is checked here: the MCP configuration form keeps
+    the checks each facade had before ``connection_name`` existed.
+
+    Returns:
+        The identifier, known to be non-empty.
 
     Raises:
-        ValueError: Both or neither of ``mcp_config_id`` and ``connection_name``
-            are given, the one given is blank, or ``identifier`` is missing or
-            empty.
+        ValueError: ``mcp_config_id`` is also given, ``connection_name`` is
+            empty, or ``identifier`` is missing or empty.
     """
-    if mcp_config_id is not None and connection_name is not None:
+    if mcp_config_id is not _UNSET and mcp_config_id is not None:
         raise ValueError(
             "Pass either mcp_config_id or connection_name, not both: a session token "
             "is for one MCP configuration or for one connection's MCP server"
         )
-    if connection_name is not None:
-        name, is_connection, argument = connection_name, True, "connection_name"
-    elif mcp_config_id is not None:
-        name, is_connection, argument = mcp_config_id, False, "mcp_config_id"
-    else:
-        raise ValueError("Either mcp_config_id or connection_name is required")
-    if not name.strip():
-        raise ValueError(f"{argument} must not be blank")
+    if not connection_name:
+        raise ValueError("connection_name must not be empty")
     if not identifier:
         raise ValueError("identifier is required")
-    return _SessionTokenTarget(name, identifier, is_connection)
+    return identifier
 
 
 class McpClient:
@@ -326,9 +327,9 @@ class McpClient:
         self,
         mcp_config_id: str,
         identifier: str,
-        expiry: Optional[timedelta] = None,
-        access_level: Optional[str] = None,
-    ) -> Tuple[CreateMcpSessionTokenResponse, grpc.Call]: ...
+        expiry: timedelta | None = None,
+        access_level: str | None = None,
+    ) -> tuple[CreateMcpSessionTokenResponse, grpc.Call]: ...
 
     @overload
     def create_session_token(
@@ -336,19 +337,19 @@ class McpClient:
         *,
         connection_name: str,
         identifier: str,
-        expiry: Optional[timedelta] = None,
-        access_level: Optional[str] = None,
-    ) -> Tuple[CreateMcpSessionTokenResponse, grpc.Call]: ...
+        expiry: timedelta | None = None,
+        access_level: str | None = None,
+    ) -> tuple[CreateMcpSessionTokenResponse, grpc.Call]: ...
 
     def create_session_token(
         self,
-        mcp_config_id: Optional[str] = None,
-        identifier: Optional[str] = None,
-        expiry: Optional[timedelta] = None,
-        access_level: Optional[str] = None,
+        mcp_config_id: str | None | _Unset = _UNSET,
+        identifier: str | None = None,
+        expiry: timedelta | None = None,
+        access_level: str | None = None,
         *,
-        connection_name: Optional[str] = None,
-    ) -> Tuple[CreateMcpSessionTokenResponse, grpc.Call]:
+        connection_name: str | None = None,
+    ) -> tuple[CreateMcpSessionTokenResponse, grpc.Call]:
         """Create a short-lived session token for a user to access an MCP server.
 
         Pass exactly one of ``mcp_config_id`` or ``connection_name``; the
@@ -389,9 +390,12 @@ class McpClient:
             ``response.expires_at`` (Timestamp) is when it expires.
 
         Raises:
-            ValueError: Both or neither of ``mcp_config_id`` and
-                ``connection_name`` are given, the one given is blank, or
-                ``identifier`` is missing or empty. Raised before any request.
+            ValueError: Raised before any request when neither
+                ``mcp_config_id`` nor ``connection_name`` is passed, or, with
+                ``connection_name``: ``mcp_config_id`` is also given,
+                ``connection_name`` is empty, or ``identifier`` is missing or
+                empty. With ``mcp_config_id``, the arguments are sent as given
+                and the server validates them.
             ScalekitNotFoundException: No active connection has
                 ``connection_name``.
             ScalekitBadRequestException: Any other invalid request, e.g. an
@@ -418,21 +422,25 @@ class McpClient:
             )
             headers = {"Authorization": f"Bearer {response.token}"}
         """
-        target = _resolve_session_token_target(mcp_config_id, connection_name, identifier)
-        if target.is_connection:
-            request = CreateMcpSessionTokenRequest(key_id=target.name, identifier=target.identifier)
+        if connection_name is not None:
+            identifier = _check_connection_token_args(mcp_config_id, connection_name, identifier)
+            request = CreateMcpSessionTokenRequest(key_id=connection_name, identifier=identifier)
+        elif mcp_config_id is _UNSET:
+            raise ValueError("Either mcp_config_id or connection_name is required")
         else:
+            # Built exactly as before connection_name existed: the server
+            # validates the configuration ID and identifier.
             request = CreateMcpSessionTokenRequest(
-                mcp_config_id=target.name, identifier=target.identifier
+                mcp_config_id=mcp_config_id, identifier=identifier
             )
         return self._mint_session_token(request, expiry, access_level)
 
     def _mint_session_token(
         self,
         request: CreateMcpSessionTokenRequest,
-        expiry: Optional[timedelta],
-        access_level: Optional[str],
-    ) -> Tuple[CreateMcpSessionTokenResponse, grpc.Call]:
+        expiry: timedelta | None,
+        access_level: str | None,
+    ) -> tuple[CreateMcpSessionTokenResponse, grpc.Call]:
         """Set the optional fields shared by both session-token targets and send the request."""
         if access_level is not None:
             request.access_level = access_level

@@ -16,7 +16,7 @@ from scalekit.actions.modifier import (
     apply_pre_modifiers, apply_post_modifiers
 )
 from scalekit.common.exceptions import ScalekitNotFoundException
-from scalekit.mcp import _resolve_session_token_target
+from scalekit.mcp import _check_connection_token_args
 from scalekit.v1.tools.tools_pb2 import Filter
 from google.protobuf.wrappers_pb2 import BoolValue
 
@@ -1372,8 +1372,8 @@ class ActionMcp:
         self,
         mcp_config_id: str,
         identifier: str,
-        expiry: Optional[timedelta] = None,
-        access_level: Optional[str] = None,
+        expiry: timedelta | None = None,
+        access_level: str | None = None,
     ) -> CreateMcpSessionTokenResponse: ...
 
     @overload
@@ -1382,18 +1382,18 @@ class ActionMcp:
         *,
         connection_name: str,
         identifier: str,
-        expiry: Optional[timedelta] = None,
-        access_level: Optional[str] = None,
+        expiry: timedelta | None = None,
+        access_level: str | None = None,
     ) -> CreateMcpSessionTokenResponse: ...
 
     def create_session_token(
         self,
-        mcp_config_id: Optional[str] = None,
-        identifier: Optional[str] = None,
-        expiry: Optional[timedelta] = None,
-        access_level: Optional[str] = None,
+        mcp_config_id: str | None = None,
+        identifier: str | None = None,
+        expiry: timedelta | None = None,
+        access_level: str | None = None,
         *,
-        connection_name: Optional[str] = None,
+        connection_name: str | None = None,
     ) -> CreateMcpSessionTokenResponse:
         """Create a short-lived session token for a user to access an MCP server.
 
@@ -1442,9 +1442,11 @@ class ActionMcp:
               token expires.
 
         Raises:
-            ValueError: Both or neither of ``mcp_config_id`` and
-                ``connection_name`` are given, the one given is blank, or
-                ``identifier`` is missing or empty. Raised before any request.
+            ValueError: Raised before any request. Without
+                ``connection_name``: ``mcp_config_id`` or ``identifier`` is
+                empty or missing. With ``connection_name``: ``mcp_config_id``
+                is also given, ``connection_name`` is empty, or ``identifier``
+                is missing or empty.
             ScalekitNotFoundException: No active connection has
                 ``connection_name``.
             ScalekitBadRequestException: Any other invalid request, e.g. an
@@ -1477,19 +1479,23 @@ class ActionMcp:
             headers = {"Authorization": f"Bearer {resp.token}"}
             # Use headers when calling the MCP server URL
         """
-        target = _resolve_session_token_target(mcp_config_id, connection_name, identifier)
-        client = self._client()
-        if target.is_connection:
-            result_tuple = client.create_session_token(
-                connection_name=target.name,
-                identifier=target.identifier,
+        if connection_name is None:
+            # Checks and messages unchanged from before connection_name existed.
+            if not mcp_config_id:
+                raise ValueError("mcp_config_id is required")
+            if not identifier:
+                raise ValueError("identifier is required")
+            result_tuple = self._client().create_session_token(
+                mcp_config_id=mcp_config_id,
+                identifier=identifier,
                 expiry=expiry,
                 access_level=access_level,
             )
         else:
-            result_tuple = client.create_session_token(
-                mcp_config_id=target.name,
-                identifier=target.identifier,
+            identifier = _check_connection_token_args(mcp_config_id, connection_name, identifier)
+            result_tuple = self._client().create_session_token(
+                connection_name=connection_name,
+                identifier=identifier,
                 expiry=expiry,
                 access_level=access_level,
             )

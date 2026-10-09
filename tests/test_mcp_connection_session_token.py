@@ -2,8 +2,9 @@
 
 ``create_session_token`` targets either an MCP configuration (``mcp_config_id``)
 or a connection's MCP server (``connection_name``, sent as ``key_id`` on the
-wire). The server requires exactly one of the two, so the SDK rejects both or
-neither before any request, and never sets the other field.
+wire), and never sets the other field. Only the connection form gets new
+client-side checks; the config form behaves exactly as in v2.20.0 (client.mcp
+sends it to the server as given, client.actions.mcp keeps its old checks).
 """
 
 import unittest
@@ -17,21 +18,35 @@ from scalekit.common.exceptions import ScalekitNotFoundException
 from scalekit.mcp import McpClient
 from scalekit.v1.mcp.mcp_pb2 import CreateMcpSessionTokenResponse
 
-# Argument combinations that must fail before any request, on both facades.
-INVALID_TARGETS = {
-    "neither": {"identifier": "u1"},
+# Connection-token argument combinations that fail before any request, on both facades.
+INVALID_CONNECTION_ARGS = {
     "both": {"mcp_config_id": "cfg_1", "connection_name": "GMAIL", "identifier": "u1"},
     "both, config empty": {"mcp_config_id": "", "connection_name": "GMAIL", "identifier": "u1"},
-    "explicit None config": {"mcp_config_id": None, "identifier": "u1"},
-    "empty config": {"mcp_config_id": "", "identifier": "u1"},
-    "whitespace config": {"mcp_config_id": "  ", "identifier": "u1"},
     "empty connection": {"connection_name": "", "identifier": "u1"},
-    "whitespace connection": {"connection_name": " \t", "identifier": "u1"},
-    "config, missing identifier": {"mcp_config_id": "cfg_1"},
-    "config, empty identifier": {"mcp_config_id": "cfg_1", "identifier": ""},
     "connection, missing identifier": {"connection_name": "GMAIL"},
     "connection, None identifier": {"connection_name": "GMAIL", "identifier": None},
     "connection, empty identifier": {"connection_name": "GMAIL", "identifier": ""},
+}
+
+# Config-ID calls that client.mcp sends to the server unchanged, as in v2.20.0.
+# Each case: (args, kwargs, expected mcp_config_id, expected identifier on the wire).
+MCP_CLIENT_PASS_THROUGH = {
+    "empty config": (("", "u1"), {}, "", "u1"),
+    "whitespace config": (("  ", "u1"), {}, "  ", "u1"),
+    "explicit None config": ((None, "u1"), {}, "", "u1"),
+    "keyword None config": ((), {"mcp_config_id": None, "identifier": "u1"}, "", "u1"),
+    "empty identifier": (("cfg_1", ""), {}, "cfg_1", ""),
+    "whitespace identifier": (("cfg_1", " "), {}, "cfg_1", " "),
+    "None identifier": (("cfg_1", None), {}, "cfg_1", ""),
+}
+
+# client.actions.mcp keeps its v2.20.0 checks and messages for the config form.
+ACTIONS_CONFIG_ERRORS = {
+    "omitted config": ({"identifier": "u1"}, "mcp_config_id is required"),
+    "None config": ({"mcp_config_id": None, "identifier": "u1"}, "mcp_config_id is required"),
+    "empty config": ({"mcp_config_id": "", "identifier": "u1"}, "mcp_config_id is required"),
+    "missing identifier": ({"mcp_config_id": "cfg_1"}, "identifier is required"),
+    "empty identifier": ({"mcp_config_id": "cfg_1", "identifier": ""}, "identifier is required"),
 }
 
 
@@ -152,28 +167,55 @@ class TestMcpClientSessionTokenTargets(unittest.TestCase):
             self.mcp.create_session_token(None, "u1", None, None, "GMAIL")
         self.core_client.grpc_exec.assert_not_called()
 
-    # Validation happens before any request.
+    # Validation happens before any request, only for the connection form.
 
-    def test_invalid_targets_rejected_before_request(self):
-        for case, kwargs in INVALID_TARGETS.items():
+    def test_invalid_connection_args_rejected_before_request(self):
+        for case, kwargs in INVALID_CONNECTION_ARGS.items():
             with self.subTest(case=case):
                 with self.assertRaises(ValueError):
                     self.mcp.create_session_token(**kwargs)
         self.core_client.grpc_exec.assert_not_called()
 
-    def test_error_messages_name_the_problem(self):
+    def test_no_target_at_all_rejected_before_request(self):
+        with self.assertRaisesRegex(ValueError, "mcp_config_id or connection_name is required"):
+            self.mcp.create_session_token(identifier="u1")
+        self.core_client.grpc_exec.assert_not_called()
+
+    def test_whitespace_connection_name_goes_to_server(self):
+        # Like identifier, only an empty name is rejected locally.
+        self.mcp.create_session_token(connection_name=" ", identifier="u1")
+        self.assertEqual(self._sent_request().key_id, " ")
+
+    def test_whitespace_identifier_goes_to_server_for_connection(self):
+        self.mcp.create_session_token(connection_name="GMAIL", identifier=" ")
+        self.assertEqual(self._sent_request().identifier, " ")
+
+    def test_connection_error_messages_name_the_problem(self):
         with self.assertRaisesRegex(ValueError, "not both"):
             self.mcp.create_session_token(
                 mcp_config_id="cfg_1", connection_name="GMAIL", identifier="u1"
             )
-        with self.assertRaisesRegex(ValueError, "mcp_config_id or connection_name is required"):
-            self.mcp.create_session_token(identifier="u1")
-        with self.assertRaisesRegex(ValueError, "connection_name must not be blank"):
-            self.mcp.create_session_token(connection_name=" ", identifier="u1")
-        with self.assertRaisesRegex(ValueError, "mcp_config_id must not be blank"):
-            self.mcp.create_session_token("", "u1")
+        with self.assertRaisesRegex(ValueError, "connection_name must not be empty"):
+            self.mcp.create_session_token(connection_name="", identifier="u1")
         with self.assertRaisesRegex(ValueError, "identifier is required"):
             self.mcp.create_session_token(connection_name="GMAIL", identifier="")
+
+    def test_config_form_passes_through_as_in_v2_20_0(self):
+        # No client-side validation for the config form: the server decides.
+        for case, (args, kwargs, config_id, identifier) in MCP_CLIENT_PASS_THROUGH.items():
+            with self.subTest(case=case):
+                self.core_client.grpc_exec.reset_mock()
+                self.mcp.create_session_token(*args, **kwargs)
+                self.core_client.grpc_exec.assert_called_once()
+                request = self._sent_request()
+                self.assertEqual(request.mcp_config_id, config_id)
+                self.assertEqual(request.identifier, identifier)
+                self.assertEqual(request.key_id, "")
+
+    def test_config_form_server_error_propagates(self):
+        self.core_client.grpc_exec.side_effect = _not_found()
+        with self.assertRaises(ScalekitNotFoundException):
+            self.mcp.create_session_token("", "u1")
 
     def test_server_error_propagates(self):
         self.core_client.grpc_exec.side_effect = _not_found()
@@ -243,12 +285,32 @@ class TestActionsSessionTokenTargets(unittest.TestCase):
         self.assertEqual(result.token, "tok")
         self.assertEqual(result.expires_at, Timestamp(seconds=1_800_000_000).ToDatetime())
 
-    def test_invalid_targets_rejected_before_call(self):
-        for case, kwargs in INVALID_TARGETS.items():
+    def test_invalid_connection_args_rejected_before_call(self):
+        for case, kwargs in INVALID_CONNECTION_ARGS.items():
             with self.subTest(case=case):
                 with self.assertRaises(ValueError):
                     self.actions.mcp.create_session_token(**kwargs)
         self.mcp_client.create_session_token.assert_not_called()
+
+    def test_config_form_keeps_v2_20_0_messages(self):
+        for case, (kwargs, message) in ACTIONS_CONFIG_ERRORS.items():
+            with self.subTest(case=case):
+                with self.assertRaises(ValueError) as ctx:
+                    self.actions.mcp.create_session_token(**kwargs)
+                self.assertEqual(str(ctx.exception), message)
+        self.mcp_client.create_session_token.assert_not_called()
+
+    def test_config_form_whitespace_goes_to_server(self):
+        # v2.20.0 checked emptiness only; whitespace is the server's to reject.
+        self.actions.mcp.create_session_token(mcp_config_id=" ", identifier=" ")
+        kwargs = self._forwarded()
+        self.assertEqual((kwargs["mcp_config_id"], kwargs["identifier"]), (" ", " "))
+
+    def test_config_form_validates_before_needing_mcp_client(self):
+        # As in v2.20.0, the argument check comes before the MCP client lookup.
+        actions = ActionClient(MagicMock(), MagicMock(), mcp_client=None)
+        with self.assertRaisesRegex(ValueError, "^mcp_config_id is required$"):
+            actions.mcp.create_session_token(mcp_config_id="", identifier="u1")
 
     def test_server_error_propagates(self):
         self.mcp_client.create_session_token.side_effect = _not_found()
