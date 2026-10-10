@@ -80,9 +80,9 @@ To use the Scalekit Python SDK, you must have the following:
 
 | Component | Version |
 | --------- | ------- |
-| Python    | 3.8+    |
+| Python    | 3.10+   |
 
-> **Tip:** Although Python 3.8 meets the minimum requirement, using a more recent version (such as Python 3.9 or later) is advisable.
+To use the Google ADK integration (`actions.google`), install the extra: `pip install "scalekit-sdk-python[google-adk]"`.
 
 
 ## Examples - SSO with FastAPI
