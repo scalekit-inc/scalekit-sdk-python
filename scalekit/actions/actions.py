@@ -1,6 +1,10 @@
+import os
+from collections.abc import Callable, Mapping
 from datetime import timedelta
-from typing import Optional, Any, List, Dict, Union
+from typing import IO, Optional, Any, List, Dict, Literal, Union
 import requests
+from scalekit.actions import _resumable_upload
+from scalekit.actions.models.upload_progress import UploadProgress
 from scalekit.actions.types import ToolRequest,ExecuteToolResponse,MagicLinkResponse,ListConnectedAccountsResponse,ListToolsResponse,DeleteConnectedAccountResponse,GetConnectedAccountAuthResponse,GetConnectedAccountDetailsResponse,ToolInput, \
     UpdateConnectedAccountResponse,CreateMcpConfigResponse,ListMcpConfigsResponse,UpdateMcpConfigResponse,DeleteMcpConfigResponse, \
     EnsureMcpInstanceResponse,UpdateMcpInstanceResponse,GetMcpInstanceResponse,ListMcpInstancesResponse,DeleteMcpInstanceResponse,GetMcpInstanceAuthStateResponse, \
@@ -621,6 +625,152 @@ class ActionClient:
                 **kwargs,
             )
         return response
+
+    def upload_resumable(
+        self,
+        connection_name: str,
+        identifier: str,
+        path: str,
+        *,
+        data: bytes | bytearray | memoryview | IO[bytes] | os.PathLike[str],
+        total_bytes: int | None = None,
+        content_type: str = "application/octet-stream",
+        metadata: Mapping[str, object] | None = None,
+        method: Literal["POST", "PATCH", "PUT"] = "POST",
+        query_params: Mapping[str, str | int | bool] | None = None,
+        chunk_size: int = 4 * 1024 * 1024,
+        max_retries: int = 3,
+        timeout: float | None = None,
+        on_progress: Callable[[UploadProgress], None] | None = None,
+    ) -> dict[str, Any]:
+        """Upload content of any size to a Google API through the Scalekit proxy.
+
+        Uses Google's resumable upload protocol, so it works with Google Drive
+        (``/upload/drive/v3/files``), Cloud Storage
+        (``/upload/storage/v1/b/<bucket>/o``) and YouTube
+        (``/upload/youtube/v3/videos``). The connected account's credentials
+        are added by the proxy, as with :meth:`request`.
+
+        The content is sent in chunks (4 MiB by default) and read about one
+        chunk at a time; resending the rest of a chunk briefly copies it.
+        When a chunk fails with a timeout, a connection error or HTTP 408,
+        429, 500, 502, 503 or 504, the SDK waits
+        (exponential backoff with jitter, or the server's ``Retry-After`` on
+        429 and 503, capped at 30 seconds), asks the server how much it has
+        stored, and resumes from there instead of restarting. The request that
+        starts the session is never retried, because a retry would open a
+        second session. The only exception is one resend after the SDK
+        refreshes an expired Scalekit access token.
+
+        This call blocks until the upload finishes. In async code, run it with
+        ``await asyncio.to_thread(client.actions.upload_resumable, ...)``.
+
+        Args:
+            connection_name: Connection name, for example ``"googledrive"``.
+            identifier: Identifier of the connected account.
+            path: Provider upload path, for example ``"/upload/drive/v3/files"``,
+                or ``"/upload/drive/v3/files/<fileId>"`` with ``method="PATCH"``
+                to replace an existing file's content. A leading ``/`` is added
+                when missing. It must not contain ``?``, ``#``, spaces, control
+                characters, or ``.``/``..`` segments; pass query parameters in
+                ``query_params``.
+            data: The content. One of: ``bytes``, ``bytearray`` or
+                ``memoryview``; a binary file object or stream, read from its
+                current position; or a path (``os.PathLike``, such as
+                ``pathlib.Path``), which the SDK opens and closes. Errors raised
+                while reading your stream propagate unchanged.
+            total_bytes: Total size in bytes. The SDK knows it for bytes, a path
+                to a regular file and a seekable stream. For any other stream,
+                pass it if you know it; otherwise the size is discovered at the
+                end of the stream. A stream shorter or longer than
+                ``total_bytes`` raises ``ValueError`` before its last chunk is
+                sent.
+            content_type: MIME type of the content, sent as
+                ``X-Upload-Content-Type`` when the session starts and as
+                ``Content-Type`` on each chunk.
+            metadata: JSON object sent as the body of the session-start request,
+                for example ``{"name": "report.pdf", "parents": ["<folderId>"]}``
+                for Drive. Without it, the start request has no body.
+            method: Method of the session-start request: ``"POST"`` to create
+                (the default), ``"PATCH"`` or ``"PUT"``. Case-insensitive.
+            query_params: Extra query parameters for the session-start request
+                only, for example ``{"supportsAllDrives": True}`` or YouTube's
+                ``{"part": "snippet,status"}``. Booleans are sent as ``true`` and
+                ``false``. The SDK always sends ``uploadType=resumable``, so the
+                key ``uploadType`` (exact, case-sensitive) is rejected.
+            chunk_size: Bytes per chunk, a positive multiple of 262144 (256 KiB).
+                Defaults to 4 MiB. Larger chunks need fewer requests; smaller
+                chunks keep each request short.
+            max_retries: How many times in a row one chunk may be retried
+                (counting chunk resends, status queries and answers that store
+                no new data) before the upload fails. The count resets only when
+                the server confirms data beyond the highest offset so far.
+                ``0`` disables retries. Defaults to 3.
+            timeout: Timeout in seconds for each HTTP request. Defaults to the
+                client's tool-call timeout (60 seconds).
+            on_progress: Called with an :class:`UploadProgress` each time the
+                server confirms more data, and once when the upload completes.
+                An exception it raises aborts the upload and propagates.
+
+        Returns:
+            The resource the provider returns when the upload completes, as a
+            dict, for example the Drive file (``{"id": ..., "name": ...}``). An
+            empty final response returns ``{}``.
+
+        Raises:
+            ValueError: An argument is invalid (raised before any network call),
+                or the stream length does not match ``total_bytes``.
+            TypeError: An argument has the wrong type, for example ``data`` is a
+                ``str`` or a text-mode file.
+            OSError: ``data`` is a path that cannot be opened (for example
+                ``FileNotFoundError``), or reading your stream failed. Raised as is.
+            ScalekitUploadSessionExpiredException: The upload session expired or
+                was cancelled (HTTP 404 or 410 after it started). Start a new
+                upload. Subclass of ``ScalekitUploadException``.
+            ScalekitUploadException: The session-start request failed, a chunk
+                failed with a non-retryable status (such as 403), or a retryable
+                failure persisted after ``max_retries`` retries. It carries
+                ``status_code``, ``headers``, ``body``, ``upload_id`` and
+                ``bytes_committed``.
+            ScalekitUploadProtocolException: The server's answer does not follow
+                the resumable upload protocol, for example no ``upload_id`` in
+                the session-start response, or every byte confirmed without the
+                upload completing.
+            ScalekitException: The Scalekit access token could not be refreshed
+                after a 401 from Scalekit. This is the client's own
+                authentication error (for example ``ScalekitUnauthorizedException``),
+                raised unchanged as by :meth:`request`; it is not a
+                ``ScalekitUploadException``.
+
+        Example:
+            >>> from pathlib import Path
+            >>> file = client.actions.upload_resumable(
+            ...     "googledrive",
+            ...     "user_123",
+            ...     "/upload/drive/v3/files",
+            ...     data=Path("video.mp4"),
+            ...     content_type="video/mp4",
+            ...     metadata={"name": "video.mp4"},
+            ...     on_progress=lambda p: print(p.bytes_committed, p.total_bytes),
+            ... )
+            >>> file["id"]
+        """
+        return _resumable_upload.upload_resumable(
+            self.tools.core_client,
+            connection_name=connection_name,
+            identifier=identifier,
+            path=path,
+            data=data,
+            total_bytes=total_bytes,
+            content_type=content_type,
+            metadata=metadata,
+            method=method,
+            query_params=query_params,
+            chunk_size=chunk_size,
+            max_retries=max_retries,
+            timeout=timeout,
+            on_progress=on_progress,
+        )
 
 
     def list_configs(

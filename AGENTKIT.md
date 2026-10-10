@@ -813,6 +813,83 @@ Proxied REST call via `{env_url}/proxy` with `connection_name` and `identifier` 
 </dd></dl>
 </details>
 
+<details><summary><code>client.actions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">upload_resumable</a>(connection_name, identifier, path, *, data, total_bytes?, content_type?, metadata?, method?, query_params?, chunk_size?, max_retries?, timeout?, on_progress?) -> dict</code></summary>
+<dl>
+<dd>
+
+### 📝 Description
+
+Uploads content of any size to Google Drive, Cloud Storage or YouTube through the Scalekit proxy, using Google's resumable upload protocol. The content is sent in chunks (4 MiB by default) and read about one chunk at a time; resending the rest of a chunk briefly copies it. A chunk that fails with a timeout, a connection error or HTTP 408, 429, 500, 502, 503 or 504 is resumed from what the server stored instead of restarting (exponential backoff with jitter, or `Retry-After` on 429 and 503, capped at 30 seconds). The request that starts the session is never retried, because a retry would open a second session; the only exception is a single resend after the SDK refreshes an expired Scalekit access token (a 401 from Scalekit itself, not from Google). Returns the created or updated resource as a dict, for example the Drive file (`{}` when the final response is empty).
+
+Errors (all in `scalekit.common.exceptions`):
+
+- `ScalekitUploadSessionExpiredException` (subclass of `ScalekitUploadException`): the session expired or was cancelled (HTTP 404 or 410 after it started). Start a new upload; the SDK never restarts one on its own.
+- `ScalekitUploadException`: the session-start request failed, a chunk failed with a non-retryable status (such as 403), or a retryable failure persisted after `max_retries` retries. `status_code` is `None` when no response arrived.
+- `ScalekitUploadProtocolException`: the server's answer does not follow the protocol (for example, no `upload_id` in the session-start response, or every byte confirmed without the upload completing).
+
+These three upload exceptions carry `status_code`, `headers`, `body`, `upload_id` and `bytes_committed`.
+
+If the Scalekit access token cannot be refreshed after a 401 from Scalekit, the client's own authentication error (for example `ScalekitUnauthorizedException`) is raised unchanged, as with `request`; it is not a `ScalekitUploadException`.
+
+Invalid arguments raise `ValueError` or `TypeError` before any network call. A path that cannot be opened raises `OSError` (for example `FileNotFoundError`), and errors from reading your stream propagate unchanged. The call blocks; in async code use `await asyncio.to_thread(...)`.
+
+### 🔌 Usage
+
+```python
+from pathlib import Path
+from scalekit.actions.types import UploadProgress
+from scalekit.common.exceptions import ScalekitUploadSessionExpiredException
+
+def show(p: UploadProgress) -> None:
+    print(p.bytes_committed, "of", p.total_bytes)
+
+try:
+    file = scalekit_client.actions.upload_resumable(
+        "googledrive",
+        "user_123",
+        "/upload/drive/v3/files",
+        data=Path("video.mp4"),
+        content_type="video/mp4",
+        metadata={"name": "video.mp4", "parents": ["<folderId>"]},
+        on_progress=show,
+    )
+    print(file["id"])
+except ScalekitUploadSessionExpiredException:
+    ...  # start a new upload
+```
+
+### ⚙️ Parameters
+
+**connection_name:** `str` — Connection name, for example `"googledrive"`.
+
+**identifier:** `str` — Identifier of the connected account.
+
+**path:** `str` — Provider upload path: `/upload/drive/v3/files` (Drive), `/upload/drive/v3/files/<fileId>` with `method="PATCH"` to replace a file's content, `/upload/storage/v1/b/<bucket>/o` (Cloud Storage) or `/upload/youtube/v3/videos` (YouTube). A leading `/` is added when missing. Must not contain `?`, `#`, spaces, control characters, or `.`/`..` segments.
+
+**data:** `bytes | bytearray | memoryview | IO[bytes] | os.PathLike[str]` — The content. A binary stream is read from its current position. A path (for example `pathlib.Path`) is opened and closed by the SDK. Errors raised while reading your stream propagate unchanged.
+
+**total_bytes:** `Optional[int]` — Total size in bytes. Known automatically for bytes, a path to a regular file and a seekable stream. For other streams, pass it if you know it; otherwise the size is discovered at the end of the stream. A stream shorter or longer than `total_bytes` raises `ValueError` before its last chunk is sent.
+
+**content_type:** `str` — MIME type of the content (default `application/octet-stream`).
+
+**metadata:** `Optional[Mapping[str, object]]` — JSON object sent when the session starts, for example `{"name": "report.pdf", "parents": ["<folderId>"]}`. Without it the start request has no body.
+
+**method:** `Literal["POST", "PATCH", "PUT"]` — Method of the session-start request (default `POST`). Case-insensitive.
+
+**query_params:** `Optional[Mapping[str, str | int | bool]]` — Extra query parameters for the session-start request only, for example `{"supportsAllDrives": True}` or `{"part": "snippet,status"}`. Booleans are sent as `true`/`false`. The key `uploadType` (exact, case-sensitive) is rejected, because the SDK always sends `uploadType=resumable`.
+
+**chunk_size:** `int` — Bytes per chunk, a positive multiple of 262144 (256 KiB). Default 4 MiB.
+
+**max_retries:** `int` — Retries in a row allowed for one chunk, counting chunk resends, status queries and answers that store no new data (default 3). The count resets only when the server confirms data beyond the highest offset so far. `0` disables retries.
+
+**timeout:** `Optional[float]` — Timeout in seconds for each HTTP request. Defaults to the client's tool-call timeout (60 seconds).
+
+**on_progress:** `Optional[Callable[[UploadProgress], None]]` — Called with `UploadProgress(bytes_committed, total_bytes)` each time the server confirms more data, and once on completion. `total_bytes` is `None` while the size is unknown. A zero-length upload reports `UploadProgress(0, 0)` once. An exception raised by the callback aborts the upload.
+
+</dd>
+</dl>
+</details>
+
 ### Modifiers
 
 <details><summary><code>add_modifier</code>, <code>get_modifiers</code>, <code>pre_modifier</code>, <code>post_modifier</code></summary>
