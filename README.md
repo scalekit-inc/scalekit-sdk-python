@@ -13,7 +13,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python versions](https://img.shields.io/pypi/pyversions/scalekit-sdk-python.svg?style=flat-square)](https://pypi.org/project/scalekit-sdk-python/)
 
-<a href="https://scalekit.com" target="_blank" rel="noopener noreferrer">Scalekit</a> is the **auth stack for AI apps** - from human authentication to agent authorization. Build secure AI products faster with authentication for humans (SSO, passwordless, full-stack auth) and agents (MCP/APIs, delegated actions), all unified on one platform. This Python SDK enables both traditional B2B authentication and cutting-edge agentic workflows.
+<a href="https://scalekit.com" target="_blank" rel="noopener noreferrer">Scalekit</a> provides auth and actions on behalf of users, with 500+ connectors and 20,000+ tools. Build secure AI products faster with authentication for humans (SSO, passwordless, full-stack auth) and agents (MCP/APIs, delegated actions), all unified on one platform. This Python SDK enables both traditional B2B authentication and cutting-edge agentic workflows.
 
 ## 🤖 Agent-First Features
 
