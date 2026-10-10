@@ -340,6 +340,8 @@ class ActionClient:
         identifier: Optional[str] = None,
         provider: Optional[str] = None,
         connection_names: Optional[List[str]] = None,
+        page_size: Optional[int] = None,
+        page_token: Optional[str] = None,
         **kwargs
     ) -> ListConnectedAccountsResponse:
         """List connected accounts with optional filtering.
@@ -357,14 +359,20 @@ class ActionClient:
                 e.g. ``["github", "google-calendar", "slack"]``. Takes up to 20 names and
                 can't be combined with ``connection_name``. Combine it with
                 ``identifier`` to check one user's accounts across several connections.
+            page_size: Maximum number of connected accounts per page (optional).
+            page_token: ``next_page_token`` from a previous response, to fetch the
+                next page (optional).
 
         Returns:
-            ListConnectedAccountsResponse containing the matching connected accounts.
+            ListConnectedAccountsResponse containing the matching connected accounts,
+            with ``next_page_token`` set when more pages remain.
         """
         result_tuple = self.connected_accounts.list_connected_accounts(
             connector=connection_name,
             identifier=identifier,
             provider=provider,
+            page_size=page_size,
+            page_token=page_token,
             connection_names=connection_names,
         )
         return ListConnectedAccountsResponse.from_proto(result_tuple[0])

@@ -15,13 +15,12 @@ make test    # unittest discover
 make generate  # Regenerate from proto (needs buf)
 ```
 
-## Release
+## Release notes and releases
 
-Package: `scalekit-sdk-python` on PyPI. Workflow: `.github/workflows/release.yml`.
-
-1. Bump `scalekit/_version.py`. Use a minor or patch bump. `setup.py` reads this file.
-2. Review the unreleased changes. If proto or generated API files changed, extra generation steps apply. Those steps are not documented yet. Do not invent them. Ask before you regenerate.
-3. Merge the release branch to `main`.
-4. Create a git tag that matches the version (`v2.17.0` for `2.17.0`). Draft a GitHub Release for that tag.
-5. Publishing does not start on its own. Open the Actions run for the release workflow. Any peer can approve it. The `release` environment gates deploy.
-6. After approval, the workflow publishes to PyPI.
+- Package: `scalekit-sdk-python` on PyPI. Workflow: `.github/workflows/release.yml`.
+- Every change that users can notice adds a release-notes file under `.changes/unreleased/`.
+- Never hand-edit the version (`scalekit/_version.py`) or `CHANGELOG.md` sections: release
+  tooling bumps the version and renders the CHANGELOG section from those files.
+- Publishing a GitHub Release for a merged version starts the release workflow. It waits for
+  an approval on the `release` environment from someone other than the person who started
+  it, then publishes to PyPI.
