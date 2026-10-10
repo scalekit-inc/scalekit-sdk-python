@@ -1,0 +1,8 @@
+kind: changed
+body: |
+  The SDK now declares Python 3.10 as its minimum supported version (`python_requires=">=3.10"`); the README previously listed 3.8. Working installs are unaffected: the previous release's dependencies, such as `grpcio` 1.81, already required Python 3.10.
+time: '2026-10-10T00:05:07.307370+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: ''
+  Migration: ''
