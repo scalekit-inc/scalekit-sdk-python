@@ -4,6 +4,8 @@ from datetime import datetime, timedelta, timezone
 from faker import Faker
 from basetest import BaseTest
 
+from scalekit.common.exceptions import ScalekitNotFoundException
+
 from scalekit.v1.mcp.mcp_pb2 import (
     Mcp,
     McpConfig,
@@ -296,6 +298,50 @@ class TestMcp(BaseTest):
                 now + timedelta(hours=2, minutes=5),
                 "expires_at should not exceed 2h5m from now for a 2-hour expiry",
             )
+        finally:
+            if created_config_id:
+                self.scalekit_client.mcp.delete_config(config_id=created_config_id)
+
+    def test_create_session_token_for_connection(self):
+        """create_session_token(connection_name=...) mints a token for a connection's MCP server."""
+        now = datetime.now(tz=timezone.utc)
+        token_response = self.scalekit_client.mcp.create_session_token(
+            connection_name="GMAIL",
+            identifier=self.test_connected_account_identifier,
+            expiry=timedelta(minutes=10),
+            access_level="READ_ONLY",
+        )
+        self.assertEqual(token_response[1].code().name, "OK")
+        self.assertTrue(token_response[0].token, "Expected a non-empty token string")
+        expires_at = token_response[0].expires_at.ToDatetime(tzinfo=timezone.utc)
+        self.assertGreater(expires_at, now + timedelta(minutes=5))
+        self.assertLess(expires_at, now + timedelta(minutes=15))
+
+    def test_create_session_token_unknown_connection(self):
+        """An unknown connection name raises ScalekitNotFoundException."""
+        with self.assertRaises(ScalekitNotFoundException):
+            self.scalekit_client.mcp.create_session_token(
+                connection_name=f"py-test-missing-{uuid.uuid4().hex[:8]}",
+                identifier=self.test_user_identifier,
+            )
+
+    def test_create_session_token_positional_config(self):
+        """The positional (mcp_config_id, identifier, expiry) form keeps working."""
+        mcp_config = self._create_test_mcp_config()
+        mcp_config.name = f"py-test-session-positional-{uuid.uuid4().hex[:8]}"
+        created_config_id = None
+
+        try:
+            create_response = self.scalekit_client.mcp.create_config(mcp_config=mcp_config)
+            created_config_id = create_response[0].config.id
+
+            token_response = self.scalekit_client.mcp.create_session_token(
+                created_config_id,
+                self.test_user_identifier,
+                timedelta(minutes=10),
+            )
+            self.assertEqual(token_response[1].code().name, "OK")
+            self.assertTrue(token_response[0].token, "Expected a non-empty token string")
         finally:
             if created_config_id:
                 self.scalekit_client.mcp.delete_config(config_id=created_config_id)

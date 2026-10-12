@@ -45,6 +45,11 @@ class MigrationServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateEnvKeysRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateEnvKeysResponse.FromString,
                 )
+        self.RepairSkCredsConnectedAccountEncryption = channel.unary_unary(
+                '/scalekit.v1.migrations.MigrationService/RepairSkCredsConnectedAccountEncryption',
+                request_serializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.RepairSkCredsConnectedAccountEncryptionRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.RepairSkCredsConnectedAccountEncryptionResponse.FromString,
+                )
         self.ReconcileConnectionsAccrual = channel.unary_unary(
                 '/scalekit.v1.migrations.MigrationService/ReconcileConnectionsAccrual',
                 request_serializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.ReconcileConnectionsAccrualRequest.SerializeToString,
@@ -96,6 +101,12 @@ class MigrationServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def RepairSkCredsConnectedAccountEncryption(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def ReconcileConnectionsAccrual(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -140,6 +151,11 @@ def add_MigrationServiceServicer_to_server(servicer, server):
                     servicer.MigrateEnvKeys,
                     request_deserializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateEnvKeysRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateEnvKeysResponse.SerializeToString,
+            ),
+            'RepairSkCredsConnectedAccountEncryption': grpc.unary_unary_rpc_method_handler(
+                    servicer.RepairSkCredsConnectedAccountEncryption,
+                    request_deserializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.RepairSkCredsConnectedAccountEncryptionRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_migrations_dot_migrations__pb2.RepairSkCredsConnectedAccountEncryptionResponse.SerializeToString,
             ),
             'ReconcileConnectionsAccrual': grpc.unary_unary_rpc_method_handler(
                     servicer.ReconcileConnectionsAccrual,
@@ -260,6 +276,23 @@ class MigrationService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.migrations.MigrationService/MigrateEnvKeys',
             scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateEnvKeysRequest.SerializeToString,
             scalekit_dot_v1_dot_migrations_dot_migrations__pb2.MigrateEnvKeysResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def RepairSkCredsConnectedAccountEncryption(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.migrations.MigrationService/RepairSkCredsConnectedAccountEncryption',
+            scalekit_dot_v1_dot_migrations_dot_migrations__pb2.RepairSkCredsConnectedAccountEncryptionRequest.SerializeToString,
+            scalekit_dot_v1_dot_migrations_dot_migrations__pb2.RepairSkCredsConnectedAccountEncryptionResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
