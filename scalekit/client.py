@@ -1,14 +1,10 @@
 from __future__ import annotations
 import json
-from math import floor
 from typing import Any, Optional, Dict, List, Union
 from urllib.parse import urlencode
 
 import jwt
-import hmac
-import hashlib
-import base64
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 from scalekit.core import (
     CoreClient,
     DEFAULT_KEEPALIVE_TIME_MS,
@@ -47,6 +43,11 @@ from scalekit.common.scalekit import (
 from scalekit.constants.user import id_token_claim_to_user_map
 from scalekit.common.exceptions import (WebhookVerificationError,
                                         ScalekitValidateTokenFailureException)
+from scalekit.common._webhook_signature import (
+    compute_signature as _compute_signature,
+    verify_payload_signature as _verify_payload_signature,
+    verify_timestamp as _verify_timestamp,
+)
 
 AUTHORIZE_ENDPOINT = "oauth/authorize"
 LOGOUT_ENDPOINT = "oidc/logout" 
@@ -479,43 +480,15 @@ class ScalekitClient:
         :returns:
             bool
         """
-        if not all([webhook_id, webhook_timestamp, webhook_signature]):
-            raise WebhookVerificationError("Missing required headers")
-
-        secret_parts = secret.split("_")
-        if len(secret_parts) < 2:
-            raise WebhookVerificationError("Invalid secret")
-
-        try:
-            secret_bytes = base64.b64decode(secret_parts[1])
-        except Exception:
-            raise
-
-        try:
-            timestamp = self.__verify_timestamp(webhook_timestamp)
-        except Exception:
-            raise
-
-        timestamp_str = str(floor(timestamp.replace(tzinfo=timezone.utc).timestamp()))
-        data = f"{webhook_id}.{timestamp_str}.{payload}"
-        computed_signature = base64.b64decode(self.__compute_signature(secret_bytes, data).split(',')[1])
-
-        received_signatures = webhook_signature.split(" ")
-        for versioned_signature in received_signatures:
-            signature_parts = versioned_signature.split(",")
-            if len(signature_parts) < 2:
-                continue
-
-            version = signature_parts[0]
-            signature = base64.b64decode(signature_parts[1])
-
-            if version != webhook_signature_version:
-                continue
-
-            if hmac.compare_digest(signature, computed_signature):
-                return True
-
-        raise WebhookVerificationError("Invalid signature")
+        return _verify_payload_signature(
+            secret,
+            webhook_id,
+            webhook_timestamp,
+            webhook_signature,
+            payload,
+            tolerance=webhook_tolerance_in_seconds,
+            signature_version=webhook_signature_version,
+        )
 
     def verify_webhook_payload(self, secret: str, headers: Dict[str, str], payload: str | bytes) -> bool:
         """
@@ -571,19 +544,7 @@ class ScalekitClient:
         :returns:
             None
         """
-        now = datetime.now(tz=timezone.utc)
-        try:
-            timestamp = datetime.fromtimestamp(float(timestamp_str), tz=timezone.utc)
-        except Exception:
-            raise WebhookVerificationError("Invalid Signature Headers")
-
-        if timestamp < (now - webhook_tolerance_in_seconds):
-            raise WebhookVerificationError("Message timestamp too old")
-
-        if timestamp > (now + webhook_tolerance_in_seconds):
-            raise WebhookVerificationError("Message timestamp too new")
-
-        return timestamp
+        return _verify_timestamp(timestamp_str, tolerance=webhook_tolerance_in_seconds)
 
     @staticmethod
     def __compute_signature(secret: bytes, data: str) -> str:
@@ -598,8 +559,7 @@ class ScalekitClient:
         :returns:
             None
         """
-        signature = hmac.new(secret, data.encode(), hashlib.sha256).digest()
-        return f"v1, {base64.b64encode(signature).decode('utf-8')}"
+        return _compute_signature(secret, data)
 
     def refresh_access_token(self, refresh_token: str):
         """
