@@ -765,6 +765,81 @@ print(f'Magic Link: {response[0].magic_link}')
 </dl>
 </details>
 
+<details><summary><code>client.connected_accounts.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connected_accounts.py">refresh_connected_account_tokens</a>(connected_account_id?, connection_name?, identifier?) -> RefreshConnectedAccountTokensResponse</code></summary>
+<dl>
+<dd>
+
+### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Refreshes the stored tokens of a connected account now. Call it when a proxy call to the provider fails with an auth error, then retry. Pass `connected_account_id`, or both `connection_name` and `identifier`; if the ID is sent the other two are ignored. Supported for OAuth, SMART on FHIR, OAuth M2M, Google DWD and trusted IdP connections; API key, bearer, basic and no-auth accounts return 400. The account must be ACTIVE or EXPIRED. A provider rejection marks an ACTIVE account EXPIRED and returns 400 `REAUTHENTICATION_NEEDED`; a provider outage or 5xx leaves the status unchanged and returns 500; overlapping calls get 400 `REFRESH_IN_PROGRESS`. Needs server-side API credentials, not an account-bound token. The response has metadata only; use `token_expires_at` for the new expiry.
+</dd>
+</dl>
+</dd>
+</dl>
+
+### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.connected_accounts.refresh_connected_account_tokens(
+    connection_name='gmail',
+    identifier='user_123'
+)
+
+print(response[0].connected_account.token_expires_at)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**connected_account_id:** `Optional[str]` - ID of the connected account
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**connection_name:** `Optional[str]` - Connection name (use with identifier)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**identifier:** `Optional[str]` - Identifier for the connected account (use with connection_name)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Connect and Actions (`ActionClient`)
 
 `ScalekitClient.connect` and `ScalekitClient.actions` are the same [`ActionClient`](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py) instance — a facade over `tools`, `connected_accounts`, and `mcp` with typed helpers, modifiers, and optional framework integrations.

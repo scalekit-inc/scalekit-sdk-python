@@ -13,6 +13,8 @@ from scalekit.v1.connected_accounts.connected_accounts_pb2 import (
     GetMagicLinkForConnectedAccountResponse,
     ListConnectedAccountsRequest,
     ListConnectedAccountsResponse,
+    RefreshConnectedAccountTokensRequest,
+    RefreshConnectedAccountTokensResponse,
     UpdateConnectedAccount,
     UpdateConnectedAccountRequest,
     UpdateConnectedAccountResponse,
@@ -317,6 +319,59 @@ class ConnectedAccountsClient:
                 identifier=identifier,
                 id=connected_account_id
             ),
+        )
+
+    def refresh_connected_account_tokens(
+        self,
+        connected_account_id: Optional[str] = None,
+        connection_name: Optional[str] = None,
+        identifier: Optional[str] = None
+    ) -> RefreshConnectedAccountTokensResponse:
+        """
+        Method to refresh the stored tokens of a connected account now.
+
+        Call this when a proxy call to the provider fails with an auth error, then
+        retry the call. Identify the account by ``connected_account_id``, or by both
+        ``connection_name`` and ``identifier``. If the ID is sent, the other two are ignored.
+
+        Supported for OAuth, SMART on FHIR, OAuth M2M, Google DWD and trusted IdP
+        connections. API key, bearer, basic and no-auth accounts return 400. The account
+        must be ACTIVE or EXPIRED. If the provider rejects the refresh, an ACTIVE account
+        is marked EXPIRED and a 400 REAUTHENTICATION_NEEDED is returned. A provider outage
+        or 5xx leaves the status unchanged and returns 500. Overlapping calls for the same
+        account get 400 REFRESH_IN_PROGRESS. Needs server-side API credentials, not an
+        account-bound token. The response has account metadata only, no credentials; use
+        ``token_expires_at`` for the new expiry.
+
+        :param connected_account_id : ID of the connected account
+        :type                       : ``` str ```
+        :param connection_name      : Connection name (use with identifier)
+        :type                       : ``` str ```
+        :param identifier           : Identifier for the connected account (use with connection_name)
+        :type                       : ``` str ```
+
+        :raises ValueError: If neither connected_account_id nor both connection_name
+                            and identifier are given.
+
+        :returns:
+            Refresh Connected Account Tokens Response
+        """
+        if not connected_account_id and not (connection_name and identifier):
+            raise ValueError(
+                "connected_account_id, or both connection_name and identifier, is required"
+            )
+        if connected_account_id:
+            request = RefreshConnectedAccountTokensRequest(
+                connected_account_id=connected_account_id
+            )
+        else:
+            request = RefreshConnectedAccountTokensRequest(
+                connection_name=connection_name,
+                identifier=identifier
+            )
+        return self.core_client.grpc_exec(
+            self.connected_accounts_service.RefreshConnectedAccountTokens.with_call,
+            request,
         )
 
     def verify_connected_account_user(

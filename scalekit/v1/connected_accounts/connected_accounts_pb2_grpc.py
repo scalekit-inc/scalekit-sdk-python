@@ -39,6 +39,11 @@ class ConnectedAccountServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.DeleteConnectedAccountRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.DeleteConnectedAccountResponse.FromString,
                 )
+        self.RefreshConnectedAccountTokens = channel.unary_unary(
+                '/scalekit.v1.connected_accounts.ConnectedAccountService/RefreshConnectedAccountTokens',
+                request_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.RefreshConnectedAccountTokensRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.RefreshConnectedAccountTokensResponse.FromString,
+                )
         self.GetMagicLinkForConnectedAccount = channel.unary_unary(
                 '/scalekit.v1.connected_accounts.ConnectedAccountService/GetMagicLinkForConnectedAccount',
                 request_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.GetMagicLinkForConnectedAccountRequest.SerializeToString,
@@ -134,6 +139,13 @@ class ConnectedAccountServiceServicer(object):
 
     def DeleteConnectedAccount(self, request, context):
         """Delete Connected Account
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def RefreshConnectedAccountTokens(self, request, context):
+        """Refresh Connected Account Tokens
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -261,6 +273,11 @@ def add_ConnectedAccountServiceServicer_to_server(servicer, server):
                     servicer.DeleteConnectedAccount,
                     request_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.DeleteConnectedAccountRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.DeleteConnectedAccountResponse.SerializeToString,
+            ),
+            'RefreshConnectedAccountTokens': grpc.unary_unary_rpc_method_handler(
+                    servicer.RefreshConnectedAccountTokens,
+                    request_deserializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.RefreshConnectedAccountTokensRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.RefreshConnectedAccountTokensResponse.SerializeToString,
             ),
             'GetMagicLinkForConnectedAccount': grpc.unary_unary_rpc_method_handler(
                     servicer.GetMagicLinkForConnectedAccount,
@@ -414,6 +431,23 @@ class ConnectedAccountService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connected_accounts.ConnectedAccountService/DeleteConnectedAccount',
             scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.DeleteConnectedAccountRequest.SerializeToString,
             scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.DeleteConnectedAccountResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def RefreshConnectedAccountTokens(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connected_accounts.ConnectedAccountService/RefreshConnectedAccountTokens',
+            scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.RefreshConnectedAccountTokensRequest.SerializeToString,
+            scalekit_dot_v1_dot_connected__accounts_dot_connected__accounts__pb2.RefreshConnectedAccountTokensResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

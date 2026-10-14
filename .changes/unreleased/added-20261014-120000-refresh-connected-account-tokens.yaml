@@ -1,0 +1,16 @@
+kind: added
+body: |
+  `client.connected_accounts.refresh_connected_account_tokens(connected_account_id=...)` refreshes a connected account's stored tokens now (preview API). Identify the account by `connected_account_id`, or by both `connection_name` and `identifier`; if the ID is sent the other two are ignored. Call it when a proxy call to the provider fails with an auth error, then retry. It needs server-side API credentials, and the response has account metadata only (use `token_expires_at` for the new expiry).
+
+  ```python
+  response, _ = client.connected_accounts.refresh_connected_account_tokens(
+      connection_name="gmail",
+      identifier="user_123",
+  )
+  print(response.connected_account.token_expires_at)
+  ```
+time: '2026-10-14T12:00:00.000000+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: SK-2345
+  Migration: ''
