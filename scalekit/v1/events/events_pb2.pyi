@@ -43,6 +43,7 @@ class EventTarget(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     CONNECTED_ACCOUNT: _ClassVar[EventTarget]
     ROLE: _ClassVar[EventTarget]
     PERMISSION: _ClassVar[EventTarget]
+    PROVIDER: _ClassVar[EventTarget]
 
 class EventCategory(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
@@ -114,6 +115,7 @@ EMAIL: EventTarget
 CONNECTED_ACCOUNT: EventTarget
 ROLE: EventTarget
 PERMISSION: EventTarget
+PROVIDER: EventTarget
 EVENT_SOURCE_UNSPECIFIED: EventCategory
 CORE: EventCategory
 SSO: EventCategory

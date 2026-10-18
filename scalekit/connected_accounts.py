@@ -334,14 +334,24 @@ class ConnectedAccountsClient:
         retry the call. Identify the account by ``connected_account_id``, or by both
         ``connection_name`` and ``identifier``. If the ID is sent, the other two are ignored.
 
-        Supported for OAuth, SMART on FHIR, OAuth M2M, Google DWD and trusted IdP
-        connections. API key, bearer, basic and no-auth accounts return 400. The account
-        must be ACTIVE or EXPIRED. If the provider rejects the refresh, an ACTIVE account
-        is marked EXPIRED and a 400 REAUTHENTICATION_NEEDED is returned. A provider outage
-        or 5xx leaves the status unchanged and returns 500. Overlapping calls for the same
-        account get 400 REFRESH_IN_PROGRESS. Needs server-side API credentials, not an
-        account-bound token. The response has account metadata only, no credentials; use
-        ``token_expires_at`` for the new expiry.
+        Only ACTIVE accounts are refreshed. Key on ``error_code``, not only the HTTP status.
+        Errors:
+
+        - 400 REAUTHENTICATION_NEEDED: the account is EXPIRED (the user must authorize
+          again; no provider call is made), or the provider rejected the refresh (for
+          example invalid_grant, revoked, or no refresh token). In the second case the
+          account is marked EXPIRED.
+        - 500 INTERNAL_ERROR: provider outage, network error, 5xx or 429. The account
+          stays ACTIVE; retry later.
+        - 409 REFRESH_IN_PROGRESS: a refresh is already running for the account. Retry
+          in a few seconds.
+        - 400 REFRESH_NOT_SUPPORTED_FOR_CONNECTOR: API key, bearer, basic auth, no-auth
+          and Trello OAuth1 accounts.
+        - 403: account-bound or portal tokens. Use server-side API credentials.
+        - 404: account not found.
+
+        The response has account metadata only, no credentials; use ``token_expires_at``
+        for the new expiry.
 
         :param connected_account_id : ID of the connected account
         :type                       : ``` str ```

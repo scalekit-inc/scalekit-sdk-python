@@ -1,6 +1,6 @@
 kind: added
 body: |
-  `client.connected_accounts.refresh_connected_account_tokens(connected_account_id=...)` refreshes a connected account's stored tokens now (preview API). Identify the account by `connected_account_id`, or by both `connection_name` and `identifier`; if the ID is sent the other two are ignored. Call it when a proxy call to the provider fails with an auth error, then retry. It needs server-side API credentials, and the response has account metadata only (use `token_expires_at` for the new expiry).
+  `client.connected_accounts.refresh_connected_account_tokens(connected_account_id=...)` refreshes a connected account's stored tokens now (preview API). Identify the account by `connected_account_id`, or by both `connection_name` and `identifier`; if the ID is sent the other two are ignored. Call it when a proxy call to the provider fails with an auth error, then retry. Only ACTIVE accounts are refreshed. An EXPIRED account, or a provider rejection (which marks the account EXPIRED), returns 400 `REAUTHENTICATION_NEEDED` and the user must authorize again; a provider outage returns 500 and the account stays ACTIVE; a refresh already running returns 409 `REFRESH_IN_PROGRESS`; account types that cannot refresh return 400 `REFRESH_NOT_SUPPORTED_FOR_CONNECTOR`. Check `error_code`, not only the HTTP status. It needs server-side API credentials, and the response has account metadata only (use `token_expires_at` for the new expiry).
 
   ```python
   response, _ = client.connected_accounts.refresh_connected_account_tokens(
