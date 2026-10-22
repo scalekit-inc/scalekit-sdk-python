@@ -1522,8 +1522,8 @@ class ActionProviders:
 
         :param request: Request object containing display_name (required),
                         proxy_url (required), auth_patterns (one AuthPattern,
-                        required in practice: the server rejects an empty list
-                        with 'auth patterns cannot be empty'), and optional
+                        required in practice: the server rejects a missing or
+                        empty list), and optional
                         description, proxy_enabled, icon_src, and metadata.
         :type request: CreateCustomProviderRequest
 
@@ -1533,8 +1533,10 @@ class ActionProviders:
         :rtype: CreateCustomProviderResponse
 
         :raises ScalekitBadRequestException: If a required field is missing or
-            invalid, auth_patterns is empty, or the display_name matches a
-            built-in provider.
+            invalid, auth_patterns is missing or empty, or the display_name is
+            the name of a built-in login provider (Github, Google, Gitlab,
+            Microsoft, LinkedIn, Salesforce, Facebook). The message shows the
+            field and the reason.
         :raises ScalekitConflictException: Only if another create with the same
             name is in progress at the same moment; retry. A name that is already
             in use does not raise: the new provider gets a numbered identifier.

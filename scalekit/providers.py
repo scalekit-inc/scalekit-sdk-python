@@ -48,8 +48,10 @@ class ProvidersClient:
         :param display_name: Name shown in the UI. Required. Letters, digits and
                              spaces only (max 200 characters); symbols such as '_'
                              or '-' are rejected. The identifier is derived from it
-                             ('Acme MCP' becomes 'ACMEMCP:<environment id>'). Names
-                             that match a built-in provider are rejected.
+                             ('Acme MCP' becomes 'ACMEMCP:<environment id>'). The
+                             names of the built-in login providers (Github, Google,
+                             Gitlab, Microsoft, LinkedIn, Salesforce, Facebook) are
+                             rejected; other built-in names such as Gmail are accepted.
                              Good practice: suffix with 'MCP' for MCP server providers.
         :type display_name: str
         :param proxy_url: HTTPS URL of the external service this provider connects
@@ -65,10 +67,11 @@ class ProvidersClient:
                                must be an AuthPattern instance. Currently only a single
                                AuthPattern is supported — pass a list with exactly one
                                element. The list type is intentional for future
-                               multi-pattern support. Required in practice: the
-                               server rejects an empty list ('auth patterns cannot
-                               be empty'), and the SDK does not check this before
-                               sending.
+                               multi-pattern support. Required in practice: leaving
+                               it out fails with a validation error on
+                               provider.auth_patterns, and an empty list fails with
+                               'auth patterns cannot be empty'. The SDK checks
+                               neither before sending.
         :type auth_patterns: Optional[List[AuthPattern]]
         :param icon_src: URL of the provider's icon image. Optional.
         :type icon_src: Optional[str]
