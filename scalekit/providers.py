@@ -45,11 +45,17 @@ class ProvidersClient:
     ):
         """Create a new custom provider.
 
-        :param display_name: Human-readable name for the provider. Required.
-                             Accepted characters: a-z, A-Z, 0-9, and spaces.
+        :param display_name: Name shown in the UI. Required. Letters, digits and
+                             spaces only (max 200 characters); symbols such as '_'
+                             or '-' are rejected. The identifier is derived from it
+                             ('Acme MCP' becomes 'ACMEMCP:<environment id>'). Names
+                             that match a built-in provider are rejected.
                              Good practice: suffix with 'MCP' for MCP server providers.
         :type display_name: str
-        :param proxy_url: Base HTTPS URL of the provider's server. Required.
+        :param proxy_url: HTTPS URL of the external service this provider connects
+                          to, and the address Scalekit sends proxied requests to.
+                          For an MCP connector this is the MCP server's URL; for an
+                          API connector it is the API's base URL. Required.
         :type proxy_url: str
         :param proxy_enabled: Whether to enable Scalekit request proxying. Defaults to True.
         :type proxy_enabled: bool
@@ -59,7 +65,10 @@ class ProvidersClient:
                                must be an AuthPattern instance. Currently only a single
                                AuthPattern is supported — pass a list with exactly one
                                element. The list type is intentional for future
-                               multi-pattern support. Optional.
+                               multi-pattern support. Required in practice: the
+                               server rejects an empty list ('auth patterns cannot
+                               be empty'), and the SDK does not check this before
+                               sending.
         :type auth_patterns: Optional[List[AuthPattern]]
         :param icon_src: URL of the provider's icon image. Optional.
         :type icon_src: Optional[str]
@@ -100,28 +109,39 @@ class ProvidersClient:
     ):
         """Update an existing custom provider.
 
-        display_name and proxy_url are required by the server on every update.
-        Optional fields left as None are not sent and the server keeps their
-        existing values.
+        The server applies this as a PUT: it replaces the provider's settings and
+        is not a partial update. Send display_name, proxy_url and auth_patterns
+        every time. Fields left as None are not sent: description and icon_src
+        are then kept, but metadata is cleared.
 
         :param identifier: Identifier of the custom provider to update. Required.
         :type identifier: str
-        :param display_name: Display name for the provider. Accepted characters:
-                             a-z, A-Z, 0-9, and spaces. Good practice: suffix with
-                             'MCP' for MCP server providers. Required.
+        :param display_name: Name shown in the UI. Letters, digits and spaces only
+                             (max 200 characters); symbols such as '_' or '-' are
+                             rejected. Changing the name does not change the
+                             identifier. Good practice: suffix with 'MCP' for MCP
+                             server providers. Required.
         :type display_name: str
-        :param proxy_url: Proxy URL for the provider. Must be a valid HTTPS URL
-                          starting with 'https://'. Required.
+        :param proxy_url: HTTPS URL of the external service this provider connects
+                          to, and the address Scalekit sends proxied requests to.
+                          For an MCP connector this is the MCP server's URL; for an
+                          API connector it is the API's base URL. Must start with
+                          'https://'. Required.
         :type proxy_url: str
-        :param description: New description. Pass None to leave unchanged.
+        :param description: New description. Pass None to leave unchanged. An empty
+                            string does not clear it: the server ignores empty values.
         :type description: Optional[str]
-        :param auth_patterns: Replacement auth patterns. Fully replaces the existing
-                               list when provided — it is not merged. Currently only a
-                               single AuthPattern is supported — pass a list with exactly
-                               one element. The list type is intentional for future
-                               multi-pattern support. Pass None to leave unchanged.
+        :param auth_patterns: Replacement auth patterns. Marked required by the API
+                               on every update. Fully replaces the existing list — it
+                               is not merged. Currently only a single AuthPattern is
+                               supported — pass a list with exactly one element. The
+                               list type is intentional for future multi-pattern
+                               support. The auth type and is_mcp cannot be changed,
+                               and an API_KEY provider cannot switch between
+                               single-key and multiple-headers mode.
         :type auth_patterns: Optional[List[AuthPattern]]
-        :param icon_src: New icon URL. Pass None to leave unchanged.
+        :param icon_src: New icon URL. Pass None to leave unchanged. An empty string
+                         does not clear it.
         :type icon_src: Optional[str]
         :param metadata: Replacement metadata key-value pairs. The server replaces
                          the provider's entire metadata map with this value — it does
@@ -138,6 +158,8 @@ class ProvidersClient:
         provider = UpdateCustomProvider(
             display_name=display_name,
             proxy_url=proxy_url,
+            # Sent on every update.
+            proxy_enabled=True,
         )
         if description is not None:
             provider.description = description
@@ -156,7 +178,11 @@ class ProvidersClient:
         """Delete a custom provider by identifier.
 
         Deletion is permanent. The provider is removed from the Scalekit catalog
-        and can no longer be used for new connections.
+        and can no longer be used for new connections. The server refuses to delete
+        a provider that still has connections, and a connection that still has
+        connected accounts: remove the connected accounts, then the connections,
+        then the provider. It also removes the provider's discovered custom MCP
+        tools.
 
         :param identifier: Identifier of the custom provider to delete. Required.
         :type identifier: str
@@ -187,10 +213,12 @@ class ProvidersClient:
         :type page_token: Optional[str]
         :param provider_type: ProviderType enum value to filter results.
                               ProviderType.CUSTOM=1, ProviderType.DEFAULT=0,
-                              ProviderType.ALL=2. Pass None to return all.
+                              ProviderType.ALL=2. Pass None and only built-in
+                              providers are returned (the same as DEFAULT): use
+                              CUSTOM to find your own connectors, or ALL for both.
         :type provider_type: Optional[int]
         :param identifier: Filter to a specific provider by identifier.
-                           Pass None to return all providers.
+                           Pass None to skip this filter.
         :type identifier: Optional[str]
 
         :returns: Tuple of (ListProvidersResponse proto, grpc.Call).

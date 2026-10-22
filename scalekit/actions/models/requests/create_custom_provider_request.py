@@ -1,24 +1,27 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 from urllib.parse import urlparse
 
 from pydantic import BaseModel, Field, validator
 
-from scalekit.actions.models.custom_provider import AuthPattern
+from scalekit.actions.models.custom_provider import AuthPattern, check_request_is_mcp
 
 
 class CreateCustomProviderRequest(BaseModel):
     """Request model for creating a new custom provider.
 
     A custom provider represents an external service (e.g. an MCP server or a
-    REST API) that end users can connect to. At least one AuthPattern should be
-    included so users know how to authenticate with the provider.
+    REST API) that end users can connect to. Exactly one AuthPattern is required:
+    the server rejects a create with no auth pattern ("auth patterns cannot be
+    empty"), so users know how to authenticate with the provider.
     """
 
     display_name: str = Field(
         ...,
         description=(
-            "Required. Human-readable name for the provider shown in the UI and "
-            "API responses. Accepted characters: a-z, A-Z, 0-9, and spaces. "
+            "Required. Name shown in the UI. Letters, digits and spaces only (max 200 "
+            "characters); symbols such as '_' or '-' are rejected. The provider "
+            "identifier is derived from it ('Acme MCP' becomes 'ACMEMCP:<environment "
+            "id>'). Names that match a built-in provider are rejected. "
             "Good practice: suffix with 'MCP' for MCP server providers. "
             "Example: 'GitHub Copilot MCP', 'Apify MCP Server'."
         ),
@@ -26,9 +29,11 @@ class CreateCustomProviderRequest(BaseModel):
     proxy_url: str = Field(
         ...,
         description=(
-            "Required. Base URL of the provider's server. All proxied requests are "
-            "routed through this URL. Must be a valid HTTPS URL. "
-            "Example: 'https://server.example.com/mcp'."
+            "Required. URL of the external service this provider connects to, and the "
+            "address Scalekit sends proxied requests to. For an MCP connector this is "
+            "the MCP server's URL (example: 'https://server.example.com/mcp'). For an "
+            "API connector it is the API's base URL (example: "
+            "'https://api.example.com'). Must be a valid HTTPS URL."
         ),
     )
     proxy_enabled: bool = Field(
@@ -48,12 +53,24 @@ class CreateCustomProviderRequest(BaseModel):
     auth_patterns: List[AuthPattern] = Field(
         default_factory=list,
         description=(
-            "Optional. List of AuthPattern objects defining how users can authenticate "
-            "with this provider. Each pattern represents one authentication method "
-            "(OAUTH, BEARER, or API_KEY). At least one pattern is recommended. "
+            "Required in practice. List of AuthPattern objects defining how users can "
+            "authenticate with this provider. Each pattern represents one authentication "
+            "method (OAUTH, BEARER, API_KEY, or NO_AUTH). The server rejects a create "
+            "with an empty list ('auth patterns cannot be empty'); the SDK does not "
+            "check this before sending, so the error comes back from the server. "
             "Note: currently only a single AuthPattern is supported — pass a list "
             "with exactly one element. The list type is intentional for future "
-            "multi-pattern support. Defaults to empty list."
+            "multi-pattern support. The field defaults to an empty list only for "
+            "backward compatibility."
+        ),
+    )
+    is_mcp: Optional[bool] = Field(
+        None,
+        description=(
+            "Optional. True creates an MCP (Model Context Protocol) server connector. "
+            "None or False creates an API connector. Use this instead of is_mcp on "
+            "AuthPattern, which is deprecated. Setting it to a value that conflicts "
+            "with is_mcp on the pattern raises a validation error."
         ),
     )
     icon_src: str = Field(
@@ -83,6 +100,11 @@ class CreateCustomProviderRequest(BaseModel):
     def validate_single_auth_pattern(cls, v):
         if len(v) > 1:
             raise ValueError("auth_patterns must contain at most one AuthPattern")
+        return v
+
+    @validator("is_mcp")
+    def validate_is_mcp_matches_patterns(cls, v, values):
+        check_request_is_mcp(v, values.get("auth_patterns") or [])
         return v
 
     class Config:

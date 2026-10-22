@@ -1521,23 +1521,33 @@ class ActionProviders:
         """Create a new custom provider.
 
         :param request: Request object containing display_name (required),
-                        proxy_url (required), and optional description,
-                        proxy_enabled, auth_patterns, icon_src, and metadata.
+                        proxy_url (required), auth_patterns (one AuthPattern,
+                        required in practice: the server rejects an empty list
+                        with 'auth patterns cannot be empty'), and optional
+                        description, proxy_enabled, icon_src, and metadata.
         :type request: CreateCustomProviderRequest
 
         :returns: Response containing the created provider with its server-assigned
-                  identifier and all decoded auth_patterns.
+                  identifier and all decoded auth_patterns. Pass the identifier as
+                  ``provider`` when creating a connection for this provider.
         :rtype: CreateCustomProviderResponse
 
-        :raises ScalekitBadRequestException: If required fields are missing or invalid.
-        :raises ScalekitConflictException: If a provider with the same name already exists.
+        :raises ScalekitBadRequestException: If a required field is missing or
+            invalid, auth_patterns is empty, or the display_name matches a
+            built-in provider.
+        :raises ScalekitConflictException: Only if another create with the same
+            name is in progress at the same moment; retry. A name that is already
+            in use does not raise: the new provider gets a numbered identifier.
         """
+        auth_patterns = request.auth_patterns
+        if request.is_mcp:
+            auth_patterns = [p.model_copy(update={"is_mcp": True}) for p in auth_patterns]
         result_tuple = self._providers_client.create_custom_provider(
             display_name=request.display_name,
             proxy_url=request.proxy_url,
             proxy_enabled=request.proxy_enabled,
             description=request.description,
-            auth_patterns=request.auth_patterns,
+            auth_patterns=auth_patterns,
             icon_src=request.icon_src,
             metadata=request.metadata,
         )
@@ -1549,26 +1559,32 @@ class ActionProviders:
     ) -> UpdateCustomProviderResponse:
         """Update an existing custom provider.
 
-        Only fields set to a non-None value in the request are applied.
-        Fields left as None are ignored and their existing server values are kept.
+        The server applies this as a PUT, not a partial update: send display_name,
+        proxy_url and auth_patterns every time. A field left as None is not always
+        unchanged: description and icon_src are kept, but metadata is cleared.
 
-        :param request: Request object containing identifier (required) and any
-                        combination of display_name, description, proxy_url,
-                        auth_patterns, icon_src, and metadata to update.
+        :param request: Request object containing identifier (required),
+                        display_name, proxy_url and auth_patterns, and optionally
+                        description, icon_src, metadata and is_mcp.
         :type request: UpdateCustomProviderRequest
 
         :returns: Response containing the provider's full state after the update.
         :rtype: UpdateCustomProviderResponse
 
         :raises ScalekitNotFoundException: If no provider with the given identifier exists.
-        :raises ScalekitBadRequestException: If any updated field value is invalid.
+        :raises ScalekitBadRequestException: If a field value is invalid, the auth
+            type or is_mcp differs from the existing provider, or an API_KEY
+            provider switches between single-key and multiple-headers mode.
         """
+        auth_patterns = request.auth_patterns
+        if request.is_mcp:
+            auth_patterns = [p.model_copy(update={"is_mcp": True}) for p in auth_patterns]
         result_tuple = self._providers_client.update_custom_provider(
             identifier=request.identifier,
             display_name=request.display_name,
             proxy_url=request.proxy_url,
             description=request.description,
-            auth_patterns=request.auth_patterns,
+            auth_patterns=auth_patterns,
             icon_src=request.icon_src,
             metadata=request.metadata,
         )
@@ -1582,7 +1598,9 @@ class ActionProviders:
 
         :param request: Request object with optional provider_type, page_size,
                         page_token, and identifier filters. All fields are optional —
-                        an empty ListProvidersRequest() returns all providers.
+                        an empty ListProvidersRequest() returns built-in providers
+                        only. Pass provider_type=ProviderType.CUSTOM for your own
+                        connectors, or ProviderType.ALL for both.
         :type request: ListProvidersRequest
 
         :returns: Response containing a page of providers and a next_page_token
@@ -1604,8 +1622,9 @@ class ActionProviders:
         """Delete a custom provider by identifier.
 
         Deletion is permanent. Returns an empty response on success. Any error
-        (provider not found, insufficient permissions) raises a
-        ScalekitServerException subclass before this method returns.
+        (provider not found, insufficient permissions, provider still has
+        connections) raises a ScalekitServerException subclass before this method
+        returns. Deleting also removes the provider's discovered custom MCP tools.
 
         :param request: Request object containing the identifier of the provider
                         to delete.
@@ -1616,6 +1635,11 @@ class ActionProviders:
 
         :raises ScalekitNotFoundException: If no provider with the given identifier exists.
         :raises ScalekitForbiddenException: If the caller lacks permission to delete.
+        :raises ScalekitBadRequestException: If the provider still has connections
+            ("cannot delete custom provider with existing connections"). Remove
+            its connected accounts first, then its connections (a connection that
+            still has connected accounts cannot be deleted either), then delete
+            the provider.
         """
         result_tuple = self._providers_client.delete_custom_provider(request.identifier)
         return DeleteCustomProviderResponse.from_proto(result_tuple[0])

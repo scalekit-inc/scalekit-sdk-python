@@ -1,7 +1,55 @@
+import sys
+import warnings
 from typing import Dict, List, Optional
 
 from google.protobuf.json_format import MessageToDict
 from pydantic import BaseModel, Field, PrivateAttr, ValidationInfo, model_validator
+
+
+def check_request_is_mcp(is_mcp: bool, patterns: "List[AuthPattern]") -> None:
+    """Raise ValueError if a request-level is_mcp contradicts an AuthPattern's own.
+
+    Shared by CreateCustomProviderRequest and UpdateCustomProviderRequest.
+    """
+    for index, pattern in enumerate(patterns):
+        if is_mcp is False and pattern.is_mcp:
+            raise ValueError(
+                f"is_mcp=False on the request conflicts with is_mcp=True on "
+                f"auth_patterns[{index}]. is_mcp on AuthPattern is deprecated: remove "
+                f"it from the pattern and set is_mcp only on the request."
+            )
+        if is_mcp is True and "is_mcp" in pattern.model_fields_set and not pattern.is_mcp:
+            raise ValueError(
+                f"is_mcp=True on the request conflicts with is_mcp=False on "
+                f"auth_patterns[{index}]. is_mcp on AuthPattern is deprecated: remove "
+                f"it from the pattern and set is_mcp only on the request. (A pattern "
+                f"read back from the server always carries its own is_mcp value; "
+                f"build a new AuthPattern instead of reusing it.)"
+            )
+
+
+def _warn_pattern_is_mcp_deprecated() -> None:
+    """Warn that AuthPattern.is_mcp is deprecated, attributed to the caller's code.
+
+    Python hides a DeprecationWarning unless it is attributed to the user's own
+    module, so skip the pydantic and scalekit frames between the user's
+    AuthPattern(...) call and this validator.
+    """
+    frame = sys._getframe(1)
+    level = 2
+    while frame is not None and frame.f_globals.get("__name__", "").split(".")[0] in (
+        "pydantic",
+        "pydantic_core",
+        "scalekit",
+    ):
+        frame = frame.f_back
+        level += 1
+    warnings.warn(
+        "AuthPattern.is_mcp is deprecated; set is_mcp on CreateCustomProviderRequest "
+        "or UpdateCustomProviderRequest instead.",
+        DeprecationWarning,
+        stacklevel=level,
+    )
 
 
 class AuthFieldOption(BaseModel):
@@ -295,7 +343,8 @@ class AuthPattern(BaseModel):
 
     A custom provider can have multiple auth patterns (e.g. both OAUTH and API_KEY),
     giving users a choice of how to authenticate. For MCP connectors set is_mcp=True
-    on every pattern.
+    on CreateCustomProviderRequest or UpdateCustomProviderRequest; is_mcp on the
+    pattern itself is deprecated but still works.
 
     Type guide for the four types you create custom connectors with:
       - "OAUTH"   — Browser-based OAuth 2.0 / 2.1 flow. Attach an OAuthConfig.
@@ -366,8 +415,10 @@ class AuthPattern(BaseModel):
     is_mcp: bool = Field(
         False,
         description=(
-            "Optional. Set to True for MCP (Model Context Protocol) server connectors. "
-            "When True the server sets is_custom_mcp=True on the provider. "
+            "Deprecated: set is_mcp on CreateCustomProviderRequest or "
+            "UpdateCustomProviderRequest instead. Still works and still sent to the "
+            "server. True makes this an MCP (Model Context Protocol) server "
+            "connector, and the provider then reports is_custom_mcp=True. "
             "Defaults to False."
         ),
     )
@@ -424,6 +475,8 @@ class AuthPattern(BaseModel):
             return self
         if self._decoded:
             return self
+        if self.is_mcp:
+            _warn_pattern_is_mcp_deprecated()
         if self.type == "OAUTH" and self.oauth_config is None:
             raise ValueError("oauth_config is required when type='OAUTH'")
         if self.type == "NO_AUTH" and self.fields:
@@ -515,13 +568,17 @@ class Provider(BaseModel):
 
     identifier: str = Field(
         "",
-        description="Unique identifier assigned by the server. Read-only.",
+        description=(
+            "Unique identifier assigned by the server. Read-only. Pass it as "
+            "'provider' when creating a connection for this provider."
+        ),
     )
     display_name: str = Field(
         "",
         description=(
             "Human-readable name of the provider. "
-            "Accepted characters: a-z, A-Z, 0-9, and spaces."
+            "Letters, digits and spaces only. The identifier is derived from it at "
+            "creation and does not change if the name is updated."
         ),
     )
     description: str = Field(
@@ -530,7 +587,11 @@ class Provider(BaseModel):
     )
     proxy_url: str = Field(
         "",
-        description="The proxy URL through which requests to this provider are routed.",
+        description=(
+            "URL of the external service this provider connects to, and the address "
+            "Scalekit sends proxied requests to. For an MCP connector this is the MCP "
+            "server's URL; for an API connector it is the API's base URL."
+        ),
     )
     proxy_enabled: bool = Field(
         False,

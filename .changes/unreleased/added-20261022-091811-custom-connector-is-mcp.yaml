@@ -1,0 +1,19 @@
+kind: added
+body: |
+  Custom connectors: both `CreateCustomProviderRequest` and `UpdateCustomProviderRequest` take a request-level `is_mcp`, and `is_mcp` on `AuthPattern` is deprecated (it now emits a `DeprecationWarning`) but still works and is still sent. A request-level `is_mcp` that conflicts with the pattern's raises a validation error naming the pattern. The docstrings now state what the server does: update is a PUT that replaces the connector (omitting `metadata` clears it, `description` and `icon_src` cannot be cleared, the auth type and `is_mcp` cannot change), delete is refused while the connector has connections, `list_providers` returns built-in providers only unless `provider_type` is `CUSTOM` or `ALL`, and how `display_name` becomes the identifier.
+
+  ```python
+  client.actions.providers.create_custom_provider(
+      CreateCustomProviderRequest(
+          display_name="Acme MCP",
+          proxy_url="https://mcp.acme.com/mcp",
+          is_mcp=True,  # replaces AuthPattern(is_mcp=True)
+          auth_patterns=[AuthPattern(type="OAUTH", display_name="Acme OAuth", oauth_config=OAuthConfig())],
+      )
+  )
+  ```
+time: '2026-10-22T09:18:11.000000+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: ''
+  Migration: ''

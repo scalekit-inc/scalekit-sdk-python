@@ -13,8 +13,9 @@ class ListProvidersRequest(BaseModel):
             "value from scalekit.v1.providers.providers_pb2: "
             "ProviderType.CUSTOM (1) = custom providers only, "
             "ProviderType.DEFAULT (0) = built-in providers only, "
-            "ProviderType.ALL (2) = all providers. "
-            "Pass None (default) to return all providers."
+            "ProviderType.ALL (2) = built-in and custom providers. "
+            "Pass None (default) and only built-in providers are returned, the same "
+            "as DEFAULT: use CUSTOM to find your own connectors."
         ),
     )
     page_size: Optional[int] = Field(
@@ -36,7 +37,7 @@ class ListProvidersRequest(BaseModel):
         min_length=1,
         description=(
             "Optional. Filter to a specific provider by its identifier. "
-            "Pass None (default) to return all providers matching the other filters."
+            "Pass None (default) to skip this filter."
         ),
     )
 
