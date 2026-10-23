@@ -1,0 +1,8 @@
+kind: added
+body: |
+  Documentation for connected accounts, tool calling and virtual MCP: `connection_name` is now described as the connection's own name (for example `slack-b1fqL2Dr`, not the provider's name) and `identifier` as the identifier the connected account was created with, in the same words everywhere. `execute_tool` now documents which connected account is used (`identifier` alone is enough when it matches one account on the tool's provider) and the errors you get, and no longer promises a `ValueError` that was never raised; `tool_request` and unknown keyword arguments are documented as ignored. `get_authorization_link` is described as the way to create or re-authorize a connected account, and `get_connected_account` is flagged as returning credentials. `AGENTKIT.md` lists the connected-account and tool methods with their signatures and return types (including `connection_name` on `execute_tool`), and gains a short "how the pieces fit together" flow, a note on which namespace to use, and guidance that virtual MCP servers use one configuration per agent role plus a session token per user, with the instance methods marked preview and `ensure_instance` argument order called out. No code changes.
+time: '2026-10-23T10:00:00.000000+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: ''
+  Migration: ''

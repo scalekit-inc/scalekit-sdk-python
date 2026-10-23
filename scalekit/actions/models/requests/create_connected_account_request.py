@@ -14,8 +14,8 @@ from google.protobuf import struct_pb2
 class CreateConnectedAccountRequest(BaseModel):
     """Create connected account request model"""
 
-    connection_name: str = Field(..., description="Connector identifier")
-    identifier: str = Field(..., description="Connected account identifier")
+    connection_name: str = Field(..., description="Connection name, for example 'slack-b1fqL2Dr'. Not the provider's name")
+    identifier: str = Field(..., description="The identifier the connected account was created with, usually your end user's ID or email")
     authorization_details: Optional[Dict[str, Any]] = Field(None, description="Authorization details (OAuth token or static auth)")
     organization_id: Optional[str] = Field(None, description="Organization ID")
     user_id: Optional[str] = Field(None, description="User ID")

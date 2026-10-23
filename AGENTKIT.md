@@ -34,6 +34,45 @@ These attributes on `scalekit_client` are the AgentKit-related entry points:
 | `connect` and `actions` | Same [`ActionClient`](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py) — ergonomic facade over tools + connected accounts + MCP helpers. |
 | `mcp` | Low-level MCP server configuration and instances (gRPC protos). |
 
+**Which one to use:** use `actions` for almost everything. `connect` is the same object under another name. `tools`, `connected_accounts` and `mcp` are the lower layers it wraps: they return the raw `(response, call)` tuple, and the lower `connected_accounts` layer calls the connection name `connector`.
+
+Two words appear in almost every call:
+
+- **`connection_name`** is the name of a connection, for example `slack-b1fqL2Dr`, as shown for the connection in the dashboard. It is not the provider's name (`Slack`).
+- **`identifier`** is the identifier a connected account was created with, usually your end user's ID or email. It is yours to choose, and it is how Scalekit finds that user's account.
+
+## How the pieces fit together
+
+To run a tool for one of your users:
+
+1. **Create the connection** for the service in the dashboard. Its name is your `connection_name`.
+2. **Send the user an authorization link.** This is also how a connected account is created:
+
+   ```python
+   link = client.actions.get_authorization_link(
+       connection_name="gmail-b1fqL2Dr",
+       identifier="user_123",
+   )
+   print(link.link, link.expiry)  # send link.link to the user before it expires
+   ```
+
+3. **The user authorizes.** If you passed `user_verify_url`, they are redirected there with an `auth_request_id`. Confirm the user with `client.actions.verify_connected_account_user(auth_request_id=..., identifier="user_123")`.
+4. **Run the tool:**
+
+   ```python
+   result = client.actions.execute_tool(
+       tool_name="gmail.messages.list",
+       tool_input={"maxResults": 10},
+       identifier="user_123",
+       connection_name="gmail-b1fqL2Dr",
+   )
+   print(result.data)
+   ```
+
+   `identifier` alone is enough when that user has exactly one account for the tool's provider. If there is none the call fails as not found, and if there are several it fails as a bad request: then add `connection_name` or pass `connected_account_id`.
+
+To give a user access to a virtual MCP server instead, see [MCP](#mcp-mcpclient).
+
 OAuth login (`get_authorization_url`, `authenticate_with_code`, …) and MCP **Bring-your-own-auth** (`client.auth.update_login_user_details`) are documented under **ScalekitClient** / **Auth** in [`REFERENCE.md`](REFERENCE.md), not in this AgentKit guide.
 
 ## Tools
@@ -92,7 +131,7 @@ response = scalekit_client.tools.list_scoped_tools(
 
 ### ⚙️ Parameters
 
-**identifier:** `str` — Connected account identifier.
+**identifier:** `str` — The identifier the connected account was created with, usually your end user's ID or email.
 
 **filter:** `Optional[ScopedToolFilter]` — Optional; the example passes an empty `ScopedToolFilter()` — populate fields as required by your workspace.
 
@@ -147,7 +186,7 @@ When set, each result is annotated with readiness for this identifier's connecti
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/tools.py">execute_tool</a>(tool_name, identifier, params?, connected_account_id?) -> ExecuteToolResponse</code></summary>
+<details><summary><code>client.tools.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/tools.py">execute_tool</a>(tool_name, identifier, params?, connected_account_id?, connection_name?) -> ExecuteToolResponse</code></summary>
 <dl>
 <dd>
 
@@ -169,11 +208,13 @@ response = scalekit_client.tools.execute_tool(
 
 **tool_name:** `str` — Tool identifier.
 
-**identifier:** `str` — Connected account identifier.
+**identifier:** `str` — The identifier the connected account was created with, usually your end user's ID or email.
 
 **params:** `Optional[dict]` — JSON-serializable tool arguments.
 
 **connected_account_id:** `Optional[str]` — Use a specific connected account by id.
+
+**connection_name:** `Optional[str]` — Connection name, for example `slack-b1fqL2Dr`, not the provider's name. Use it with `identifier` to pick the account on that connection.
 
 </dd>
 </dl>
@@ -246,7 +287,7 @@ for account in response[0].connected_accounts:
 <dl>
 <dd>
 
-**connector:** `Optional[str]` - Connector identifier
+**connector:** `Optional[str]` - Connection name, for example `slack-b1fqL2Dr`, not the provider's name. The `actions` facade calls this `connection_name`.
 
 </dd>
 </dl>
@@ -337,7 +378,7 @@ response = scalekit_client.connected_accounts.get_connected_account_by_identifie
 <dl>
 <dd>
 
-**connector:** `str` - Connector identifier
+**connector:** `str` - Connection name, for example `slack-b1fqL2Dr`, not the provider's name. The `actions` facade calls this `connection_name`.
 
 </dd>
 </dl>
@@ -433,7 +474,7 @@ response = scalekit_client.connected_accounts.create_connected_account(
 <dl>
 <dd>
 
-**connector:** `str` - Connector identifier
+**connector:** `str` - Connection name, for example `slack-b1fqL2Dr`, not the provider's name. The `actions` facade calls this `connection_name`.
 
 </dd>
 </dl>
@@ -529,7 +570,7 @@ response = scalekit_client.connected_accounts.update_connected_account(
 <dl>
 <dd>
 
-**connector:** `str` - Connector identifier
+**connector:** `str` - Connection name, for example `slack-b1fqL2Dr`, not the provider's name. The `actions` facade calls this `connection_name`.
 
 </dd>
 </dl>
@@ -628,7 +669,7 @@ scalekit_client.connected_accounts.delete_connected_account(
 <dl>
 <dd>
 
-**connector:** `str` - Connector identifier
+**connector:** `str` - Connection name, for example `slack-b1fqL2Dr`, not the provider's name. The `actions` facade calls this `connection_name`.
 
 </dd>
 </dl>
@@ -721,7 +762,7 @@ print(f'Magic Link: {response[0].magic_link}')
 <dl>
 <dd>
 
-**connector:** `str` - Connector identifier
+**connector:** `str` - Connection name, for example `slack-b1fqL2Dr`, not the provider's name. The `actions` facade calls this `connection_name`.
 
 </dd>
 </dl>
@@ -777,10 +818,14 @@ print(f'Magic Link: {response[0].magic_link}')
 
 ### Tool execution
 
-<details><summary><code>client.connect.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">execute_tool</a>(tool_input, tool_name, identifier?, tool_request?, connected_account_id?, **kwargs) -> ExecuteToolResponse</code></summary>
+<details><summary><code>client.connect.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">execute_tool</a>(tool_input, tool_name, identifier?, tool_request?, connected_account_id?, connection_name?, **kwargs) -> ExecuteToolResponse</code></summary>
 <dl><dd>
 
-Runs pre/post modifiers then delegates to `client.tools.execute_tool`. `tool_name` is required.
+Runs pre/post modifiers then delegates to `client.tools.execute_tool`. `tool_name` is required. The response has `data` (the tool's output) and `execution_id`.
+
+Which connected account is used: `identifier` alone is enough when that user has exactly one account for the tool's provider. If there is none the call fails as not found (`ScalekitNotFoundException`), and if there are several it fails as a bad request (`ScalekitBadRequestException`): then add `connection_name` or pass `connected_account_id`. `connected_account_id` picks the account directly, and `connection_name` with `identifier` picks the account on that connection. With none of these the server rejects the call; this method does not check that itself.
+
+`tool_request` and unknown keyword arguments are accepted and ignored.
 
 </dd></dl>
 </details>
@@ -790,7 +835,17 @@ Runs pre/post modifiers then delegates to `client.tools.execute_tool`. `tool_nam
 <details><summary><code>get_authorization_link</code> / <code>verify_connected_account_user</code> / <code>list_connected_accounts</code> / <code>delete_connected_account</code> / <code>get_connected_account</code></summary>
 <dl><dd>
 
-High-level wrappers around `connected_accounts` with friendlier parameter names (`connection_name` vs `connector`) and typed response objects. See source for full signatures.
+High-level wrappers around `connected_accounts` with friendlier parameter names (`connection_name` vs `connector`) and typed response objects. Identify an account by `connected_account_id`, or by `connection_name` with `identifier`. Unknown keyword arguments are accepted and ignored.
+
+| Method | What it does | Returns |
+|--------|--------------|---------|
+| `get_authorization_link(identifier?, connection_name?, connected_account_id?, state?, user_verify_url?)` | Link the user opens to connect or re-authorize an account. | `MagicLinkResponse` (`link`, `expiry`) |
+| `verify_connected_account_user(auth_request_id, identifier)` | Confirms the user after the redirect back to your `user_verify_url`. | `VerifyConnectedAccountUserResponse` |
+| `list_connected_accounts(connection_name?, identifier?, provider?, connection_names?, page_size?, page_token?)` | Lists accounts, optionally filtered. | `ListConnectedAccountsResponse` |
+| `get_connected_account(connection_name?, identifier?, connected_account_id?)` | One account **with its credentials**. Treat the result as a secret. | `GetConnectedAccountAuthResponse` |
+| `get_connected_account_details(connection_name?, identifier?, connected_account_id?)` | The same account **without credentials**. | `GetConnectedAccountDetailsResponse` |
+| `delete_connected_account(connection_name?, identifier?, connected_account_id?)` | Deletes an account. | `DeleteConnectedAccountResponse` |
+| `list_tools(connection_name?, identifier?, provider?, tool_name?, query?, organization_id?, user_id?, connected_account_id?, summary?, page_size?, page_token?)` | Lists tools, optionally scoped to one account. | `ListToolsResponse` |
 
 </dd></dl>
 </details>
@@ -798,7 +853,7 @@ High-level wrappers around `connected_accounts` with friendlier parameter names 
 <details><summary><code>create_connected_account</code> / <code>get_or_create_connected_account</code> / <code>update_connected_account</code></summary>
 <dl><dd>
 
-Create, upsert, or update accounts using dict-based auth payloads converted to protobuf.
+Create, upsert, or update accounts using dict-based auth payloads converted to protobuf. To connect a user's account, prefer `get_authorization_link`: it creates the account if needed and the user completes authorization through the link. OAuth credentials cannot be supplied directly.
 
 </dd></dl>
 </details>
@@ -829,10 +884,14 @@ The `ActionClient` also exposes `list_configs`, `create_config`, `update_config`
 
 ### `ActionMcp` helper
 
+To give users access to a virtual MCP server, create one configuration per agent role (`create_config`) and mint a short-lived session token per user (`create_session_token`). The instance methods (`ensure_instance`, `get_instance`, `list_instances`, `update_instance`, `delete_instance`, `get_instance_auth_state`) are preview in the API and may change. `ensure_instance` takes its arguments in a different order here than on `client.mcp`, so pass them as keywords.
+
 Access via `client.connect.mcp` / `client.actions.mcp`. Requires `McpClient` to be initialized on the parent `ScalekitClient`. Methods include `list_configs`, `create_config` (builds `McpConfig` from `name` / `description` / mappings), `update_config`, `delete_config`, `ensure_instance`, `update_instance`, `get_instance`, `list_instances`, `delete_instance`, `get_instance_auth_state`, and `create_session_token`, returning parsed wrapper types instead of raw gRPC tuples.
 
 
 ## MCP (`McpClient`)
+
+Configurations, `create_session_token` and `list_mcp_connected_accounts` are generally available. The instance methods are preview in the API and may change. `ensure_instance` takes `name` first here but last on `client.actions.mcp`: pass keywords.
 
 Low-level MCP configuration and instance APIs on `client.mcp` ([`scalekit/mcp.py`](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/mcp.py)). For higher-level helpers that return parsed wrappers, use `client.connect.mcp` / `client.actions.mcp` (see [ActionMcp](#connect-and-actions-actionclient)).
 

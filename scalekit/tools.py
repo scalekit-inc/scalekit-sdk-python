@@ -145,13 +145,13 @@ class ToolsClient:
 
         :param tool_name        : Name of the tool to execute
         :type                   : ``` str ```
-        :param identifier       : Identifier of the connected account
+        :param identifier       : The identifier the connected account was created with, usually your end user's ID or email
         :type                   : ``` str ```
         :param params           : Parameters for tool execution
         :type                   : ``` dict ```
         :param connected_account_id : ID of the connected account to use for tool execution
         :type                   : ``` str ```
-        :param connection_name  : Name of the connector/provider (e.g., 'Google Workspace', 'Slack')
+        :param connection_name  : Name of the connection, for example 'slack-b1fqL2Dr'. Not the provider's name
         :type                   : ``` str ```
 
         :returns:

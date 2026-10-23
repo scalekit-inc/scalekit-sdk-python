@@ -24,7 +24,12 @@ from google.protobuf.wrappers_pb2 import BoolValue
 
 
 class ActionClient:
-    """Class definition for Connect Client"""
+    """Facade over tools, connected accounts, MCP and custom providers. Also available as ``client.connect``.
+
+    Many methods accept ``**kwargs`` for backward compatibility. Unknown keyword
+    arguments are ignored, not rejected: a misspelled argument is dropped without
+    an error, so check the names against the signature.
+    """
 
     def __init__(self,tools_client, connected_accounts_client, mcp_client=None, providers_client=None):
         """
@@ -128,22 +133,34 @@ class ActionClient:
         Args:
             tool_input: Input data for the tool execution (required)
             tool_name: Name of the tool to execute (required)
-            **kwargs: Additional optional parameters
+            identifier: The identifier the connected account was created with,
+                usually your end user's ID or email.
+            connected_account_id: ID of the connected account to use.
+            connection_name: Connection name, for example 'slack-b1fqL2Dr'. Not
+                the provider's name.
+            tool_request: Accepted for backward compatibility and ignored.
+            **kwargs: Accepted and ignored. A misspelled argument is dropped
+                without an error.
 
-        Account resolution (one of the following combinations is required):
-            connected_account_id: ID of the connected account to use. Provide this
-                OR the (identifier + connection_name) pair — not both.
-            identifier + connection_name: Resolve the connected account by user
-                identifier (e.g. a user ID or email) together with the connection
-                name (e.g. 'slack-b1fqL2Dr', 'notion-arffP5Ff').
+        Which connected account is used:
+            - ``identifier`` alone is enough. Scalekit looks for that identifier
+              on the tool's own provider. If there is none the call fails as not
+              found, and if there are several it fails as a bad request: then add
+              ``connection_name`` or pass ``connected_account_id``.
+            - ``connected_account_id`` picks the account directly.
+            - ``connection_name`` with ``identifier`` picks the account on that
+              connection.
+            - With none of these the server rejects the call as a bad request.
+              This method does not check that itself.
 
         Returns:
             ExecuteToolResponse containing execution results
 
         Raises:
-            ValueError: If tool_name is not provided, or if neither
-                connected_account_id nor the (identifier, connection_name) pair
-                is supplied.
+            ValueError: If tool_name is not provided.
+            ScalekitNotFoundException: If no connected account matches.
+            ScalekitBadRequestException: If no account is identified, or more
+                than one account matches.
         """
         # Validate required parameters
         if not tool_name:
@@ -261,11 +278,21 @@ class ActionClient:
             **kwargs
     ) -> MagicLinkResponse:
         """
-        Get authorization magic link for a connected account
+        Get a time-limited authorization link that the end user opens to connect,
+        or re-authorize, their account on a connection.
 
-        :param connection_name: Connector identifier
+        This is the way to create or update a connected account: if the account
+        doesn't exist yet it is created in the pending-authorization state, and
+        it becomes active once the user completes the flow. Send the link to the
+        user before it expires, and generate a fresh one whenever the account
+        needs authorizing again (for example when it has expired). Credentials
+        cannot be supplied directly for OAuth connections.
+
+        Unknown keyword arguments are accepted and ignored.
+
+        :param connection_name: Connection name, for example 'slack-b1fqL2Dr'. Not the provider's name
         :type: str
-        :param identifier: Connected account identifier
+        :param identifier: The identifier the connected account was created with, usually your end user's ID or email
         :type: str
         :param connected_account_id: Connected account ID (optional)
         :type: str
@@ -372,9 +399,9 @@ class ActionClient:
         """
         Delete a connected account
         
-        :param connection_name: Connector identifier (required)
+        :param connection_name: Connection name (required), for example 'slack-b1fqL2Dr'. Not the provider's name
         :type: str
-        :param identifier: Connected account identifier (required)
+        :param identifier: The identifier the connected account was created with, usually your end user's ID or email (required)
         :type: str
         :param connected_account_id: Connected account ID (optional)
         :type: str
@@ -404,11 +431,18 @@ class ActionClient:
         **kwargs
     ) -> GetConnectedAccountAuthResponse:
         """
-        Get connected account authorization details by identifier
-        
-        :param connection_name: Connector identifier (required)
+        Get connected account authorization details by identifier.
+
+        The response includes the account's authorization details, such as access
+        tokens. Treat it as a secret: don't log it or return it to a browser. To
+        read the same account without credentials, use
+        ``get_connected_account_details``.
+
+        Unknown keyword arguments are accepted and ignored.
+
+        :param connection_name: Connection name (required), for example 'slack-b1fqL2Dr'. Not the provider's name
         :type: str
-        :param identifier: Connected account identifier (required)
+        :param identifier: The identifier the connected account was created with, usually your end user's ID or email (required)
         :type: str
         :param connected_account_id: Connected account ID (optional)
         :type: str
@@ -453,7 +487,7 @@ class ActionClient:
         - ``connected_account_id`` — use when you already hold the Scalekit
           connected account ID.
 
-        :param connection_name: Connector identifier, e.g. ``"salesforce-1hpnGzcD"``.
+        :param connection_name: Connection name, e.g. ``"salesforce-1hpnGzcD"``. Not the provider's name.
             Required when ``connected_account_id`` is not provided.
         :type connection_name: str
         :param identifier: End-user identifier tied to the connected account,
@@ -542,9 +576,9 @@ class ActionClient:
         """
         Make a proxied REST API call through Scalekit on behalf of a connected account.
 
-        :param connection_name: Connector identifier (required)
+        :param connection_name: Connection name (required), for example 'slack-b1fqL2Dr'. Not the provider's name
         :type connection_name: str
-        :param identifier: Connected account identifier (required)
+        :param identifier: The identifier the connected account was created with, usually your end user's ID or email (required)
         :type identifier: str
         :param path: API path to call, e.g. "/v1.0/me/messages" (required)
         :type path: str
@@ -787,9 +821,9 @@ class ActionClient:
         """
         Create a new connected account
 
-        :param connection_name: Connector identifier (required)
+        :param connection_name: Connection name (required), for example 'slack-b1fqL2Dr'. Not the provider's name
         :type: str
-        :param identifier: Connected account identifier (required)
+        :param identifier: The identifier the connected account was created with, usually your end user's ID or email (required)
         :type: str
         :param authorization_details: Authorization details (OAuth token or static auth) (optional)
         :type: Optional[Dict[str, Any]]
@@ -850,9 +884,9 @@ class ActionClient:
         """
         Get an existing connected account or create a new one if it doesn't exist
 
-        :param connection_name: Connector identifier (required)
+        :param connection_name: Connection name (required), for example 'slack-b1fqL2Dr'. Not the provider's name
         :type: str
-        :param identifier: Connected account identifier (required)
+        :param identifier: The identifier the connected account was created with, usually your end user's ID or email (required)
         :type: str
         :param authorization_details: Authorization details (OAuth token or static auth) (optional)
         :type: Optional[Dict[str, Any]]
@@ -923,9 +957,9 @@ class ActionClient:
         """
         Update an existing connected account
 
-        :param connection_name: Connector identifier (required)
+        :param connection_name: Connection name (required), for example 'slack-b1fqL2Dr'. Not the provider's name
         :type: str
-        :param identifier: Connected account identifier (required)
+        :param identifier: The identifier the connected account was created with, usually your end user's ID or email (required)
         :type: str
         :param authorization_details: Authorization details (OAuth token or static auth) (optional)
         :type: Optional[Dict[str, Any]]
@@ -979,7 +1013,19 @@ class ActionClient:
 
 
 class ActionMcp:
-    """Helper that exposes MCP-specific actions through the ActionClient."""
+    """Helper that exposes MCP-specific actions through the ActionClient.
+
+    To give users access to a virtual MCP server, create one configuration per
+    agent role (``create_config``) and mint a short-lived session token per user
+    (``create_session_token``). The instance methods (``ensure_instance``,
+    ``get_instance``, ``list_instances``, ``update_instance``,
+    ``delete_instance``, ``get_instance_auth_state``) are preview in the API and
+    may change.
+
+    ``ensure_instance`` takes its arguments in a different order here than on
+    ``client.mcp``: pass them as keywords (``config_name=``, ``user_identifier=``,
+    ``name=``).
+    """
 
     def __init__(self, action_client: ActionClient) -> None:
         self._actions = action_client

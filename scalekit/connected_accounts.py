@@ -57,7 +57,7 @@ class ConnectedAccountsClient:
         :type                   : ``` str ```
         :param user_id          : User ID
         :type                   : ``` str ```
-        :param connector        : Connector identifier (optional)
+        :param connector        : Connection name (optional), for example 'slack-b1fqL2Dr'. Not the provider's name
         :type                   : ``` str ```
         :param identifier       : Identifier for the connector (optional)
         :type                   : ``` str ```
@@ -106,7 +106,7 @@ class ConnectedAccountsClient:
         :type                   : ``` str ```
         :param user_id          : User ID
         :type                   : ``` str ```
-        :param connector        : Connector identifier
+        :param connector        : Connection name, for example 'slack-b1fqL2Dr'. Not the provider's name
         :type                   : ``` str ```
         :param identifier       : Identifier for the connector
         :type                   : ``` str ```
@@ -143,7 +143,7 @@ class ConnectedAccountsClient:
         :type                   : ``` str ```
         :param user_id          : User ID
         :type                   : ``` str ```
-        :param connector        : Connector identifier
+        :param connector        : Connection name, for example 'slack-b1fqL2Dr'. Not the provider's name
         :type                   : ``` str ```
         :param identifier       : Identifier for the connector
         :type                   : ``` str ```
@@ -182,7 +182,7 @@ class ConnectedAccountsClient:
         :type                   : ``` str ```
         :param user_id          : User ID
         :type                   : ``` str ```
-        :param connector        : Connector identifier
+        :param connector        : Connection name, for example 'slack-b1fqL2Dr'. Not the provider's name
         :type                   : ``` str ```
         :param identifier       : Identifier for the connector
         :type                   : ``` str ```
@@ -220,7 +220,7 @@ class ConnectedAccountsClient:
         :type                   : ``` str ```
         :param user_id          : User ID
         :type                   : ``` str ```
-        :param connector        : Connector identifier
+        :param connector        : Connection name, for example 'slack-b1fqL2Dr'. Not the provider's name
         :type                   : ``` str ```
         :param identifier       : Identifier for the connector
         :type                   : ``` str ```
@@ -262,7 +262,7 @@ class ConnectedAccountsClient:
         :type                   : ``` str ```
         :param user_id          : User ID
         :type                   : ``` str ```
-        :param connector        : Connector identifier
+        :param connector        : Connection name, for example 'slack-b1fqL2Dr'. Not the provider's name
         :type                   : ``` str ```
         :param identifier       : Identifier for the connector
         :type                   : ``` str ```
@@ -294,7 +294,7 @@ class ConnectedAccountsClient:
         """
         Method to get connected account details (without auth credentials) by identifier
 
-        :param connector        : Connector identifier
+        :param connector        : Connection name, for example 'slack-b1fqL2Dr'. Not the provider's name
         :type                   : ``` str ```
         :param identifier       : Identifier for the connector
         :type                   : ``` str ```

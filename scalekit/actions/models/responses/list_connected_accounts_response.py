@@ -35,7 +35,7 @@ class ConnectedAccountForList(BaseModel):
     )
     connector: Optional[str] = Field(
         None,
-        description="Connector identifier"
+        description="Connection name, for example 'slack-b1fqL2Dr'. Not the provider's name"
     )
     last_used_at: Optional[datetime] = Field(
         None,

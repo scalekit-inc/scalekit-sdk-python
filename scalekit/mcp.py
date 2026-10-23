@@ -49,7 +49,21 @@ def _check_connection_token_args(
 
 
 class McpClient:
-    """Class definition for MCP Client"""
+    """Class definition for MCP Client.
+
+    Low-level calls that return the raw ``(response, call)`` tuple. Most code
+    should use ``client.actions.mcp``, which returns typed responses.
+
+    Configurations (``create_config`` and friends), ``create_session_token`` and
+    ``list_mcp_connected_accounts`` are generally available. The instance methods
+    (``ensure_instance``, ``get_instance``, ``list_instances``, ``update_instance``,
+    ``delete_instance``, ``get_instance_auth_state``) are preview in the API and
+    may change.
+
+    ``ensure_instance`` takes its arguments in a different order than on
+    ``client.actions.mcp``: pass them as keywords (``name=``, ``config_name=``,
+    ``user_identifier=``).
+    """
 
     def __init__(self, core_client: CoreClient):
         """
