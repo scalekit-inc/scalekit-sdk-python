@@ -1,0 +1,23 @@
+kind: added
+body: |
+  `client.actions.upload_resumable(connection_name, identifier, path, data=...)` uploads a file of any size to Google Drive, Cloud Storage and YouTube through a connected account: the content is sent in chunks (4 MiB by default), a failed chunk resumes instead of restarting, and the call returns the created resource as a dict. `data` takes `bytes`, a binary file object or a `pathlib.Path`; if the upload session expires, the call raises `ScalekitUploadSessionExpiredException` and does not start a new one. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/v2.21.0/AGENTKIT.md#http-proxy)
+
+  ```python
+  from pathlib import Path
+
+  file = client.actions.upload_resumable(
+      "googledrive",
+      "user_123",
+      "/upload/drive/v3/files",
+      data=Path("video.mp4"),
+      content_type="video/mp4",
+      metadata={"name": "video.mp4"},
+      on_progress=lambda p: print(p.bytes_committed, p.total_bytes),
+  )
+  print(file["id"])
+  ```
+time: '2026-10-08T21:50:34.443588+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: SK-2296
+  Migration: ''
