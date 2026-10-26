@@ -85,6 +85,16 @@ class OrganizationServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationSessionPolicyRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationSessionPolicyResponse.FromString,
                 )
+        self.GetOrganizationBranding = channel.unary_unary(
+                '/scalekit.v1.organizations.OrganizationService/GetOrganizationBranding',
+                request_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationBrandingRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationBrandingResponse.FromString,
+                )
+        self.UpdateOrganizationBranding = channel.unary_unary(
+                '/scalekit.v1.organizations.OrganizationService/UpdateOrganizationBranding',
+                request_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.UpdateOrganizationBrandingRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.UpdateOrganizationBrandingResponse.FromString,
+                )
         self.UpsertUserManagementSettings = channel.unary_unary(
                 '/scalekit.v1.organizations.OrganizationService/UpsertUserManagementSettings',
                 request_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.UpsertUserManagementSettingsRequest.SerializeToString,
@@ -192,6 +202,18 @@ class OrganizationServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetOrganizationBranding(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateOrganizationBranding(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def UpsertUserManagementSettings(self, request, context):
         """Update user management setting for an organization
         """
@@ -283,6 +305,16 @@ def add_OrganizationServiceServicer_to_server(servicer, server):
                     servicer.GetOrganizationSessionPolicy,
                     request_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationSessionPolicyRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationSessionPolicyResponse.SerializeToString,
+            ),
+            'GetOrganizationBranding': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetOrganizationBranding,
+                    request_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationBrandingRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationBrandingResponse.SerializeToString,
+            ),
+            'UpdateOrganizationBranding': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateOrganizationBranding,
+                    request_deserializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.UpdateOrganizationBrandingRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_organizations_dot_organizations__pb2.UpdateOrganizationBrandingResponse.SerializeToString,
             ),
             'UpsertUserManagementSettings': grpc.unary_unary_rpc_method_handler(
                     servicer.UpsertUserManagementSettings,
@@ -544,6 +576,40 @@ class OrganizationService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.organizations.OrganizationService/GetOrganizationSessionPolicy',
             scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationSessionPolicyRequest.SerializeToString,
             scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationSessionPolicyResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetOrganizationBranding(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.organizations.OrganizationService/GetOrganizationBranding',
+            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationBrandingRequest.SerializeToString,
+            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.GetOrganizationBrandingResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def UpdateOrganizationBranding(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.organizations.OrganizationService/UpdateOrganizationBranding',
+            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.UpdateOrganizationBrandingRequest.SerializeToString,
+            scalekit_dot_v1_dot_organizations_dot_organizations__pb2.UpdateOrganizationBrandingResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

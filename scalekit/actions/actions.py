@@ -1,7 +1,7 @@
 import os
 from collections.abc import Callable, Mapping
 from datetime import timedelta
-from typing import IO, Optional, Any, List, Dict, Literal, Union
+from typing import IO, Optional, Any, List, Dict, Literal, Union, overload
 import requests
 from scalekit.actions import _resumable_upload
 from scalekit.actions.models.upload_progress import UploadProgress
@@ -19,7 +19,10 @@ from scalekit.actions.modifier import (
     Modifier, ModifierType, ToolNames,
     apply_pre_modifiers, apply_post_modifiers
 )
+from scalekit.actions._proxy_path import ProxySession, ensure_under_proxy_prefix
 from scalekit.common.exceptions import ScalekitNotFoundException
+from scalekit.actions.triggers import ActionTriggers
+from scalekit.mcp import _check_connection_token_args
 from scalekit.v1.tools.tools_pb2 import Filter
 from google.protobuf.wrappers_pb2 import BoolValue
 
@@ -52,6 +55,7 @@ class ActionClient:
         self._mcp_actions = None
         self._providers_client = providers_client
         self._providers_actions = None
+        self._triggers_actions: ActionTriggers | None = None
         self._modifiers: List[Modifier] = []
         self._google = None
         self._langchain = None
@@ -100,6 +104,18 @@ class ActionClient:
         if self._mcp_actions is None:
             self._mcp_actions = ActionMcp(self)
         return self._mcp_actions
+
+    @property
+    def triggers(self) -> ActionTriggers:
+        """Verify and parse trigger events delivered to your endpoint (local, no network).
+
+        Example:
+            >>> event = client.actions.triggers.verify_event(
+            ...     body, headers=request.headers, secret=secret)
+        """
+        if self._triggers_actions is None:
+            self._triggers_actions = ActionTriggers()
+        return self._triggers_actions
 
     @property
     def providers(self) -> "ActionProviders":
@@ -549,7 +565,16 @@ class ActionClient:
         :type connection_name: str
         :param identifier: Connected account identifier (required)
         :type identifier: str
-        :param path: API path to call, e.g. "/v1.0/me/messages" (required)
+        :param path: API path to call, e.g. "/v1.0/me/messages" (required).
+            It is appended to ``{env_url}/proxy`` and sent as given. A path
+            that resolves outside the proxy prefix (for example through
+            ``..`` segments, including percent-encoded or backslash forms)
+            raises ``ValueError`` before any request is sent. With an
+            ``http://`` env URL this also covers the URL a forward proxy would
+            receive, even when none is configured. Redirects are followed as
+            before, but a redirect to a location outside the proxy
+            prefix is sent without the client's bearer token and without the
+            ``connection_name`` and ``identifier`` headers.
         :type path: str
         :param method: HTTP method — GET, POST, PUT, PATCH, DELETE, etc. (default: GET)
         :type method: str
@@ -584,6 +609,9 @@ class ActionClient:
 
         core = self.tools.core_client
         url = core.env_url.rstrip("/") + "/proxy" + path
+        # Checked once, before any credentials are attached: the 401 retry
+        # below re-sends this same url.
+        ensure_under_proxy_prefix(core.env_url, url)
 
         params = query_params or {}
 
@@ -599,22 +627,10 @@ class ActionClient:
         # add default timeout and allow override via kwargs
         timeout = kwargs.pop("timeout", 30)
 
-        response = requests.request(
-            method=method.upper(),
-            url=url,
-            params=params,
-            json=body if raw_body is None else None,
-            data=raw_body or form_data,
-            headers=req_headers,
-            timeout=timeout,
-            **kwargs,
-        )
-
-        if response.status_code == 401:
-            # retry once if unauthorized after refreshing token
-            core._CoreClient__authenticate_client()
-            req_headers = core.get_headers(proxy_headers)
-            response = requests.request(
+        # A fresh session per send, as requests.request() uses; ProxySession
+        # also keeps the credentials off redirects that leave the proxy prefix.
+        with ProxySession(core.env_url) as session:
+            response = session.request(
                 method=method.upper(),
                 url=url,
                 params=params,
@@ -624,6 +640,22 @@ class ActionClient:
                 timeout=timeout,
                 **kwargs,
             )
+
+        if response.status_code == 401:
+            # retry once if unauthorized after refreshing token
+            core._CoreClient__authenticate_client()
+            req_headers = core.get_headers(proxy_headers)
+            with ProxySession(core.env_url) as session:
+                response = session.request(
+                    method=method.upper(),
+                    url=url,
+                    params=params,
+                    json=body if raw_body is None else None,
+                    data=raw_body if raw_body is not None else form_data,
+                    headers=req_headers,
+                    timeout=timeout,
+                    **kwargs,
+                )
         return response
 
     def upload_resumable(
@@ -1516,63 +1548,140 @@ class ActionMcp:
         )
         return ListMcpConnectedAccountsResponse.from_proto(result_tuple[0])
 
+    @overload
     def create_session_token(
         self,
         mcp_config_id: str,
         identifier: str,
-        expiry: Optional[timedelta] = None,
+        expiry: timedelta | None = None,
+        access_level: str | None = None,
+    ) -> CreateMcpSessionTokenResponse: ...
+
+    @overload
+    def create_session_token(
+        self,
+        *,
+        connection_name: str,
+        identifier: str,
+        expiry: timedelta | None = None,
+        access_level: str | None = None,
+    ) -> CreateMcpSessionTokenResponse: ...
+
+    def create_session_token(
+        self,
+        mcp_config_id: str | None = None,
+        identifier: str | None = None,
+        expiry: timedelta | None = None,
+        access_level: str | None = None,
+        *,
+        connection_name: str | None = None,
     ) -> CreateMcpSessionTokenResponse:
         """Create a short-lived session token for a user to access an MCP server.
 
-        The token is scoped to a specific MCP configuration and end-user. Pass it
-        as a ``Bearer`` token in the ``Authorization`` header when making requests
-        to the MCP server URL associated with the config.
+        Pass exactly one of ``mcp_config_id`` or ``connection_name``; the
+        token works only on the MCP server of that target:
+
+        - ``mcp_config_id``: the MCP configuration's server, at the config's
+          ``mcp_server_url``. It serves the tools the configuration exposes.
+        - ``connection_name``: the connection's own MCP server, at
+          ``<environment_url>/mcp/v3/connections/<connection_name>``. It
+          serves every tool of that connection, with no MCP configuration.
+
+        Send the token as a ``Bearer`` token in the ``Authorization`` header
+        when calling that URL.
 
         Args:
-            mcp_config_id: Scalekit ID of the MCP configuration the token should
-                grant access to, e.g. ``"cfg_01abc123"``.
-            identifier: End-user identifier for whom the token is minted — typically
-                the same email or opaque ID used when calling ``ensure_instance``,
-                e.g. ``"alice@example.com"``.
+            mcp_config_id: Scalekit ID of the MCP configuration the token
+                grants access to, e.g. ``"cfg_01abc123"``.
+            identifier: End-user identifier the token acts as. For a
+                configuration, typically the same email or opaque ID used when
+                calling ``ensure_instance``, e.g. ``"alice@example.com"``; for
+                a connection, the user whose connected account on it is used.
+                1 to 255 characters. Required.
             expiry: Requested lifetime for the token as a Python ``timedelta``.
-                When omitted, the server-side default TTL is applied (typically
-                1 hour). Example values:
+                The server accepts 60 seconds to 24 hours and applies 1 hour
+                when omitted. Fractions of a second are dropped. Example values:
 
                 - ``timedelta(minutes=30)`` — 30-minute token
                 - ``timedelta(hours=8)``    — 8-hour token (work-day session)
                 - ``timedelta(days=1)``     — 24-hour token
+            access_level: Tools the token can use. ``"READ_ONLY"`` limits it to
+                tools annotated read-only: other tools are left out of the tool
+                list and refused when called. ``"FULL"``, or omitting it, exposes
+                every tool of the target. Values are case-sensitive.
+            connection_name: Name of the connection whose MCP server the token
+                grants access to, e.g. ``"gmail"``. Keyword-only. Matched
+                without regard to case, but the server URL path is
+                case-sensitive: connect using the name exactly as stored, e.g.
+                copied from the dashboard.
 
         Returns:
             CreateMcpSessionTokenResponse: Contains:
 
             - ``token`` (``str``) — opaque bearer token string.
-            - ``expires_at`` (``datetime``) — UTC datetime when the token expires.
+            - ``expires_at`` (``datetime``) — naive datetime, in UTC, when the
+              token expires.
 
         Raises:
-            ValueError: If ``mcp_config_id`` or ``identifier`` is blank.
+            ValueError: Raised before any request. Without
+                ``connection_name``: ``mcp_config_id`` or ``identifier`` is
+                empty or missing. With ``connection_name``: ``mcp_config_id``
+                is also given, ``connection_name`` is empty, or ``identifier``
+                is missing or empty.
+            ScalekitNotFoundException: No active connection has
+                ``connection_name``.
+            ScalekitBadRequestException: Any other invalid request, e.g. an
+                invalid ``identifier``, ``expiry`` or ``access_level``, or a
+                connection that is not an AgentKit connection. Depending on
+                the environment's configuration, a connection token also
+                requires ``identifier`` to have an active connected account on
+                the connection; otherwise the server creates a pending
+                connected account for ``identifier`` if it has none on the
+                connection, a token is minted, and the account is reported as
+                not connected when tools are called.
 
         Example::
 
             from datetime import timedelta
 
+            # MCP configuration
             resp = client.actions.mcp.create_session_token(
                 mcp_config_id="cfg_01abc123",
                 identifier="alice@example.com",
                 expiry=timedelta(hours=8),
             )
 
+            # A connection's MCP server, read-only tools for 15 minutes
+            resp = client.actions.mcp.create_session_token(
+                connection_name="gmail",
+                identifier="user_123",
+                expiry=timedelta(minutes=15),
+                access_level="READ_ONLY",
+            )
+
             headers = {"Authorization": f"Bearer {resp.token}"}
             # Use headers when calling the MCP server URL
         """
-        if not mcp_config_id:
-            raise ValueError("mcp_config_id is required")
-        if not identifier:
-            raise ValueError("identifier is required")
-        result_tuple = self._client().create_session_token(
-            mcp_config_id=mcp_config_id,
-            identifier=identifier,
-            expiry=expiry,
-        )
+        if connection_name is None:
+            # Checks and messages unchanged from before connection_name existed.
+            if not mcp_config_id:
+                raise ValueError("mcp_config_id is required")
+            if not identifier:
+                raise ValueError("identifier is required")
+            result_tuple = self._client().create_session_token(
+                mcp_config_id=mcp_config_id,
+                identifier=identifier,
+                expiry=expiry,
+                access_level=access_level,
+            )
+        else:
+            identifier = _check_connection_token_args(mcp_config_id, connection_name, identifier)
+            result_tuple = self._client().create_session_token(
+                connection_name=connection_name,
+                identifier=identifier,
+                expiry=expiry,
+                access_level=access_level,
+            )
         return CreateMcpSessionTokenResponse.from_proto(result_tuple[0])
 
 
