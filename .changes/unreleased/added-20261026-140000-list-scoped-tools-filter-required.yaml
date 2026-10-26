@@ -1,0 +1,8 @@
+kind: added
+body: |
+  The `list_scoped_tools` documentation in `AGENTKIT.md` now says what the API requires: `filter` is required and must contain at least one of `providers`, `tool_names` or `connection_names`. A call without a filter, or with an empty one, returns `INVALID_ARGUMENT`. The example used to pass an empty `ScopedToolFilter()`, which fails, and described `filter` as optional. It now passes `filter={"connection_names": [...]}`. No code changes.
+time: '2026-10-26T14:00:00.000000+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: ''
+  Migration: ''

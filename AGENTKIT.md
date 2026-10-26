@@ -71,7 +71,7 @@ response = scalekit_client.tools.list_tools(
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/tools.py">list_scoped_tools</a>(identifier, filter?, page_size?, page_token?) -> ListScopedToolsResponse</code></summary>
+<details><summary><code>client.tools.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/tools.py">list_scoped_tools</a>(identifier, filter, page_size?, page_token?) -> ListScopedToolsResponse</code></summary>
 <dl>
 <dd>
 
@@ -82,11 +82,9 @@ Lists tools scoped to a specific connected-account identifier (for example works
 ### 🔌 Usage
 
 ```python
-from scalekit.v1.tools.tools_pb2 import ScopedToolFilter
-
 response = scalekit_client.tools.list_scoped_tools(
     "user@example.com",
-    filter=ScopedToolFilter(),
+    filter={"connection_names": ["slack"]},
 )
 ```
 
@@ -94,7 +92,7 @@ response = scalekit_client.tools.list_scoped_tools(
 
 **identifier:** `str` — Connected account identifier.
 
-**filter:** `Optional[ScopedToolFilter]` — Optional; the example passes an empty `ScopedToolFilter()` — populate fields as required by your workspace.
+**filter:** `ScopedToolFilter` or a dict — **Required.** It must contain at least one of `providers`, `tool_names` or `connection_names` (each a list of strings). Without one, including an empty filter, the API returns `INVALID_ARGUMENT`. The Python signature defaults `filter` to `None`, but a call without a filter is rejected.
 
 **page_size:** `Optional[int]` — Page size.
 
