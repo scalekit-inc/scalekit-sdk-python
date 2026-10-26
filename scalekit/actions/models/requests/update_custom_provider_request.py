@@ -3,14 +3,16 @@ from urllib.parse import urlparse
 
 from pydantic import BaseModel, Field, validator
 
-from scalekit.actions.models.custom_provider import AuthPattern
+from scalekit.actions.models.custom_provider import AuthPattern, ConnectorSource, check_request_source
 
 
 class UpdateCustomProviderRequest(BaseModel):
     """Request model for updating an existing custom provider.
 
-    display_name and proxy_url are required by the server on every update.
-    Optional fields left as None are ignored — the server keeps their existing values.
+    The server applies this as a PUT (PUT /api/v1/custom-providers/{identifier}):
+    it replaces the provider's settings and is not a partial update. Send
+    display_name, proxy_url and auth_patterns every time. A field left as None does
+    not always mean "unchanged"; see each field.
     """
 
     identifier: str = Field(
@@ -24,8 +26,9 @@ class UpdateCustomProviderRequest(BaseModel):
     display_name: str = Field(
         ...,
         description=(
-            "Required. Display name for the provider. Accepted characters: "
-            "a-z, A-Z, 0-9, and spaces. Good practice: suffix with 'MCP' for MCP "
+            "Required. Name shown in the UI. Letters, digits and spaces only (max 200 "
+            "characters); symbols such as '_' or '-' are rejected. Changing the name "
+            "does not change the identifier. Good practice: suffix with 'MCP' for MCP "
             "server providers."
         ),
     )
@@ -33,40 +36,60 @@ class UpdateCustomProviderRequest(BaseModel):
         None,
         description=(
             "Optional. New description for the provider. Pass None (default) to "
-            "leave the existing value unchanged."
+            "leave the existing value unchanged. An empty string does not clear it: "
+            "the server ignores empty values."
         ),
     )
     proxy_url: str = Field(
         ...,
         description=(
-            "Required. Proxy URL for the provider. Must be a valid HTTPS URL "
-            "starting with 'https://'."
+            "Required. URL of the external service this provider connects to, and the "
+            "address Scalekit sends proxied requests to. For an MCP connector this is "
+            "the MCP server's URL; for an API connector it is the API's base URL. "
+            "Must be a valid HTTPS URL starting with 'https://'. Send the current "
+            "value to keep it unchanged."
         ),
     )
     auth_patterns: Optional[List[AuthPattern]] = Field(
         None,
         description=(
-            "Optional. Replacement list of AuthPattern objects. When provided, "
-            "this list fully replaces the existing auth_patterns on the server — "
-            "it is not merged. Note: currently only a single AuthPattern is supported "
-            "— pass a list with exactly one element. The list type is intentional for "
-            "future multi-pattern support. Pass None (default) to leave auth_patterns unchanged."
+            "Marked required by the API on every update, although the SDK accepts "
+            "None. Fully replaces the existing auth_patterns; it is not merged. "
+            "Note: currently only a single AuthPattern is supported — pass a list "
+            "with exactly one element. The list type is intentional for future "
+            "multi-pattern support. The auth type and the connector kind (MCP or API) cannot be changed, and "
+            "an API_KEY provider cannot switch between single-key and "
+            "multiple-headers mode. Editing the header fields of a multiple-headers "
+            "provider requires its connected accounts to re-authorize."
+        ),
+    )
+    source: Optional[ConnectorSource] = Field(
+        None,
+        description=(
+            "Optional. Must match the connector's existing kind: the server rejects "
+            "changing a connector between MCP and API. Pass ConnectorSource.MCP_SERVER "
+            "when updating an MCP connector so the replacement pattern stays an MCP "
+            "connector. Only valid together with auth_patterns. None leaves is_mcp on "
+            "the pattern alone. Use this instead of is_mcp on AuthPattern, which is "
+            "deprecated. A value that conflicts with is_mcp=False on the pattern raises "
+            "a validation error."
         ),
     )
     icon_src: Optional[str] = Field(
         None,
         description=(
             "Optional. New URL of the provider's icon image. Pass None (default) to "
-            "leave the existing value unchanged."
+            "leave the existing value unchanged. An empty string does not clear it."
         ),
     )
     metadata: Optional[Dict[str, str]] = Field(
         None,
         description=(
-            "Optional. Replacement metadata key-value pairs. When provided, the server "
-            "replaces the provider's entire metadata map with this value — it is not "
-            "merged. Keys must be 3-25 characters, values 1-256 characters, with a "
-            "maximum of 20 pairs. Pass None (default) to leave metadata unchanged."
+            "Optional. Replaces the provider's entire metadata map; it is not merged. "
+            "Pass None (default) and the server clears all existing metadata. To keep "
+            "the current metadata, read the provider first and pass its metadata here. "
+            "Keys must be 3-25 characters, values 1-256 characters, with a maximum of "
+            "20 pairs."
         ),
     )
 
@@ -81,6 +104,11 @@ class UpdateCustomProviderRequest(BaseModel):
     def validate_single_auth_pattern(cls, v):
         if v is not None and len(v) != 1:
             raise ValueError("auth_patterns must contain exactly one AuthPattern when provided")
+        return v
+
+    @validator("source")
+    def validate_source_matches_patterns(cls, v, values):
+        check_request_source(v, values.get("auth_patterns"))
         return v
 
     class Config:

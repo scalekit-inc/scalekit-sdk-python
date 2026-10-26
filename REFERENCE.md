@@ -7439,6 +7439,7 @@ Creates a new custom provider (MCP connector) in the Scalekit catalog. Once crea
 from scalekit.actions.types import (
     AuthPattern,
     AuthField,
+    ConnectorSource,
     OAuthConfig,
     CreateCustomProviderRequest,
 )
@@ -7450,6 +7451,7 @@ response = scalekit_client.actions.providers.create_custom_provider(
         description="Acme integration via MCP",
         proxy_url="https://mcp.acme.com/mcp",
         proxy_enabled=True,
+        source=ConnectorSource.MCP_SERVER,  # an MCP server connector
         icon_src="https://acme.com/icon.png",
         metadata={"team": "integrations", "tier": "premium"},
         auth_patterns=[
@@ -7457,7 +7459,6 @@ response = scalekit_client.actions.providers.create_custom_provider(
                 type="OAUTH",
                 display_name="OAuth 2.1",
                 description="Authenticate via browser OAuth.",
-                is_mcp=True,
                 oauth_config=OAuthConfig(),  # pkce_enabled=True by default
             )
         ],
@@ -7473,12 +7474,12 @@ response = scalekit_client.actions.providers.create_custom_provider(
         description="Apify platform via MCP",
         proxy_url="https://mcp.apify.com/mcp",
         proxy_enabled=True,
+        source=ConnectorSource.MCP_SERVER,
         auth_patterns=[
             AuthPattern(
                 type="BEARER",
                 display_name="Apify Token",
                 description="Authenticate with your Apify API Token.",
-                is_mcp=True,
                 fields=[
                     AuthField(
                         field_name="token",
@@ -7511,11 +7512,12 @@ response = scalekit_client.actions.providers.create_custom_provider(
 - `proxy_url: str` - Base HTTPS URL of the provider's server (e.g., `https://mcp.acme.com/mcp`).
 - `proxy_enabled: bool` - Whether to enable Scalekit request proxying. Defaults to `True`.
 - `description: str` - Short description of the provider. Defaults to empty string.
+- `source: Optional[ConnectorSource]` - What the connector fronts. `ConnectorSource.MCP_SERVER` creates an MCP server connector; leave it unset for an API connector. `MCP_SERVER` is the only value today.
 - `auth_patterns: List[AuthPattern]` - Authentication options for users. Currently only a single element is supported — the list type is intentional for future multi-pattern support.
   - `type: str` - Auth mechanism. Use `"OAUTH"`, `"BEARER"`, `"API_KEY"`, or `"NO_AUTH"` for custom connectors. Reading providers back can surface further types the managed catalogue uses (`"BASIC"`, `"OAUTH_M2M"`, `"GOOGLE_DWD"`, …), so any string is accepted.
   - `display_name: str` - Display name for this auth option.
   - `description: str` - Short description of this auth option.
-  - `is_mcp: bool` - Set `True` for MCP server providers.
+  - `is_mcp: bool` - Deprecated. Set `source=ConnectorSource.MCP_SERVER` on the request instead. Still works.
   - `oauth_config: Optional[OAuthConfig]` - Required when `type="OAUTH"`. `OAuthConfig(pkce_enabled=True)` by default.
   - `fields: List[AuthField]` - Input fields shown during connection setup. Credentials for `BEARER` and `API_KEY`; `OAUTH` patterns use them for options collected before the browser flow (e.g. `access_type`).
     - `field_name: str` - Machine-readable key for the field.
@@ -7555,7 +7557,7 @@ response = scalekit_client.actions.providers.create_custom_provider(
 <dl>
 <dd>
 
-Updates an existing custom provider. `display_name` and `proxy_url` are required by the server on every update. Optional fields omitted from the request keep their existing server values — except `auth_patterns`, which fully replaces the existing list when provided.
+Updates an existing custom provider. The server applies this as a PUT, not a partial update: `display_name`, `proxy_url` and `auth_patterns` are required on every update (leaving out `auth_patterns` fails with a validation error), `metadata` replaces the stored map so leaving it out clears it, and `description` and `icon_src` keep their stored values when left out (an empty value does not clear them).
 </dd>
 </dl>
 </dd>
@@ -7573,6 +7575,7 @@ Updates an existing custom provider. `display_name` and `proxy_url` are required
 from scalekit.actions.types import (
     AuthPattern,
     AuthField,
+    ConnectorSource,
     UpdateCustomProviderRequest,
 )
 
@@ -7582,12 +7585,12 @@ response = scalekit_client.actions.providers.update_custom_provider(
         display_name="Acme MCP",               # required on every update
         proxy_url="https://mcp.acme.com/mcp",  # required on every update
         description="Updated description",
+        source=ConnectorSource.MCP_SERVER,  # must match the connector's kind
         auth_patterns=[
             AuthPattern(
                 type="BEARER",
                 display_name="Apify Token",
                 description="Authenticate with your Apify API Token.",
-                is_mcp=True,
                 fields=[
                     AuthField(
                         field_name="token",
@@ -7621,10 +7624,11 @@ print(f"Updated: {updated.description}")
 - `identifier: str` - Identifier of the provider to update. Obtained from `Provider.identifier`.
 - `display_name: str` - Required on every update. Accepted characters: a-z, A-Z, 0-9, and spaces.
 - `proxy_url: str` - Required on every update. Must be a valid HTTPS URL.
-- `description: Optional[str]` - New description. Pass `None` to leave unchanged.
-- `auth_patterns: Optional[List[AuthPattern]]` - Replacement auth patterns. When provided, fully replaces the existing list — not merged. Pass `None` to leave unchanged.
-- `icon_src: Optional[str]` - New icon URL. Pass `None` to leave unchanged.
-- `metadata: Optional[Dict[str, str]]` - Replacement metadata key-value pairs. When provided, replaces the entire metadata map — not merged. Keys 3-25 chars, values 1-256 chars, max 20 pairs. Pass `None` to leave unchanged.
+- `description: Optional[str]` - New description. Left as `None`, the stored value is kept. An empty string does not clear it.
+- `source: Optional[ConnectorSource]` - Must match the connector's existing kind: the server rejects changing it between MCP and API. Pass `ConnectorSource.MCP_SERVER` when updating an MCP connector so the replacement pattern stays an MCP connector. Only valid together with `auth_patterns`.
+- `auth_patterns: List[AuthPattern]` - Required by the server on every update. Fully replaces the existing list — not merged. The auth type cannot be changed.
+- `icon_src: Optional[str]` - New icon URL. Left as `None`, the stored value is kept. An empty string does not clear it.
+- `metadata: Optional[Dict[str, str]]` - Replacement metadata key-value pairs. Replaces the entire metadata map — not merged — so leaving it as `None` clears all existing metadata. To keep the current metadata, read the provider first and pass it back. Keys 3-25 chars, values 1-256 chars, max 20 pairs.
 
 </dd>
 </dl>
