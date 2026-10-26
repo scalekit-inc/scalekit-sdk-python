@@ -114,6 +114,38 @@ class MigrateEnvKeysResponse(_message.Message):
     accepted: bool
     def __init__(self, environments_processed: _Optional[int] = ..., failed_environment_ids: _Optional[_Iterable[str]] = ..., unrecoverable_rows: _Optional[_Iterable[_Union[EnvironmentReencryptSkips, _Mapping]]] = ..., accepted: bool = ...) -> None: ...
 
+class RepairSkCredsConnectedAccountEncryptionRequest(_message.Message):
+    __slots__ = ("apply", "environment_ids", "connected_account_ids")
+    APPLY_FIELD_NUMBER: _ClassVar[int]
+    ENVIRONMENT_IDS_FIELD_NUMBER: _ClassVar[int]
+    CONNECTED_ACCOUNT_IDS_FIELD_NUMBER: _ClassVar[int]
+    apply: bool
+    environment_ids: _containers.RepeatedScalarFieldContainer[str]
+    connected_account_ids: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, apply: bool = ..., environment_ids: _Optional[_Iterable[str]] = ..., connected_account_ids: _Optional[_Iterable[str]] = ...) -> None: ...
+
+class SkCredsRepairFailure(_message.Message):
+    __slots__ = ("connected_account_id", "environment_id", "error")
+    CONNECTED_ACCOUNT_ID_FIELD_NUMBER: _ClassVar[int]
+    ENVIRONMENT_ID_FIELD_NUMBER: _ClassVar[int]
+    ERROR_FIELD_NUMBER: _ClassVar[int]
+    connected_account_id: str
+    environment_id: str
+    error: str
+    def __init__(self, connected_account_id: _Optional[str] = ..., environment_id: _Optional[str] = ..., error: _Optional[str] = ...) -> None: ...
+
+class RepairSkCredsConnectedAccountEncryptionResponse(_message.Message):
+    __slots__ = ("dry_run", "healthy", "repaired_connected_account_ids", "failures")
+    DRY_RUN_FIELD_NUMBER: _ClassVar[int]
+    HEALTHY_FIELD_NUMBER: _ClassVar[int]
+    REPAIRED_CONNECTED_ACCOUNT_IDS_FIELD_NUMBER: _ClassVar[int]
+    FAILURES_FIELD_NUMBER: _ClassVar[int]
+    dry_run: bool
+    healthy: int
+    repaired_connected_account_ids: _containers.RepeatedScalarFieldContainer[str]
+    failures: _containers.RepeatedCompositeFieldContainer[SkCredsRepairFailure]
+    def __init__(self, dry_run: bool = ..., healthy: _Optional[int] = ..., repaired_connected_account_ids: _Optional[_Iterable[str]] = ..., failures: _Optional[_Iterable[_Union[SkCredsRepairFailure, _Mapping]]] = ...) -> None: ...
+
 class MigrationServiceResponse(_message.Message):
     __slots__ = ("success_environments", "failed_environments")
     SUCCESS_ENVIRONMENTS_FIELD_NUMBER: _ClassVar[int]
