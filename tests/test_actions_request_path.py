@@ -261,6 +261,17 @@ class TestRequestSendsInPrefixPathsUnchanged(_ProxyServerTestCase):
         )
         core._CoreClient__authenticate_client.assert_called_once_with()
 
+    def test_401_retry_sends_the_same_body_for_an_empty_raw_body(self):
+        # raw_body takes priority whenever it is given, even when empty, on both sends.
+        self.server.statuses.extend([401, 200])
+        client, _ = self._client(self.origin)
+        client.request(
+            "googledrive", "user@example.com", "/drive/v3/files",
+            method="post", raw_body=b"", form_data={"a": "1"},
+        )
+        lengths = [headers.get("content-length", "0") for _, _, headers in self.server.hops]
+        self.assertEqual(lengths, ["0", "0"])
+
 
 class TestRequestWithBasePathInEnvUrl(_ProxyServerTestCase):
     """The prefix is ``<env base path>/proxy/`` when the env URL has a path."""

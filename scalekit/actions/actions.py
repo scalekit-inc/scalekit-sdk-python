@@ -616,7 +616,7 @@ class ActionClient:
                 url=url,
                 params=params,
                 json=body if raw_body is None else None,
-                data=raw_body or form_data,
+                data=raw_body if raw_body is not None else form_data,
                 headers=req_headers,
                 timeout=timeout,
                 **kwargs,
