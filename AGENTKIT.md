@@ -843,7 +843,11 @@ Verifies the signature of a trigger event Scalekit delivered to your endpoint, t
 
 - The signature is checked first: `webhook-signature` must be a `v1` HMAC-SHA256 of `"{webhook-id}.{webhook-timestamp}.{body}"` keyed with your `whsec_` secret, and `webhook-timestamp` must be within five minutes of now, given as Unix seconds in plain digits. Header names match case-insensitively. Every `webhook-signature` value is a candidate; a repeated `webhook-id` or `webhook-timestamp` must repeat the same value.
 - Any verification failure raises `WebhookVerificationError`. A correctly signed body that is not a valid trigger event raises `ScalekitTriggerEventParseException`, a subclass, so one `except WebhookVerificationError` answering `400` covers both. Raises `TypeError` when called with arguments of the wrong type.
-- Delivery is at least once. Use `dedupe_key` plus the connected account you act as as the idempotency key.
+- Delivery is at least once, and a redelivery can arrive while the first delivery is still being handled. Use `dedupe_key` plus the connected account you act as as the idempotency key:
+  - Claim it atomically before handling the event, so two concurrent deliveries cannot both handle it. For example, use a row with a unique key on both, inserted with a lease (an expiry time). The claim succeeds only when no row exists, or when the row is unfinished and its lease has expired.
+  - Make the lease longer than handling can take. A claim left by a worker that stopped mid-handling then expires, and a later redelivery can take it, but an active claim is never taken.
+  - Mark the claim finished after handling, so a finished event is never handled again. Release it if handling fails, so a redelivery can retry at once.
+  - Answer `2xx` only once the event is finished, handled, or durably queued. When another delivery still holds an unexpired claim, answer a non-`2xx` status such as `409`, so Scalekit delivers the event again later instead of treating it as done.
 - Branch on `delivery_scope`: `DeliveryScope.ACCOUNT` events carry `connected_account_id`; `DeliveryScope.CONNECTION` events apply to the whole connection and have `connected_account_id == ""`.
 - When `payload_state` is `PayloadState.REFERENCE`, `payload` is `None`: fetch the resource by `resource_type` and `resource_id`.
 - Enum fields hold the enum member for known values and the raw `str` for newer ones; fields this SDK version does not know are kept in `event.model_extra`. `occurred_at` is a timezone-aware UTC `datetime` or `None`; fractional seconds are truncated to microseconds.
@@ -874,16 +878,30 @@ def scalekit_trigger():
     else:
         return "", 204  # a scope this code does not handle yet
 
+    in_progress = False
     for account_id in account_ids:
-        if already_processed(event.dedupe_key, account_id):  # redeliveries are expected
+        # Atomic, with a lease longer than handling takes. Returns "claimed",
+        # "finished" (already handled) or "in_progress" (another delivery holds
+        # an unexpired lease).
+        claim = claim_delivery(event.dedupe_key, account_id, lease_seconds=900)
+        if claim == "finished":
             continue
-        data = (
-            fetch_resource(account_id, event.resource_type, event.resource_id)
-            if event.payload_state == PayloadState.REFERENCE
-            else event.payload
-        )
-        handle(account_id, event.trigger_type, data)
-        mark_processed(event.dedupe_key, account_id)
+        if claim == "in_progress":
+            in_progress = True
+            continue
+        try:
+            data = (
+                fetch_resource(account_id, event.resource_type, event.resource_id)
+                if event.payload_state == PayloadState.REFERENCE
+                else event.payload
+            )
+            handle(account_id, event.trigger_type, data)
+        except Exception:
+            release_delivery(event.dedupe_key, account_id)  # let a redelivery retry
+            raise
+        finish_delivery(event.dedupe_key, account_id)  # never handled again
+    if in_progress:
+        return "", 409  # not done yet: Scalekit delivers it again later
     return "", 204
 ```
 

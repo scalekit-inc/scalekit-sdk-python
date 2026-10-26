@@ -99,9 +99,11 @@ class TriggerEvent(BaseModel):
 
     Handling rules:
 
-    * **Delivery is at least once.** The same event can arrive more than once. Use
-      ``dedupe_key`` together with the connected account your handler acts as as the
-      idempotency key, and skip events you have already processed.
+    * **Delivery is at least once.** The same event can arrive more than once, also
+      while an earlier delivery is still being handled. Use ``dedupe_key`` together
+      with the connected account your handler acts as as the idempotency key: claim it
+      atomically before handling and skip only events already finished (example in
+      ``AGENTKIT.md``, "Trigger events").
     * **Branch on** ``delivery_scope``. ``DeliveryScope.ACCOUNT`` events belong to one
       connected account (``connected_account_id``); ``DeliveryScope.CONNECTION``
       events belong to the whole connection and have ``connected_account_id == ""``.

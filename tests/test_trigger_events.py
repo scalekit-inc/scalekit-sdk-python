@@ -915,9 +915,11 @@ class TestFrameworkHeaders(unittest.TestCase):
 _FLASK_SNIPPET_STUBS = """
 def accounts_for_connection(connection_id: str) -> list[str]:
     raise NotImplementedError
-def already_processed(dedupe_key: str, account_id: str) -> bool:
+def claim_delivery(dedupe_key: str, account_id: str, *, lease_seconds: int) -> str:
     raise NotImplementedError
-def mark_processed(dedupe_key: str, account_id: str) -> None:
+def release_delivery(dedupe_key: str, account_id: str) -> None:
+    raise NotImplementedError
+def finish_delivery(dedupe_key: str, account_id: str) -> None:
     raise NotImplementedError
 def fetch_resource(account_id: str, resource_type: str, resource_id: str | None) -> object:
     raise NotImplementedError
