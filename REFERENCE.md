@@ -7348,7 +7348,7 @@ response = scalekit_client.connected_accounts.get_magic_link_for_connected_accou
     user_id='usr_123456'
 )
 
-print(f'Magic Link: {response[0].magic_link}')
+print(f'Magic Link: {response[0].link}')
 ```
 </dd>
 </dl>
