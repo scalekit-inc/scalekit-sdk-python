@@ -590,6 +590,14 @@ class ActionClient:
         :type raw_body: Optional[Union[bytes, str]]
         :param headers: Additional HTTP headers to merge into the request
         :type headers: Optional[Dict[str, str]]
+        :param timeout: Passed as a keyword argument. Request timeout in seconds;
+            defaults to 30 when not given. It applies to connecting and to
+            waiting for a response separately, so a slow provider call that needs
+            longer must pass a larger value, for example ``timeout=90``. A request
+            that exceeds it raises ``requests.exceptions.Timeout``.
+        :type timeout: Optional[float]
+        :param kwargs: Any other keyword arguments are passed to the underlying
+            ``requests`` call.
 
         :returns:
             requests.Response — the raw HTTP response; call .json(), .text,
