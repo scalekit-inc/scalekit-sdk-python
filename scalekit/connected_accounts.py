@@ -13,6 +13,8 @@ from scalekit.v1.connected_accounts.connected_accounts_pb2 import (
     GetMagicLinkForConnectedAccountResponse,
     ListConnectedAccountsRequest,
     ListConnectedAccountsResponse,
+    RefreshConnectedAccountTokensRequest,
+    RefreshConnectedAccountTokensResponse,
     UpdateConnectedAccount,
     UpdateConnectedAccountRequest,
     UpdateConnectedAccountResponse,
@@ -317,6 +319,69 @@ class ConnectedAccountsClient:
                 identifier=identifier,
                 id=connected_account_id
             ),
+        )
+
+    def refresh_connected_account_tokens(
+        self,
+        connected_account_id: Optional[str] = None,
+        connection_name: Optional[str] = None,
+        identifier: Optional[str] = None
+    ) -> RefreshConnectedAccountTokensResponse:
+        """
+        Method to refresh the stored tokens of a connected account now.
+
+        Call this when a proxy call to the provider fails with an auth error, then
+        retry the call. Identify the account by ``connected_account_id``, or by both
+        ``connection_name`` and ``identifier``. If the ID is sent, the other two are ignored.
+
+        Only ACTIVE accounts are refreshed. Key on ``error_code``, not only the HTTP status.
+        Errors:
+
+        - 400 REAUTHENTICATION_NEEDED: the account is EXPIRED (the user must authorize
+          again; no provider call is made), or the provider rejected the refresh (for
+          example invalid_grant, revoked, or no refresh token). In the second case the
+          account is marked EXPIRED.
+        - 500 INTERNAL_ERROR: provider outage, network error, 5xx or 429. The account
+          stays ACTIVE; retry later.
+        - 409 REFRESH_IN_PROGRESS: a refresh is already running for the account. Retry
+          in a few seconds.
+        - 400 REFRESH_NOT_SUPPORTED_FOR_CONNECTOR: API key, bearer, basic auth, no-auth
+          and Trello OAuth1 accounts.
+        - 403: account-bound or portal tokens. Use server-side API credentials.
+        - 404: account not found.
+
+        The response has account metadata only, no credentials; use ``token_expires_at``
+        for the new expiry.
+
+        :param connected_account_id : ID of the connected account
+        :type                       : ``` str ```
+        :param connection_name      : Connection name (use with identifier)
+        :type                       : ``` str ```
+        :param identifier           : Identifier for the connected account (use with connection_name)
+        :type                       : ``` str ```
+
+        :raises ValueError: If neither connected_account_id nor both connection_name
+                            and identifier are given.
+
+        :returns:
+            Refresh Connected Account Tokens Response
+        """
+        if not connected_account_id and not (connection_name and identifier):
+            raise ValueError(
+                "connected_account_id, or both connection_name and identifier, is required"
+            )
+        if connected_account_id:
+            request = RefreshConnectedAccountTokensRequest(
+                connected_account_id=connected_account_id
+            )
+        else:
+            request = RefreshConnectedAccountTokensRequest(
+                connection_name=connection_name,
+                identifier=identifier
+            )
+        return self.core_client.grpc_exec(
+            self.connected_accounts_service.RefreshConnectedAccountTokens.with_call,
+            request,
         )
 
     def verify_connected_account_user(

@@ -55,6 +55,7 @@ class IdentityProviderType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     IDP_SIMULATOR: _ClassVar[IdentityProviderType]
     SCALEKIT: _ClassVar[IdentityProviderType]
     ADFS: _ClassVar[IdentityProviderType]
+    FACEBOOK: _ClassVar[IdentityProviderType]
 
 class AuthenticationMode(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
@@ -96,6 +97,7 @@ MICROSOFT: IdentityProviderType
 IDP_SIMULATOR: IdentityProviderType
 SCALEKIT: IdentityProviderType
 ADFS: IdentityProviderType
+FACEBOOK: IdentityProviderType
 AUTHENTICATION_MODE_UNSPECIFIED: AuthenticationMode
 MODULAR_AUTH: AuthenticationMode
 FULL_STACK_AUTH: AuthenticationMode

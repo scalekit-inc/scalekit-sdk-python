@@ -7315,6 +7315,81 @@ print(f'Magic Link: {response[0].magic_link}')
 </dl>
 </details>
 
+<details><summary><code>client.connected_accounts.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connected_accounts.py">refresh_connected_account_tokens</a>(connected_account_id?, connection_name?, identifier?) -> RefreshConnectedAccountTokensResponse</code></summary>
+<dl>
+<dd>
+
+### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Refreshes the stored tokens of a connected account now. Call it when a proxy call to the provider fails with an auth error, then retry. Pass `connected_account_id`, or both `connection_name` and `identifier`; if the ID is sent the other two are ignored. Only ACTIVE accounts are refreshed. Key on `error_code`, not only the HTTP status. Errors: 400 `REAUTHENTICATION_NEEDED` if the account is EXPIRED (the user must authorize again; no provider call is made) or the provider rejects the refresh (for example invalid_grant, revoked, or no refresh token), in which case the account is marked EXPIRED; 500 `INTERNAL_ERROR` on a provider outage, network error, 5xx or 429, and the account stays ACTIVE (retry later); 409 `REFRESH_IN_PROGRESS` if a refresh is already running for the account (retry in a few seconds); 400 `REFRESH_NOT_SUPPORTED_FOR_CONNECTOR` for API key, bearer, basic auth, no-auth and Trello OAuth1 accounts; 403 for account-bound or portal tokens (use server-side API credentials); 404 if the account is not found. The response has metadata only; use `token_expires_at` for the new expiry.
+</dd>
+</dl>
+</dd>
+</dl>
+
+### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+response = scalekit_client.connected_accounts.refresh_connected_account_tokens(
+    connection_name='gmail',
+    identifier='user_123'
+)
+
+print(response[0].connected_account.token_expires_at)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**connected_account_id:** `Optional[str]` - ID of the connected account
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**connection_name:** `Optional[str]` - Connection name (use with identifier)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**identifier:** `Optional[str]` - Identifier for the connected account (use with connection_name)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Custom Providers
 
 <details><summary><code>client.actions.providers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">create_custom_provider</a>(request) -> CreateCustomProviderResponse</code></summary>

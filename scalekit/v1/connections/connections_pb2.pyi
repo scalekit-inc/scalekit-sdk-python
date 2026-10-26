@@ -134,6 +134,7 @@ class ConnectionProvider(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     IDP_SIMULATOR: _ClassVar[ConnectionProvider]
     SCALEKIT: _ClassVar[ConnectionProvider]
     ADFS: _ClassVar[ConnectionProvider]
+    FACEBOOK: _ClassVar[ConnectionProvider]
 CODE_CHALLENGE_TYPE_UNSPECIFIED: CodeChallengeType
 NUMERIC: CodeChallengeType
 ALPHANUMERIC: CodeChallengeType
@@ -210,6 +211,7 @@ MICROSOFT: ConnectionProvider
 IDP_SIMULATOR: ConnectionProvider
 SCALEKIT: ConnectionProvider
 ADFS: ConnectionProvider
+FACEBOOK: ConnectionProvider
 
 class AssignDomainsToConnectionRequest(_message.Message):
     __slots__ = ("organization_id", "connection_id", "domain_ids")
