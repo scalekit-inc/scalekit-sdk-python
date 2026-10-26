@@ -915,7 +915,7 @@ class TestFrameworkHeaders(unittest.TestCase):
 _FLASK_SNIPPET_STUBS = """
 def accounts_for_connection(connection_id: str) -> list[str]:
     raise NotImplementedError
-def claim_delivery(dedupe_key: str, account_id: str, *, lease_seconds: int) -> bool:
+def claim_delivery(dedupe_key: str, account_id: str, *, lease_seconds: int) -> str:
     raise NotImplementedError
 def release_delivery(dedupe_key: str, account_id: str) -> None:
     raise NotImplementedError

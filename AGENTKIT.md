@@ -847,6 +847,7 @@ Verifies the signature of a trigger event Scalekit delivered to your endpoint, t
   - Claim it atomically before handling the event, so two concurrent deliveries cannot both handle it. For example, use a row with a unique key on both, inserted with a lease (an expiry time). The claim succeeds only when no row exists, or when the row is unfinished and its lease has expired.
   - Make the lease longer than handling can take. A claim left by a worker that stopped mid-handling then expires, and a later redelivery can take it, but an active claim is never taken.
   - Mark the claim finished after handling, so a finished event is never handled again. Release it if handling fails, so a redelivery can retry at once.
+  - Answer `2xx` only once the event is finished, handled, or durably queued. When another delivery still holds an unexpired claim, answer a non-`2xx` status such as `409`, so Scalekit delivers the event again later instead of treating it as done.
 - Branch on `delivery_scope`: `DeliveryScope.ACCOUNT` events carry `connected_account_id`; `DeliveryScope.CONNECTION` events apply to the whole connection and have `connected_account_id == ""`.
 - When `payload_state` is `PayloadState.REFERENCE`, `payload` is `None`: fetch the resource by `resource_type` and `resource_id`.
 - Enum fields hold the enum member for known values and the raw `str` for newer ones; fields this SDK version does not know are kept in `event.model_extra`. `occurred_at` is a timezone-aware UTC `datetime` or `None`; fractional seconds are truncated to microseconds.
@@ -877,10 +878,16 @@ def scalekit_trigger():
     else:
         return "", 204  # a scope this code does not handle yet
 
+    in_progress = False
     for account_id in account_ids:
-        # Atomic, with a lease longer than handling takes: False when this event is
-        # finished, or claimed by another delivery whose lease has not expired.
-        if not claim_delivery(event.dedupe_key, account_id, lease_seconds=900):
+        # Atomic, with a lease longer than handling takes. Returns "claimed",
+        # "finished" (already handled) or "in_progress" (another delivery holds
+        # an unexpired lease).
+        claim = claim_delivery(event.dedupe_key, account_id, lease_seconds=900)
+        if claim == "finished":
+            continue
+        if claim == "in_progress":
+            in_progress = True
             continue
         try:
             data = (
@@ -893,6 +900,8 @@ def scalekit_trigger():
             release_delivery(event.dedupe_key, account_id)  # let a redelivery retry
             raise
         finish_delivery(event.dedupe_key, account_id)  # never handled again
+    if in_progress:
+        return "", 409  # not done yet: Scalekit delivers it again later
     return "", 204
 ```
 
