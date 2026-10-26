@@ -1,0 +1,8 @@
+kind: added
+body: |
+  `client.actions` responses now include fields the API already returned but the Python models left out. A connected account from `list_connected_accounts` gains `id`, `connection_id` and `is_org_wide_credential`, so you can pass its `id` straight to `get`, `update` and `delete` by connected account id. A connected account from `get_connected_account_auth` gains `connection_id` and `is_org_wide_credential`. A provider from `list_providers` gains `id`, `categories`, `display_priority` and `coming_soon`, and the `list_providers` response gains `prev_page_token` for paging backwards. All new fields have defaults, so existing code keeps working and nothing you read today changes.
+time: '2026-10-26T13:00:00.000000+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: ''
+  Migration: ''

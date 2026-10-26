@@ -9,6 +9,10 @@ from scalekit.v1.connected_accounts.connected_accounts_pb2 import ConnectorStatu
 class ConnectedAccountForList(BaseModel):
     """Connected account item in list response with one-to-one mapping to proto ConnectedAccountForList"""
     
+    id: Optional[str] = Field(
+        None,
+        description="Unique connected account ID (for example 'ca_...'). Use it as connected_account_id in get, update and delete calls."
+    )
     identifier: Optional[str] = Field(
         None,
         description="Unique identifier for the connected account"
@@ -41,6 +45,14 @@ class ConnectedAccountForList(BaseModel):
         None,
         description="Timestamp when the connected account was last used"
     )
+    connection_id: Optional[str] = Field(
+        None,
+        description="ID of the connection this connected account belongs to (for example 'conn_...')"
+    )
+    is_org_wide_credential: bool = Field(
+        False,
+        description="True when the account holds a credential shared across the whole organization"
+    )
 
     @classmethod
     def from_proto(cls, proto_account) -> 'ConnectedAccountForList':
@@ -67,6 +79,7 @@ class ConnectedAccountForList(BaseModel):
             last_used_at = proto_account.last_used_at.ToDatetime()
             
         return cls(
+            id=proto_account.id if proto_account.id else None,
             identifier=proto_account.identifier if proto_account.identifier else None,
             provider=proto_account.provider if proto_account.provider else None,
             status= ConnectorStatus.Name(proto_account.status) if proto_account.status else None,
@@ -74,7 +87,9 @@ class ConnectedAccountForList(BaseModel):
             token_expires_at=token_expires_at,
             updated_at=updated_at,
             connector=proto_account.connector if proto_account.connector else None,
-            last_used_at=last_used_at
+            last_used_at=last_used_at,
+            connection_id=proto_account.connection_id if proto_account.connection_id else None,
+            is_org_wide_credential=proto_account.is_org_wide_credential
         )
 
     def to_dict(self) -> dict:
@@ -85,6 +100,7 @@ class ConnectedAccountForList(BaseModel):
             Dictionary representation of the connected account
         """
         return {
+            "id": self.id,
             "identifier": self.identifier,
             "provider": self.provider,
             "status": self.status,
@@ -92,7 +108,9 @@ class ConnectedAccountForList(BaseModel):
             "token_expires_at": self.token_expires_at.isoformat() if self.token_expires_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
             "connector": self.connector,
-            "last_used_at": self.last_used_at.isoformat() if self.last_used_at else None
+            "last_used_at": self.last_used_at.isoformat() if self.last_used_at else None,
+            "connection_id": self.connection_id,
+            "is_org_wide_credential": self.is_org_wide_credential
         }
 
     class Config:
