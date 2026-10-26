@@ -139,7 +139,7 @@ class ProvidersClient:
                                is not merged. Currently only a single AuthPattern is
                                supported — pass a list with exactly one element. The
                                list type is intentional for future multi-pattern
-                               support. The auth type and is_mcp cannot be changed,
+                               support. The auth type and the connector kind (MCP or API) cannot be changed,
                                and an API_KEY provider cannot switch between
                                single-key and multiple-headers mode.
         :type auth_patterns: Optional[List[AuthPattern]]

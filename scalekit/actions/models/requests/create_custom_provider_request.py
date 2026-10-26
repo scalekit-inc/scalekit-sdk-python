@@ -3,7 +3,7 @@ from urllib.parse import urlparse
 
 from pydantic import BaseModel, Field, validator
 
-from scalekit.actions.models.custom_provider import AuthPattern, check_request_is_mcp
+from scalekit.actions.models.custom_provider import AuthPattern, ConnectorSource, check_request_source
 
 
 class CreateCustomProviderRequest(BaseModel):
@@ -67,13 +67,14 @@ class CreateCustomProviderRequest(BaseModel):
             "backward compatibility."
         ),
     )
-    is_mcp: Optional[bool] = Field(
+    source: Optional[ConnectorSource] = Field(
         None,
         description=(
-            "Optional. True creates an MCP (Model Context Protocol) server connector. "
-            "None or False creates an API connector. Use this instead of is_mcp on "
-            "AuthPattern, which is deprecated. Setting it to a value that conflicts "
-            "with is_mcp on the pattern raises a validation error."
+            "Optional. What the connector fronts. ConnectorSource.MCP_SERVER creates an "
+            "MCP (Model Context Protocol) server connector. Leave it as None (default) "
+            "for an API connector. Use this instead of is_mcp on AuthPattern, which is "
+            "deprecated. A value that conflicts with is_mcp=False on the pattern raises "
+            "a validation error."
         ),
     )
     icon_src: str = Field(
@@ -105,9 +106,9 @@ class CreateCustomProviderRequest(BaseModel):
             raise ValueError("auth_patterns must contain at most one AuthPattern")
         return v
 
-    @validator("is_mcp")
-    def validate_is_mcp_matches_patterns(cls, v, values):
-        check_request_is_mcp(v, values.get("auth_patterns") or [])
+    @validator("source")
+    def validate_source_matches_patterns(cls, v, values):
+        check_request_source(v, values.get("auth_patterns") or [])
         return v
 
     class Config:

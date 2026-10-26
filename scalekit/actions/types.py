@@ -31,6 +31,7 @@ from .models.custom_provider import (
     AuthPattern,
     AuthField,
     AuthFieldOption,
+    ConnectorSource,
     OAuthConfig,
     Provider,
 )
@@ -84,6 +85,7 @@ __all__ = [
     'AuthPattern',
     'AuthField',
     'AuthFieldOption',
+    'ConnectorSource',
     'OAuthConfig',
     'Provider',
     'CreateCustomProviderRequest',

@@ -3,7 +3,7 @@ from urllib.parse import urlparse
 
 from pydantic import BaseModel, Field, validator
 
-from scalekit.actions.models.custom_provider import AuthPattern, check_request_is_mcp
+from scalekit.actions.models.custom_provider import AuthPattern, ConnectorSource, check_request_source
 
 
 class UpdateCustomProviderRequest(BaseModel):
@@ -57,21 +57,22 @@ class UpdateCustomProviderRequest(BaseModel):
             "None. Fully replaces the existing auth_patterns; it is not merged. "
             "Note: currently only a single AuthPattern is supported — pass a list "
             "with exactly one element. The list type is intentional for future "
-            "multi-pattern support. The auth type and is_mcp cannot be changed, and "
+            "multi-pattern support. The auth type and the connector kind (MCP or API) cannot be changed, and "
             "an API_KEY provider cannot switch between single-key and "
             "multiple-headers mode. Editing the header fields of a multiple-headers "
             "provider requires its connected accounts to re-authorize."
         ),
     )
-    is_mcp: Optional[bool] = Field(
+    source: Optional[ConnectorSource] = Field(
         None,
         description=(
             "Optional. Must match the connector's existing kind: the server rejects "
-            "changing a connector between MCP and API. Pass True when updating an MCP "
-            "connector so the replacement pattern stays an MCP connector. Only valid "
-            "together with auth_patterns. Use this instead of is_mcp on AuthPattern, "
-            "which is deprecated. A value that conflicts with is_mcp on the pattern "
-            "raises a validation error."
+            "changing a connector between MCP and API. Pass ConnectorSource.MCP_SERVER "
+            "when updating an MCP connector so the replacement pattern stays an MCP "
+            "connector. Only valid together with auth_patterns. None leaves is_mcp on "
+            "the pattern alone. Use this instead of is_mcp on AuthPattern, which is "
+            "deprecated. A value that conflicts with is_mcp=False on the pattern raises "
+            "a validation error."
         ),
     )
     icon_src: Optional[str] = Field(
@@ -105,16 +106,9 @@ class UpdateCustomProviderRequest(BaseModel):
             raise ValueError("auth_patterns must contain exactly one AuthPattern when provided")
         return v
 
-    @validator("is_mcp")
-    def validate_is_mcp_matches_patterns(cls, v, values):
-        patterns = values.get("auth_patterns")
-        if patterns is None:
-            raise ValueError(
-                "is_mcp can only be sent together with auth_patterns, because "
-                "auth_patterns replace the existing ones. Pass both, or leave is_mcp "
-                "unset to keep the current auth patterns."
-            )
-        check_request_is_mcp(v, patterns)
+    @validator("source")
+    def validate_source_matches_patterns(cls, v, values):
+        check_request_source(v, values.get("auth_patterns"))
         return v
 
     class Config:

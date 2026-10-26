@@ -19,6 +19,7 @@ from scalekit.common.exceptions import ScalekitNotFoundException
 from scalekit.mcp import _check_connection_token_args
 from scalekit.v1.tools.tools_pb2 import Filter
 from google.protobuf.wrappers_pb2 import BoolValue
+from scalekit.actions.models.custom_provider import ConnectorSource, check_request_source
 
 
 
@@ -1541,8 +1542,9 @@ class ActionProviders:
             name is in progress at the same moment; retry. A name that is already
             in use does not raise: the new provider gets a numbered identifier.
         """
+        check_request_source(request.source, request.auth_patterns)
         auth_patterns = request.auth_patterns
-        if request.is_mcp:
+        if request.source == ConnectorSource.MCP_SERVER:
             auth_patterns = [p.model_copy(update={"is_mcp": True}) for p in auth_patterns]
         result_tuple = self._providers_client.create_custom_provider(
             display_name=request.display_name,
@@ -1567,7 +1569,7 @@ class ActionProviders:
 
         :param request: Request object containing identifier (required),
                         display_name, proxy_url and auth_patterns, and optionally
-                        description, icon_src, metadata and is_mcp.
+                        description, icon_src, metadata and source.
         :type request: UpdateCustomProviderRequest
 
         :returns: Response containing the provider's full state after the update.
@@ -1575,11 +1577,12 @@ class ActionProviders:
 
         :raises ScalekitNotFoundException: If no provider with the given identifier exists.
         :raises ScalekitBadRequestException: If a field value is invalid, the auth
-            type or is_mcp differs from the existing provider, or an API_KEY
+            type or source (MCP or API) differs from the existing provider, or an API_KEY
             provider switches between single-key and multiple-headers mode.
         """
+        check_request_source(request.source, request.auth_patterns)
         auth_patterns = request.auth_patterns
-        if request.is_mcp:
+        if request.source == ConnectorSource.MCP_SERVER:
             auth_patterns = [p.model_copy(update={"is_mcp": True}) for p in auth_patterns]
         result_tuple = self._providers_client.update_custom_provider(
             identifier=request.identifier,

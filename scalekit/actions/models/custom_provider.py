@@ -1,31 +1,50 @@
 import sys
 import warnings
+from enum import Enum
 from typing import Dict, List, Optional
 
 from google.protobuf.json_format import MessageToDict
 from pydantic import BaseModel, Field, PrivateAttr, ValidationInfo, model_validator
 
 
-def check_request_is_mcp(is_mcp: bool, patterns: "List[AuthPattern]") -> None:
-    """Raise ValueError if a request-level is_mcp contradicts an AuthPattern's own.
+class ConnectorSource(str, Enum):
+    """What a custom connector fronts.
 
-    Shared by CreateCustomProviderRequest and UpdateCustomProviderRequest.
+    Set it as ``source`` on CreateCustomProviderRequest or UpdateCustomProviderRequest.
+    Leave ``source`` unset for an API connector (the default). MCP_SERVER is the
+    only value today; more values will be added to this enum.
     """
-    for index, pattern in enumerate(patterns):
-        if is_mcp is False and pattern.is_mcp:
-            raise ValueError(
-                f"is_mcp=False on the request conflicts with is_mcp=True on "
-                f"auth_patterns[{index}]. is_mcp on AuthPattern is deprecated: remove "
-                f"it from the pattern and set is_mcp only on the request."
-            )
-        if is_mcp is True and "is_mcp" in pattern.model_fields_set and not pattern.is_mcp:
-            raise ValueError(
-                f"is_mcp=True on the request conflicts with is_mcp=False on "
-                f"auth_patterns[{index}]. is_mcp on AuthPattern is deprecated: remove "
-                f"it from the pattern and set is_mcp only on the request. (A pattern "
-                f"read back from the server always carries its own is_mcp value; "
-                f"build a new AuthPattern instead of reusing it.)"
-            )
+
+    MCP_SERVER = "MCP_SERVER"
+    """The connector fronts an MCP (Model Context Protocol) server."""
+
+
+def check_request_source(source: Optional[ConnectorSource], patterns: "Optional[List[AuthPattern]]") -> None:
+    """Raise ValueError if a request-level source contradicts an AuthPattern's own.
+
+    Shared by CreateCustomProviderRequest and UpdateCustomProviderRequest, and run
+    again by the create and update actions, because a request can be changed after
+    it was built. ``None`` means "not set" and always passes. A value without
+    ``patterns`` is an error: the source only makes sense with the patterns it marks.
+    """
+    if source is None:
+        return
+    if patterns is None:
+        raise ValueError(
+            "source can only be sent together with auth_patterns, because "
+            "auth_patterns replace the existing ones. Pass both, or leave source "
+            "unset to keep the current auth patterns."
+        )
+    if source == ConnectorSource.MCP_SERVER:
+        for index, pattern in enumerate(patterns):
+            if "is_mcp" in pattern.model_fields_set and not pattern.is_mcp:
+                raise ValueError(
+                    f"source=MCP_SERVER on the request conflicts with is_mcp=False on "
+                    f"auth_patterns[{index}]. is_mcp on AuthPattern is deprecated: remove "
+                    f"it from the pattern and set source only on the request. (A pattern "
+                    f"read back from the server always carries its own is_mcp value; "
+                    f"build a new AuthPattern instead of reusing it.)"
+                )
 
 
 def _warn_pattern_is_mcp_deprecated() -> None:
@@ -45,8 +64,8 @@ def _warn_pattern_is_mcp_deprecated() -> None:
         frame = frame.f_back
         level += 1
     warnings.warn(
-        "AuthPattern.is_mcp is deprecated; set is_mcp on CreateCustomProviderRequest "
-        "or UpdateCustomProviderRequest instead.",
+        "AuthPattern.is_mcp is deprecated; set source=ConnectorSource.MCP_SERVER on "
+        "CreateCustomProviderRequest or UpdateCustomProviderRequest instead.",
         DeprecationWarning,
         stacklevel=level,
     )
@@ -342,9 +361,10 @@ class AuthPattern(BaseModel):
     """One authentication option available on a custom connector.
 
     A custom provider can have multiple auth patterns (e.g. both OAUTH and API_KEY),
-    giving users a choice of how to authenticate. For MCP connectors set is_mcp=True
-    on CreateCustomProviderRequest or UpdateCustomProviderRequest; is_mcp on the
-    pattern itself is deprecated but still works.
+    giving users a choice of how to authenticate. For MCP connectors set
+    source=ConnectorSource.MCP_SERVER on CreateCustomProviderRequest or
+    UpdateCustomProviderRequest; is_mcp on the pattern itself is deprecated but
+    still works.
 
     Type guide for the four types you create custom connectors with:
       - "OAUTH"   — Browser-based OAuth 2.0 / 2.1 flow. Attach an OAuthConfig.
@@ -415,8 +435,9 @@ class AuthPattern(BaseModel):
     is_mcp: bool = Field(
         False,
         description=(
-            "Deprecated: set is_mcp on CreateCustomProviderRequest or "
-            "UpdateCustomProviderRequest instead. Still works and still sent to the "
+            "Deprecated: set source=ConnectorSource.MCP_SERVER on "
+            "CreateCustomProviderRequest or UpdateCustomProviderRequest instead. "
+            "Still works and still sent to the "
             "server. True makes this an MCP (Model Context Protocol) server "
             "connector, and the provider then reports is_custom_mcp=True. "
             "Defaults to False."
