@@ -13,8 +13,9 @@ class ListProvidersRequest(BaseModel):
             "value from scalekit.v1.providers.providers_pb2: "
             "ProviderType.CUSTOM (1) = custom providers only, "
             "ProviderType.DEFAULT (0) = built-in providers only, "
-            "ProviderType.ALL (2) = all providers. "
-            "Pass None (default) to return all providers."
+            "ProviderType.ALL (2) = built-in and custom providers. "
+            "Pass None (default) to return built-in providers only, the same as "
+            "ProviderType.DEFAULT; use ALL or CUSTOM to include custom providers."
         ),
     )
     page_size: Optional[int] = Field(

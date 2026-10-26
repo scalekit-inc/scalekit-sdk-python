@@ -7766,7 +7766,7 @@ else:
 <dd>
 
 **request:** `ListProvidersRequest` - Request object for listing providers
-- `provider_type: Optional[int]` - `ProviderType.CUSTOM` (custom only), `ProviderType.DEFAULT` (built-in only), or `ProviderType.ALL`. Defaults to all.
+- `provider_type: Optional[int]` - `ProviderType.CUSTOM` (custom only), `ProviderType.DEFAULT` (built-in only), or `ProviderType.ALL` (built-in and custom). Omit it and only built-in providers are returned, the same as `ProviderType.DEFAULT`; pass `ProviderType.ALL` or `ProviderType.CUSTOM` to include custom providers.
 - `page_size: Optional[int]` - Maximum number of providers to return.
 - `page_token: Optional[str]` - Pagination cursor from a previous response's `next_page_token`.
 - `identifier: Optional[str]` - Filter to a specific provider by identifier.

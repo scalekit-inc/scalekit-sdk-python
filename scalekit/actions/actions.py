@@ -1613,7 +1613,9 @@ class ActionProviders:
 
         :param request: Request object with optional provider_type, page_size,
                         page_token, and identifier filters. All fields are optional —
-                        an empty ListProvidersRequest() returns all providers.
+                        an empty ListProvidersRequest() returns the built-in providers
+                        only. Set provider_type to ProviderType.ALL or
+                        ProviderType.CUSTOM to include custom providers.
         :type request: ListProvidersRequest
 
         :returns: Response containing a page of providers and a next_page_token
