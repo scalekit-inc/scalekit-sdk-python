@@ -14,6 +14,7 @@ setup(
         "protobuf>=5.29.5,<8.0.0",
         "google>=3.0",
         "requests>=2.34.0",
+        "urllib3>=1.26,<3",
         "PyJWT>=2.13.0",
         "cffi>=1.15.1",
         "cryptography>=50.0.0",
