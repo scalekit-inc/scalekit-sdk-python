@@ -1,0 +1,16 @@
+{
+  "version": "1",
+  "trigger_type": "example.item.created",
+  "subscription_id": "sub_123",
+  "delivery_scope": "account",
+  "connection_id": "conn_123",
+  "connected_account_id": "ca_123",
+  "resource_type": "message",
+  "resource_id": "msg_123",
+  "occurred_at": null,
+  "detection_mode": "webhook",
+  "payload_state": "reference",
+  "payload": null,
+  "dedupe_key": "dk_123",
+  "correlation_id": "corr_123"
+}
