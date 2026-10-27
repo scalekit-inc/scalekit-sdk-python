@@ -2,7 +2,7 @@
 
 These are new methods on ``client.actions``. Create, get, list and update call the AgentKit-only
 connection RPCs (``CreateAppConnection``, ``GetAppConnection``, ``ListAppConnectionSummaries``,
-``UpdateAppConnection``). Enable, disable and delete call the existing environment connection RPCs.
+``UpdateAppConnection``). Delete calls the existing environment connection RPC.
 
 ``update_connection`` sends only what you pass: the server merges it into the stored settings. Over
 gRPC the server clears a list or map only when it arrives empty *and* its path is named in
@@ -347,22 +347,7 @@ class ConnectionActions:
         resp = self._call(self._stub.UpdateAppConnection, request, "update", writes=True)
         return connection_from_proto(resp.connection)
 
-    # -- enable / disable / delete (existing environment RPCs) ------------
-
-    def _toggle(self, rpc, connection_name: Optional[str], connection_id: Optional[str], step: str) -> bool:
-        cid = self._resolve_id(connection_name, connection_id)
-        resp = self._call(rpc, pb.ToggleEnvironmentConnectionRequest(connection_id=cid), step, writes=True)
-        return resp.enabled
-
-    def enable_connection(
-        self, connection_name: Optional[str] = None, *, connection_id: Optional[str] = None
-    ) -> bool:
-        return self._toggle(self._stub.EnableEnvironmentConnection, connection_name, connection_id, "enable")
-
-    def disable_connection(
-        self, connection_name: Optional[str] = None, *, connection_id: Optional[str] = None
-    ) -> bool:
-        return self._toggle(self._stub.DisableEnvironmentConnection, connection_name, connection_id, "disable")
+    # -- delete (existing environment RPC) ---------------------------------
 
     def delete_connection(
         self, connection_name: Optional[str] = None, *, connection_id: Optional[str] = None

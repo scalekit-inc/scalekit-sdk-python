@@ -164,15 +164,11 @@ class ConnectionMethodsTest(unittest.TestCase):
 
     # -- enable / disable / delete -------------------------------------------
 
-    def test_toggle_and_delete_use_environment_rpcs(self):
-        self._reply(pb.ToggleConnectionResponse(enabled=True),
-                    pb.ToggleConnectionResponse(enabled=False),
-                    Empty())
-        self.assertTrue(self.client.enable_connection(connection_id="conn_5"))
-        self.assertFalse(self.client.disable_connection(connection_id="conn_5"))
+    def test_delete_uses_the_environment_rpc_and_is_not_retried(self):
+        self._reply(Empty())
         self.assertIsNone(self.client.delete_connection(connection_id="conn_5"))
-        self.assertEqual([c[1].connection_id for c in self.calls], ["conn_5"] * 3)
-        self.assertFalse(self.calls[2][2]["retry_on_unavailable"])
+        self.assertEqual(self.calls[0][1].connection_id, "conn_5")
+        self.assertFalse(self.calls[0][2]["retry_on_unavailable"])
 
     # -- error mapping ----------------------------------------------------------
 

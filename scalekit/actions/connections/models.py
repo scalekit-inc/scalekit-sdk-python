@@ -134,8 +134,7 @@ class AgentKitConnectionList(BaseModel):
 class AgentKitConnection(BaseModel):
     """An AgentKit connection with its settings.
 
-    The new APIs do not report whether a connection is enabled; ``enable_connection`` and
-    ``disable_connection`` use the existing connection RPCs.
+    The new APIs do not report whether a connection is enabled.
     """
 
     id: str

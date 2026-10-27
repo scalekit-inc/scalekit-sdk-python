@@ -1,6 +1,6 @@
 kind: added
 body: |
-  New `client.actions` methods manage AgentKit connections: `create_connection`, `get_connection`, `list_connections`, `update_connection`, `enable_connection`, `disable_connection` and `delete_connection`. Updates send only what you pass (a list or map passed empty clears it), connections are addressed by name or id, and failures raise typed `AgentKitConnectionError` subclasses with `code`, `step` and `retryable`. Typed settings (`OAuthSettings`, `GoogleDWDSettings`, `ProviderConfigurations`, `AuthMode`) live in `scalekit.actions.connections`. Existing methods are unchanged. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/AGENTKIT.md#agentkit-connections)
+  New `client.actions` methods manage AgentKit connections: `create_connection`, `get_connection`, `list_connections`, `update_connection` and `delete_connection`. Updates send only what you pass (a list or map passed empty clears it), connections are addressed by name or id, and failures raise typed `AgentKitConnectionError` subclasses with `code`, `step` and `retryable`. Typed settings (`OAuthSettings`, `GoogleDWDSettings`, `ProviderConfigurations`, `AuthMode`) live in `scalekit.actions.connections`. Existing methods are unchanged. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/AGENTKIT.md#agentkit-connections)
 
   ```python
   from scalekit.actions.connections import OAuthSettings

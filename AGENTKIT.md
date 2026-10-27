@@ -959,7 +959,7 @@ client.actions.update_connection("gmail-work", oauth=OAuthSettings(extra_authori
 
 conn = client.actions.get_connection("gmail-work")          # by name or id
 page = client.actions.list_connections(provider="gmail", page_size=20)
-client.actions.enable_connection("gmail-work")              # also disable_connection, delete_connection
+client.actions.delete_connection("gmail-work")              # raises ConnectionInUseError while accounts or MCP configs use it
 ```
 
 | Method | Notes |
@@ -968,7 +968,7 @@ client.actions.enable_connection("gmail-work")              # also disable_conne
 | `get_connection(connection_name=None, *, connection_id=None)` | Name is case-insensitive. Secrets come back masked (`****1234`). |
 | `list_connections(provider=None, query=None, page_size=None, page_token=None)` | Summaries, newest first. `page_size` defaults to 10, max 100. `query` needs 3+ characters. |
 | `update_connection(name=None, *, connection_id=None, new_name=None, oauth=None, google_dwd=None, static=None, provider_configurations=None)` | Partial merge. `None` keeps a value; `[]` or `{}` clears a list or map. Pass one settings group. Sending your own `client_id` or `client_secret` turns `use_scalekit_creds` off unless you set it. |
-| `enable_connection` / `disable_connection` / `delete_connection` | Use the existing connection RPCs. Enabling needs a client id, secret and (OAuth) `user_info_uri`. Delete raises `ConnectionInUseError` while accounts or MCP configs use the connection. |
+| `delete_connection(name=None, *, connection_id=None)` | Uses the existing connection RPC; never retried after a timeout. Raises `ConnectionInUseError` while connected accounts or MCP configs use the connection. |
 
 Errors derive from `AgentKitConnectionError` and carry `code`, `step`, `retryable` and the original server error in `cause`. `OutcomeUnknownError` means a write timed out and may have been applied; read the connection (or `list_connections` after a create) before repeating it.
 
