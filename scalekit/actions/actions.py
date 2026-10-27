@@ -1281,6 +1281,22 @@ class ActionClient:
             connection_name, connection_id=connection_id, new_name=new_name, oauth=oauth,
             google_dwd=google_dwd, static=static, provider_configurations=provider_configurations)
 
+    def enable_connection(
+        self, connection_name: Optional[str] = None, *, connection_id: Optional[str] = None
+    ) -> bool:
+        """Enable a connection and return its new enabled state.
+
+        Uses the existing connection RPCs. The server needs client id, secret and (for OAuth) a
+        ``user_info_uri`` to be set; otherwise it raises ``InvalidConfigurationError``.
+        """
+        return self._connection_actions().enable_connection(connection_name, connection_id=connection_id)
+
+    def disable_connection(
+        self, connection_name: Optional[str] = None, *, connection_id: Optional[str] = None
+    ) -> bool:
+        """Disable a connection and return its new enabled state (``False``)."""
+        return self._connection_actions().disable_connection(connection_name, connection_id=connection_id)
+
     def delete_connection(
         self, connection_name: Optional[str] = None, *, connection_id: Optional[str] = None
     ) -> None:
