@@ -226,6 +226,22 @@ class DeleteConnectedAccountResponse(_message.Message):
     __slots__ = ()
     def __init__(self) -> None: ...
 
+class RefreshConnectedAccountTokensRequest(_message.Message):
+    __slots__ = ("connected_account_id", "connection_name", "identifier")
+    CONNECTED_ACCOUNT_ID_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_NAME_FIELD_NUMBER: _ClassVar[int]
+    IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
+    connected_account_id: str
+    connection_name: str
+    identifier: str
+    def __init__(self, connected_account_id: _Optional[str] = ..., connection_name: _Optional[str] = ..., identifier: _Optional[str] = ...) -> None: ...
+
+class RefreshConnectedAccountTokensResponse(_message.Message):
+    __slots__ = ("connected_account",)
+    CONNECTED_ACCOUNT_FIELD_NUMBER: _ClassVar[int]
+    connected_account: ConnectedAccount
+    def __init__(self, connected_account: _Optional[_Union[ConnectedAccount, _Mapping]] = ...) -> None: ...
+
 class GetMagicLinkForConnectedAccountRequest(_message.Message):
     __slots__ = ("organization_id", "user_id", "connector", "identifier", "id", "state", "user_verify_url")
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]

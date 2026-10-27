@@ -1,0 +1,17 @@
+kind: added
+body: |
+  `client.actions.mcp.create_config(...)` and `update_config(...)` take an optional `tool_exposure` (`"DIRECT"` or `"META"`), and `McpConfig.tool_exposure` reports it. `DIRECT` (the default) lists every mapped tool and allows at most 25 connections; `META` gives agents five search and execute tools with no connection limit and must be enabled for your environment. Existing code keeps working: leave `tool_exposure` out and you get `DIRECT`, and an update that omits it never changes the stored mode.
+
+  ```python
+  config = client.actions.mcp.create_config(
+      name="support-agent",
+      connection_tool_mappings=[...],
+      tool_exposure="META",
+  )
+  client.actions.mcp.update_config(config_id, tool_exposure="DIRECT")
+  ```
+time: '2026-10-27T12:00:00+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: SK-2782
+  Migration: ''

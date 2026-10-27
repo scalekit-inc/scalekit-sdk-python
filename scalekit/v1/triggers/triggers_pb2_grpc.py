@@ -53,10 +53,20 @@ class TriggerServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.DeleteTriggerSubscriptionRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
+        self.BatchDeleteTriggerSubscriptions = channel.unary_unary(
+                '/scalekit.v1.triggers.TriggerService/BatchDeleteTriggerSubscriptions',
+                request_serializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.BatchDeleteTriggerSubscriptionsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.BatchDeleteTriggerSubscriptionsResponse.FromString,
+                )
         self.GetTriggerActivity = channel.unary_unary(
                 '/scalekit.v1.triggers.TriggerService/GetTriggerActivity',
                 request_serializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.GetTriggerActivityRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.GetTriggerActivityResponse.FromString,
+                )
+        self.GetTriggerUsage = channel.unary_unary(
+                '/scalekit.v1.triggers.TriggerService/GetTriggerUsage',
+                request_serializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.GetTriggerUsageRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.GetTriggerUsageResponse.FromString,
                 )
         self.GetTriggerIngressEndpoint = channel.unary_unary(
                 '/scalekit.v1.triggers.TriggerService/GetTriggerIngressEndpoint',
@@ -78,6 +88,11 @@ class TriggerServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.ConfirmTriggerSigningSecretRotationRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.TriggerIngressEndpoint.FromString,
                 )
+        self.GenerateTriggerSigningSecret = channel.unary_unary(
+                '/scalekit.v1.triggers.TriggerService/GenerateTriggerSigningSecret',
+                request_serializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.GenerateTriggerSigningSecretRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.GenerateTriggerSigningSecretResponse.FromString,
+                )
         self.SyncTriggerDefinitions = channel.unary_unary(
                 '/scalekit.v1.triggers.TriggerService/SyncTriggerDefinitions',
                 request_serializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.SyncTriggerDefinitionsRequest.SerializeToString,
@@ -87,6 +102,36 @@ class TriggerServiceStub(object):
                 '/scalekit.v1.triggers.TriggerService/ListTriggerDeliveryAttemptsByEndpoint',
                 request_serializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.ListTriggerDeliveryAttemptsByEndpointRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.ListTriggerDeliveryAttemptsByEndpointResponse.FromString,
+                )
+        self.ListTriggerDeliveriesByEndpoint = channel.unary_unary(
+                '/scalekit.v1.triggers.TriggerService/ListTriggerDeliveriesByEndpoint',
+                request_serializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.ListTriggerDeliveriesByEndpointRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.ListTriggerDeliveriesByEndpointResponse.FromString,
+                )
+        self.ListTriggerDeliveryAttemptsByMessage = channel.unary_unary(
+                '/scalekit.v1.triggers.TriggerService/ListTriggerDeliveryAttemptsByMessage',
+                request_serializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.ListTriggerDeliveryAttemptsByMessageRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.ListTriggerDeliveryAttemptsByMessageResponse.FromString,
+                )
+        self.LookupTriggerDelivery = channel.unary_unary(
+                '/scalekit.v1.triggers.TriggerService/LookupTriggerDelivery',
+                request_serializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.LookupTriggerDeliveryRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.LookupTriggerDeliveryResponse.FromString,
+                )
+        self.BatchLookupTriggerDeliveries = channel.unary_unary(
+                '/scalekit.v1.triggers.TriggerService/BatchLookupTriggerDeliveries',
+                request_serializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.BatchLookupTriggerDeliveriesRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.BatchLookupTriggerDeliveriesResponse.FromString,
+                )
+        self.BatchResendTriggerDeliveries = channel.unary_unary(
+                '/scalekit.v1.triggers.TriggerService/BatchResendTriggerDeliveries',
+                request_serializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.BatchResendTriggerDeliveriesRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.BatchResendTriggerDeliveriesResponse.FromString,
+                )
+        self.RecoverTriggerDeliveries = channel.unary_unary(
+                '/scalekit.v1.triggers.TriggerService/RecoverTriggerDeliveries',
+                request_serializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.RecoverTriggerDeliveriesRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.RecoverTriggerDeliveriesResponse.FromString,
                 )
         self.TriggerWebhookWrapper = channel.unary_unary(
                 '/scalekit.v1.triggers.TriggerService/TriggerWebhookWrapper',
@@ -141,8 +186,25 @@ class TriggerServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def GetTriggerActivity(self, request, context):
+    def BatchDeleteTriggerSubscriptions(self, request, context):
         """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetTriggerActivity(self, request, context):
+        """GetTriggerActivity retrieves counts of what happened to this environment's trigger events
+        over the last day.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetTriggerUsage(self, request, context):
+        """GetTriggerUsage reads the trigger deliveries Metronome metered for this environment, either for
+        a preset period ending now (by the hour for 24h, by UTC day for 7d and 30d) or on each UTC day
+        of a date range, cut to the days that can be read: today and the 30 days before it.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -171,6 +233,12 @@ class TriggerServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GenerateTriggerSigningSecret(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def SyncTriggerDefinitions(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -178,6 +246,42 @@ class TriggerServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def ListTriggerDeliveryAttemptsByEndpoint(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListTriggerDeliveriesByEndpoint(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListTriggerDeliveryAttemptsByMessage(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def LookupTriggerDelivery(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def BatchLookupTriggerDeliveries(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def BatchResendTriggerDeliveries(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def RecoverTriggerDeliveries(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -222,10 +326,20 @@ def add_TriggerServiceServicer_to_server(servicer, server):
                     request_deserializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.DeleteTriggerSubscriptionRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
+            'BatchDeleteTriggerSubscriptions': grpc.unary_unary_rpc_method_handler(
+                    servicer.BatchDeleteTriggerSubscriptions,
+                    request_deserializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.BatchDeleteTriggerSubscriptionsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.BatchDeleteTriggerSubscriptionsResponse.SerializeToString,
+            ),
             'GetTriggerActivity': grpc.unary_unary_rpc_method_handler(
                     servicer.GetTriggerActivity,
                     request_deserializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.GetTriggerActivityRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.GetTriggerActivityResponse.SerializeToString,
+            ),
+            'GetTriggerUsage': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetTriggerUsage,
+                    request_deserializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.GetTriggerUsageRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.GetTriggerUsageResponse.SerializeToString,
             ),
             'GetTriggerIngressEndpoint': grpc.unary_unary_rpc_method_handler(
                     servicer.GetTriggerIngressEndpoint,
@@ -247,6 +361,11 @@ def add_TriggerServiceServicer_to_server(servicer, server):
                     request_deserializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.ConfirmTriggerSigningSecretRotationRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.TriggerIngressEndpoint.SerializeToString,
             ),
+            'GenerateTriggerSigningSecret': grpc.unary_unary_rpc_method_handler(
+                    servicer.GenerateTriggerSigningSecret,
+                    request_deserializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.GenerateTriggerSigningSecretRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.GenerateTriggerSigningSecretResponse.SerializeToString,
+            ),
             'SyncTriggerDefinitions': grpc.unary_unary_rpc_method_handler(
                     servicer.SyncTriggerDefinitions,
                     request_deserializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.SyncTriggerDefinitionsRequest.FromString,
@@ -256,6 +375,36 @@ def add_TriggerServiceServicer_to_server(servicer, server):
                     servicer.ListTriggerDeliveryAttemptsByEndpoint,
                     request_deserializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.ListTriggerDeliveryAttemptsByEndpointRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.ListTriggerDeliveryAttemptsByEndpointResponse.SerializeToString,
+            ),
+            'ListTriggerDeliveriesByEndpoint': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListTriggerDeliveriesByEndpoint,
+                    request_deserializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.ListTriggerDeliveriesByEndpointRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.ListTriggerDeliveriesByEndpointResponse.SerializeToString,
+            ),
+            'ListTriggerDeliveryAttemptsByMessage': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListTriggerDeliveryAttemptsByMessage,
+                    request_deserializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.ListTriggerDeliveryAttemptsByMessageRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.ListTriggerDeliveryAttemptsByMessageResponse.SerializeToString,
+            ),
+            'LookupTriggerDelivery': grpc.unary_unary_rpc_method_handler(
+                    servicer.LookupTriggerDelivery,
+                    request_deserializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.LookupTriggerDeliveryRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.LookupTriggerDeliveryResponse.SerializeToString,
+            ),
+            'BatchLookupTriggerDeliveries': grpc.unary_unary_rpc_method_handler(
+                    servicer.BatchLookupTriggerDeliveries,
+                    request_deserializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.BatchLookupTriggerDeliveriesRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.BatchLookupTriggerDeliveriesResponse.SerializeToString,
+            ),
+            'BatchResendTriggerDeliveries': grpc.unary_unary_rpc_method_handler(
+                    servicer.BatchResendTriggerDeliveries,
+                    request_deserializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.BatchResendTriggerDeliveriesRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.BatchResendTriggerDeliveriesResponse.SerializeToString,
+            ),
+            'RecoverTriggerDeliveries': grpc.unary_unary_rpc_method_handler(
+                    servicer.RecoverTriggerDeliveries,
+                    request_deserializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.RecoverTriggerDeliveriesRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_triggers_dot_triggers__pb2.RecoverTriggerDeliveriesResponse.SerializeToString,
             ),
             'TriggerWebhookWrapper': grpc.unary_unary_rpc_method_handler(
                     servicer.TriggerWebhookWrapper,
@@ -382,6 +531,23 @@ class TriggerService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
+    def BatchDeleteTriggerSubscriptions(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.triggers.TriggerService/BatchDeleteTriggerSubscriptions',
+            scalekit_dot_v1_dot_triggers_dot_triggers__pb2.BatchDeleteTriggerSubscriptionsRequest.SerializeToString,
+            scalekit_dot_v1_dot_triggers_dot_triggers__pb2.BatchDeleteTriggerSubscriptionsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
     def GetTriggerActivity(request,
             target,
             options=(),
@@ -395,6 +561,23 @@ class TriggerService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.triggers.TriggerService/GetTriggerActivity',
             scalekit_dot_v1_dot_triggers_dot_triggers__pb2.GetTriggerActivityRequest.SerializeToString,
             scalekit_dot_v1_dot_triggers_dot_triggers__pb2.GetTriggerActivityResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetTriggerUsage(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.triggers.TriggerService/GetTriggerUsage',
+            scalekit_dot_v1_dot_triggers_dot_triggers__pb2.GetTriggerUsageRequest.SerializeToString,
+            scalekit_dot_v1_dot_triggers_dot_triggers__pb2.GetTriggerUsageResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -467,6 +650,23 @@ class TriggerService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
+    def GenerateTriggerSigningSecret(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.triggers.TriggerService/GenerateTriggerSigningSecret',
+            scalekit_dot_v1_dot_triggers_dot_triggers__pb2.GenerateTriggerSigningSecretRequest.SerializeToString,
+            scalekit_dot_v1_dot_triggers_dot_triggers__pb2.GenerateTriggerSigningSecretResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
     def SyncTriggerDefinitions(request,
             target,
             options=(),
@@ -497,6 +697,108 @@ class TriggerService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.triggers.TriggerService/ListTriggerDeliveryAttemptsByEndpoint',
             scalekit_dot_v1_dot_triggers_dot_triggers__pb2.ListTriggerDeliveryAttemptsByEndpointRequest.SerializeToString,
             scalekit_dot_v1_dot_triggers_dot_triggers__pb2.ListTriggerDeliveryAttemptsByEndpointResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListTriggerDeliveriesByEndpoint(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.triggers.TriggerService/ListTriggerDeliveriesByEndpoint',
+            scalekit_dot_v1_dot_triggers_dot_triggers__pb2.ListTriggerDeliveriesByEndpointRequest.SerializeToString,
+            scalekit_dot_v1_dot_triggers_dot_triggers__pb2.ListTriggerDeliveriesByEndpointResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListTriggerDeliveryAttemptsByMessage(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.triggers.TriggerService/ListTriggerDeliveryAttemptsByMessage',
+            scalekit_dot_v1_dot_triggers_dot_triggers__pb2.ListTriggerDeliveryAttemptsByMessageRequest.SerializeToString,
+            scalekit_dot_v1_dot_triggers_dot_triggers__pb2.ListTriggerDeliveryAttemptsByMessageResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def LookupTriggerDelivery(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.triggers.TriggerService/LookupTriggerDelivery',
+            scalekit_dot_v1_dot_triggers_dot_triggers__pb2.LookupTriggerDeliveryRequest.SerializeToString,
+            scalekit_dot_v1_dot_triggers_dot_triggers__pb2.LookupTriggerDeliveryResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def BatchLookupTriggerDeliveries(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.triggers.TriggerService/BatchLookupTriggerDeliveries',
+            scalekit_dot_v1_dot_triggers_dot_triggers__pb2.BatchLookupTriggerDeliveriesRequest.SerializeToString,
+            scalekit_dot_v1_dot_triggers_dot_triggers__pb2.BatchLookupTriggerDeliveriesResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def BatchResendTriggerDeliveries(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.triggers.TriggerService/BatchResendTriggerDeliveries',
+            scalekit_dot_v1_dot_triggers_dot_triggers__pb2.BatchResendTriggerDeliveriesRequest.SerializeToString,
+            scalekit_dot_v1_dot_triggers_dot_triggers__pb2.BatchResendTriggerDeliveriesResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def RecoverTriggerDeliveries(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.triggers.TriggerService/RecoverTriggerDeliveries',
+            scalekit_dot_v1_dot_triggers_dot_triggers__pb2.RecoverTriggerDeliveriesRequest.SerializeToString,
+            scalekit_dot_v1_dot_triggers_dot_triggers__pb2.RecoverTriggerDeliveriesResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

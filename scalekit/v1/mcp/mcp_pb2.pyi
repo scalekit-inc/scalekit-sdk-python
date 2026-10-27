@@ -10,11 +10,21 @@ from google.protobuf import wrappers_pb2 as _wrappers_pb2
 from protoc_gen_openapiv2.options import annotations_pb2 as _annotations_pb2_1
 from scalekit.v1.options import options_pb2 as _options_pb2
 from google.protobuf.internal import containers as _containers
+from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Mapping, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
+
+class ToolExposure(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    TOOL_EXPOSURE_UNSPECIFIED: _ClassVar[ToolExposure]
+    DIRECT: _ClassVar[ToolExposure]
+    META: _ClassVar[ToolExposure]
+TOOL_EXPOSURE_UNSPECIFIED: ToolExposure
+DIRECT: ToolExposure
+META: ToolExposure
 
 class CreateMcpRequest(_message.Message):
     __slots__ = ("mcp",)
@@ -104,14 +114,16 @@ class CreateMcpConfigResponse(_message.Message):
     def __init__(self, config: _Optional[_Union[McpConfig, _Mapping]] = ...) -> None: ...
 
 class UpdateMcpConfigRequest(_message.Message):
-    __slots__ = ("config_id", "description", "connection_tool_mappings")
+    __slots__ = ("config_id", "description", "connection_tool_mappings", "tool_exposure")
     CONFIG_ID_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     CONNECTION_TOOL_MAPPINGS_FIELD_NUMBER: _ClassVar[int]
+    TOOL_EXPOSURE_FIELD_NUMBER: _ClassVar[int]
     config_id: str
     description: str
     connection_tool_mappings: _containers.RepeatedCompositeFieldContainer[McpConfigConnectionToolMapping]
-    def __init__(self, config_id: _Optional[str] = ..., description: _Optional[str] = ..., connection_tool_mappings: _Optional[_Iterable[_Union[McpConfigConnectionToolMapping, _Mapping]]] = ...) -> None: ...
+    tool_exposure: ToolExposure
+    def __init__(self, config_id: _Optional[str] = ..., description: _Optional[str] = ..., connection_tool_mappings: _Optional[_Iterable[_Union[McpConfigConnectionToolMapping, _Mapping]]] = ..., tool_exposure: _Optional[_Union[ToolExposure, str]] = ...) -> None: ...
 
 class UpdateMcpConfigResponse(_message.Message):
     __slots__ = ("config",)
@@ -346,18 +358,20 @@ class McpInstance(_message.Message):
     def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., user_identifier: _Optional[str] = ..., config: _Optional[_Union[McpConfig, _Mapping]] = ..., last_used_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., url: _Optional[str] = ...) -> None: ...
 
 class McpConfig(_message.Message):
-    __slots__ = ("id", "name", "description", "connection_tool_mappings", "mcp_server_url")
+    __slots__ = ("id", "name", "description", "connection_tool_mappings", "mcp_server_url", "tool_exposure")
     ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     CONNECTION_TOOL_MAPPINGS_FIELD_NUMBER: _ClassVar[int]
     MCP_SERVER_URL_FIELD_NUMBER: _ClassVar[int]
+    TOOL_EXPOSURE_FIELD_NUMBER: _ClassVar[int]
     id: str
     name: str
     description: str
     connection_tool_mappings: _containers.RepeatedCompositeFieldContainer[McpConfigConnectionToolMapping]
     mcp_server_url: str
-    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., connection_tool_mappings: _Optional[_Iterable[_Union[McpConfigConnectionToolMapping, _Mapping]]] = ..., mcp_server_url: _Optional[str] = ...) -> None: ...
+    tool_exposure: ToolExposure
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., connection_tool_mappings: _Optional[_Iterable[_Union[McpConfigConnectionToolMapping, _Mapping]]] = ..., mcp_server_url: _Optional[str] = ..., tool_exposure: _Optional[_Union[ToolExposure, str]] = ...) -> None: ...
 
 class McpConfigConnectionToolMapping(_message.Message):
     __slots__ = ("connection_id", "connection_name", "provider", "tools", "connected_account_id", "connected_account_status")

@@ -25,7 +25,7 @@ CUSTOM: ProviderType
 ALL: ProviderType
 
 class Provider(_message.Message):
-    __slots__ = ("id", "identifier", "display_name", "description", "categories", "auth_patterns", "icon_src", "display_priority", "coming_soon", "proxy_url", "proxy_enabled", "is_custom", "is_custom_mcp", "metadata")
+    __slots__ = ("id", "identifier", "display_name", "description", "categories", "auth_patterns", "icon_src", "display_priority", "coming_soon", "proxy_url", "proxy_enabled", "is_custom", "is_custom_mcp", "metadata", "openapi_spec_url")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -47,6 +47,7 @@ class Provider(_message.Message):
     IS_CUSTOM_FIELD_NUMBER: _ClassVar[int]
     IS_CUSTOM_MCP_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
+    OPENAPI_SPEC_URL_FIELD_NUMBER: _ClassVar[int]
     id: str
     identifier: str
     display_name: str
@@ -61,7 +62,8 @@ class Provider(_message.Message):
     is_custom: bool
     is_custom_mcp: bool
     metadata: _containers.ScalarMap[str, str]
-    def __init__(self, id: _Optional[str] = ..., identifier: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., categories: _Optional[_Iterable[str]] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., icon_src: _Optional[str] = ..., display_priority: _Optional[int] = ..., coming_soon: bool = ..., proxy_url: _Optional[str] = ..., proxy_enabled: bool = ..., is_custom: bool = ..., is_custom_mcp: bool = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    openapi_spec_url: str
+    def __init__(self, id: _Optional[str] = ..., identifier: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., categories: _Optional[_Iterable[str]] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., icon_src: _Optional[str] = ..., display_priority: _Optional[int] = ..., coming_soon: bool = ..., proxy_url: _Optional[str] = ..., proxy_enabled: bool = ..., is_custom: bool = ..., is_custom_mcp: bool = ..., metadata: _Optional[_Mapping[str, str]] = ..., openapi_spec_url: _Optional[str] = ...) -> None: ...
 
 class CreateProvider(_message.Message):
     __slots__ = ("identifier", "display_name", "description", "categories", "auth_patterns", "icon_src", "display_priority", "coming_soon", "proxy_url", "proxy_enabled")
@@ -94,7 +96,7 @@ class CreateProviderRequest(_message.Message):
     def __init__(self, provider: _Optional[_Union[CreateProvider, _Mapping]] = ...) -> None: ...
 
 class CreateCustomProvider(_message.Message):
-    __slots__ = ("display_name", "description", "auth_patterns", "proxy_url", "proxy_enabled", "icon_src", "metadata")
+    __slots__ = ("display_name", "description", "auth_patterns", "proxy_url", "proxy_enabled", "icon_src", "metadata", "openapi_spec_url")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -109,6 +111,7 @@ class CreateCustomProvider(_message.Message):
     PROXY_ENABLED_FIELD_NUMBER: _ClassVar[int]
     ICON_SRC_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
+    OPENAPI_SPEC_URL_FIELD_NUMBER: _ClassVar[int]
     display_name: str
     description: str
     auth_patterns: _struct_pb2.ListValue
@@ -116,7 +119,8 @@ class CreateCustomProvider(_message.Message):
     proxy_enabled: bool
     icon_src: str
     metadata: _containers.ScalarMap[str, str]
-    def __init__(self, display_name: _Optional[str] = ..., description: _Optional[str] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., proxy_url: _Optional[str] = ..., proxy_enabled: bool = ..., icon_src: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    openapi_spec_url: str
+    def __init__(self, display_name: _Optional[str] = ..., description: _Optional[str] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., proxy_url: _Optional[str] = ..., proxy_enabled: bool = ..., icon_src: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., openapi_spec_url: _Optional[str] = ...) -> None: ...
 
 class CreateCustomProviderRequest(_message.Message):
     __slots__ = ("provider",)
@@ -161,7 +165,7 @@ class UpdateProviderRequest(_message.Message):
     def __init__(self, identifier: _Optional[str] = ..., provider: _Optional[_Union[UpdateProvider, _Mapping]] = ...) -> None: ...
 
 class UpdateCustomProvider(_message.Message):
-    __slots__ = ("display_name", "description", "auth_patterns", "proxy_url", "proxy_enabled", "icon_src", "metadata")
+    __slots__ = ("display_name", "description", "auth_patterns", "proxy_url", "proxy_enabled", "icon_src", "metadata", "openapi_spec_url")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -176,6 +180,7 @@ class UpdateCustomProvider(_message.Message):
     PROXY_ENABLED_FIELD_NUMBER: _ClassVar[int]
     ICON_SRC_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
+    OPENAPI_SPEC_URL_FIELD_NUMBER: _ClassVar[int]
     display_name: str
     description: str
     auth_patterns: _struct_pb2.ListValue
@@ -183,7 +188,8 @@ class UpdateCustomProvider(_message.Message):
     proxy_enabled: bool
     icon_src: str
     metadata: _containers.ScalarMap[str, str]
-    def __init__(self, display_name: _Optional[str] = ..., description: _Optional[str] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., proxy_url: _Optional[str] = ..., proxy_enabled: bool = ..., icon_src: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    openapi_spec_url: str
+    def __init__(self, display_name: _Optional[str] = ..., description: _Optional[str] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., proxy_url: _Optional[str] = ..., proxy_enabled: bool = ..., icon_src: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., openapi_spec_url: _Optional[str] = ...) -> None: ...
 
 class UpdateCustomProviderRequest(_message.Message):
     __slots__ = ("identifier", "provider")
@@ -245,3 +251,45 @@ class DeleteProviderRequest(_message.Message):
 class DeleteProviderResponse(_message.Message):
     __slots__ = ()
     def __init__(self) -> None: ...
+
+class TriggerToolCollectionRequest(_message.Message):
+    __slots__ = ("provider_identifier",)
+    PROVIDER_IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
+    provider_identifier: str
+    def __init__(self, provider_identifier: _Optional[str] = ...) -> None: ...
+
+class GetToolCollectionRunRequest(_message.Message):
+    __slots__ = ("provider_identifier", "run_id")
+    PROVIDER_IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
+    RUN_ID_FIELD_NUMBER: _ClassVar[int]
+    provider_identifier: str
+    run_id: str
+    def __init__(self, provider_identifier: _Optional[str] = ..., run_id: _Optional[str] = ...) -> None: ...
+
+class ToolCollectionRun(_message.Message):
+    __slots__ = ("run_id", "provider_identifier", "status", "total_endpoints", "tools_created", "tools_updated", "tools_deleted", "skipped_tools_json", "error_message", "created_at", "started_at", "finished_at")
+    RUN_ID_FIELD_NUMBER: _ClassVar[int]
+    PROVIDER_IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
+    STATUS_FIELD_NUMBER: _ClassVar[int]
+    TOTAL_ENDPOINTS_FIELD_NUMBER: _ClassVar[int]
+    TOOLS_CREATED_FIELD_NUMBER: _ClassVar[int]
+    TOOLS_UPDATED_FIELD_NUMBER: _ClassVar[int]
+    TOOLS_DELETED_FIELD_NUMBER: _ClassVar[int]
+    SKIPPED_TOOLS_JSON_FIELD_NUMBER: _ClassVar[int]
+    ERROR_MESSAGE_FIELD_NUMBER: _ClassVar[int]
+    CREATED_AT_FIELD_NUMBER: _ClassVar[int]
+    STARTED_AT_FIELD_NUMBER: _ClassVar[int]
+    FINISHED_AT_FIELD_NUMBER: _ClassVar[int]
+    run_id: str
+    provider_identifier: str
+    status: str
+    total_endpoints: int
+    tools_created: int
+    tools_updated: int
+    tools_deleted: int
+    skipped_tools_json: str
+    error_message: str
+    created_at: _timestamp_pb2.Timestamp
+    started_at: _timestamp_pb2.Timestamp
+    finished_at: _timestamp_pb2.Timestamp
+    def __init__(self, run_id: _Optional[str] = ..., provider_identifier: _Optional[str] = ..., status: _Optional[str] = ..., total_endpoints: _Optional[int] = ..., tools_created: _Optional[int] = ..., tools_updated: _Optional[int] = ..., tools_deleted: _Optional[int] = ..., skipped_tools_json: _Optional[str] = ..., error_message: _Optional[str] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., started_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., finished_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...

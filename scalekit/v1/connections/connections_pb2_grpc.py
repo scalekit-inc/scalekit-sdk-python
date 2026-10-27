@@ -115,6 +115,26 @@ class ConnectionServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.UpdateConnectionContextRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
+        self.CreateAppConnection = channel.unary_unary(
+                '/scalekit.v1.connections.ConnectionService/CreateAppConnection',
+                request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.CreateAppConnectionRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.CreateAppConnectionResponse.FromString,
+                )
+        self.GetAppConnection = channel.unary_unary(
+                '/scalekit.v1.connections.ConnectionService/GetAppConnection',
+                request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.GetAppConnectionRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.GetAppConnectionResponse.FromString,
+                )
+        self.UpdateAppConnection = channel.unary_unary(
+                '/scalekit.v1.connections.ConnectionService/UpdateAppConnection',
+                request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.UpdateAppConnectionRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.UpdateAppConnectionResponse.FromString,
+                )
+        self.ListAppConnectionSummaries = channel.unary_unary(
+                '/scalekit.v1.connections.ConnectionService/ListAppConnectionSummaries',
+                request_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ListAppConnectionSummariesRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ListAppConnectionSummariesResponse.FromString,
+                )
 
 
 class ConnectionServiceServicer(object):
@@ -240,6 +260,30 @@ class ConnectionServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def CreateAppConnection(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetAppConnection(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateAppConnection(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListAppConnectionSummaries(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_ConnectionServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -342,6 +386,26 @@ def add_ConnectionServiceServicer_to_server(servicer, server):
                     servicer.UpdateConnectionContext,
                     request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.UpdateConnectionContextRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'CreateAppConnection': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateAppConnection,
+                    request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.CreateAppConnectionRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.CreateAppConnectionResponse.SerializeToString,
+            ),
+            'GetAppConnection': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetAppConnection,
+                    request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.GetAppConnectionRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.GetAppConnectionResponse.SerializeToString,
+            ),
+            'UpdateAppConnection': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateAppConnection,
+                    request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.UpdateAppConnectionRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.UpdateAppConnectionResponse.SerializeToString,
+            ),
+            'ListAppConnectionSummaries': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListAppConnectionSummaries,
+                    request_deserializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ListAppConnectionSummariesRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_connections_dot_connections__pb2.ListAppConnectionSummariesResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -690,5 +754,73 @@ class ConnectionService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connections.ConnectionService/UpdateConnectionContext',
             scalekit_dot_v1_dot_connections_dot_connections__pb2.UpdateConnectionContextRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def CreateAppConnection(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connections.ConnectionService/CreateAppConnection',
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.CreateAppConnectionRequest.SerializeToString,
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.CreateAppConnectionResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetAppConnection(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connections.ConnectionService/GetAppConnection',
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.GetAppConnectionRequest.SerializeToString,
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.GetAppConnectionResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def UpdateAppConnection(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connections.ConnectionService/UpdateAppConnection',
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.UpdateAppConnectionRequest.SerializeToString,
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.UpdateAppConnectionResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListAppConnectionSummaries(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.connections.ConnectionService/ListAppConnectionSummaries',
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.ListAppConnectionSummariesRequest.SerializeToString,
+            scalekit_dot_v1_dot_connections_dot_connections__pb2.ListAppConnectionSummariesResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

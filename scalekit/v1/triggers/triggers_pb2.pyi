@@ -82,6 +82,52 @@ class BatchSubscribeOutcome(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     NOT_FOUND: _ClassVar[BatchSubscribeOutcome]
     FAILED: _ClassVar[BatchSubscribeOutcome]
 
+class BatchDeleteOutcome(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    BATCH_DELETE_OUTCOME_UNSPECIFIED: _ClassVar[BatchDeleteOutcome]
+    BATCH_DELETE_OUTCOME_DELETED: _ClassVar[BatchDeleteOutcome]
+    BATCH_DELETE_OUTCOME_NOT_FOUND: _ClassVar[BatchDeleteOutcome]
+    BATCH_DELETE_OUTCOME_FAILED: _ClassVar[BatchDeleteOutcome]
+    BATCH_DELETE_OUTCOME_NOT_ATTEMPTED: _ClassVar[BatchDeleteOutcome]
+
+class TriggerUsageBucket(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    TRIGGER_USAGE_BUCKET_UNSPECIFIED: _ClassVar[TriggerUsageBucket]
+    TRIGGER_USAGE_BUCKET_DAY: _ClassVar[TriggerUsageBucket]
+    TRIGGER_USAGE_BUCKET_HOUR: _ClassVar[TriggerUsageBucket]
+
+class TriggerDeliveryStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    TRIGGER_DELIVERY_STATUS_UNSPECIFIED: _ClassVar[TriggerDeliveryStatus]
+    TRIGGER_DELIVERY_STATUS_DELIVERED: _ClassVar[TriggerDeliveryStatus]
+    TRIGGER_DELIVERY_STATUS_PENDING: _ClassVar[TriggerDeliveryStatus]
+    TRIGGER_DELIVERY_STATUS_FAILED: _ClassVar[TriggerDeliveryStatus]
+    TRIGGER_DELIVERY_STATUS_RETRYING: _ClassVar[TriggerDeliveryStatus]
+
+class BatchLookupOutcome(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    BATCH_LOOKUP_OUTCOME_UNSPECIFIED: _ClassVar[BatchLookupOutcome]
+    BATCH_LOOKUP_OUTCOME_FOUND: _ClassVar[BatchLookupOutcome]
+    BATCH_LOOKUP_OUTCOME_NOT_FOUND: _ClassVar[BatchLookupOutcome]
+    BATCH_LOOKUP_OUTCOME_RATE_LIMITED: _ClassVar[BatchLookupOutcome]
+    BATCH_LOOKUP_OUTCOME_FAILED: _ClassVar[BatchLookupOutcome]
+    BATCH_LOOKUP_OUTCOME_NOT_ATTEMPTED: _ClassVar[BatchLookupOutcome]
+
+class BatchResendOutcome(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    BATCH_RESEND_OUTCOME_UNSPECIFIED: _ClassVar[BatchResendOutcome]
+    BATCH_RESEND_OUTCOME_QUEUED: _ClassVar[BatchResendOutcome]
+    BATCH_RESEND_OUTCOME_NOT_FOUND: _ClassVar[BatchResendOutcome]
+    BATCH_RESEND_OUTCOME_RATE_LIMITED: _ClassVar[BatchResendOutcome]
+    BATCH_RESEND_OUTCOME_FAILED: _ClassVar[BatchResendOutcome]
+    BATCH_RESEND_OUTCOME_NOT_ATTEMPTED: _ClassVar[BatchResendOutcome]
+
+class TriggerDeliveryAttemptTriggerType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    TRIGGER_DELIVERY_ATTEMPT_TRIGGER_TYPE_UNSPECIFIED: _ClassVar[TriggerDeliveryAttemptTriggerType]
+    TRIGGER_DELIVERY_ATTEMPT_TRIGGER_TYPE_SCHEDULED: _ClassVar[TriggerDeliveryAttemptTriggerType]
+    TRIGGER_DELIVERY_ATTEMPT_TRIGGER_TYPE_MANUAL: _ClassVar[TriggerDeliveryAttemptTriggerType]
+
 class TriggerDeliveryAttemptStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
     TRIGGER_DELIVERY_ATTEMPT_STATUS_UNSPECIFIED: _ClassVar[TriggerDeliveryAttemptStatus]
@@ -130,6 +176,34 @@ ALREADY_SUBSCRIBED: BatchSubscribeOutcome
 REFUSED: BatchSubscribeOutcome
 NOT_FOUND: BatchSubscribeOutcome
 FAILED: BatchSubscribeOutcome
+BATCH_DELETE_OUTCOME_UNSPECIFIED: BatchDeleteOutcome
+BATCH_DELETE_OUTCOME_DELETED: BatchDeleteOutcome
+BATCH_DELETE_OUTCOME_NOT_FOUND: BatchDeleteOutcome
+BATCH_DELETE_OUTCOME_FAILED: BatchDeleteOutcome
+BATCH_DELETE_OUTCOME_NOT_ATTEMPTED: BatchDeleteOutcome
+TRIGGER_USAGE_BUCKET_UNSPECIFIED: TriggerUsageBucket
+TRIGGER_USAGE_BUCKET_DAY: TriggerUsageBucket
+TRIGGER_USAGE_BUCKET_HOUR: TriggerUsageBucket
+TRIGGER_DELIVERY_STATUS_UNSPECIFIED: TriggerDeliveryStatus
+TRIGGER_DELIVERY_STATUS_DELIVERED: TriggerDeliveryStatus
+TRIGGER_DELIVERY_STATUS_PENDING: TriggerDeliveryStatus
+TRIGGER_DELIVERY_STATUS_FAILED: TriggerDeliveryStatus
+TRIGGER_DELIVERY_STATUS_RETRYING: TriggerDeliveryStatus
+BATCH_LOOKUP_OUTCOME_UNSPECIFIED: BatchLookupOutcome
+BATCH_LOOKUP_OUTCOME_FOUND: BatchLookupOutcome
+BATCH_LOOKUP_OUTCOME_NOT_FOUND: BatchLookupOutcome
+BATCH_LOOKUP_OUTCOME_RATE_LIMITED: BatchLookupOutcome
+BATCH_LOOKUP_OUTCOME_FAILED: BatchLookupOutcome
+BATCH_LOOKUP_OUTCOME_NOT_ATTEMPTED: BatchLookupOutcome
+BATCH_RESEND_OUTCOME_UNSPECIFIED: BatchResendOutcome
+BATCH_RESEND_OUTCOME_QUEUED: BatchResendOutcome
+BATCH_RESEND_OUTCOME_NOT_FOUND: BatchResendOutcome
+BATCH_RESEND_OUTCOME_RATE_LIMITED: BatchResendOutcome
+BATCH_RESEND_OUTCOME_FAILED: BatchResendOutcome
+BATCH_RESEND_OUTCOME_NOT_ATTEMPTED: BatchResendOutcome
+TRIGGER_DELIVERY_ATTEMPT_TRIGGER_TYPE_UNSPECIFIED: TriggerDeliveryAttemptTriggerType
+TRIGGER_DELIVERY_ATTEMPT_TRIGGER_TYPE_SCHEDULED: TriggerDeliveryAttemptTriggerType
+TRIGGER_DELIVERY_ATTEMPT_TRIGGER_TYPE_MANUAL: TriggerDeliveryAttemptTriggerType
 TRIGGER_DELIVERY_ATTEMPT_STATUS_UNSPECIFIED: TriggerDeliveryAttemptStatus
 SUCCESS: TriggerDeliveryAttemptStatus
 PENDING: TriggerDeliveryAttemptStatus
@@ -160,7 +234,7 @@ class ConfigField(_message.Message):
     def __init__(self, key: _Optional[str] = ..., display_name: _Optional[str] = ..., help_text: _Optional[str] = ..., placeholder: _Optional[str] = ..., required: bool = ...) -> None: ...
 
 class AvailableTrigger(_message.Message):
-    __slots__ = ("name", "display_name", "description", "provider", "mode", "required_scopes", "min_interval_seconds", "default_interval_seconds", "config_fields", "available", "reason", "remedy", "delivery_scope", "platform_credentials", "refusal_code", "requires_signing_secret", "register_hint", "secret_hint")
+    __slots__ = ("name", "display_name", "description", "provider", "mode", "required_scopes", "min_interval_seconds", "default_interval_seconds", "config_fields", "available", "reason", "remedy", "delivery_scope", "platform_credentials", "refusal_code", "requires_signing_secret", "register_hint", "secret_hint", "provides_bearer_secret")
     NAME_FIELD_NUMBER: _ClassVar[int]
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
@@ -179,6 +253,7 @@ class AvailableTrigger(_message.Message):
     REQUIRES_SIGNING_SECRET_FIELD_NUMBER: _ClassVar[int]
     REGISTER_HINT_FIELD_NUMBER: _ClassVar[int]
     SECRET_HINT_FIELD_NUMBER: _ClassVar[int]
+    PROVIDES_BEARER_SECRET_FIELD_NUMBER: _ClassVar[int]
     name: str
     display_name: str
     description: str
@@ -197,7 +272,8 @@ class AvailableTrigger(_message.Message):
     requires_signing_secret: bool
     register_hint: str
     secret_hint: str
-    def __init__(self, name: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., provider: _Optional[str] = ..., mode: _Optional[_Union[TriggerMode, str]] = ..., required_scopes: _Optional[_Iterable[_Union[RequiredScope, _Mapping]]] = ..., min_interval_seconds: _Optional[int] = ..., default_interval_seconds: _Optional[int] = ..., config_fields: _Optional[_Iterable[_Union[ConfigField, _Mapping]]] = ..., available: bool = ..., reason: _Optional[str] = ..., remedy: _Optional[str] = ..., delivery_scope: _Optional[_Union[TriggerDeliveryScope, str]] = ..., platform_credentials: _Optional[_Union[TriggerPlatformCredentials, str]] = ..., refusal_code: _Optional[_Union[TriggerRefusalCode, str]] = ..., requires_signing_secret: bool = ..., register_hint: _Optional[str] = ..., secret_hint: _Optional[str] = ...) -> None: ...
+    provides_bearer_secret: bool
+    def __init__(self, name: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., provider: _Optional[str] = ..., mode: _Optional[_Union[TriggerMode, str]] = ..., required_scopes: _Optional[_Iterable[_Union[RequiredScope, _Mapping]]] = ..., min_interval_seconds: _Optional[int] = ..., default_interval_seconds: _Optional[int] = ..., config_fields: _Optional[_Iterable[_Union[ConfigField, _Mapping]]] = ..., available: bool = ..., reason: _Optional[str] = ..., remedy: _Optional[str] = ..., delivery_scope: _Optional[_Union[TriggerDeliveryScope, str]] = ..., platform_credentials: _Optional[_Union[TriggerPlatformCredentials, str]] = ..., refusal_code: _Optional[_Union[TriggerRefusalCode, str]] = ..., requires_signing_secret: bool = ..., register_hint: _Optional[str] = ..., secret_hint: _Optional[str] = ..., provides_bearer_secret: bool = ...) -> None: ...
 
 class EligibleAccount(_message.Message):
     __slots__ = ("id", "identifier", "eligible", "reason", "remedy", "health")
@@ -429,6 +505,38 @@ class DeleteTriggerSubscriptionRequest(_message.Message):
     subscription_id: str
     def __init__(self, connection_id: _Optional[str] = ..., subscription_id: _Optional[str] = ...) -> None: ...
 
+class BatchDeleteTriggerSubscriptionsRequest(_message.Message):
+    __slots__ = ("connection_id", "subscription_ids", "trigger_name", "connected_account_ids")
+    CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
+    SUBSCRIPTION_IDS_FIELD_NUMBER: _ClassVar[int]
+    TRIGGER_NAME_FIELD_NUMBER: _ClassVar[int]
+    CONNECTED_ACCOUNT_IDS_FIELD_NUMBER: _ClassVar[int]
+    connection_id: str
+    subscription_ids: _containers.RepeatedScalarFieldContainer[str]
+    trigger_name: str
+    connected_account_ids: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, connection_id: _Optional[str] = ..., subscription_ids: _Optional[_Iterable[str]] = ..., trigger_name: _Optional[str] = ..., connected_account_ids: _Optional[_Iterable[str]] = ...) -> None: ...
+
+class BatchDeleteTriggerSubscriptionResult(_message.Message):
+    __slots__ = ("subscription_id", "connected_account_id", "outcome", "reason")
+    SUBSCRIPTION_ID_FIELD_NUMBER: _ClassVar[int]
+    CONNECTED_ACCOUNT_ID_FIELD_NUMBER: _ClassVar[int]
+    OUTCOME_FIELD_NUMBER: _ClassVar[int]
+    REASON_FIELD_NUMBER: _ClassVar[int]
+    subscription_id: str
+    connected_account_id: str
+    outcome: BatchDeleteOutcome
+    reason: str
+    def __init__(self, subscription_id: _Optional[str] = ..., connected_account_id: _Optional[str] = ..., outcome: _Optional[_Union[BatchDeleteOutcome, str]] = ..., reason: _Optional[str] = ...) -> None: ...
+
+class BatchDeleteTriggerSubscriptionsResponse(_message.Message):
+    __slots__ = ("results", "deleted_count")
+    RESULTS_FIELD_NUMBER: _ClassVar[int]
+    DELETED_COUNT_FIELD_NUMBER: _ClassVar[int]
+    results: _containers.RepeatedCompositeFieldContainer[BatchDeleteTriggerSubscriptionResult]
+    deleted_count: int
+    def __init__(self, results: _Optional[_Iterable[_Union[BatchDeleteTriggerSubscriptionResult, _Mapping]]] = ..., deleted_count: _Optional[int] = ...) -> None: ...
+
 class GetTriggerActivityRequest(_message.Message):
     __slots__ = ()
     def __init__(self) -> None: ...
@@ -455,6 +563,50 @@ class GetTriggerActivityResponse(_message.Message):
     explains_individual_events: bool
     delivery_details_path: str
     def __init__(self, counts: _Optional[_Mapping[str, int]] = ..., window_hours: _Optional[int] = ..., signature_banner: bool = ..., degraded: bool = ..., explains_individual_events: bool = ..., delivery_details_path: _Optional[str] = ...) -> None: ...
+
+class GetTriggerUsageRequest(_message.Message):
+    __slots__ = ("to", "period")
+    FROM_FIELD_NUMBER: _ClassVar[int]
+    TO_FIELD_NUMBER: _ClassVar[int]
+    PERIOD_FIELD_NUMBER: _ClassVar[int]
+    to: str
+    period: str
+    def __init__(self, to: _Optional[str] = ..., period: _Optional[str] = ..., **kwargs) -> None: ...
+
+class GetTriggerUsageResponse(_message.Message):
+    __slots__ = ("to", "today", "days", "period", "bucket", "hours", "current_hour")
+    FROM_FIELD_NUMBER: _ClassVar[int]
+    TO_FIELD_NUMBER: _ClassVar[int]
+    TODAY_FIELD_NUMBER: _ClassVar[int]
+    DAYS_FIELD_NUMBER: _ClassVar[int]
+    PERIOD_FIELD_NUMBER: _ClassVar[int]
+    BUCKET_FIELD_NUMBER: _ClassVar[int]
+    HOURS_FIELD_NUMBER: _ClassVar[int]
+    CURRENT_HOUR_FIELD_NUMBER: _ClassVar[int]
+    to: str
+    today: str
+    days: _containers.RepeatedCompositeFieldContainer[TriggerUsageDay]
+    period: str
+    bucket: TriggerUsageBucket
+    hours: _containers.RepeatedCompositeFieldContainer[TriggerUsageHour]
+    current_hour: str
+    def __init__(self, to: _Optional[str] = ..., today: _Optional[str] = ..., days: _Optional[_Iterable[_Union[TriggerUsageDay, _Mapping]]] = ..., period: _Optional[str] = ..., bucket: _Optional[_Union[TriggerUsageBucket, str]] = ..., hours: _Optional[_Iterable[_Union[TriggerUsageHour, _Mapping]]] = ..., current_hour: _Optional[str] = ..., **kwargs) -> None: ...
+
+class TriggerUsageHour(_message.Message):
+    __slots__ = ("start", "units")
+    START_FIELD_NUMBER: _ClassVar[int]
+    UNITS_FIELD_NUMBER: _ClassVar[int]
+    start: str
+    units: int
+    def __init__(self, start: _Optional[str] = ..., units: _Optional[int] = ...) -> None: ...
+
+class TriggerUsageDay(_message.Message):
+    __slots__ = ("date", "units")
+    DATE_FIELD_NUMBER: _ClassVar[int]
+    UNITS_FIELD_NUMBER: _ClassVar[int]
+    date: str
+    units: int
+    def __init__(self, date: _Optional[str] = ..., units: _Optional[int] = ...) -> None: ...
 
 class TriggerIngressEndpoint(_message.Message):
     __slots__ = ("id", "connection_id", "url", "signing_secret_configured", "masked_signing_secret", "rotation_in_progress", "previous_signing_secret_expires_at", "signing_secret_rotation_id")
@@ -504,6 +656,22 @@ class ConfirmTriggerSigningSecretRotationRequest(_message.Message):
     signing_secret_rotation_id: int
     def __init__(self, connection_id: _Optional[str] = ..., signing_secret_rotation_id: _Optional[int] = ...) -> None: ...
 
+class GenerateTriggerSigningSecretRequest(_message.Message):
+    __slots__ = ("connection_id",)
+    CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
+    connection_id: str
+    def __init__(self, connection_id: _Optional[str] = ...) -> None: ...
+
+class GenerateTriggerSigningSecretResponse(_message.Message):
+    __slots__ = ("endpoint", "signing_secret", "url_with_secret")
+    ENDPOINT_FIELD_NUMBER: _ClassVar[int]
+    SIGNING_SECRET_FIELD_NUMBER: _ClassVar[int]
+    URL_WITH_SECRET_FIELD_NUMBER: _ClassVar[int]
+    endpoint: TriggerIngressEndpoint
+    signing_secret: str
+    url_with_secret: str
+    def __init__(self, endpoint: _Optional[_Union[TriggerIngressEndpoint, _Mapping]] = ..., signing_secret: _Optional[str] = ..., url_with_secret: _Optional[str] = ...) -> None: ...
+
 class SyncTriggerDefinitionsRequest(_message.Message):
     __slots__ = ("provider", "definitions", "provider_metadata")
     PROVIDER_FIELD_NUMBER: _ClassVar[int]
@@ -542,8 +710,188 @@ class ListTriggerDeliveryAttemptsByEndpointResponse(_message.Message):
     attempts: _containers.RepeatedCompositeFieldContainer[TriggerDeliveryAttempt]
     def __init__(self, attempts: _Optional[_Iterable[_Union[TriggerDeliveryAttempt, _Mapping]]] = ...) -> None: ...
 
+class ListTriggerDeliveriesByEndpointRequest(_message.Message):
+    __slots__ = ("endpoint_id", "page_size", "page_token", "status", "channel", "after", "before")
+    ENDPOINT_ID_FIELD_NUMBER: _ClassVar[int]
+    PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
+    PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    STATUS_FIELD_NUMBER: _ClassVar[int]
+    CHANNEL_FIELD_NUMBER: _ClassVar[int]
+    AFTER_FIELD_NUMBER: _ClassVar[int]
+    BEFORE_FIELD_NUMBER: _ClassVar[int]
+    endpoint_id: str
+    page_size: int
+    page_token: str
+    status: TriggerDeliveryStatus
+    channel: str
+    after: _timestamp_pb2.Timestamp
+    before: _timestamp_pb2.Timestamp
+    def __init__(self, endpoint_id: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ..., status: _Optional[_Union[TriggerDeliveryStatus, str]] = ..., channel: _Optional[str] = ..., after: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., before: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+
+class ListTriggerDeliveriesByEndpointResponse(_message.Message):
+    __slots__ = ("deliveries", "next_page_token")
+    DELIVERIES_FIELD_NUMBER: _ClassVar[int]
+    NEXT_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    deliveries: _containers.RepeatedCompositeFieldContainer[TriggerDelivery]
+    next_page_token: str
+    def __init__(self, deliveries: _Optional[_Iterable[_Union[TriggerDelivery, _Mapping]]] = ..., next_page_token: _Optional[str] = ...) -> None: ...
+
+class TriggerDelivery(_message.Message):
+    __slots__ = ("msg_id", "event_id", "message_timestamp", "status", "next_attempt_at", "subscription_id", "trigger_name", "trigger_mode", "connection_id", "connection_provider", "connection_key_id", "endpoint_id")
+    MSG_ID_FIELD_NUMBER: _ClassVar[int]
+    EVENT_ID_FIELD_NUMBER: _ClassVar[int]
+    MESSAGE_TIMESTAMP_FIELD_NUMBER: _ClassVar[int]
+    STATUS_FIELD_NUMBER: _ClassVar[int]
+    NEXT_ATTEMPT_AT_FIELD_NUMBER: _ClassVar[int]
+    SUBSCRIPTION_ID_FIELD_NUMBER: _ClassVar[int]
+    TRIGGER_NAME_FIELD_NUMBER: _ClassVar[int]
+    TRIGGER_MODE_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_PROVIDER_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_KEY_ID_FIELD_NUMBER: _ClassVar[int]
+    ENDPOINT_ID_FIELD_NUMBER: _ClassVar[int]
+    msg_id: str
+    event_id: str
+    message_timestamp: _timestamp_pb2.Timestamp
+    status: TriggerDeliveryStatus
+    next_attempt_at: _timestamp_pb2.Timestamp
+    subscription_id: str
+    trigger_name: str
+    trigger_mode: TriggerMode
+    connection_id: str
+    connection_provider: str
+    connection_key_id: str
+    endpoint_id: str
+    def __init__(self, msg_id: _Optional[str] = ..., event_id: _Optional[str] = ..., message_timestamp: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., status: _Optional[_Union[TriggerDeliveryStatus, str]] = ..., next_attempt_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., subscription_id: _Optional[str] = ..., trigger_name: _Optional[str] = ..., trigger_mode: _Optional[_Union[TriggerMode, str]] = ..., connection_id: _Optional[str] = ..., connection_provider: _Optional[str] = ..., connection_key_id: _Optional[str] = ..., endpoint_id: _Optional[str] = ...) -> None: ...
+
+class ListTriggerDeliveryAttemptsByMessageRequest(_message.Message):
+    __slots__ = ("endpoint_id", "msg_id")
+    ENDPOINT_ID_FIELD_NUMBER: _ClassVar[int]
+    MSG_ID_FIELD_NUMBER: _ClassVar[int]
+    endpoint_id: str
+    msg_id: str
+    def __init__(self, endpoint_id: _Optional[str] = ..., msg_id: _Optional[str] = ...) -> None: ...
+
+class ListTriggerDeliveryAttemptsByMessageResponse(_message.Message):
+    __slots__ = ("attempts", "truncated")
+    ATTEMPTS_FIELD_NUMBER: _ClassVar[int]
+    TRUNCATED_FIELD_NUMBER: _ClassVar[int]
+    attempts: _containers.RepeatedCompositeFieldContainer[TriggerDeliveryAttempt]
+    truncated: bool
+    def __init__(self, attempts: _Optional[_Iterable[_Union[TriggerDeliveryAttempt, _Mapping]]] = ..., truncated: bool = ...) -> None: ...
+
+class LookupTriggerDeliveryRequest(_message.Message):
+    __slots__ = ("id",)
+    ID_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    def __init__(self, id: _Optional[str] = ...) -> None: ...
+
+class LookupTriggerDeliveryResponse(_message.Message):
+    __slots__ = ("msg_id", "event_id", "message_timestamp", "subscription_id", "trigger_name", "trigger_mode", "connection_id", "connection_provider", "connection_key_id", "attempts", "truncated")
+    MSG_ID_FIELD_NUMBER: _ClassVar[int]
+    EVENT_ID_FIELD_NUMBER: _ClassVar[int]
+    MESSAGE_TIMESTAMP_FIELD_NUMBER: _ClassVar[int]
+    SUBSCRIPTION_ID_FIELD_NUMBER: _ClassVar[int]
+    TRIGGER_NAME_FIELD_NUMBER: _ClassVar[int]
+    TRIGGER_MODE_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_PROVIDER_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_KEY_ID_FIELD_NUMBER: _ClassVar[int]
+    ATTEMPTS_FIELD_NUMBER: _ClassVar[int]
+    TRUNCATED_FIELD_NUMBER: _ClassVar[int]
+    msg_id: str
+    event_id: str
+    message_timestamp: _timestamp_pb2.Timestamp
+    subscription_id: str
+    trigger_name: str
+    trigger_mode: TriggerMode
+    connection_id: str
+    connection_provider: str
+    connection_key_id: str
+    attempts: _containers.RepeatedCompositeFieldContainer[TriggerDeliveryAttempt]
+    truncated: bool
+    def __init__(self, msg_id: _Optional[str] = ..., event_id: _Optional[str] = ..., message_timestamp: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., subscription_id: _Optional[str] = ..., trigger_name: _Optional[str] = ..., trigger_mode: _Optional[_Union[TriggerMode, str]] = ..., connection_id: _Optional[str] = ..., connection_provider: _Optional[str] = ..., connection_key_id: _Optional[str] = ..., attempts: _Optional[_Iterable[_Union[TriggerDeliveryAttempt, _Mapping]]] = ..., truncated: bool = ...) -> None: ...
+
+class BatchLookupTriggerDeliveriesRequest(_message.Message):
+    __slots__ = ("ids",)
+    IDS_FIELD_NUMBER: _ClassVar[int]
+    ids: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, ids: _Optional[_Iterable[str]] = ...) -> None: ...
+
+class BatchLookupTriggerDeliveryResult(_message.Message):
+    __slots__ = ("id", "outcome", "reason", "delivery")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    OUTCOME_FIELD_NUMBER: _ClassVar[int]
+    REASON_FIELD_NUMBER: _ClassVar[int]
+    DELIVERY_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    outcome: BatchLookupOutcome
+    reason: str
+    delivery: LookupTriggerDeliveryResponse
+    def __init__(self, id: _Optional[str] = ..., outcome: _Optional[_Union[BatchLookupOutcome, str]] = ..., reason: _Optional[str] = ..., delivery: _Optional[_Union[LookupTriggerDeliveryResponse, _Mapping]] = ...) -> None: ...
+
+class BatchLookupTriggerDeliveriesResponse(_message.Message):
+    __slots__ = ("results", "found_count")
+    RESULTS_FIELD_NUMBER: _ClassVar[int]
+    FOUND_COUNT_FIELD_NUMBER: _ClassVar[int]
+    results: _containers.RepeatedCompositeFieldContainer[BatchLookupTriggerDeliveryResult]
+    found_count: int
+    def __init__(self, results: _Optional[_Iterable[_Union[BatchLookupTriggerDeliveryResult, _Mapping]]] = ..., found_count: _Optional[int] = ...) -> None: ...
+
+class TriggerDeliveryResendTarget(_message.Message):
+    __slots__ = ("msg_id", "endpoint_id")
+    MSG_ID_FIELD_NUMBER: _ClassVar[int]
+    ENDPOINT_ID_FIELD_NUMBER: _ClassVar[int]
+    msg_id: str
+    endpoint_id: str
+    def __init__(self, msg_id: _Optional[str] = ..., endpoint_id: _Optional[str] = ...) -> None: ...
+
+class BatchResendTriggerDeliveriesRequest(_message.Message):
+    __slots__ = ("targets",)
+    TARGETS_FIELD_NUMBER: _ClassVar[int]
+    targets: _containers.RepeatedCompositeFieldContainer[TriggerDeliveryResendTarget]
+    def __init__(self, targets: _Optional[_Iterable[_Union[TriggerDeliveryResendTarget, _Mapping]]] = ...) -> None: ...
+
+class BatchResendTriggerDeliveryResult(_message.Message):
+    __slots__ = ("msg_id", "endpoint_id", "outcome", "reason")
+    MSG_ID_FIELD_NUMBER: _ClassVar[int]
+    ENDPOINT_ID_FIELD_NUMBER: _ClassVar[int]
+    OUTCOME_FIELD_NUMBER: _ClassVar[int]
+    REASON_FIELD_NUMBER: _ClassVar[int]
+    msg_id: str
+    endpoint_id: str
+    outcome: BatchResendOutcome
+    reason: str
+    def __init__(self, msg_id: _Optional[str] = ..., endpoint_id: _Optional[str] = ..., outcome: _Optional[_Union[BatchResendOutcome, str]] = ..., reason: _Optional[str] = ...) -> None: ...
+
+class BatchResendTriggerDeliveriesResponse(_message.Message):
+    __slots__ = ("results", "queued_count")
+    RESULTS_FIELD_NUMBER: _ClassVar[int]
+    QUEUED_COUNT_FIELD_NUMBER: _ClassVar[int]
+    results: _containers.RepeatedCompositeFieldContainer[BatchResendTriggerDeliveryResult]
+    queued_count: int
+    def __init__(self, results: _Optional[_Iterable[_Union[BatchResendTriggerDeliveryResult, _Mapping]]] = ..., queued_count: _Optional[int] = ...) -> None: ...
+
+class RecoverTriggerDeliveriesRequest(_message.Message):
+    __slots__ = ("endpoint_id", "since", "until")
+    ENDPOINT_ID_FIELD_NUMBER: _ClassVar[int]
+    SINCE_FIELD_NUMBER: _ClassVar[int]
+    UNTIL_FIELD_NUMBER: _ClassVar[int]
+    endpoint_id: str
+    since: _timestamp_pb2.Timestamp
+    until: _timestamp_pb2.Timestamp
+    def __init__(self, endpoint_id: _Optional[str] = ..., since: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., until: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+
+class RecoverTriggerDeliveriesResponse(_message.Message):
+    __slots__ = ("task_id", "status")
+    TASK_ID_FIELD_NUMBER: _ClassVar[int]
+    STATUS_FIELD_NUMBER: _ClassVar[int]
+    task_id: str
+    status: str
+    def __init__(self, task_id: _Optional[str] = ..., status: _Optional[str] = ...) -> None: ...
+
 class TriggerDeliveryAttempt(_message.Message):
-    __slots__ = ("id", "endpoint_id", "msg_id", "status", "response_status_code", "response", "timestamp")
+    __slots__ = ("id", "endpoint_id", "msg_id", "status", "response_status_code", "response", "timestamp", "response_duration_ms", "trigger_type", "response_truncated", "endpoint_url")
     ID_FIELD_NUMBER: _ClassVar[int]
     ENDPOINT_ID_FIELD_NUMBER: _ClassVar[int]
     MSG_ID_FIELD_NUMBER: _ClassVar[int]
@@ -551,6 +899,10 @@ class TriggerDeliveryAttempt(_message.Message):
     RESPONSE_STATUS_CODE_FIELD_NUMBER: _ClassVar[int]
     RESPONSE_FIELD_NUMBER: _ClassVar[int]
     TIMESTAMP_FIELD_NUMBER: _ClassVar[int]
+    RESPONSE_DURATION_MS_FIELD_NUMBER: _ClassVar[int]
+    TRIGGER_TYPE_FIELD_NUMBER: _ClassVar[int]
+    RESPONSE_TRUNCATED_FIELD_NUMBER: _ClassVar[int]
+    ENDPOINT_URL_FIELD_NUMBER: _ClassVar[int]
     id: str
     endpoint_id: str
     msg_id: str
@@ -558,7 +910,11 @@ class TriggerDeliveryAttempt(_message.Message):
     response_status_code: int
     response: str
     timestamp: _timestamp_pb2.Timestamp
-    def __init__(self, id: _Optional[str] = ..., endpoint_id: _Optional[str] = ..., msg_id: _Optional[str] = ..., status: _Optional[_Union[TriggerDeliveryAttemptStatus, str]] = ..., response_status_code: _Optional[int] = ..., response: _Optional[str] = ..., timestamp: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+    response_duration_ms: int
+    trigger_type: TriggerDeliveryAttemptTriggerType
+    response_truncated: bool
+    endpoint_url: str
+    def __init__(self, id: _Optional[str] = ..., endpoint_id: _Optional[str] = ..., msg_id: _Optional[str] = ..., status: _Optional[_Union[TriggerDeliveryAttemptStatus, str]] = ..., response_status_code: _Optional[int] = ..., response: _Optional[str] = ..., timestamp: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., response_duration_ms: _Optional[int] = ..., trigger_type: _Optional[_Union[TriggerDeliveryAttemptTriggerType, str]] = ..., response_truncated: bool = ..., endpoint_url: _Optional[str] = ...) -> None: ...
 
 class TriggerWebhookWrapperRequest(_message.Message):
     __slots__ = ("request_body",)

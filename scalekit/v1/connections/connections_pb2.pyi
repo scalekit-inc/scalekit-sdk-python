@@ -4,6 +4,7 @@ from google.api import field_behavior_pb2 as _field_behavior_pb2
 from google.api import visibility_pb2 as _visibility_pb2
 from google.protobuf import duration_pb2 as _duration_pb2
 from google.protobuf import empty_pb2 as _empty_pb2
+from google.protobuf import field_mask_pb2 as _field_mask_pb2
 from google.protobuf import struct_pb2 as _struct_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
 from google.protobuf import wrappers_pb2 as _wrappers_pb2
@@ -73,6 +74,7 @@ class TokenAuthType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     TOKEN_AUTH_TYPE_UNSPECIFIED: _ClassVar[TokenAuthType]
     URL_PARAMS: _ClassVar[TokenAuthType]
     BASIC_AUTH: _ClassVar[TokenAuthType]
+    NONE: _ClassVar[TokenAuthType]
 
 class OIDCScope(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
@@ -134,6 +136,7 @@ class ConnectionProvider(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     IDP_SIMULATOR: _ClassVar[ConnectionProvider]
     SCALEKIT: _ClassVar[ConnectionProvider]
     ADFS: _ClassVar[ConnectionProvider]
+    FACEBOOK: _ClassVar[ConnectionProvider]
 CODE_CHALLENGE_TYPE_UNSPECIFIED: CodeChallengeType
 NUMERIC: CodeChallengeType
 ALPHANUMERIC: CodeChallengeType
@@ -164,6 +167,7 @@ HTTP_REDIRECT: RequestBinding
 TOKEN_AUTH_TYPE_UNSPECIFIED: TokenAuthType
 URL_PARAMS: TokenAuthType
 BASIC_AUTH: TokenAuthType
+NONE: TokenAuthType
 OIDC_SCOPE_UNSPECIFIED: OIDCScope
 openid: OIDCScope
 profile: OIDCScope
@@ -210,6 +214,7 @@ MICROSOFT: ConnectionProvider
 IDP_SIMULATOR: ConnectionProvider
 SCALEKIT: ConnectionProvider
 ADFS: ConnectionProvider
+FACEBOOK: ConnectionProvider
 
 class AssignDomainsToConnectionRequest(_message.Message):
     __slots__ = ("organization_id", "connection_id", "domain_ids")
@@ -254,6 +259,219 @@ class CreateEnvironmentConnectionRequest(_message.Message):
     connection: CreateConnection
     flags: Flags
     def __init__(self, connection: _Optional[_Union[CreateConnection, _Mapping]] = ..., flags: _Optional[_Union[Flags, _Mapping]] = ...) -> None: ...
+
+class CreateAppConnectionRequest(_message.Message):
+    __slots__ = ("connection",)
+    CONNECTION_FIELD_NUMBER: _ClassVar[int]
+    connection: CreateAppConnection
+    def __init__(self, connection: _Optional[_Union[CreateAppConnection, _Mapping]] = ...) -> None: ...
+
+class CreateAppConnection(_message.Message):
+    __slots__ = ("provider", "connection_name", "auth_mode", "provider_configurations")
+    PROVIDER_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_NAME_FIELD_NUMBER: _ClassVar[int]
+    AUTH_MODE_FIELD_NUMBER: _ClassVar[int]
+    PROVIDER_CONFIGURATIONS_FIELD_NUMBER: _ClassVar[int]
+    provider: str
+    connection_name: str
+    auth_mode: ConnectionAuthMode
+    provider_configurations: AppProviderConfigurations
+    def __init__(self, provider: _Optional[str] = ..., connection_name: _Optional[str] = ..., auth_mode: _Optional[_Union[ConnectionAuthMode, str]] = ..., provider_configurations: _Optional[_Union[AppProviderConfigurations, _Mapping]] = ...) -> None: ...
+
+class CreateAppConnectionResponse(_message.Message):
+    __slots__ = ("connection",)
+    CONNECTION_FIELD_NUMBER: _ClassVar[int]
+    connection: AppConnection
+    def __init__(self, connection: _Optional[_Union[AppConnection, _Mapping]] = ...) -> None: ...
+
+class AppConnection(_message.Message):
+    __slots__ = ("id", "type", "create_time", "update_time", "provider", "connection_name", "auth_mode", "connection_mcp_url", "provider_configurations", "oauth_config", "google_dwd_config", "static_config")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    TYPE_FIELD_NUMBER: _ClassVar[int]
+    CREATE_TIME_FIELD_NUMBER: _ClassVar[int]
+    UPDATE_TIME_FIELD_NUMBER: _ClassVar[int]
+    PROVIDER_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_NAME_FIELD_NUMBER: _ClassVar[int]
+    AUTH_MODE_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_MCP_URL_FIELD_NUMBER: _ClassVar[int]
+    PROVIDER_CONFIGURATIONS_FIELD_NUMBER: _ClassVar[int]
+    OAUTH_CONFIG_FIELD_NUMBER: _ClassVar[int]
+    GOOGLE_DWD_CONFIG_FIELD_NUMBER: _ClassVar[int]
+    STATIC_CONFIG_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    type: ConnectionType
+    create_time: _timestamp_pb2.Timestamp
+    update_time: _timestamp_pb2.Timestamp
+    provider: str
+    connection_name: str
+    auth_mode: ConnectionAuthMode
+    connection_mcp_url: str
+    provider_configurations: AppProviderConfigurations
+    oauth_config: AppOAuthConfig
+    google_dwd_config: GoogleDWDConfig
+    static_config: StaticAuthConfig
+    def __init__(self, id: _Optional[str] = ..., type: _Optional[_Union[ConnectionType, str]] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., update_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., provider: _Optional[str] = ..., connection_name: _Optional[str] = ..., auth_mode: _Optional[_Union[ConnectionAuthMode, str]] = ..., connection_mcp_url: _Optional[str] = ..., provider_configurations: _Optional[_Union[AppProviderConfigurations, _Mapping]] = ..., oauth_config: _Optional[_Union[AppOAuthConfig, _Mapping]] = ..., google_dwd_config: _Optional[_Union[GoogleDWDConfig, _Mapping]] = ..., static_config: _Optional[_Union[StaticAuthConfig, _Mapping]] = ...) -> None: ...
+
+class AppOAuthConfig(_message.Message):
+    __slots__ = ("authorize_uri", "token_uri", "user_info_uri", "client_id", "client_secret", "scopes", "redirect_uri", "pkce_enabled", "prompt", "use_scalekit_creds", "access_type", "token_access_type", "is_cimd", "optional_scopes", "extra_authorize_params", "token_endpoint_auth_method", "scope_selection_allowed", "required_scopes", "required_optional_scopes")
+    class TokenEndpointAuthMethod(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+        __slots__ = ()
+        TOKEN_ENDPOINT_AUTH_METHOD_UNSPECIFIED: _ClassVar[AppOAuthConfig.TokenEndpointAuthMethod]
+        NONE: _ClassVar[AppOAuthConfig.TokenEndpointAuthMethod]
+        BASIC_AUTH: _ClassVar[AppOAuthConfig.TokenEndpointAuthMethod]
+        REQUEST_BODY: _ClassVar[AppOAuthConfig.TokenEndpointAuthMethod]
+        DEFAULT: _ClassVar[AppOAuthConfig.TokenEndpointAuthMethod]
+    TOKEN_ENDPOINT_AUTH_METHOD_UNSPECIFIED: AppOAuthConfig.TokenEndpointAuthMethod
+    NONE: AppOAuthConfig.TokenEndpointAuthMethod
+    BASIC_AUTH: AppOAuthConfig.TokenEndpointAuthMethod
+    REQUEST_BODY: AppOAuthConfig.TokenEndpointAuthMethod
+    DEFAULT: AppOAuthConfig.TokenEndpointAuthMethod
+    class ExtraAuthorizeParamsEntry(_message.Message):
+        __slots__ = ("key", "value")
+        KEY_FIELD_NUMBER: _ClassVar[int]
+        VALUE_FIELD_NUMBER: _ClassVar[int]
+        key: str
+        value: str
+        def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
+    AUTHORIZE_URI_FIELD_NUMBER: _ClassVar[int]
+    TOKEN_URI_FIELD_NUMBER: _ClassVar[int]
+    USER_INFO_URI_FIELD_NUMBER: _ClassVar[int]
+    CLIENT_ID_FIELD_NUMBER: _ClassVar[int]
+    CLIENT_SECRET_FIELD_NUMBER: _ClassVar[int]
+    SCOPES_FIELD_NUMBER: _ClassVar[int]
+    REDIRECT_URI_FIELD_NUMBER: _ClassVar[int]
+    PKCE_ENABLED_FIELD_NUMBER: _ClassVar[int]
+    PROMPT_FIELD_NUMBER: _ClassVar[int]
+    USE_SCALEKIT_CREDS_FIELD_NUMBER: _ClassVar[int]
+    ACCESS_TYPE_FIELD_NUMBER: _ClassVar[int]
+    TOKEN_ACCESS_TYPE_FIELD_NUMBER: _ClassVar[int]
+    IS_CIMD_FIELD_NUMBER: _ClassVar[int]
+    OPTIONAL_SCOPES_FIELD_NUMBER: _ClassVar[int]
+    EXTRA_AUTHORIZE_PARAMS_FIELD_NUMBER: _ClassVar[int]
+    TOKEN_ENDPOINT_AUTH_METHOD_FIELD_NUMBER: _ClassVar[int]
+    SCOPE_SELECTION_ALLOWED_FIELD_NUMBER: _ClassVar[int]
+    REQUIRED_SCOPES_FIELD_NUMBER: _ClassVar[int]
+    REQUIRED_OPTIONAL_SCOPES_FIELD_NUMBER: _ClassVar[int]
+    authorize_uri: _wrappers_pb2.StringValue
+    token_uri: _wrappers_pb2.StringValue
+    user_info_uri: _wrappers_pb2.StringValue
+    client_id: _wrappers_pb2.StringValue
+    client_secret: _wrappers_pb2.StringValue
+    scopes: _containers.RepeatedScalarFieldContainer[str]
+    redirect_uri: str
+    pkce_enabled: _wrappers_pb2.BoolValue
+    prompt: _wrappers_pb2.StringValue
+    use_scalekit_creds: _wrappers_pb2.BoolValue
+    access_type: _wrappers_pb2.StringValue
+    token_access_type: _wrappers_pb2.StringValue
+    is_cimd: _wrappers_pb2.BoolValue
+    optional_scopes: OptionalScopes
+    extra_authorize_params: _containers.ScalarMap[str, str]
+    token_endpoint_auth_method: AppOAuthConfig.TokenEndpointAuthMethod
+    scope_selection_allowed: _wrappers_pb2.BoolValue
+    required_scopes: _containers.RepeatedScalarFieldContainer[str]
+    required_optional_scopes: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, authorize_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., token_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., user_info_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_id: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_secret: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., scopes: _Optional[_Iterable[str]] = ..., redirect_uri: _Optional[str] = ..., pkce_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., prompt: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., use_scalekit_creds: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., access_type: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., token_access_type: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., is_cimd: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., optional_scopes: _Optional[_Union[OptionalScopes, _Mapping]] = ..., extra_authorize_params: _Optional[_Mapping[str, str]] = ..., token_endpoint_auth_method: _Optional[_Union[AppOAuthConfig.TokenEndpointAuthMethod, str]] = ..., scope_selection_allowed: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., required_scopes: _Optional[_Iterable[str]] = ..., required_optional_scopes: _Optional[_Iterable[str]] = ...) -> None: ...
+
+class AppProviderConfigurations(_message.Message):
+    __slots__ = ("provider_domain", "slack_connection_type", "googleads_developer_token", "microsoft_tenant_id", "trello_app_name", "smart_fhir_aud", "smart_fhir_domain")
+    PROVIDER_DOMAIN_FIELD_NUMBER: _ClassVar[int]
+    SLACK_CONNECTION_TYPE_FIELD_NUMBER: _ClassVar[int]
+    GOOGLEADS_DEVELOPER_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    MICROSOFT_TENANT_ID_FIELD_NUMBER: _ClassVar[int]
+    TRELLO_APP_NAME_FIELD_NUMBER: _ClassVar[int]
+    SMART_FHIR_AUD_FIELD_NUMBER: _ClassVar[int]
+    SMART_FHIR_DOMAIN_FIELD_NUMBER: _ClassVar[int]
+    provider_domain: str
+    slack_connection_type: str
+    googleads_developer_token: str
+    microsoft_tenant_id: str
+    trello_app_name: str
+    smart_fhir_aud: str
+    smart_fhir_domain: str
+    def __init__(self, provider_domain: _Optional[str] = ..., slack_connection_type: _Optional[str] = ..., googleads_developer_token: _Optional[str] = ..., microsoft_tenant_id: _Optional[str] = ..., trello_app_name: _Optional[str] = ..., smart_fhir_aud: _Optional[str] = ..., smart_fhir_domain: _Optional[str] = ...) -> None: ...
+
+class GetAppConnectionRequest(_message.Message):
+    __slots__ = ("connection_identifier",)
+    CONNECTION_IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
+    connection_identifier: str
+    def __init__(self, connection_identifier: _Optional[str] = ...) -> None: ...
+
+class GetAppConnectionResponse(_message.Message):
+    __slots__ = ("connection",)
+    CONNECTION_FIELD_NUMBER: _ClassVar[int]
+    connection: AppConnection
+    def __init__(self, connection: _Optional[_Union[AppConnection, _Mapping]] = ...) -> None: ...
+
+class UpdateAppConnectionRequest(_message.Message):
+    __slots__ = ("connection_id", "connection", "update_mask")
+    CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_FIELD_NUMBER: _ClassVar[int]
+    UPDATE_MASK_FIELD_NUMBER: _ClassVar[int]
+    connection_id: str
+    connection: AppConnectionUpdate
+    update_mask: _field_mask_pb2.FieldMask
+    def __init__(self, connection_id: _Optional[str] = ..., connection: _Optional[_Union[AppConnectionUpdate, _Mapping]] = ..., update_mask: _Optional[_Union[_field_mask_pb2.FieldMask, _Mapping]] = ...) -> None: ...
+
+class AppConnectionUpdate(_message.Message):
+    __slots__ = ("oauth_config", "google_dwd_config", "static_config", "provider_configurations", "connection_name")
+    OAUTH_CONFIG_FIELD_NUMBER: _ClassVar[int]
+    GOOGLE_DWD_CONFIG_FIELD_NUMBER: _ClassVar[int]
+    STATIC_CONFIG_FIELD_NUMBER: _ClassVar[int]
+    PROVIDER_CONFIGURATIONS_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_NAME_FIELD_NUMBER: _ClassVar[int]
+    oauth_config: AppOAuthConfig
+    google_dwd_config: GoogleDWDConfig
+    static_config: StaticAuthConfig
+    provider_configurations: AppProviderConfigurations
+    connection_name: str
+    def __init__(self, oauth_config: _Optional[_Union[AppOAuthConfig, _Mapping]] = ..., google_dwd_config: _Optional[_Union[GoogleDWDConfig, _Mapping]] = ..., static_config: _Optional[_Union[StaticAuthConfig, _Mapping]] = ..., provider_configurations: _Optional[_Union[AppProviderConfigurations, _Mapping]] = ..., connection_name: _Optional[str] = ...) -> None: ...
+
+class UpdateAppConnectionResponse(_message.Message):
+    __slots__ = ("connection",)
+    CONNECTION_FIELD_NUMBER: _ClassVar[int]
+    connection: AppConnection
+    def __init__(self, connection: _Optional[_Union[AppConnection, _Mapping]] = ...) -> None: ...
+
+class ListAppConnectionSummariesRequest(_message.Message):
+    __slots__ = ("page_size", "page_token", "provider", "query")
+    PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
+    PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    PROVIDER_FIELD_NUMBER: _ClassVar[int]
+    QUERY_FIELD_NUMBER: _ClassVar[int]
+    page_size: int
+    page_token: str
+    provider: str
+    query: str
+    def __init__(self, page_size: _Optional[int] = ..., page_token: _Optional[str] = ..., provider: _Optional[str] = ..., query: _Optional[str] = ...) -> None: ...
+
+class ListAppConnectionSummariesResponse(_message.Message):
+    __slots__ = ("connections", "next_page_token", "prev_page_token", "total_size")
+    CONNECTIONS_FIELD_NUMBER: _ClassVar[int]
+    NEXT_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    PREV_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    TOTAL_SIZE_FIELD_NUMBER: _ClassVar[int]
+    connections: _containers.RepeatedCompositeFieldContainer[AppConnectionSummary]
+    next_page_token: str
+    prev_page_token: str
+    total_size: int
+    def __init__(self, connections: _Optional[_Iterable[_Union[AppConnectionSummary, _Mapping]]] = ..., next_page_token: _Optional[str] = ..., prev_page_token: _Optional[str] = ..., total_size: _Optional[int] = ...) -> None: ...
+
+class AppConnectionSummary(_message.Message):
+    __slots__ = ("id", "connection_name", "provider", "type", "auth_mode", "create_time")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    CONNECTION_NAME_FIELD_NUMBER: _ClassVar[int]
+    PROVIDER_FIELD_NUMBER: _ClassVar[int]
+    TYPE_FIELD_NUMBER: _ClassVar[int]
+    AUTH_MODE_FIELD_NUMBER: _ClassVar[int]
+    CREATE_TIME_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    connection_name: str
+    provider: str
+    type: ConnectionType
+    auth_mode: ConnectionAuthMode
+    create_time: _timestamp_pb2.Timestamp
+    def __init__(self, id: _Optional[str] = ..., connection_name: _Optional[str] = ..., provider: _Optional[str] = ..., type: _Optional[_Union[ConnectionType, str]] = ..., auth_mode: _Optional[_Union[ConnectionAuthMode, str]] = ..., create_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
 class CreateConnectionRequest(_message.Message):
     __slots__ = ("organization_id", "connection")
@@ -606,7 +824,7 @@ class OIDCConnectionConfig(_message.Message):
     def __init__(self, issuer: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., discovery_endpoint: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., authorize_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., token_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., user_info_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., jwks_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_id: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_secret: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., scopes: _Optional[_Iterable[_Union[OIDCScope, str]]] = ..., token_auth_type: _Optional[_Union[TokenAuthType, str]] = ..., redirect_uri: _Optional[str] = ..., pkce_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., idp_logout_required: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., post_logout_redirect_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., backchannel_logout_redirect_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., sync_user_profile_on_login: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., jit_provisioning_with_sso_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ...) -> None: ...
 
 class OAuthConnectionConfig(_message.Message):
-    __slots__ = ("authorize_uri", "token_uri", "user_info_uri", "client_id", "client_secret", "scopes", "redirect_uri", "pkce_enabled", "prompt", "use_platform_creds", "access_type", "custom_scope_name", "sync_user_profile_on_login", "token_access_type", "tenant_id", "is_cimd", "app_name", "optional_scopes", "extensions", "token_endpoint_auth_method", "googleads_developer_token", "scope_selection_allowed", "required_scopes", "required_optional_scopes")
+    __slots__ = ("authorize_uri", "token_uri", "user_info_uri", "client_id", "client_secret", "scopes", "redirect_uri", "pkce_enabled", "prompt", "use_platform_creds", "access_type", "custom_scope_name", "sync_user_profile_on_login", "token_access_type", "tenant_id", "is_cimd", "app_name", "optional_scopes", "extensions", "token_endpoint_auth_method", "googleads_developer_token", "scope_selection_allowed", "required_scopes", "required_optional_scopes", "token_endpoint_auth_type")
     AUTHORIZE_URI_FIELD_NUMBER: _ClassVar[int]
     TOKEN_URI_FIELD_NUMBER: _ClassVar[int]
     USER_INFO_URI_FIELD_NUMBER: _ClassVar[int]
@@ -631,6 +849,7 @@ class OAuthConnectionConfig(_message.Message):
     SCOPE_SELECTION_ALLOWED_FIELD_NUMBER: _ClassVar[int]
     REQUIRED_SCOPES_FIELD_NUMBER: _ClassVar[int]
     REQUIRED_OPTIONAL_SCOPES_FIELD_NUMBER: _ClassVar[int]
+    TOKEN_ENDPOINT_AUTH_TYPE_FIELD_NUMBER: _ClassVar[int]
     authorize_uri: _wrappers_pb2.StringValue
     token_uri: _wrappers_pb2.StringValue
     user_info_uri: _wrappers_pb2.StringValue
@@ -655,7 +874,8 @@ class OAuthConnectionConfig(_message.Message):
     scope_selection_allowed: _wrappers_pb2.BoolValue
     required_scopes: _containers.RepeatedScalarFieldContainer[str]
     required_optional_scopes: _containers.RepeatedScalarFieldContainer[str]
-    def __init__(self, authorize_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., token_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., user_info_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_id: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_secret: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., scopes: _Optional[_Iterable[str]] = ..., redirect_uri: _Optional[str] = ..., pkce_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., prompt: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., use_platform_creds: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., access_type: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., custom_scope_name: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., sync_user_profile_on_login: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., token_access_type: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., tenant_id: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., is_cimd: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., app_name: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., optional_scopes: _Optional[_Union[OptionalScopes, _Mapping]] = ..., extensions: _Optional[_Union[OauthExtensions, _Mapping]] = ..., token_endpoint_auth_method: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., googleads_developer_token: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., scope_selection_allowed: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., required_scopes: _Optional[_Iterable[str]] = ..., required_optional_scopes: _Optional[_Iterable[str]] = ...) -> None: ...
+    token_endpoint_auth_type: TokenAuthType
+    def __init__(self, authorize_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., token_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., user_info_uri: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_id: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., client_secret: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., scopes: _Optional[_Iterable[str]] = ..., redirect_uri: _Optional[str] = ..., pkce_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., prompt: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., use_platform_creds: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., access_type: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., custom_scope_name: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., sync_user_profile_on_login: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., token_access_type: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., tenant_id: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., is_cimd: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., app_name: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., optional_scopes: _Optional[_Union[OptionalScopes, _Mapping]] = ..., extensions: _Optional[_Union[OauthExtensions, _Mapping]] = ..., token_endpoint_auth_method: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., googleads_developer_token: _Optional[_Union[_wrappers_pb2.StringValue, _Mapping]] = ..., scope_selection_allowed: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., required_scopes: _Optional[_Iterable[str]] = ..., required_optional_scopes: _Optional[_Iterable[str]] = ..., token_endpoint_auth_type: _Optional[_Union[TokenAuthType, str]] = ...) -> None: ...
 
 class OauthExtensions(_message.Message):
     __slots__ = ("smart", "extra_authorize_params")
