@@ -513,6 +513,10 @@ class Provider(BaseModel):
     handle protobuf types.
     """
 
+    id: str = Field(
+        "",
+        description="Unique provider ID assigned by the server (for example 'prvd_...'). Read-only.",
+    )
     identifier: str = Field(
         "",
         description="Unique identifier assigned by the server. Read-only.",
@@ -547,6 +551,18 @@ class Provider(BaseModel):
             "Empty dict when none are set."
         ),
     )
+    categories: List[str] = Field(
+        default_factory=list,
+        description="Categories the provider is listed under (for example ['AI', 'Search']). Empty list when none are set.",
+    )
+    display_priority: int = Field(
+        0,
+        description="Sort priority used when listing providers. Read-only.",
+    )
+    coming_soon: bool = Field(
+        False,
+        description="True for providers that are announced but not yet available. Read-only.",
+    )
     is_custom: bool = Field(
         False,
         description="True for all providers created via create_custom_provider.",
@@ -580,6 +596,7 @@ class Provider(BaseModel):
         """
         auth_patterns_raw = MessageToDict(proto.auth_patterns)
         return cls(
+            id=proto.id,
             identifier=proto.identifier,
             display_name=proto.display_name,
             description=proto.description,
@@ -587,6 +604,9 @@ class Provider(BaseModel):
             proxy_enabled=proto.proxy_enabled,
             icon_src=proto.icon_src,
             metadata=dict(proto.metadata),
+            categories=list(proto.categories),
+            display_priority=proto.display_priority,
+            coming_soon=proto.coming_soon,
             is_custom=proto.is_custom,
             is_custom_mcp=proto.is_custom_mcp,
             auth_patterns=[AuthPattern.from_dict(p) for p in auth_patterns_raw],

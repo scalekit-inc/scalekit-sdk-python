@@ -27,6 +27,14 @@ class ListProvidersResponse(BaseModel):
             "page. Empty string when this is the last page."
         ),
     )
+    prev_page_token: str = Field(
+        "",
+        description=(
+            "Pagination cursor for the previous page. Pass this value as "
+            "ListProvidersRequest.page_token to go back one page. Empty string "
+            "on the first page."
+        ),
+    )
     total_size: int = Field(
         0,
         description=(
@@ -46,18 +54,20 @@ class ListProvidersResponse(BaseModel):
         return cls(
             providers=[Provider.from_proto(p) for p in proto_response.providers],
             next_page_token=proto_response.next_page_token,
+            prev_page_token=proto_response.prev_page_token,
             total_size=proto_response.total_size,
         )
 
     def to_dict(self) -> dict:
         """Serialize to a plain Python dict.
 
-        :returns: Dict with 'providers', 'next_page_token', and 'total_size' keys.
+        :returns: Dict with 'providers', 'next_page_token', 'prev_page_token', and 'total_size' keys.
         :rtype: dict
         """
         return {
             "providers": [p.model_dump() for p in self.providers],
             "next_page_token": self.next_page_token,
+            "prev_page_token": self.prev_page_token,
             "total_size": self.total_size,
         }
 

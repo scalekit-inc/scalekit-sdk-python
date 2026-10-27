@@ -18,6 +18,8 @@ class ConnectedAccount(BaseModel):
     connector: Optional[str] = Field(None, description="Connector name")
     last_used_at: Optional[datetime] = Field(None, description="Last used time")
     api_config: Optional[Dict[str, Any]] = Field(None, description="API configuration as dictionary")
+    connection_id: Optional[str] = Field(None, description="ID of the connection this connected account belongs to (for example 'conn_...')")
+    is_org_wide_credential: bool = Field(False, description="True when the account holds a credential shared across the whole organization")
 
     @classmethod
     def from_proto(cls, proto_account: ProtoConnectedAccount) -> 'ConnectedAccount':
@@ -95,7 +97,9 @@ class ConnectedAccount(BaseModel):
             updated_at=updated_at,
             connector=proto_account.connector,
             last_used_at=last_used_at,
-            api_config=api_config_dict
+            api_config=api_config_dict,
+            connection_id=proto_account.connection_id if proto_account.connection_id else None,
+            is_org_wide_credential=proto_account.is_org_wide_credential
         )
 
 
