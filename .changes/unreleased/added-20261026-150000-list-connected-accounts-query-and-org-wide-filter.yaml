@@ -1,0 +1,8 @@
+kind: added
+body: |
+  `list_connected_accounts` (on `client.connected_accounts` and `client.actions`) now takes `query` and `is_org_wide_credential`. `query` searches connected accounts by text (up to 100 characters, ignoring case) across the account identifier, the provider, the connection name and the provider's display name. Before, `client.actions.list_connected_accounts(query=...)` was accepted but silently ignored, and returned every account. `is_org_wide_credential=True` returns only the account that holds the shared credential of an organization-wide connection, and `False` returns only the per-user accounts; leave it unset to get both. When `query` is given, only the connection name and the paging options narrow the search, so use `identifier`, `provider`, `connection_names` and `is_org_wide_credential` without it. Both parameters are optional and added after the existing ones, so existing calls behave as before.
+time: '2026-10-26T15:00:00.000000+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: ''
+  Migration: ''
