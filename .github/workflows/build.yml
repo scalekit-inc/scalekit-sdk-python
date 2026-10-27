@@ -19,7 +19,7 @@ concurrency:
 jobs:
   build:
     name: build
-    runs-on: arc-runner-set
+    runs-on: ubuntu-latest
     if: ${{ !github.event.pull_request.draft }}
     steps:
       - name: Checkout
