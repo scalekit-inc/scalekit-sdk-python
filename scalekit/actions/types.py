@@ -45,6 +45,7 @@ from .models.responses.delete_custom_provider_response import DeleteCustomProvid
 from .models.responses.list_mcp_connected_accounts_response import ListMcpConnectedAccountsResponse
 from .models.responses.create_mcp_session_token_response import CreateMcpSessionTokenResponse
 from .models.mcp_connection_auth_state import McpConnectionAuthState
+from .models.upload_progress import UploadProgress
 
 
 __all__ = [
@@ -98,4 +99,5 @@ __all__ = [
     'ListMcpConnectedAccountsResponse',
     'CreateMcpSessionTokenResponse',
     'McpConnectionAuthState',
+    'UploadProgress',
 ]
