@@ -82,7 +82,7 @@ class ConnectionMethodsTest(unittest.TestCase):
         summary = pb.AppConnectionSummary(id="conn_1", connection_name="x", provider="GMAIL",
                                           type=pb.ConnectionType.OAUTH, auth_mode=pb.ConnectionAuthMode.USER)
         self._reply(pb.ListAppConnectionSummariesResponse(connections=[summary], next_page_token="n", total_size=7))
-        result = self.client.list_connections(provider="gmail", query="mail", page_size=5)
+        result = self.client.list_app_connections(provider="gmail", query="mail", page_size=5)
         request = self.calls[0][1]
         self.assertEqual((request.provider, request.query, request.page_size), ("gmail", "mail", 5))
         self.assertEqual((result.total_size, result.next_page_token, result.connections[0].provider), (7, "n", "GMAIL"))

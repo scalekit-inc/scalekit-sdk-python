@@ -114,7 +114,7 @@ class GoogleDWDSettingsView(GoogleDWDSettings):
 
 
 class AgentKitConnectionSummary(BaseModel):
-    """One row of ``list_connections``."""
+    """One row of ``list_app_connections``."""
 
     id: str
     connection_name: str

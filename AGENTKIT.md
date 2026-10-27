@@ -958,7 +958,7 @@ client.actions.update_connection(
 client.actions.update_connection("gmail-work", oauth=OAuthSettings(extra_authorize_params={}))  # {} / [] clears
 
 conn = client.actions.get_connection("gmail-work")          # by name or id
-page = client.actions.list_connections(provider="gmail", page_size=20)
+page = client.actions.list_app_connections(provider="gmail", page_size=20)
 client.actions.delete_connection("gmail-work")              # raises ConnectionInUseError while accounts or MCP configs use it
 ```
 
@@ -966,7 +966,7 @@ client.actions.delete_connection("gmail-work")              # raises ConnectionI
 |---|---|
 | `create_connection(provider, connection_name=None, auth_mode=None, provider_domain=None)` | The type comes from the connector (a connector with several auth types is refused). `provider_domain` is only for regional connectors such as `MIXPANELMCP` and is never returned. Never retried after a timeout. |
 | `get_connection(connection_name=None, *, connection_id=None)` | Name is case-insensitive. Secrets come back masked (`****1234`). |
-| `list_connections(provider=None, query=None, page_size=None, page_token=None)` | Summaries, newest first. `page_size` defaults to 10, max 100. `query` needs 3+ characters. |
+| `list_app_connections(provider=None, query=None, page_size=None, page_token=None)` | Summaries only (no settings), newest first, from the AgentKit-only API; not the same as `client.connection.list_app_connections`, which is unchanged. `page_size` defaults to 10, max 100. `query` needs 3+ characters. |
 | `update_connection(name=None, *, connection_id=None, new_name=None, oauth=None, google_dwd=None, static=None, provider_configurations=None)` | Partial merge. `None` keeps a value; `[]` or `{}` clears a list or map. Pass one settings group. Sending your own `client_id` or `client_secret` turns `use_scalekit_creds` off unless you set it. |
 | `delete_connection(name=None, *, connection_id=None)` | Uses the existing connection RPC; never retried after a timeout. Raises `ConnectionInUseError` while connected accounts or MCP configs use the connection. |
 

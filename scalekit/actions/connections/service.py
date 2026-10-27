@@ -277,7 +277,7 @@ class ConnectionActions:
             "read", writes=False)
         return connection_from_proto(resp.connection)
 
-    def list_connections(
+    def list_app_connections(
         self,
         provider: Optional[str] = None,
         query: Optional[str] = None,

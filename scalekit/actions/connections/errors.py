@@ -136,7 +136,7 @@ class OutcomeUnknownError(AgentKitConnectionError):
 
     The change may or may not have been applied. Read the connection to check. Updating,
     deleting, enabling and disabling can be safely repeated. For ``create_connection``, check
-    ``list_connections`` before repeating the call.
+    ``list_app_connections`` before repeating the call.
     """
 
     code = OUTCOME_UNKNOWN

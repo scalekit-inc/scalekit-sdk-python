@@ -1229,7 +1229,7 @@ class ActionClient:
         :raises AgentKitConnectionError: on failure; see ``scalekit.actions.connections.errors``.
 
         Never retried automatically after a timeout, because the first attempt may have succeeded. On
-        ``OutcomeUnknownError``, check ``list_connections`` before repeating the call.
+        ``OutcomeUnknownError``, check ``list_app_connections`` before repeating the call.
         """
         return self._connection_actions().create_connection(
             provider, connection_name=connection_name, auth_mode=auth_mode, provider_domain=provider_domain)
@@ -1240,7 +1240,7 @@ class ActionClient:
         """Get one AgentKit connection by name (case-insensitive) or by id (``conn_...``)."""
         return self._connection_actions().get_connection(connection_name, connection_id=connection_id)
 
-    def list_connections(
+    def list_app_connections(
         self,
         provider: Optional[str] = None,
         query: Optional[str] = None,
@@ -1249,10 +1249,14 @@ class ActionClient:
     ) -> AgentKitConnectionList:
         """List AgentKit connections, newest first (summaries only).
 
+        This uses the AgentKit-only connection API and returns summaries (no settings, no enabled flag).
+        It is not the same as ``client.connection.list_app_connections``, which uses the older API and is
+        unchanged: this one matches ``provider`` case-insensitively and supports ``query``.
+
         ``page_size`` defaults to 10 and is at most 100. ``query`` needs at least 3 characters and
         matches name, provider and display name.
         """
-        return self._connection_actions().list_connections(
+        return self._connection_actions().list_app_connections(
             provider=provider, query=query, page_size=page_size, page_token=page_token)
 
     def update_connection(
