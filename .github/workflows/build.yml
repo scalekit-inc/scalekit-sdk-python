@@ -19,7 +19,7 @@ concurrency:
 jobs:
   build:
     name: build
-    runs-on: blacksmith-2vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
     if: ${{ !github.event.pull_request.draft }}
     steps:
       - name: Checkout

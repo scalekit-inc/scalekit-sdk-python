@@ -5338,7 +5338,7 @@ response = scalekit_client.sessions.get_user_sessions(
 )
 
 for session in response[0].sessions:
-    print(f'Session: {session.id}')
+    print(f'Session: {session.session_id}')
 ```
 </dd>
 </dl>
@@ -5532,7 +5532,7 @@ response = scalekit_client.m2m_client.list_organization_clients(
 )
 
 for client in response[0].clients:
-    print(f'Client: {client.id}')
+    print(f'Client: {client.client_id}')
 ```
 </dd>
 </dl>
@@ -6823,7 +6823,7 @@ scalekit_client.resources.revoke_user_consent(
 
 ## Connected Accounts
 
-<details><summary><code>client.connected_accounts.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connected_accounts.py">list_connected_accounts</a>(organization_id?, user_id?, connector?, identifier?, provider?, page_size?, page_token?) -> ListConnectedAccountsResponse</code></summary>
+<details><summary><code>client.connected_accounts.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connected_accounts.py">list_connected_accounts</a>(organization_id?, user_id?, connector?, identifier?, provider?, page_size?, page_token?, connection_names?) -> ListConnectedAccountsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6921,6 +6921,14 @@ for account in response[0].connected_accounts:
 <dd>
 
 **page_token:** `Optional[str]` - Page token for pagination
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**connection_names:** `Optional[List[str]]` - Return only accounts that belong to these connections, by connection name (for example `["github", "slack"]`, up to 20). It cannot be combined with `connector`; the API rejects a request that sets both.
 
 </dd>
 </dl>
@@ -7314,7 +7322,7 @@ scalekit_client.connected_accounts.delete_connected_account(
 </dl>
 </details>
 
-<details><summary><code>client.connected_accounts.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connected_accounts.py">get_magic_link_for_connected_account</a>(connector, identifier, organization_id?, user_id?, connected_account_id?) -> GetMagicLinkForConnectedAccountResponse</code></summary>
+<details><summary><code>client.connected_accounts.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connected_accounts.py">get_magic_link_for_connected_account</a>(connector, identifier, organization_id?, user_id?, connected_account_id?, state?, user_verify_url?) -> GetMagicLinkForConnectedAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -7348,7 +7356,7 @@ response = scalekit_client.connected_accounts.get_magic_link_for_connected_accou
     user_id='usr_123456'
 )
 
-print(f'Magic Link: {response[0].magic_link}')
+print(f'Magic Link: {response[0].link}')
 ```
 </dd>
 </dl>
@@ -7396,6 +7404,22 @@ print(f'Magic Link: {response[0].magic_link}')
 <dd>
 
 **connected_account_id:** `Optional[str]` - ID of the connected account
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**state:** `Optional[str]` - Opaque value (up to 512 characters). It is added to the query parameters of the user verify redirect URL, so your app can validate the user verification.
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**user_verify_url:** `Optional[str]` - Your app's user verify redirect URL (must start with `http://` or `https://`, up to 2048 characters). Use it for the user verification redirect flow; see `verify_connected_account_user`.
 
 </dd>
 </dl>
@@ -7766,7 +7790,7 @@ else:
 <dd>
 
 **request:** `ListProvidersRequest` - Request object for listing providers
-- `provider_type: Optional[int]` - `ProviderType.CUSTOM` (custom only), `ProviderType.DEFAULT` (built-in only), or `ProviderType.ALL`. Defaults to all.
+- `provider_type: Optional[int]` - `ProviderType.CUSTOM` (custom only), `ProviderType.DEFAULT` (built-in only), or `ProviderType.ALL` (built-in and custom). Omit it and only built-in providers are returned, the same as `ProviderType.DEFAULT`; pass `ProviderType.ALL` or `ProviderType.CUSTOM` to include custom providers.
 - `page_size: Optional[int]` - Maximum number of providers to return.
 - `page_token: Optional[str]` - Pagination cursor from a previous response's `next_page_token`.
 - `identifier: Optional[str]` - Filter to a specific provider by identifier.

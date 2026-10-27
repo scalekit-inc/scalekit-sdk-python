@@ -187,7 +187,9 @@ class ProvidersClient:
         :type page_token: Optional[str]
         :param provider_type: ProviderType enum value to filter results.
                               ProviderType.CUSTOM=1, ProviderType.DEFAULT=0,
-                              ProviderType.ALL=2. Pass None to return all.
+                              ProviderType.ALL=2. Pass None to return built-in
+                              providers only (same as DEFAULT); use ALL or CUSTOM
+                              to include custom providers.
         :type provider_type: Optional[int]
         :param identifier: Filter to a specific provider by identifier.
                            Pass None to return all providers.

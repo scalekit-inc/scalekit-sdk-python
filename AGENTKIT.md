@@ -147,7 +147,7 @@ When set, each result is annotated with readiness for this identifier's connecti
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/tools.py">execute_tool</a>(tool_name, identifier, params?, connected_account_id?) -> ExecuteToolResponse</code></summary>
+<details><summary><code>client.tools.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/tools.py">execute_tool</a>(tool_name, identifier, params?, connected_account_id?, connection_name?) -> ExecuteToolResponse</code></summary>
 <dl>
 <dd>
 
@@ -175,13 +175,15 @@ response = scalekit_client.tools.execute_tool(
 
 **connected_account_id:** `Optional[str]` — Use a specific connected account by id.
 
+**connection_name:** `Optional[str]` — The connection's own name (for example `slack-b1fqL2Dr`, not the provider name). Pass it with `identifier` to pick the connected account, or pass `connected_account_id` instead.
+
 </dd>
 </dl>
 </details>
 
 ## Connected Accounts
 
-<details><summary><code>client.connected_accounts.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connected_accounts.py">list_connected_accounts</a>(organization_id?, user_id?, connector?, identifier?, provider?, page_size?, page_token?) -> ListConnectedAccountsResponse</code></summary>
+<details><summary><code>client.connected_accounts.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connected_accounts.py">list_connected_accounts</a>(organization_id?, user_id?, connector?, identifier?, provider?, page_size?, page_token?, connection_names?) -> ListConnectedAccountsResponse</code></summary>
 <dl>
 <dd>
 
@@ -279,6 +281,14 @@ for account in response[0].connected_accounts:
 <dd>
 
 **page_token:** `Optional[str]` - Page token for pagination
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**connection_names:** `Optional[List[str]]` - Return only accounts that belong to these connections, by connection name (for example `["github", "slack"]`, up to 20). It cannot be combined with `connector`; the API rejects a request that sets both.
 
 </dd>
 </dl>
@@ -672,7 +682,7 @@ scalekit_client.connected_accounts.delete_connected_account(
 </dl>
 </details>
 
-<details><summary><code>client.connected_accounts.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connected_accounts.py">get_magic_link_for_connected_account</a>(connector, identifier, organization_id?, user_id?, connected_account_id?) -> GetMagicLinkForConnectedAccountResponse</code></summary>
+<details><summary><code>client.connected_accounts.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/connected_accounts.py">get_magic_link_for_connected_account</a>(connector, identifier, organization_id?, user_id?, connected_account_id?, state?, user_verify_url?) -> GetMagicLinkForConnectedAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -706,7 +716,7 @@ response = scalekit_client.connected_accounts.get_magic_link_for_connected_accou
     user_id='usr_123456'
 )
 
-print(f'Magic Link: {response[0].magic_link}')
+print(f'Magic Link: {response[0].link}')
 ```
 </dd>
 </dl>
@@ -754,6 +764,22 @@ print(f'Magic Link: {response[0].magic_link}')
 <dd>
 
 **connected_account_id:** `Optional[str]` - ID of the connected account
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**state:** `Optional[str]` - Opaque value (up to 512 characters). It is added to the query parameters of the user verify redirect URL, so your app can validate the user verification.
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**user_verify_url:** `Optional[str]` - Your app's user verify redirect URL (must start with `http://` or `https://`, up to 2048 characters). Use it for the user verification redirect flow; see `verify_connected_account_user`.
 
 </dd>
 </dl>
@@ -810,6 +836,8 @@ Create, upsert, or update accounts using dict-based auth payloads converted to p
 <dl><dd>
 
 Proxied REST call via `{env_url}/proxy` with `connection_name` and `identifier` headers. Returns a `requests.Response`.
+
+The request times out after **30 seconds** by default, for connecting and for waiting for a response separately. For a provider call that can take longer, pass a larger value as a keyword argument, for example `request(..., timeout=90)`; a request that exceeds the timeout raises `requests.exceptions.Timeout`. Other keyword arguments are passed to the underlying `requests` call.
 
 A `path` that resolves outside the proxy prefix (for example through `..` segments, including percent-encoded or backslash forms) raises `ValueError` before any request is sent. With an `http://` environment URL, this also covers the URL a forward proxy would receive, even when none is configured. Redirects are followed as before, but a redirect to a location outside the proxy prefix is sent without the client's bearer token and without the `connection_name` and `identifier` headers.
 
@@ -992,7 +1020,7 @@ def scalekit_trigger():
 
 Low-level MCP configuration and instance APIs on `client.mcp` ([`scalekit/mcp.py`](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/mcp.py)). For higher-level helpers that return parsed wrappers, use `client.connect.mcp` / `client.actions.mcp` (see [ActionMcp](#connect-and-actions-actionclient)).
 
-<details><summary><code>client.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/mcp.py">list_configs</a>(page_size?, page_token?, filter_id?, filter_provider?, filter_name?, search?) -> ListMcpConfigsResponse</code></summary>
+<details><summary><code>client.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/mcp.py">list_configs</a>(page_size?, page_token?, filter_id?, filter_provider?, filter_name?, filter_mcp_server_url?, search?) -> ListMcpConfigsResponse</code></summary>
 <dl><dd>
 
 ### 📝 Description
@@ -1003,7 +1031,7 @@ Lists MCP server configurations with optional filters.
 
 **page_size**, **page_token** — Pagination.
 
-**filter_id**, **filter_provider**, **filter_name**, **search** — Restrict or search configs.
+**filter_id**, **filter_provider**, **filter_name**, **filter_mcp_server_url**, **search** — Restrict or search configs. `filter_mcp_server_url` returns the config behind one MCP server URL (it is found from the last path segment of the URL).
 
 </dd></dl>
 </details>
@@ -1038,12 +1066,14 @@ Deletes a configuration by id.
 </dd></dl>
 </details>
 
-<details><summary><code>client.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/mcp.py">ensure_instance</a>(name?, config_name, user_identifier) -> EnsureMcpInstanceResponse</code></summary>
+<details><summary><code>client.mcp.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/mcp.py">ensure_instance</a>(name, config_name, user_identifier) -> EnsureMcpInstanceResponse</code></summary>
 <dl><dd>
 
 ### 📝 Description
 
 Creates or returns an MCP instance for a config and user.
+
+`name` (the display name of the instance) is a required positional argument, in this order: `name`, `config_name`, `user_identifier`. Pass `None` to leave it unset, for example `ensure_instance(None, 'my-config', 'user@example.com')`. Leaving the argument out raises `TypeError`.
 
 </dd></dl>
 </details>
