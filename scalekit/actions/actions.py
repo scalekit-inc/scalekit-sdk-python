@@ -350,6 +350,8 @@ class ActionClient:
         connection_names: Optional[List[str]] = None,
         page_size: Optional[int] = None,
         page_token: Optional[str] = None,
+        query: Optional[str] = None,
+        is_org_wide_credential: Optional[bool] = None,
         **kwargs
     ) -> ListConnectedAccountsResponse:
         """List connected accounts with optional filtering.
@@ -366,6 +368,16 @@ class ActionClient:
             page_size: Maximum number of connected accounts per page (optional).
             page_token: ``next_page_token`` from a previous response, to fetch the
                 next page (optional).
+            query: Text to search for (optional, up to 100 characters). Matches anywhere
+                in the account identifier, the provider, the connection name and the
+                provider's display name, ignoring case. When ``query`` is given, only
+                ``connection_name`` (and the paging options) narrow the search;
+                ``identifier``, ``provider``, ``connection_names`` and
+                ``is_org_wide_credential`` are not applied, so use those without ``query``.
+            is_org_wide_credential: For connections that share one credential across the
+                organization: ``True`` returns only the account that holds that shared
+                credential, ``False`` returns only the per-user accounts. Leave as
+                ``None`` to return both (optional).
 
         Returns:
             ListConnectedAccountsResponse containing the matching connected accounts,
@@ -378,6 +390,8 @@ class ActionClient:
             page_size=page_size,
             page_token=page_token,
             connection_names=connection_names,
+            query=query,
+            is_org_wide_credential=is_org_wide_credential,
         )
         return ListConnectedAccountsResponse.from_proto(result_tuple[0])
     

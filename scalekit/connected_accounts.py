@@ -49,6 +49,8 @@ class ConnectedAccountsClient:
         page_size: Optional[int] = None,
         page_token: Optional[str] = None,
         connection_names: Optional[List[str]] = None,
+        query: Optional[str] = None,
+        is_org_wide_credential: Optional[bool] = None,
     ) -> ListConnectedAccountsResponse:
         """
         Method to list connected accounts for a user
@@ -71,6 +73,20 @@ class ConnectedAccountsClient:
                                   connection names (optional). Each entry is the slug name of
                                   a connector, e.g. ``["github", "google-calendar"]``.
         :type                   : ``` List[str] ```
+        :param query            : Text to search for (optional, up to 100 characters). Matches
+                                  anywhere in the account identifier, the provider, the
+                                  connection name and the provider's display name, ignoring
+                                  case. When ``query`` is given, only ``connector`` (and the
+                                  paging options) narrow the search; ``identifier``,
+                                  ``provider``, ``connection_names`` and
+                                  ``is_org_wide_credential`` are not applied, so use those
+                                  without ``query``.
+        :type                   : ``` str ```
+        :param is_org_wide_credential : For connections that share one credential across the
+                                  organization: ``True`` returns only the account that holds
+                                  that shared credential, ``False`` returns only the per-user
+                                  accounts. Leave as ``None`` to return both (optional).
+        :type                   : ``` bool ```
 
         :returns:
             List Connected Accounts Response
@@ -83,6 +99,8 @@ class ConnectedAccountsClient:
             provider=provider,
             page_size=page_size,
             page_token=page_token,
+            query=query,
+            is_org_wide_credential=is_org_wide_credential,
         )
         if connection_names:
             request.connection_names.extend(connection_names)
