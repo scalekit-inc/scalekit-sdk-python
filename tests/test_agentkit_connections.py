@@ -125,7 +125,7 @@ class ConnectionMethodsTest(unittest.TestCase):
 
     def test_dwd_clear_and_provider_configurations_and_rename(self):
         self._reply(pb.UpdateAppConnectionResponse(connection=_app_connection()))
-        self.client.update_connection(connection_id="conn_9", new_name="renamed",
+        self.client.update_connection(connection_id="conn_9", new_connection_name="renamed",
                                       google_dwd=GoogleDWDSettings(required_scopes=[]))
         request = self.calls[0][1]
         self.assertEqual(list(request.update_mask.paths), ["google_dwd_config.required_scopes"])

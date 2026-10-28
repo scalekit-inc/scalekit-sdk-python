@@ -307,7 +307,7 @@ class ConnectionActions:
         connection_name: Optional[str] = None,
         *,
         connection_id: Optional[str] = None,
-        new_name: Optional[str] = None,
+        new_connection_name: Optional[str] = None,
         oauth: Optional[OAuthSettings] = None,
         google_dwd: Optional[GoogleDWDSettings] = None,
         provider_configurations: Optional[ProviderConfigurations] = None,
@@ -315,8 +315,8 @@ class ConnectionActions:
         groups = [g for g in (oauth, google_dwd) if g is not None]
         if len(groups) > 1:
             raise _invalid("Send only one of oauth or google_dwd.")
-        if not groups and provider_configurations is None and new_name is None:
-            raise _invalid("Nothing to update: pass oauth, google_dwd, provider_configurations or new_name.")
+        if not groups and provider_configurations is None and new_connection_name is None:
+            raise _invalid("Nothing to update: pass oauth, google_dwd, provider_configurations or new_connection_name.")
 
         body = pb.AppConnectionUpdate()
         mask: List[str] = []
@@ -330,8 +330,8 @@ class ConnectionActions:
             mask += cleared
         if provider_configurations is not None:
             body.provider_configurations.CopyFrom(_build_provider_configurations(provider_configurations))
-        if new_name is not None:
-            body.connection_name = new_name
+        if new_connection_name is not None:
+            body.connection_name = new_connection_name
 
         cid = self._resolve_id(connection_name, connection_id)
         request = pb.UpdateAppConnectionRequest(connection_id=cid, connection=body)
