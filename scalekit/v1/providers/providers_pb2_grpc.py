@@ -45,6 +45,16 @@ class ProviderServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.DeleteProviderRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.DeleteProviderResponse.FromString,
                 )
+        self.TriggerToolCollection = channel.unary_unary(
+                '/scalekit.v1.providers.ProviderService/TriggerToolCollection',
+                request_serializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.TriggerToolCollectionRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.ToolCollectionRun.FromString,
+                )
+        self.GetToolCollectionRun = channel.unary_unary(
+                '/scalekit.v1.providers.ProviderService/GetToolCollectionRun',
+                request_serializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.GetToolCollectionRunRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.ToolCollectionRun.FromString,
+                )
         self.ListProviders = channel.unary_unary(
                 '/scalekit.v1.providers.ProviderService/ListProviders',
                 request_serializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.ListProvidersRequest.SerializeToString,
@@ -92,6 +102,19 @@ class ProviderServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def DeleteCustomProvider(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def TriggerToolCollection(self, request, context):
+        """Queues an async ToolCollectionRun and returns immediately; poll GetToolCollectionRun for progress.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetToolCollectionRun(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -151,6 +174,16 @@ def add_ProviderServiceServicer_to_server(servicer, server):
                     servicer.DeleteCustomProvider,
                     request_deserializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.DeleteProviderRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.DeleteProviderResponse.SerializeToString,
+            ),
+            'TriggerToolCollection': grpc.unary_unary_rpc_method_handler(
+                    servicer.TriggerToolCollection,
+                    request_deserializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.TriggerToolCollectionRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.ToolCollectionRun.SerializeToString,
+            ),
+            'GetToolCollectionRun': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetToolCollectionRun,
+                    request_deserializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.GetToolCollectionRunRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_providers_dot_providers__pb2.ToolCollectionRun.SerializeToString,
             ),
             'ListProviders': grpc.unary_unary_rpc_method_handler(
                     servicer.ListProviders,
@@ -272,6 +305,40 @@ class ProviderService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.providers.ProviderService/DeleteCustomProvider',
             scalekit_dot_v1_dot_providers_dot_providers__pb2.DeleteProviderRequest.SerializeToString,
             scalekit_dot_v1_dot_providers_dot_providers__pb2.DeleteProviderResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def TriggerToolCollection(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.providers.ProviderService/TriggerToolCollection',
+            scalekit_dot_v1_dot_providers_dot_providers__pb2.TriggerToolCollectionRequest.SerializeToString,
+            scalekit_dot_v1_dot_providers_dot_providers__pb2.ToolCollectionRun.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetToolCollectionRun(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.providers.ProviderService/GetToolCollectionRun',
+            scalekit_dot_v1_dot_providers_dot_providers__pb2.GetToolCollectionRunRequest.SerializeToString,
+            scalekit_dot_v1_dot_providers_dot_providers__pb2.ToolCollectionRun.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

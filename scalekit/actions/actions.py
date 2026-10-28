@@ -4,6 +4,11 @@ from datetime import timedelta
 from typing import IO, Optional, Any, List, Dict, Literal, Union, overload
 import requests
 from scalekit.actions import _resumable_upload
+from scalekit.actions.connections.models import (
+    AgentKitConnection, AgentKitConnectionList, AuthMode, GoogleDWDSettings, OAuthSettings,
+    ProviderConfigurations,
+)
+from scalekit.actions.models.mcp_config import tool_exposure_to_proto
 from scalekit.actions.models.upload_progress import UploadProgress
 from scalekit.actions.types import ToolRequest,ExecuteToolResponse,MagicLinkResponse,ListConnectedAccountsResponse,ListToolsResponse,DeleteConnectedAccountResponse,GetConnectedAccountAuthResponse,GetConnectedAccountDetailsResponse,ToolInput, \
     UpdateConnectedAccountResponse,CreateMcpConfigResponse,ListMcpConfigsResponse,UpdateMcpConfigResponse,DeleteMcpConfigResponse, \
@@ -1181,6 +1186,112 @@ class ActionClient:
         return UpdateConnectedAccountResponse.from_proto(proto_response)
 
 
+    # ------------------------------------------------------------------
+    # AgentKit connections
+    #
+    # New methods, thin delegates to ConnectionActions. Types and errors live in
+    # scalekit.actions.connections (OAuthSettings, GoogleDWDSettings, ProviderConfigurations,
+    # AuthMode, errors).
+    # ------------------------------------------------------------------
+
+    def _connection_actions(self):
+        """Create the connection helper on first use, so nothing changes at construction."""
+        helper = self.__dict__.get("_connection_actions_impl")
+        if helper is None:
+            from scalekit.actions.connections.service import ConnectionActions
+            from scalekit.connection import ConnectionClient
+
+            core_client = self.tools.core_client
+            helper = ConnectionActions(core_client, ConnectionClient(core_client))
+            self.__dict__["_connection_actions_impl"] = helper
+        return helper
+
+    def create_connection(
+        self,
+        provider: str,
+        connection_name: Optional[str] = None,
+        auth_mode: Optional[AuthMode] = None,
+        provider_domain: Optional[str] = None,
+    ) -> AgentKitConnection:
+        """Create an AgentKit connection.
+
+        The connection type comes from the connector. Add credentials and options afterwards with
+        ``update_connection``.
+
+        :param provider: Connector identifier, for example ``"gmail"`` (case-insensitive), or a custom
+            connector's identifier.
+        :param connection_name: Letters, digits and hyphens, unique in the environment (case-insensitive).
+            Generated when omitted.
+        :param auth_mode: ``AuthMode.USER`` (default) or ``AuthMode.ORG_WIDE``. Cannot be changed later.
+        :param provider_domain: Only for regional connectors (for example ``"mcp-eu.mixpanel.com"`` for
+            MIXPANELMCP). Create-only and never returned.
+        :returns: The created connection.
+        :raises AgentKitConnectionError: on failure; see ``scalekit.actions.connections.errors``.
+
+        Never retried automatically after a timeout, because the first attempt may have succeeded. On
+        ``OutcomeUnknownError``, check ``list_app_connections`` before repeating the call.
+        """
+        return self._connection_actions().create_connection(
+            provider, connection_name=connection_name, auth_mode=auth_mode, provider_domain=provider_domain)
+
+    def get_connection(
+        self, connection_name: Optional[str] = None, *, connection_id: Optional[str] = None
+    ) -> AgentKitConnection:
+        """Get one AgentKit connection by name (case-insensitive) or by id (``conn_...``)."""
+        return self._connection_actions().get_connection(connection_name, connection_id=connection_id)
+
+    def list_app_connections(
+        self,
+        provider: Optional[str] = None,
+        query: Optional[str] = None,
+        page_size: Optional[int] = None,
+        page_token: Optional[str] = None,
+    ) -> AgentKitConnectionList:
+        """List AgentKit connections, newest first (summaries only).
+
+        This uses the AgentKit-only connection API and returns summaries (no settings, no enabled flag).
+        It is not the same as ``client.connection.list_app_connections``, which uses the older API and is
+        unchanged: this one matches ``provider`` case-insensitively and supports ``query``.
+
+        ``page_size`` defaults to 10 and is at most 100. ``query`` needs at least 3 characters and
+        matches name, provider and display name.
+        """
+        return self._connection_actions().list_app_connections(
+            provider=provider, query=query, page_size=page_size, page_token=page_token)
+
+    def update_connection(
+        self,
+        connection_name: Optional[str] = None,
+        *,
+        connection_id: Optional[str] = None,
+        new_connection_name: Optional[str] = None,
+        oauth: Optional[OAuthSettings] = None,
+        google_dwd: Optional[GoogleDWDSettings] = None,
+        provider_configurations: Optional[ProviderConfigurations] = None,
+    ) -> AgentKitConnection:
+        """Change a connection's settings. Only what you pass changes.
+
+        Pass the connection by name (one extra read to find its id) or by ``connection_id``. Pass at most one
+        of ``oauth`` or ``google_dwd``, optionally with ``provider_configurations``; you can also rename it
+        with ``new_connection_name``, or change ``provider_configurations``, on its own. A field left as
+        ``None`` keeps its stored value; a list or map passed empty (``scopes=[]``,
+        ``extra_authorize_params={}``) clears it. Sending your own ``client_id`` or ``client_secret``
+        turns ``use_scalekit_creds`` off unless you set it. A secret echoed back in its masked form is
+        ignored.
+
+        :raises AgentKitConnectionError: on failure; see ``scalekit.actions.connections.errors``.
+        """
+        return self._connection_actions().update_connection(
+            connection_name, connection_id=connection_id, new_connection_name=new_connection_name, oauth=oauth,
+            google_dwd=google_dwd, provider_configurations=provider_configurations)
+
+    def delete_connection(
+        self, connection_name: Optional[str] = None, *, connection_id: Optional[str] = None
+    ) -> None:
+        """Delete a connection. Raises ``ConnectionInUseError`` while connected accounts or MCP configs use it."""
+        self._connection_actions().delete_connection(connection_name, connection_id=connection_id)
+
+
 class ActionMcp:
     """Helper that exposes MCP-specific actions through the ActionClient."""
 
@@ -1263,6 +1374,7 @@ class ActionMcp:
         name: str,
         description: Optional[str] = None,
         connection_tool_mappings: Optional[List[McpConfigConnectionToolMapping]] = None,
+        tool_exposure: Optional[str] = None,
     ) -> CreateMcpConfigResponse:
         """Create a new MCP configuration from the supplied metadata and tool mappings.
 
@@ -1270,12 +1382,17 @@ class ActionMcp:
             name: Human readable name for the configuration.
             description: Optional summary that surfaces in dashboards and APIs.
             connection_tool_mappings: Explicit mapping between connectors and tools.
+            tool_exposure: ``"DIRECT"`` lists every mapped tool in ``tools/list`` (at most
+                25 connections). ``"META"`` gives agents five search and execute tools with
+                no connection limit and must be enabled for your environment. Leave it unset
+                to get ``"DIRECT"``.
 
         Returns:
             CreateMcpConfigResponse: Wrapper containing the created configuration payload.
 
         Raises:
-            ValueError: If `name` is blank or the MCP client is not available.
+            ValueError: If `name` is blank, `tool_exposure` is not ``"DIRECT"`` or
+                ``"META"``, or the MCP client is not available.
         """
         if not name:
             raise ValueError("name is required")
@@ -1283,6 +1400,7 @@ class ActionMcp:
             name=name,
             description=description,
             connection_tool_mappings=connection_tool_mappings or [],
+            tool_exposure=tool_exposure,
         )
         result_tuple = self._client().create_config(mcp_config=proto_config)
         return CreateMcpConfigResponse.from_proto(result_tuple[0])
@@ -1292,6 +1410,7 @@ class ActionMcp:
         config_id: str,
         description: Optional[str] = None,
         connection_tool_mappings: Optional[List[McpConfigConnectionToolMapping]] = None,
+        tool_exposure: Optional[str] = None,
     ) -> UpdateMcpConfigResponse:
         """Update mutable fields on an existing MCP configuration.
 
@@ -1299,12 +1418,16 @@ class ActionMcp:
             config_id: Identifier of the configuration to update.
             description: New description to persist, if provided.
             connection_tool_mappings: Replacement connector-to-tool mappings.
+            tool_exposure: ``"DIRECT"`` or ``"META"``. Omit to keep the stored mode.
+                Switching to ``"DIRECT"`` fails when the configuration has more than 25
+                connections or overlapping tool names.
 
         Returns:
             UpdateMcpConfigResponse: Wrapper containing the updated configuration payload.
 
         Raises:
-            ValueError: If `config_id` is blank or the MCP client is not available.
+            ValueError: If `config_id` is blank, `tool_exposure` is not ``"DIRECT"`` or
+                ``"META"``, or the MCP client is not available.
         """
         if not config_id:
             raise ValueError("config_id is required")
@@ -1315,6 +1438,7 @@ class ActionMcp:
             config_id=config_id,
             description=description,
             connection_tool_mappings=proto_mappings,
+            tool_exposure=tool_exposure_to_proto(tool_exposure) if tool_exposure is not None else None,
         )
         return UpdateMcpConfigResponse.from_proto(result_tuple[0])
 

@@ -246,12 +246,14 @@ class GetWorkspaceResponse(_message.Message):
     def __init__(self, workspace: _Optional[_Union[Workspace, _Mapping]] = ..., context: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
 
 class GetBillingPortalRequest(_message.Message):
-    __slots__ = ("id", "flow_type")
+    __slots__ = ("id", "flow_type", "return_url")
     ID_FIELD_NUMBER: _ClassVar[int]
     FLOW_TYPE_FIELD_NUMBER: _ClassVar[int]
+    RETURN_URL_FIELD_NUMBER: _ClassVar[int]
     id: str
     flow_type: str
-    def __init__(self, id: _Optional[str] = ..., flow_type: _Optional[str] = ...) -> None: ...
+    return_url: str
+    def __init__(self, id: _Optional[str] = ..., flow_type: _Optional[str] = ..., return_url: _Optional[str] = ...) -> None: ...
 
 class GetBillingPortalResponse(_message.Message):
     __slots__ = ("url", "id")

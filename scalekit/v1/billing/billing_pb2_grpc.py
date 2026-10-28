@@ -40,6 +40,21 @@ class BillingServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.AddPaymentMethodRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.AddPaymentMethodResponse.FromString,
                 )
+        self.ListPaymentMethods = channel.unary_unary(
+                '/scalekit.v1.billing.BillingService/ListPaymentMethods',
+                request_serializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.ListPaymentMethodsRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.ListPaymentMethodsResponse.FromString,
+                )
+        self.SetDefaultPaymentMethod = channel.unary_unary(
+                '/scalekit.v1.billing.BillingService/SetDefaultPaymentMethod',
+                request_serializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.SetDefaultPaymentMethodRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.SetDefaultPaymentMethodResponse.FromString,
+                )
+        self.RemovePaymentMethod = channel.unary_unary(
+                '/scalekit.v1.billing.BillingService/RemovePaymentMethod',
+                request_serializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.RemovePaymentMethodRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.RemovePaymentMethodResponse.FromString,
+                )
         self.ListEnvironmentBilling = channel.unary_unary(
                 '/scalekit.v1.billing.BillingService/ListEnvironmentBilling',
                 request_serializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.ListEnvironmentBillingRequest.SerializeToString,
@@ -64,6 +79,21 @@ class BillingServiceStub(object):
                 '/scalekit.v1.billing.BillingService/GetInvoicesDashboardUrl',
                 request_serializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.GetInvoicesDashboardUrlRequest.SerializeToString,
                 response_deserializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.GetInvoicesDashboardUrlResponse.FromString,
+                )
+        self.GetSupportWorkspaceBilling = channel.unary_unary(
+                '/scalekit.v1.billing.BillingService/GetSupportWorkspaceBilling',
+                request_serializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.GetSupportWorkspaceBillingRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.GetSupportWorkspaceBillingResponse.FromString,
+                )
+        self.UpdateSupportEnvironmentBilling = channel.unary_unary(
+                '/scalekit.v1.billing.BillingService/UpdateSupportEnvironmentBilling',
+                request_serializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.UpdateSupportEnvironmentBillingRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.UpdateSupportEnvironmentBillingResponse.FromString,
+                )
+        self.UpdateSupportWorkspaceBillingAccount = channel.unary_unary(
+                '/scalekit.v1.billing.BillingService/UpdateSupportWorkspaceBillingAccount',
+                request_serializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.UpdateSupportWorkspaceBillingAccountRequest.SerializeToString,
+                response_deserializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.UpdateSupportWorkspaceBillingAccountResponse.FromString,
                 )
 
 
@@ -107,6 +137,31 @@ class BillingServiceServicer(object):
 
         Named for what it captures: Stripe Checkout runs in setup mode, so no money moves and nothing is
         charged. Moved here from WorkspaceService, where it was called UnlockProduction.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListPaymentMethods(self, request, context):
+        """ListPaymentMethods lists the cards on the workspace's Stripe customer, marking the invoice default.
+
+        Metronome workspaces manage cards here instead of in the Stripe customer portal, whose payment-method
+        section is off: it offers delete even on the card every invoice charges. Reading the default also
+        fills it in when none is set (the same self-heal the default-card sweep runs).
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def SetDefaultPaymentMethod(self, request, context):
+        """SetDefaultPaymentMethod makes one of the workspace's saved payment methods the invoice default.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def RemovePaymentMethod(self, request, context):
+        """RemovePaymentMethod deletes one of the workspace's saved payment methods, never the invoice default.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -162,6 +217,36 @@ class BillingServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetSupportWorkspaceBilling(self, request, context):
+        """---------------------------------------------------------------------------------------------------
+        Billing support: Scalekit staff acting on a customer's billing on their behalf.
+
+        Every support RPC is callable ONLY by members of the Scalekit platform workspace (the workspace that
+        owns the platform environment). The handler enforces that independently of the declared permission:
+        every customer admin also holds billing:read/billing:write, and the dashboard permission interceptor
+        is a passthrough while dashboard_rbac is off. See specs/billing-enterprise-deals/spec.md (REQ-1).
+        ---------------------------------------------------------------------------------------------------
+
+        GetSupportWorkspaceBilling returns a customer workspace's full billing state for support.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateSupportEnvironmentBilling(self, request, context):
+        """UpdateSupportEnvironmentBilling adds or removes billing items on a customer's production environment.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateSupportWorkspaceBillingAccount(self, request, context):
+        """UpdateSupportWorkspaceBillingAccount changes account-level billing settings on a customer's behalf.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_BillingServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -184,6 +269,21 @@ def add_BillingServiceServicer_to_server(servicer, server):
                     servicer.AddPaymentMethod,
                     request_deserializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.AddPaymentMethodRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.AddPaymentMethodResponse.SerializeToString,
+            ),
+            'ListPaymentMethods': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListPaymentMethods,
+                    request_deserializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.ListPaymentMethodsRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.ListPaymentMethodsResponse.SerializeToString,
+            ),
+            'SetDefaultPaymentMethod': grpc.unary_unary_rpc_method_handler(
+                    servicer.SetDefaultPaymentMethod,
+                    request_deserializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.SetDefaultPaymentMethodRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.SetDefaultPaymentMethodResponse.SerializeToString,
+            ),
+            'RemovePaymentMethod': grpc.unary_unary_rpc_method_handler(
+                    servicer.RemovePaymentMethod,
+                    request_deserializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.RemovePaymentMethodRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.RemovePaymentMethodResponse.SerializeToString,
             ),
             'ListEnvironmentBilling': grpc.unary_unary_rpc_method_handler(
                     servicer.ListEnvironmentBilling,
@@ -209,6 +309,21 @@ def add_BillingServiceServicer_to_server(servicer, server):
                     servicer.GetInvoicesDashboardUrl,
                     request_deserializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.GetInvoicesDashboardUrlRequest.FromString,
                     response_serializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.GetInvoicesDashboardUrlResponse.SerializeToString,
+            ),
+            'GetSupportWorkspaceBilling': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetSupportWorkspaceBilling,
+                    request_deserializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.GetSupportWorkspaceBillingRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.GetSupportWorkspaceBillingResponse.SerializeToString,
+            ),
+            'UpdateSupportEnvironmentBilling': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateSupportEnvironmentBilling,
+                    request_deserializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.UpdateSupportEnvironmentBillingRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.UpdateSupportEnvironmentBillingResponse.SerializeToString,
+            ),
+            'UpdateSupportWorkspaceBillingAccount': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateSupportWorkspaceBillingAccount,
+                    request_deserializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.UpdateSupportWorkspaceBillingAccountRequest.FromString,
+                    response_serializer=scalekit_dot_v1_dot_billing_dot_billing__pb2.UpdateSupportWorkspaceBillingAccountResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -295,6 +410,57 @@ class BillingService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
+    def ListPaymentMethods(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.billing.BillingService/ListPaymentMethods',
+            scalekit_dot_v1_dot_billing_dot_billing__pb2.ListPaymentMethodsRequest.SerializeToString,
+            scalekit_dot_v1_dot_billing_dot_billing__pb2.ListPaymentMethodsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def SetDefaultPaymentMethod(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.billing.BillingService/SetDefaultPaymentMethod',
+            scalekit_dot_v1_dot_billing_dot_billing__pb2.SetDefaultPaymentMethodRequest.SerializeToString,
+            scalekit_dot_v1_dot_billing_dot_billing__pb2.SetDefaultPaymentMethodResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def RemovePaymentMethod(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.billing.BillingService/RemovePaymentMethod',
+            scalekit_dot_v1_dot_billing_dot_billing__pb2.RemovePaymentMethodRequest.SerializeToString,
+            scalekit_dot_v1_dot_billing_dot_billing__pb2.RemovePaymentMethodResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
     def ListEnvironmentBilling(request,
             target,
             options=(),
@@ -376,5 +542,56 @@ class BillingService(object):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.billing.BillingService/GetInvoicesDashboardUrl',
             scalekit_dot_v1_dot_billing_dot_billing__pb2.GetInvoicesDashboardUrlRequest.SerializeToString,
             scalekit_dot_v1_dot_billing_dot_billing__pb2.GetInvoicesDashboardUrlResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetSupportWorkspaceBilling(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.billing.BillingService/GetSupportWorkspaceBilling',
+            scalekit_dot_v1_dot_billing_dot_billing__pb2.GetSupportWorkspaceBillingRequest.SerializeToString,
+            scalekit_dot_v1_dot_billing_dot_billing__pb2.GetSupportWorkspaceBillingResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def UpdateSupportEnvironmentBilling(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.billing.BillingService/UpdateSupportEnvironmentBilling',
+            scalekit_dot_v1_dot_billing_dot_billing__pb2.UpdateSupportEnvironmentBillingRequest.SerializeToString,
+            scalekit_dot_v1_dot_billing_dot_billing__pb2.UpdateSupportEnvironmentBillingResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def UpdateSupportWorkspaceBillingAccount(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.billing.BillingService/UpdateSupportWorkspaceBillingAccount',
+            scalekit_dot_v1_dot_billing_dot_billing__pb2.UpdateSupportWorkspaceBillingAccountRequest.SerializeToString,
+            scalekit_dot_v1_dot_billing_dot_billing__pb2.UpdateSupportWorkspaceBillingAccountResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

@@ -133,7 +133,8 @@ class McpClient:
     def update_config(self,
                       config_id: str,
                       description: Optional[str] = None,
-                      connection_tool_mappings: Optional[List[McpConfigConnectionToolMapping]] = None) -> UpdateMcpConfigResponse:
+                      connection_tool_mappings: Optional[List[McpConfigConnectionToolMapping]] = None,
+                      tool_exposure: Optional[int] = None) -> UpdateMcpConfigResponse:
         """
         Method to update an existing MCP Configuration
         :param config_id                 : ID of the MCP Configuration to update
@@ -142,6 +143,8 @@ class McpClient:
         :type                            : ``` str ```
         :param connection_tool_mappings  : New connection tool mappings for the MCP Configuration
         :type                            : ``` List[McpConfigConnectionToolMapping] ```
+        :param tool_exposure             : New tool exposure mode (``ToolExposure.DIRECT`` or ``ToolExposure.META``); omit to keep the stored mode
+        :type                            : ``` int ```
         :returns:
             Update MCP Config Response
         """
@@ -150,6 +153,8 @@ class McpClient:
             request.description = description
         if connection_tool_mappings is not None:
             request.connection_tool_mappings.extend(connection_tool_mappings)
+        if tool_exposure is not None:
+            request.tool_exposure = tool_exposure
         return self.core_client.grpc_exec(
             self.mcp_service.UpdateMcpConfig.with_call,
             request,

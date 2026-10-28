@@ -5,7 +5,22 @@ from pydantic import BaseModel, Field
 from scalekit.v1.mcp.mcp_pb2 import (
     McpConfig as ProtoMcpConfig,
     McpConfigConnectionToolMapping as ProtoConfigMapping,
+    ToolExposure as ProtoToolExposure,
 )
+
+TOOL_EXPOSURE_MODES = ("DIRECT", "META")
+
+
+def tool_exposure_to_proto(value: str) -> int:
+    """Convert ``"DIRECT"`` or ``"META"`` (case-insensitive) to the protobuf enum value.
+
+    Raises:
+        ValueError: If ``value`` is not one of the supported modes.
+    """
+    mode = value.strip().upper() if isinstance(value, str) else value
+    if mode not in TOOL_EXPOSURE_MODES:
+        raise ValueError(f"tool_exposure must be one of {', '.join(TOOL_EXPOSURE_MODES)}")
+    return ProtoToolExposure.Value(mode)
 
 
 class McpConfigConnectionToolMapping(BaseModel):
@@ -78,6 +93,14 @@ class McpConfig(BaseModel):
         None,
         description="URL of the MCP server endpoint associated with this config (read-only)",
     )
+    tool_exposure: Optional[str] = Field(
+        None,
+        description=(
+            "How the virtual MCP server exposes tools: DIRECT lists every mapped tool "
+            "(at most 25 connections); META gives agents five search/execute tools with "
+            "no connection limit. Unset on create means DIRECT."
+        ),
+    )
 
     def to_proto(self) -> ProtoMcpConfig:
         """Convert the model into a protobuf MCP config."""
@@ -86,6 +109,7 @@ class McpConfig(BaseModel):
             name=self.name,
             description=self.description,
             connection_tool_mappings=self.connection_tool_mappings,
+            tool_exposure=self.tool_exposure,
         )
         if self.id is not None:
             proto.id = self.id
@@ -96,6 +120,7 @@ class McpConfig(BaseModel):
         name: str,
         description: Optional[str] = None,
         connection_tool_mappings: Optional[List[McpConfigConnectionToolMapping]] = None,
+        tool_exposure: Optional[str] = None,
     ) -> ProtoMcpConfig:
         """Build a protobuf MCP config from raw parameters."""
 
@@ -107,6 +132,8 @@ class McpConfig(BaseModel):
             proto.connection_tool_mappings.extend(
                 mapping.to_proto() for mapping in connection_tool_mappings
             )
+        if tool_exposure is not None:
+            proto.tool_exposure = tool_exposure_to_proto(tool_exposure)
         return proto
 
     @classmethod
@@ -122,6 +149,12 @@ class McpConfig(BaseModel):
                 for mapping in proto_config.connection_tool_mappings
             ],
             mcp_server_url=proto_config.mcp_server_url or None,
+            tool_exposure=(
+                ProtoToolExposure.Name(proto_config.tool_exposure)
+                if proto_config.HasField("tool_exposure")
+                and proto_config.tool_exposure != ProtoToolExposure.TOOL_EXPOSURE_UNSPECIFIED
+                else None
+            ),
         )
 
     def to_dict(self) -> dict:
@@ -135,6 +168,7 @@ class McpConfig(BaseModel):
                 mapping.model_dump() for mapping in self.connection_tool_mappings
             ],
             "mcp_server_url": self.mcp_server_url,
+            "tool_exposure": self.tool_exposure,
         }
 
     class Config:
