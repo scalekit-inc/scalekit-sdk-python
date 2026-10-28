@@ -151,7 +151,7 @@ class ConnectionMethodsTest(unittest.TestCase):
         with self.assertRaises(errors.InvalidConfigurationError):
             self.client.update_connection(connection_id="conn_9")
         with self.assertRaises(errors.InvalidConfigurationError):
-            self.client.update_connection(connection_id="conn_9", oauth=OAuthSettings(), static={"a": "b"})
+            self.client.update_connection(connection_id="conn_9", oauth=OAuthSettings(), google_dwd=GoogleDWDSettings(scopes=["x"]))
         with self.assertRaises(errors.InvalidConnectionIdError):
             self.client.update_connection(connection_id="gmail", oauth=OAuthSettings(client_id="x"))
         with self.assertRaises(ValueError):

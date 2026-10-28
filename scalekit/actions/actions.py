@@ -1267,13 +1267,12 @@ class ActionClient:
         new_name: Optional[str] = None,
         oauth: Optional[OAuthSettings] = None,
         google_dwd: Optional[GoogleDWDSettings] = None,
-        static: Optional[Dict[str, Any]] = None,
         provider_configurations: Optional[ProviderConfigurations] = None,
     ) -> AgentKitConnection:
         """Change a connection's settings. Only what you pass changes.
 
         Pass the connection by name (one extra read to find its id) or by ``connection_id``. Pass one of
-        ``oauth``, ``google_dwd`` or ``static`` (``provider_configurations`` can go with ``oauth``), and
+        ``oauth`` or ``google_dwd`` (``provider_configurations`` can go with ``oauth``), and
         ``new_name`` to rename. A field left as ``None`` keeps its stored value; a list or map passed
         empty (``scopes=[]``, ``extra_authorize_params={}``) clears it. Sending your own ``client_id`` or
         ``client_secret`` turns ``use_scalekit_creds`` off unless you set it. A secret echoed back in its
@@ -1283,7 +1282,7 @@ class ActionClient:
         """
         return self._connection_actions().update_connection(
             connection_name, connection_id=connection_id, new_name=new_name, oauth=oauth,
-            google_dwd=google_dwd, static=static, provider_configurations=provider_configurations)
+            google_dwd=google_dwd, provider_configurations=provider_configurations)
 
     def delete_connection(
         self, connection_name: Optional[str] = None, *, connection_id: Optional[str] = None

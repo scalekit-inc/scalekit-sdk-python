@@ -6,7 +6,7 @@ settings are not.
 """
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -148,7 +148,6 @@ class AgentKitConnection(BaseModel):
     provider_configurations: Optional[ProviderConfigurations] = None
     oauth: Optional[OAuthSettingsView] = None
     google_dwd: Optional[GoogleDWDSettingsView] = None
-    static: Optional[Dict[str, Any]] = None
 
 
 # ---------------------------------------------------------------------------
@@ -228,8 +227,6 @@ def _provider_configurations_view(cfg) -> Optional[ProviderConfigurations]:
 
 def connection_from_proto(conn: AppConnection) -> AgentKitConnection:
     """Convert a server ``AppConnection`` message into the typed model."""
-    from google.protobuf.json_format import MessageToDict
-
     which = conn.WhichOneof("settings")
     return AgentKitConnection(
         id=conn.id,
@@ -246,9 +243,6 @@ def connection_from_proto(conn: AppConnection) -> AgentKitConnection:
         ),
         oauth=_oauth_view(conn.oauth_config) if which == "oauth_config" else None,
         google_dwd=_dwd_view(conn.google_dwd_config) if which == "google_dwd_config" else None,
-        static=(
-            MessageToDict(conn.static_config.static_config) if which == "static_config" else None
-        ),
     )
 
 

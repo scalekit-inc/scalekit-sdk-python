@@ -9,10 +9,9 @@ gRPC the server clears a list or map only when it arrives empty *and* its path i
 ``update_mask``, so this module adds the path for every list or map you pass as ``[]`` / ``{}``.
 """
 import re
-from typing import Any, Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 from google.protobuf.field_mask_pb2 import FieldMask
-from google.protobuf.struct_pb2 import Struct
 from google.protobuf.wrappers_pb2 import BoolValue, StringValue
 
 from scalekit.actions.connections import errors
@@ -311,14 +310,13 @@ class ConnectionActions:
         new_name: Optional[str] = None,
         oauth: Optional[OAuthSettings] = None,
         google_dwd: Optional[GoogleDWDSettings] = None,
-        static: Optional[Dict[str, Any]] = None,
         provider_configurations: Optional[ProviderConfigurations] = None,
     ) -> AgentKitConnection:
-        groups = [g for g in (oauth, google_dwd, static) if g is not None]
+        groups = [g for g in (oauth, google_dwd) if g is not None]
         if len(groups) > 1:
-            raise _invalid("Send only one of oauth, google_dwd or static.")
+            raise _invalid("Send only one of oauth or google_dwd.")
         if not groups and provider_configurations is None and new_name is None:
-            raise _invalid("Nothing to update: pass oauth, google_dwd, static, provider_configurations or new_name.")
+            raise _invalid("Nothing to update: pass oauth, google_dwd, provider_configurations or new_name.")
 
         body = pb.AppConnectionUpdate()
         mask: List[str] = []
@@ -330,10 +328,6 @@ class ConnectionActions:
             cfg, cleared = _build_dwd(google_dwd)
             body.google_dwd_config.CopyFrom(cfg)
             mask += cleared
-        if static is not None:
-            fields = Struct()
-            fields.update(static)
-            body.static_config.static_config.CopyFrom(fields)
         if provider_configurations is not None:
             body.provider_configurations.CopyFrom(_build_provider_configurations(provider_configurations))
         if new_name is not None:
