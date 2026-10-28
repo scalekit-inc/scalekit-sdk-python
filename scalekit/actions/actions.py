@@ -1271,12 +1271,13 @@ class ActionClient:
     ) -> AgentKitConnection:
         """Change a connection's settings. Only what you pass changes.
 
-        Pass the connection by name (one extra read to find its id) or by ``connection_id``. Pass one of
-        ``oauth`` or ``google_dwd`` (``provider_configurations`` can go with ``oauth``), and
-        ``new_connection_name`` to rename. A field left as ``None`` keeps its stored value; a list or map passed
-        empty (``scopes=[]``, ``extra_authorize_params={}``) clears it. Sending your own ``client_id`` or
-        ``client_secret`` turns ``use_scalekit_creds`` off unless you set it. A secret echoed back in its
-        masked form is ignored.
+        Pass the connection by name (one extra read to find its id) or by ``connection_id``. Pass at most one
+        of ``oauth`` or ``google_dwd``, optionally with ``provider_configurations``; you can also rename it
+        with ``new_connection_name``, or change ``provider_configurations``, on its own. A field left as
+        ``None`` keeps its stored value; a list or map passed empty (``scopes=[]``,
+        ``extra_authorize_params={}``) clears it. Sending your own ``client_id`` or ``client_secret``
+        turns ``use_scalekit_creds`` off unless you set it. A secret echoed back in its masked form is
+        ignored.
 
         :raises AgentKitConnectionError: on failure; see ``scalekit.actions.connections.errors``.
         """
