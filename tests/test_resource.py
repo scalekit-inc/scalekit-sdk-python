@@ -118,6 +118,60 @@ class TestResourceClient(BaseTest):
         self.assertEqual(response[1].code().name, "OK")
         self.assertEqual(len(response[0].consents), 0)
 
+    def _first_consent_id(self):
+        """ Helper to pick a real consent id from the test resource """
+        response = self.scalekit_client.resources.list_user_consents(
+            resource_id=TEST_RESOURCE_ID, page_size=30
+        )
+        if not response[0].consents:
+            self.skipTest("the test resource has no consents")
+        return response[0].consents[0].id
+
+    def test_list_user_consents_with_consent_ids(self):
+        """ Method to test that consent_ids returns only the requested consent """
+        consent_id = self._first_consent_id()
+        response = self.scalekit_client.resources.list_user_consents(
+            resource_id=TEST_RESOURCE_ID, consent_ids=[consent_id]
+        )
+
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertEqual([c.id for c in response[0].consents], [consent_id])
+
+    def test_list_user_consents_with_unknown_consent_id(self):
+        """ Method to test that a valid-format unknown consent id returns an empty list """
+        response = self.scalekit_client.resources.list_user_consents(
+            resource_id=TEST_RESOURCE_ID, consent_ids=["usrcnst_999999999999999999"]
+        )
+
+        self.assertEqual(response[1].code().name, "OK")
+        self.assertEqual(len(response[0].consents), 0)
+
+    def test_list_user_consents_consent_ids_takes_precedence_over_user_ids(self):
+        """ Method to test that consent_ids overrides user_ids (user_ids alone would match nothing) """
+        consent_id = self._first_consent_id()
+        response = self.scalekit_client.resources.list_user_consents(
+            resource_id=TEST_RESOURCE_ID,
+            consent_ids=[consent_id],
+            user_ids=["usr_does_not_exist"],
+        )
+
+        self.assertEqual([c.id for c in response[0].consents], [consent_id])
+
+    def test_list_user_consents_rejects_malformed_consent_id(self):
+        """ Method to test that a malformed consent id is rejected """
+        with self.assertRaises(ScalekitBadRequestException):
+            self.scalekit_client.resources.list_user_consents(
+                resource_id=TEST_RESOURCE_ID, consent_ids=["149633942432021190"]
+            )
+
+    def test_list_user_consents_rejects_more_than_25_consent_ids(self):
+        """ Method to test that more than 25 distinct consent ids are rejected """
+        with self.assertRaises(ScalekitBadRequestException):
+            self.scalekit_client.resources.list_user_consents(
+                resource_id=TEST_RESOURCE_ID,
+                consent_ids=["usrcnst_%d" % i for i in range(1, 27)],
+            )
+
     def test_list_user_consents_without_resource_id(self):
         """ Method to test list user consents without a resource id """
         with self.assertRaises(ValueError) as context:

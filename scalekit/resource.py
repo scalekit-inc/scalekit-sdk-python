@@ -369,6 +369,7 @@ class ResourceClient:
         page_size: Optional[int] = None,
         page_token: Optional[str] = None,
         user_ids: Optional[List[str]] = None,
+        consent_ids: Optional[List[str]] = None,
     ) -> ListResourceUserConsentsResponse:
         """
         Method to list the end-user consents granted against a resource
@@ -377,9 +378,10 @@ class ResourceClient:
         scopes and granted_at. The response also carries total_size plus
         next_page_token / prev_page_token cursors.
 
-        Pass user_ids to match specific external user IDs exactly and
-        case-sensitively. Pass search for a case-insensitive substring match.
-        When both are given, user_ids wins and search is ignored.
+        Pass consent_ids to fetch specific consents by ID. Pass user_ids to match
+        specific external user IDs exactly and case-sensitively. Pass search for a
+        case-insensitive substring match. When several are given, the priority is
+        consent_ids, then user_ids, then search; the lower ones are ignored.
 
         :param resource_id      : Resource id to list consents for (format: res_xxxxx)
         :type                   : ``` str ```
@@ -389,13 +391,22 @@ class ResourceClient:
         :type                   : ``` int ```
         :param page_token       : Page token for pagination
         :type                   : ``` str ```
-        :param user_ids         : Exact match on external user IDs (max 25)
+        :param user_ids         : Exact match on external user IDs (max 25). Ignored when consent_ids is set
+        :type                   : ``` list ```
+        :param consent_ids      : Exact match on consent IDs (format: usrcnst_xxxxx), max 25 distinct.
+                                  IDs that do not exist or belong to another resource are omitted from the result
         :type                   : ``` list ```
         :returns:
             List Resource User Consents Response
         """
         if not resource_id:
             raise ValueError("resource_id is required")
+
+        # The filter overrides search server-side, so attach it only when IDs were supplied.
+        consent_filter = (
+            ResourceUserConsentFilter(external_user_id=user_ids, consent_id=consent_ids)
+            if user_ids or consent_ids else None
+        )
 
         return self.core_client.grpc_exec(
             self.client_service.ListResourceUserConsents.with_call,
@@ -404,7 +415,7 @@ class ResourceClient:
                 search=search,
                 page_size=page_size,
                 page_token=page_token,
-                filter=ResourceUserConsentFilter(external_user_id=user_ids) if user_ids else None,
+                filter=consent_filter,
             )
         )
 
