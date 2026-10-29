@@ -1,6 +1,7 @@
 """Typed models returned by ``client.actions.triggers``.
 
-Every model is immutable and keeps fields this SDK version does not know in
+Every model is frozen (fields cannot be reassigned; nested lists and dicts, such as
+``TriggerSubscription.config``, are ordinary mutable copies) and keeps fields this SDK version does not know in
 ``model.model_extra``. Conventions shared by all of them:
 
 * Enum fields hold the enum member for known values. A value added after this SDK

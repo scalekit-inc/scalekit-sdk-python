@@ -465,6 +465,9 @@ class ActionTriggers:
             ScalekitServiceUnavailableException: The subscription may or may not have
                 been created (the call is not retried); check ``list_subscriptions``
                 before calling again.
+            ScalekitGatewayTimeoutException: The deadline passed; the subscription may
+                still have been created, so check ``list_subscriptions`` before calling
+                again.
 
         Example:
             >>> sub = client.actions.triggers.create_subscription(

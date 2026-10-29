@@ -1052,7 +1052,7 @@ def scalekit_trigger():
 
 ### Managing triggers
 
-`client.actions.triggers` also manages triggers over the network: which triggers a connection offers, who is subscribed, the webhook URL and signing secret a provider uses, and what happened to the events Scalekit delivered to your endpoints. Every method returns a typed, immutable model (enum members for known values, a plain `str` for newer ones; aware UTC `datetime`; `timedelta`; empty page tokens are `None`). Per-method details: [REFERENCE.md → Triggers](REFERENCE.md#triggers).
+`client.actions.triggers` also manages triggers over the network: which triggers a connection offers, who is subscribed, the webhook URL and signing secret a provider uses, and what happened to the events Scalekit delivered to your endpoints. Every method returns a typed, frozen model (fields cannot be reassigned, though nested lists and dicts are ordinary mutable copies; enum members for known values, a plain `str` for newer ones; aware UTC `datetime`; `timedelta`; empty page tokens are `None`). Per-method details: [REFERENCE.md → Triggers](REFERENCE.md#triggers).
 
 **Subscribe connected accounts**
 
@@ -1144,6 +1144,7 @@ Server errors raise the `ScalekitServerException` subclass for the status (all i
 | `ScalekitConflictException` | `RESOURCE_ALREADY_EXISTS` | The subscription already exists, or a secret rotation is already in progress |
 | `ScalekitTooManyRequestsException` | `RATE_LIMITED` or none | Rate limited; never retried by the SDK |
 | `ScalekitServiceUnavailableException` | none | Temporarily unavailable (for `create_subscription`: it may or may not have been created; check `list_subscriptions` before calling again) |
+| `ScalekitGatewayTimeoutException` | none | The deadline passed; for `create_subscription` (and the other calls that could apply twice), the request may still have taken effect: check before calling again |
 | `ScalekitInternalServerException` | `INTERNAL_ERROR` | Server error; for `recover_deliveries`, the recovery may be running |
 
 **Async code**
