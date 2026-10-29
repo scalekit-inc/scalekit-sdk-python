@@ -2,6 +2,7 @@
 
 Skipped unless these are set (tests/.env is loaded like BaseTest does):
   SCALEKIT_ENVIRONMENT_URL (or SCALEKIT_ENV_URL), SCALEKIT_CLIENT_ID, SCALEKIT_CLIENT_SECRET
+and also skipped when triggers are not available for that environment (checked once).
 
 Optional fixtures; each case that needs one is skipped when it is missing:
   SCALEKIT_TEST_TRIGGER_CONNECTION_ID       a connection that offers a webhook trigger whose
@@ -90,6 +91,17 @@ class TestTriggersApiLive(unittest.TestCase):
         if missing:
             raise unittest.SkipTest(f"live trigger tests need {', '.join(missing)}")
         cls.triggers = ScalekitClient(env_url, client_id, client_secret).actions.triggers
+        # An environment without triggers answers every trigger call with 404
+        # RESOURCE_NOT_FOUND. get_activity takes no IDs, so that answer from it can only
+        # mean triggers are not available here; any other error fails the class setup.
+        try:
+            cls.triggers.get_activity()
+        except ScalekitNotFoundException as exc:
+            if exc.error_code != "RESOURCE_NOT_FOUND":
+                raise
+            raise unittest.SkipTest(
+                "live trigger tests need triggers to be available for this environment"
+            ) from exc
         cls.webhook_connection = _env("SCALEKIT_TEST_TRIGGER_CONNECTION_ID")
         cls.poll_connection = _env("SCALEKIT_TEST_TRIGGER_POLL_CONNECTION_ID")
         cls.poll_account = _env("SCALEKIT_TEST_TRIGGER_POLL_ACCOUNT_ID")
