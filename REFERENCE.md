@@ -8030,7 +8030,7 @@ for trigger in page.triggers:
 <dl>
 <dd>
 
-Lists one page of a connection's connected accounts and whether each can subscribe to the trigger, with its health and how to fix it. Empty page tokens are `None`.
+Lists one page of a connection's connected accounts and whether each can subscribe to the trigger, with its health and how to fix it. Each account's `id` is the connected account ID (`ca_...`) to pass as `connected_account_id` when you subscribe; its `identifier` is the identifier the account was created with (such as your app's user ID or the user's email address). Empty page tokens are `None`.
 </dd>
 </dl>
 </dd>

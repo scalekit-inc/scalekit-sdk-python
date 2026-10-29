@@ -404,6 +404,14 @@ class AccountHealth(_TriggerModel):
 class EligibleAccount(_TriggerModel):
     """A connected account and whether it can subscribe to the trigger.
 
+    Attributes:
+        id: Connected account ID (``ca_...``). Pass it as
+            ``connected_account_id`` when you create a subscription.
+        identifier: The identifier the connected account was created with,
+            such as your app's user ID or the user's email address; the
+            connected account ID when it has none. Not accepted by
+            ``create_subscription``.
+
     Example:
         >>> ids = [a.id for a in page.accounts if a.eligible]
     """
