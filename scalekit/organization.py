@@ -1,3 +1,7 @@
+# Postponed annotations: Optional[TimeUnit] wraps a protobuf enum wrapper
+# object, which typing rejects at import time on Python 3.10.
+from __future__ import annotations
+
 from typing import Optional, List, Dict
 
 from google.protobuf import wrappers_pb2
