@@ -456,10 +456,12 @@ class ListResourceUserConsentsRequest(_message.Message):
     def __init__(self, resource_id: _Optional[str] = ..., search: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ..., filter: _Optional[_Union[ResourceUserConsentFilter, _Mapping]] = ...) -> None: ...
 
 class ResourceUserConsentFilter(_message.Message):
-    __slots__ = ("external_user_id",)
+    __slots__ = ("external_user_id", "consent_id")
     EXTERNAL_USER_ID_FIELD_NUMBER: _ClassVar[int]
+    CONSENT_ID_FIELD_NUMBER: _ClassVar[int]
     external_user_id: _containers.RepeatedScalarFieldContainer[str]
-    def __init__(self, external_user_id: _Optional[_Iterable[str]] = ...) -> None: ...
+    consent_id: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, external_user_id: _Optional[_Iterable[str]] = ..., consent_id: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class ListResourceUserConsentsResponse(_message.Message):
     __slots__ = ("total_size", "next_page_token", "consents", "prev_page_token")
