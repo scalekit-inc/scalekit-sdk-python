@@ -182,7 +182,13 @@ class TestTriggersApiLive(unittest.TestCase):
             self.poll_connection, trigger_name, page_size=100
         )
         self.assertGreaterEqual(page.total_size, len(page.accounts))
-        self.assertIn(self.poll_account, [a.id for a in page.accounts])
+        ids = [a.id for a in page.accounts]
+        while page.next_page_token and self.poll_account not in ids:
+            page = self.triggers.list_eligible_accounts(
+                self.poll_connection, trigger_name, page_size=100, page_token=page.next_page_token
+            )
+            ids += [a.id for a in page.accounts]
+        self.assertIn(self.poll_account, ids)
 
     def test_list_subscriptions(self):
         self._need(SCALEKIT_TEST_TRIGGER_POLL_CONNECTION_ID=self.poll_connection)
@@ -206,7 +212,16 @@ class TestTriggersApiLive(unittest.TestCase):
         page = self.triggers.list_subscriptions(
             self.poll_connection, trigger_name=trigger_name, page_size=100
         )
-        self.assertIn(subscription.id, [s.id for s in page.subscriptions])
+        ids = [s.id for s in page.subscriptions]
+        while page.next_page_token and subscription.id not in ids:
+            page = self.triggers.list_subscriptions(
+                self.poll_connection,
+                trigger_name=trigger_name,
+                page_size=100,
+                page_token=page.next_page_token,
+            )
+            ids += [s.id for s in page.subscriptions]
+        self.assertIn(subscription.id, ids)
 
         self.triggers.delete_subscription(self.poll_connection, subscription.id)
         with self.assertRaises(ScalekitNotFoundException):
@@ -229,7 +244,11 @@ class TestTriggersApiLive(unittest.TestCase):
             config=self.poll_config,
         )
         for result in batch.results:
-            if result.subscription is not None:
+            # ALREADY_SUBSCRIBED returns a subscription that may predate this test; leave it.
+            if (
+                result.outcome == TriggerSubscribeOutcome.CREATED
+                and result.subscription is not None
+            ):
                 self._delete_later(self.poll_connection, result.subscription.id)
         outcomes = {r.connected_account_id: r.outcome for r in batch.results}
         self.assertEqual(outcomes[unknown], TriggerSubscribeOutcome.NOT_FOUND)

@@ -7960,7 +7960,7 @@ for tool in response[0].tools:
 
 ## Triggers
 
-`client.actions.triggers` manages AgentKit triggers: the trigger catalogue of a connection, subscriptions, the webhook URL and signing secret, activity, usage and deliveries to your endpoints. Every method returns a typed, immutable model; enum fields hold members for known values and a plain `str` for newer ones, instants are timezone-aware UTC `datetime`, durations are `timedelta`. Server errors raise the matching `Scalekit*Exception` with a stable `error_code`; batch methods report per-item outcomes instead. `verify_event` (verifying a delivered event) is documented under ScalekitClient above. Walkthrough: [AGENTKIT.md → Managing triggers](AGENTKIT.md#managing-triggers).
+`client.actions.triggers` manages AgentKit triggers: the trigger catalogue of a connection, subscriptions, the webhook URL and signing secret, activity, usage and deliveries to your endpoints. Every method except `delete_subscription` (which returns `None`) returns a typed, immutable model; enum fields hold members for known values and a plain `str` for newer ones, instants are timezone-aware UTC `datetime`, durations are `timedelta`. Server errors raise the matching `Scalekit*Exception` with a stable `error_code`; batch methods report per-item outcomes instead. `verify_event` (verifying a delivered event) is documented under ScalekitClient above. Walkthrough: [AGENTKIT.md → Managing triggers](AGENTKIT.md#managing-triggers).
 
 <details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">list_available</a>(connection_id) -> ListAvailableTriggersResponse</code></summary>
 <dl>

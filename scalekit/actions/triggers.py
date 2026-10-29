@@ -462,8 +462,9 @@ class ActionTriggers:
                 unhealthy, no consent; the message says how to fix it), the account
                 is missing for an account-scoped trigger, or ``interval``/``config``
                 is invalid.
-            ScalekitServiceUnavailableException: The subscription could not be started;
-                nothing was created.
+            ScalekitServiceUnavailableException: The subscription may or may not have
+                been created (the call is not retried); check ``list_subscriptions``
+                before calling again.
 
         Example:
             >>> sub = client.actions.triggers.create_subscription(

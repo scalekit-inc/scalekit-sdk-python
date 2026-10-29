@@ -1143,7 +1143,7 @@ Server errors raise the `ScalekitServerException` subclass for the status (all i
 | `ScalekitBadRequestException` | `TRIGGER_SIGNING_SECRET_NOT_GENERATABLE` | The provider signs its own events: use `set_signing_secret` |
 | `ScalekitConflictException` | `RESOURCE_ALREADY_EXISTS` | The subscription already exists, or a secret rotation is already in progress |
 | `ScalekitTooManyRequestsException` | `RATE_LIMITED` or none | Rate limited; never retried by the SDK |
-| `ScalekitServiceUnavailableException` | none | Temporarily unavailable (for `create_subscription`: nothing was created) |
+| `ScalekitServiceUnavailableException` | none | Temporarily unavailable (for `create_subscription`: it may or may not have been created; check `list_subscriptions` before calling again) |
 | `ScalekitInternalServerException` | `INTERNAL_ERROR` | Server error; for `recover_deliveries`, the recovery may be running |
 
 **Async code**
