@@ -6750,7 +6750,7 @@ for consent in response[0].consents:
 <dl>
 <dd>
 
-**consent_ids:** `Optional[List[str]]` - Exact match on consent IDs (format `usrcnst_...`), max 25 distinct. IDs that do not exist or belong to another resource are omitted from the result. Takes precedence over `user_ids` and `search`.
+**consent_ids:** `Optional[List[str]]` - Exact match on consent IDs (format `usrcnst_xxxxx`), max 25 distinct. IDs that do not exist or belong to another resource are omitted from the result. Takes precedence over `user_ids` and `search`.
 
 </dd>
 </dl>
