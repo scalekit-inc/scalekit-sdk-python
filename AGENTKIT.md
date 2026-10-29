@@ -798,7 +798,7 @@ print(f'Magic Link: {response[0].link}')
 ### Properties
 
 - **`langchain`** — Lazy `LangChain` helper (requires `langchain` installed).
-- **`google`** — Lazy Google ADK helper (requires `google-adk` installed).
+- **`google`** — Lazy Google ADK helper (requires `pip install "scalekit-sdk-python[google-adk]"`).
 - **`mcp`** — [`ActionMcp`](#actionmcp-helper) for MCP operations that return parsed response wrappers.
 - **`triggers`** — [`ActionTriggers`](#trigger-events) to verify and parse trigger events delivered to your endpoint.
 
