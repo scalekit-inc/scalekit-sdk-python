@@ -1,0 +1,20 @@
+kind: added
+body: |
+  `client.actions.triggers` now manages AgentKit triggers: list a connection's triggers and eligible accounts, create and delete subscriptions singly or in batches, set up the webhook URL and rotate its signing secret, read activity and usage, and inspect, resend or recover deliveries. Results are typed, immutable models with timezone-aware `datetime`, `timedelta` and enum fields, and calls that could apply twice are not retried. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/v2.22.0/REFERENCE.md#triggers)
+
+  ```python
+  triggers = client.actions.triggers
+  page = triggers.list_eligible_accounts("conn_123", "example.item.created")
+  batch = triggers.batch_create_subscriptions(
+      "conn_123",
+      "example.item.created",
+      connected_account_ids=[a.id for a in page.accounts if a.eligible],
+  )
+  for r in batch.results:
+      print(r.connected_account_id, r.outcome)  # TriggerSubscribeOutcome.CREATED, .REFUSED, ...
+  ```
+time: '2026-10-28T13:41:53.615728+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: SK-2311
+  Migration: ''
