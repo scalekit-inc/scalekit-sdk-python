@@ -499,7 +499,13 @@ class TriggerSubscription(_TriggerModel):
     """A connected account (or a whole connection) subscribed to a trigger.
 
     Attributes:
-        connected_account_id: ``""`` for a connection-scoped subscription.
+        connected_account_id: Connected account ID (``ca_...``), the value you pass as
+            ``connected_account_id``; ``""`` for a connection-scoped subscription.
+        connected_account_identifier: The identifier the connected account was created
+            with, such as your app's user ID or the user's email address, for labelling
+            the subscription. Not accepted where a connected account ID is expected.
+            ``""`` for a connection-scoped subscription, and when the account has none:
+            show ``connected_account_id`` then.
         requested_interval: The poll interval asked for; ``None`` when none was.
         effective_interval: The poll interval in use; ``None`` for webhook triggers.
         account_health: ``None`` when the server did not report one.
