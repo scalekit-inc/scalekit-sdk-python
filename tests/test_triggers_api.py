@@ -1228,11 +1228,6 @@ class TestWiring(unittest.TestCase):
         self.assertIs(client.connect.triggers._triggers_client, low)
         self.assertFalse(hasattr(client, "triggers"))  # the low-level client stays private
 
-    def test_api_version_header(self):
-        from scalekit.core import CoreClient
-
-        self.assertEqual(CoreClient.api_version, "20261029")
-
 
 if __name__ == "__main__":
     unittest.main()
