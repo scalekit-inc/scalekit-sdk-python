@@ -302,8 +302,7 @@ class ActionTriggers:
     ``ValueError`` before any request.
 
     Example:
-        >>> triggers = client.actions.triggers
-        >>> for trigger in triggers.list_available("conn_123").triggers:
+        >>> for trigger in client.actions.triggers.list_available("conn_123").triggers:
         ...     print(trigger.name, trigger.available)
     """
 

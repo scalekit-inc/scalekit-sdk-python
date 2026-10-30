@@ -1056,72 +1056,71 @@ def scalekit_trigger():
 
 **Subscribe connected accounts**
 
-1. `list_available(connection_id)` returns the catalogue. Each `AvailableTrigger` says how it detects changes (`mode`: `DetectionMode.WEBHOOK` or `DetectionMode.POLL`), whether it is usable here (`available`, with `reason`, `remedy`, `refusal_code`), its `config_fields` and, for poll triggers, `min_interval` / `default_interval`.
-2. `list_eligible_accounts(connection_id, trigger_name)` pages through the connected accounts and whether each can subscribe; `health.action` says how to fix one that cannot.
-3. `create_subscription(...)` subscribes one account; `batch_create_subscriptions(...)` subscribes up to 100 and reports an outcome per account instead of raising. For a connection-scoped trigger, leave the account out.
-4. `list_subscriptions`, `delete_subscription` and `batch_delete_subscriptions` manage what exists.
+1. `actions.triggers.list_available(connection_id)` returns the catalogue. Each `AvailableTrigger` says how it detects changes (`mode`: `DetectionMode.WEBHOOK` or `DetectionMode.POLL`), whether it is usable here (`available`, with `reason`, `remedy`, `refusal_code`), its `config_fields` and, for poll triggers, `min_interval` / `default_interval`.
+2. `actions.triggers.list_eligible_accounts(connection_id, trigger_name)` pages through the connected accounts and whether each can subscribe; `health.action` says how to fix one that cannot.
+3. `actions.triggers.create_subscription(...)` subscribes one account; `actions.triggers.batch_create_subscriptions(...)` subscribes up to 100 and reports an outcome per account instead of raising. For a connection-scoped trigger, leave the account out.
+4. `actions.triggers.list_subscriptions`, `actions.triggers.delete_subscription` and `actions.triggers.batch_delete_subscriptions` manage what exists.
 
 ```python
 from datetime import timedelta
 from scalekit.actions import DetectionMode, TriggerSubscribeOutcome
 from scalekit.common.exceptions import ScalekitConflictException
 
-triggers = scalekit_client.actions.triggers
-catalogue = triggers.list_available("conn_123")
+catalogue = scalekit_client.actions.triggers.list_available("conn_123")
 poll = next(t for t in catalogue.triggers if t.mode == DetectionMode.POLL and t.available)
 
 try:
-    sub = triggers.create_subscription(
+    sub = scalekit_client.actions.triggers.create_subscription(
         "conn_123", poll.name, connected_account_id="ca_123", interval=timedelta(minutes=5)
     )
 except ScalekitConflictException:  # already subscribed with the same config
     sub = None
 
-page = triggers.list_eligible_accounts("conn_123", poll.name, page_size=100)
-batch = triggers.batch_create_subscriptions(
+page = scalekit_client.actions.triggers.list_eligible_accounts("conn_123", poll.name, page_size=100)
+batch = scalekit_client.actions.triggers.batch_create_subscriptions(
     "conn_123", poll.name, connected_account_ids=[a.id for a in page.accounts if a.eligible]
 )
 retry_later = [r.connected_account_id for r in batch.results if r.outcome == TriggerSubscribeOutcome.FAILED]
 ```
 
-`create_subscription` is never retried on `UNAVAILABLE`, because a retry could create the subscription twice; `batch_create_subscriptions` is safe to call again (an existing one comes back as `ALREADY_SUBSCRIBED`).
+`actions.triggers.create_subscription` is never retried on `UNAVAILABLE`, because a retry could create the subscription twice; `actions.triggers.batch_create_subscriptions` is safe to call again (an existing one comes back as `ALREADY_SUBSCRIBED`).
 
 **Webhook URL and signing secret** (webhook triggers)
 
-1. `create_ingress_endpoint(connection_id)` returns the URL to paste into the provider's app configuration (safe to call again; `get_ingress_endpoint` reads it later). Treat `url` as confidential.
-2. If the provider shows you a signing secret, store it with `set_signing_secret(connection_id, signing_secret=...)`. If Scalekit creates the secret for this provider (`set_signing_secret` raises `ScalekitBadRequestException` with `error_code` `TRIGGER_SIGNING_SECRET_GENERATED_ONLY`), call `generate_signing_secret(connection_id)` instead: its `signing_secret` and `url_with_secret` are returned only once and are left out of `repr()`.
-3. To rotate, call `set_signing_secret` with the new secret. Both secrets are accepted until you confirm, or for 24 hours (`previous_signing_secret_expires_at`). Once the provider uses the new one, confirm:
+1. `actions.triggers.create_ingress_endpoint(connection_id)` returns the URL to paste into the provider's app configuration (safe to call again; `actions.triggers.get_ingress_endpoint` reads it later). Treat `url` as confidential.
+2. If the provider shows you a signing secret, store it with `actions.triggers.set_signing_secret(connection_id, signing_secret=...)`. If Scalekit creates the secret for this provider (`actions.triggers.set_signing_secret` raises `ScalekitBadRequestException` with `error_code` `TRIGGER_SIGNING_SECRET_GENERATED_ONLY`), call `actions.triggers.generate_signing_secret(connection_id)` instead: its `signing_secret` and `url_with_secret` are returned only once and are left out of `repr()`.
+3. To rotate, call `actions.triggers.set_signing_secret` with the new secret. Both secrets are accepted until you confirm, or for 24 hours (`previous_signing_secret_expires_at`). Once the provider uses the new one, confirm:
 
 ```python
 import os
 
-endpoint = triggers.set_signing_secret("conn_123", signing_secret=os.environ["NEW_PROVIDER_SECRET"])
+endpoint = scalekit_client.actions.triggers.set_signing_secret("conn_123", signing_secret=os.environ["NEW_PROVIDER_SECRET"])
 # Both secrets are accepted now. Confirm only once the provider signs with the new
 # secret: after confirming, events signed with the old one fail verification.
 if endpoint.rotation_in_progress:
-    triggers.confirm_signing_secret_rotation(
+    scalekit_client.actions.triggers.confirm_signing_secret_rotation(
         "conn_123", signing_secret_rotation_id=endpoint.signing_secret_rotation_id
     )
 ```
 
-`set_signing_secret` and `generate_signing_secret` are never retried on `UNAVAILABLE`. Until a secret is stored the URL answers events with `503`, so the provider retries them.
+`actions.triggers.set_signing_secret` and `actions.triggers.generate_signing_secret` are never retried on `UNAVAILABLE`. Until a secret is stored the URL answers events with `503`, so the provider retries them.
 
 **Activity, usage and deliveries**
 
-- `get_activity()` counts recent trigger events by outcome. `signature_banner` means many events failed signature verification (the stored secret probably does not match the provider's); while `degraded` is true, zero counts are not reliable.
-- `get_usage(period="24h" | "7d" | "30d")` or `get_usage(from_date=..., to_date=...)` reads metered deliveries per UTC hour or day.
-- For one of your delivery endpoints: `list_deliveries(endpoint_id, ...)` (filter by `status`, `channel`, `after`, `before`), `list_delivery_attempts_by_endpoint`, `list_delivery_attempts_by_message`, `lookup_delivery(delivery_id)` (a `msg_` ID or the `dedupe_key` your handler received), `batch_lookup_deliveries`.
-- To send messages again: `batch_resend_deliveries([...])` for specific messages, or `recover_deliveries(endpoint_id, since=...)` for everything that failed in a time range. Neither is retried on `UNAVAILABLE`. If `recover_deliveries` raises `ScalekitInternalServerException`, the recovery may be running anyway: check the endpoint's deliveries before calling again.
+- `actions.triggers.get_activity()` counts recent trigger events by outcome. `signature_banner` means many events failed signature verification (the stored secret probably does not match the provider's); while `degraded` is true, zero counts are not reliable.
+- `actions.triggers.get_usage(period="24h" | "7d" | "30d")` or `actions.triggers.get_usage(from_date=..., to_date=...)` reads metered deliveries per UTC hour or day.
+- For one of your delivery endpoints: `actions.triggers.list_deliveries(endpoint_id, ...)` (filter by `status`, `channel`, `after`, `before`), `actions.triggers.list_delivery_attempts_by_endpoint`, `actions.triggers.list_delivery_attempts_by_message`, `actions.triggers.lookup_delivery(delivery_id)` (a `msg_` ID or the `dedupe_key` your handler received), `actions.triggers.batch_lookup_deliveries`.
+- To send messages again: `actions.triggers.batch_resend_deliveries([...])` for specific messages, or `actions.triggers.recover_deliveries(endpoint_id, since=...)` for everything that failed in a time range. Neither is retried on `UNAVAILABLE`. If `actions.triggers.recover_deliveries` raises `ScalekitInternalServerException`, the recovery may be running anyway: check the endpoint's deliveries before calling again.
 
 ```python
 from datetime import datetime, timedelta, timezone
 from scalekit.actions import TriggerDeliveryStatus
 
-failed = triggers.list_deliveries(
+failed = scalekit_client.actions.triggers.list_deliveries(
     "ep_123", status=TriggerDeliveryStatus.FAILED, after=datetime.now(timezone.utc) - timedelta(hours=6)
 )
 if failed.deliveries:
-    triggers.batch_resend_deliveries(
+    scalekit_client.actions.triggers.batch_resend_deliveries(
         [{"msg_id": d.msg_id, "endpoint_id": d.endpoint_id} for d in failed.deliveries]
     )
 ```
@@ -1133,19 +1132,19 @@ Server errors raise the `ScalekitServerException` subclass for the status (all i
 | Exception | `error_code` | When |
 |-----------|--------------|------|
 | `ScalekitNotFoundException` | `RESOURCE_NOT_FOUND` | Unknown connection, trigger, account, subscription or recovery endpoint; also when triggers are not enabled for the environment |
-| `ScalekitNotFoundException` | `TRIGGER_INGRESS_ENDPOINT_NOT_CREATED` | No webhook URL yet: call `create_ingress_endpoint` |
+| `ScalekitNotFoundException` | `TRIGGER_INGRESS_ENDPOINT_NOT_CREATED` | No webhook URL yet: call `actions.triggers.create_ingress_endpoint` |
 | `ScalekitNotFoundException` | `TRIGGER_USAGE_NOT_METERED` | Usage is not metered for this environment |
-| `ScalekitNotFoundException` | `NOT_FOUND` | `lookup_delivery` found no such message or event |
-| `ScalekitBadRequestException` | `INVALID_ARGUMENT` | Invalid argument, or an account refused for a subscription (the message says how to fix it). The delivery listing methods also answer an unknown endpoint with this (400), unlike `recover_deliveries` (404) |
+| `ScalekitNotFoundException` | `NOT_FOUND` | `actions.triggers.lookup_delivery` found no such message or event |
+| `ScalekitBadRequestException` | `INVALID_ARGUMENT` | Invalid argument, or an account refused for a subscription (the message says how to fix it). The delivery listing methods also answer an unknown endpoint with this (400), unlike `actions.triggers.recover_deliveries` (404) |
 | `ScalekitBadRequestException` | `TRIGGER_INGRESS_NOT_APPLICABLE` | The connection has no webhook trigger |
 | `ScalekitBadRequestException` | `TRIGGER_INGRESS_DEFINITIONS_UNAVAILABLE` | The connection's trigger definitions cannot be read right now |
-| `ScalekitBadRequestException` | `TRIGGER_SIGNING_SECRET_GENERATED_ONLY` | Use `generate_signing_secret` for this provider |
-| `ScalekitBadRequestException` | `TRIGGER_SIGNING_SECRET_NOT_GENERATABLE` | The provider signs its own events: use `set_signing_secret` |
+| `ScalekitBadRequestException` | `TRIGGER_SIGNING_SECRET_GENERATED_ONLY` | Use `actions.triggers.generate_signing_secret` for this provider |
+| `ScalekitBadRequestException` | `TRIGGER_SIGNING_SECRET_NOT_GENERATABLE` | The provider signs its own events: use `actions.triggers.set_signing_secret` |
 | `ScalekitConflictException` | `RESOURCE_ALREADY_EXISTS` | The subscription already exists, or a secret rotation is already in progress |
 | `ScalekitTooManyRequestsException` | `RATE_LIMITED` or none | Rate limited; never retried by the SDK |
-| `ScalekitServiceUnavailableException` | none | Temporarily unavailable (for `create_subscription`: it may or may not have been created; check `list_subscriptions` before calling again) |
-| `ScalekitGatewayTimeoutException` | none | The deadline passed; for `create_subscription` (and the other calls that could apply twice), the request may still have taken effect: check before calling again |
-| `ScalekitInternalServerException` | `INTERNAL_ERROR` | Server error; for `recover_deliveries`, the recovery may be running |
+| `ScalekitServiceUnavailableException` | none | Temporarily unavailable (for `actions.triggers.create_subscription`: it may or may not have been created; check `actions.triggers.list_subscriptions` before calling again) |
+| `ScalekitGatewayTimeoutException` | none | The deadline passed; for `actions.triggers.create_subscription` (and the other calls that could apply twice), the request may still have taken effect: check before calling again |
+| `ScalekitInternalServerException` | `INTERNAL_ERROR` | Server error; for `actions.triggers.recover_deliveries`, the recovery may be running |
 
 **Async code**
 
