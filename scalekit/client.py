@@ -25,6 +25,7 @@ from scalekit.connected_accounts import ConnectedAccountsClient
 from scalekit.tools import ToolsClient
 from scalekit.actions import ActionClient
 from scalekit.providers import ProvidersClient
+from scalekit.triggers import TriggersClient
 from scalekit.passwordless import PasswordlessClient
 from scalekit.mcp import McpClient
 from scalekit.sessions import SessionsClient
@@ -142,8 +143,13 @@ class ScalekitClient:
             self.tools = ToolsClient(self.core_client)
             self.mcp = McpClient(self.core_client)
             _providers = ProvidersClient(self.core_client)
-            self.connect = ActionClient(self.tools, self.connected_accounts, self.mcp, _providers)
-            self.actions = ActionClient(self.tools, self.connected_accounts, self.mcp, _providers)
+            _triggers = TriggersClient(self.core_client)
+            self.connect = ActionClient(
+                self.tools, self.connected_accounts, self.mcp, _providers, triggers_client=_triggers
+            )
+            self.actions = ActionClient(
+                self.tools, self.connected_accounts, self.mcp, _providers, triggers_client=_triggers
+            )
             self.passwordless = PasswordlessClient(self.core_client)
             self.sessions = SessionsClient(self.core_client)
             self.auth = AuthClient(self.core_client)

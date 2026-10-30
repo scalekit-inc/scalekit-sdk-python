@@ -7957,3 +7957,1487 @@ for tool in response[0].tools:
 </dd>
 </dl>
 </details>
+
+## Triggers
+
+`client.actions.triggers` manages AgentKit triggers: the trigger catalogue of a connection, subscriptions, the webhook URL and signing secret, activity, usage and deliveries to your endpoints. Every method except `delete_subscription` (which returns `None`) returns a typed, frozen model (fields cannot be reassigned; nested lists and dicts such as `config` are plain, mutable copies); enum fields hold members for known values and a plain `str` for newer ones, instants are timezone-aware UTC `datetime`, durations are `timedelta`. Server errors raise the matching `Scalekit*Exception` with a stable `error_code`; batch methods report per-item outcomes instead. `verify_event` (verifying a delivered event) is documented under ScalekitClient above. Walkthrough: [AGENTKIT.md → Managing triggers](AGENTKIT.md#managing-triggers).
+
+<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">list_available</a>(connection_id) -> ListAvailableTriggersResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists every trigger a connection offers (not paginated), with its detection mode, required scopes, config fields, interval limits and whether it is usable on this connection (`available`, `reason`, `remedy`, `refusal_code`). An unknown connection raises `ScalekitNotFoundException` (`RESOURCE_NOT_FOUND`).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+page = scalekit_client.actions.triggers.list_available("conn_123")
+for trigger in page.triggers:
+    print(trigger.name, trigger.mode, trigger.available, trigger.min_interval)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**connection_id:** `str` - The connection (`conn_...`)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">list_eligible_accounts</a>(connection_id, trigger_name, *, query?, page_size?, page_token?) -> ListEligibleAccountsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists one page of a connection's connected accounts and whether each can subscribe to the trigger, with its health and how to fix it. Each account's `id` is the connected account ID (`ca_...`) to pass as `connected_account_id` when you subscribe; its `identifier` is the identifier the account was created with (such as your app's user ID or the user's email address), or the connected account ID when it has none. Empty page tokens are `None`.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+page = scalekit_client.actions.triggers.list_eligible_accounts("conn_123", "item.created", page_size=50)
+eligible = [a.id for a in page.accounts if a.eligible]
+if page.next_page_token:
+    page = scalekit_client.actions.triggers.list_eligible_accounts(
+        "conn_123", "item.created", page_token=page.next_page_token
+    )
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**connection_id:** `str` - The connection (`conn_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**trigger_name:** `str` - `AvailableTrigger.name`
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**query:** `Optional[str]` - Filter accounts by identifier
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_size:** `Optional[int]` - Accounts per page; server default 10, values above 100 are capped
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_token:** `Optional[str]` - `next_page_token` or `prev_page_token` of a previous page
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">list_subscriptions</a>(connection_id, *, trigger_name?, statuses?, page_size?, page_token?) -> ListTriggerSubscriptionsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists one page of a connection's trigger subscriptions, with `total_size` and `status_counts` (per status name, ignoring the `statuses` filter).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from scalekit.actions import TriggerSubscriptionStatus
+
+page = scalekit_client.actions.triggers.list_subscriptions(
+    "conn_123", statuses=[TriggerSubscriptionStatus.PAUSED_CREDENTIAL]
+)
+for sub in page.subscriptions:
+    print(sub.id, sub.connected_account_id, sub.status)
+print(page.status_counts.get("ACTIVE", 0))
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**connection_id:** `str` - The connection (`conn_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**trigger_name:** `Optional[str]` - Only subscriptions to this trigger
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**statuses:** `Optional[Sequence[TriggerSubscriptionStatus | str | int]]` - Only these states: members, their names, or raw numbers
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_size:** `Optional[int]` - Subscriptions per page; capped at 100 by the server
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_token:** `Optional[str]` - `next_page_token` or `prev_page_token` of a previous page
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">create_subscription</a>(connection_id, trigger_name, *, connected_account_id?, interval?, config?) -> TriggerSubscription</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Subscribes a connected account (or, for a connection-scoped trigger, the whole connection) to a trigger. Not retried on `UNAVAILABLE`, because a retry could create it twice. The same subscription again raises `ScalekitConflictException` (`RESOURCE_ALREADY_EXISTS`); a refused account (missing scopes, unhealthy, no consent) raises `ScalekitBadRequestException` with a message that says how to fix it.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from datetime import timedelta
+
+sub = scalekit_client.actions.triggers.create_subscription(
+    "conn_123",
+    "item.created",
+    connected_account_id="ca_123",
+    interval=timedelta(minutes=5),  # poll triggers only
+)
+print(sub.id, sub.status, sub.effective_interval)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**connection_id:** `str` - The connection (`conn_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**trigger_name:** `str` - `AvailableTrigger.name`
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**connected_account_id:** `Optional[str]` - The account (`ca_...`); leave out only for a connection-scoped trigger
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**interval:** `Optional[timedelta]` - Poll interval in whole seconds, at least the trigger's `min_interval`; leave out for the default and for webhook triggers
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**config:** `Optional[Mapping[str, str]]` - Values for the trigger's `config_fields`
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">batch_create_subscriptions</a>(connection_id, trigger_name, *, connected_account_ids?, interval?, config?) -> BatchCreateTriggerSubscriptionsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Subscribes up to 100 connected accounts in one call. Not atomic: every account gets an outcome in `results` (`CREATED`, `ALREADY_SUBSCRIBED`, `REFUSED`, `NOT_FOUND`, `FAILED`) and those never raise. Safe to call again for the `FAILED` ones. Leave `connected_account_ids` out for a connection-scoped trigger.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from scalekit.actions import TriggerSubscribeOutcome
+
+batch = scalekit_client.actions.triggers.batch_create_subscriptions(
+    "conn_123", "item.created", connected_account_ids=["ca_1", "ca_2"]
+)
+retry = [r.connected_account_id for r in batch.results if r.outcome == TriggerSubscribeOutcome.FAILED]
+print(batch.created_count, retry)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**connection_id:** `str` - The connection (`conn_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**trigger_name:** `str` - `AvailableTrigger.name`
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**connected_account_ids:** `Optional[Sequence[str]]` - The accounts (`ca_...`), unique, up to 100
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**interval:** `Optional[timedelta]` - Poll interval in whole seconds (see `create_subscription`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**config:** `Optional[Mapping[str, str]]` - Values for the trigger's `config_fields`
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">delete_subscription</a>(connection_id, subscription_id) -> None</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Deletes one trigger subscription. Retried on `UNAVAILABLE`, so a `ScalekitNotFoundException` can also mean an earlier attempt of the same call already deleted it.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+scalekit_client.actions.triggers.delete_subscription("conn_123", "trgs_123")
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**connection_id:** `str` - The connection (`conn_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**subscription_id:** `str` - The subscription (`trgs_...`)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">batch_delete_subscriptions</a>(connection_id, *, subscription_ids?, trigger_name?, connected_account_ids?) -> BatchDeleteTriggerSubscriptionsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Deletes many subscriptions in one call. Pass exactly one selector: `subscription_ids`, or `trigger_name` with `connected_account_ids` (up to 100 each; the server rejects any other combination). Every subscription gets an outcome in `results` (`DELETED`, `NOT_FOUND`, `FAILED`, `NOT_ATTEMPTED`) and those never raise. Safe to call again; rate limiting raises `ScalekitTooManyRequestsException`.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+batch = scalekit_client.actions.triggers.batch_delete_subscriptions(
+    "conn_123", trigger_name="item.created", connected_account_ids=["ca_1", "ca_2"]
+)
+print(batch.deleted_count, [(r.subscription_id, r.outcome) for r in batch.results])
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**connection_id:** `str` - The connection (`conn_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**subscription_ids:** `Optional[Sequence[str]]` - Subscriptions to delete (`trgs_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**trigger_name:** `Optional[str]` - With `connected_account_ids`: the trigger to unsubscribe from
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**connected_account_ids:** `Optional[Sequence[str]]` - With `trigger_name`: the accounts (`ca_...`)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">get_activity</a>() -> GetTriggerActivityResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Counts what happened to this environment's trigger events over the recent `window` (`received`, `filtered`, `unresolved`, `delivered`, `delivery_failed`, `duplicate`, `signature_failed`, `discarded`; every key is present). `signature_banner` means the signing secret probably does not match the provider's; while `degraded` is true, zeroes are not reliable.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+activity = scalekit_client.actions.triggers.get_activity()
+print(activity.window, activity.counts["delivered"])
+if activity.signature_banner:
+    print("check the signing secret")
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+None.
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">get_usage</a>(*, period?, from_date?, to_date?) -> GetTriggerUsageResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Reads metered trigger deliveries: pass `period` (`"24h"` hourly, `"7d"` or `"30d"` daily) or both `from_date` and `to_date` (UTC dates, inclusive; the server clamps the range to the last 30 days). Days and hours without deliveries are absent. Not metered raises `ScalekitNotFoundException` (`TRIGGER_USAGE_NOT_METERED`).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from datetime import date
+
+usage = scalekit_client.actions.triggers.get_usage(from_date=date(2026, 10, 1), to_date=date(2026, 10, 28))
+print(usage.from_date, usage.to_date, [(d.date, d.units) for d in usage.days])
+
+hourly = scalekit_client.actions.triggers.get_usage(period="24h")
+print(hourly.current_hour, [(h.start, h.units) for h in hourly.hours])
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**period:** `Optional[str]` - `"24h"`, `"7d"` or `"30d"`
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**from_date:** `Optional[date | str]` - First UTC date: a `date`, an aware `datetime` (its UTC date) or `"YYYY-MM-DD"`
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**to_date:** `Optional[date | str]` - Last UTC date, in the same forms
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">get_ingress_endpoint</a>(connection_id) -> TriggerIngressEndpoint</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Reads the webhook URL a provider sends a connection's events to, and the state of its signing secret (never the secret itself). No URL yet raises `ScalekitNotFoundException` with `error_code` `TRIGGER_INGRESS_ENDPOINT_NOT_CREATED`; an unknown connection uses `RESOURCE_NOT_FOUND`.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+endpoint = scalekit_client.actions.triggers.get_ingress_endpoint("conn_123")
+print(endpoint.signing_secret_configured, endpoint.masked_signing_secret, endpoint.rotation_in_progress)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**connection_id:** `str` - The connection (`conn_...`)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">create_ingress_endpoint</a>(connection_id) -> TriggerIngressEndpoint</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Creates the connection's webhook URL, or returns the existing one (safe to call again). Paste `url` into the provider's app configuration and treat it as confidential. A connection without a webhook trigger raises `ScalekitBadRequestException` (`TRIGGER_INGRESS_NOT_APPLICABLE`).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+endpoint = scalekit_client.actions.triggers.create_ingress_endpoint("conn_123")
+print("paste into the provider:", endpoint.url)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**connection_id:** `str` - The connection (`conn_...`)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">set_signing_secret</a>(connection_id, *, signing_secret) -> TriggerIngressEndpoint</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Stores the secret the provider signs its events with. Setting a different secret later starts a rotation: both are accepted until `confirm_signing_secret_rotation` or for 24 hours; a third secret while a rotation is open raises `ScalekitConflictException`. Not retried on `UNAVAILABLE`. Providers whose secret Scalekit generates raise `ScalekitBadRequestException` (`TRIGGER_SIGNING_SECRET_GENERATED_ONLY`).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+import os
+
+endpoint = scalekit_client.actions.triggers.set_signing_secret(
+    "conn_123", signing_secret=os.environ["PROVIDER_SIGNING_SECRET"]
+)
+print(endpoint.masked_signing_secret, endpoint.rotation_in_progress)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**connection_id:** `str` - The connection (`conn_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**signing_secret:** `str` - The secret from the provider's app configuration, 8-4096 characters (keyword only)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">confirm_signing_secret_rotation</a>(connection_id, *, signing_secret_rotation_id?) -> TriggerIngressEndpoint</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Finishes a signing-secret rotation so only the new secret is accepted. Pass the rotation's ID while one is in progress; a missing or outdated ID raises `ScalekitBadRequestException`.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+endpoint = scalekit_client.actions.triggers.get_ingress_endpoint("conn_123")
+if endpoint.rotation_in_progress:
+    scalekit_client.actions.triggers.confirm_signing_secret_rotation(
+        "conn_123", signing_secret_rotation_id=endpoint.signing_secret_rotation_id
+    )
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**connection_id:** `str` - The connection (`conn_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**signing_secret_rotation_id:** `Optional[int]` - `TriggerIngressEndpoint.signing_secret_rotation_id` of the rotation to confirm
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">generate_signing_secret</a>(connection_id) -> GenerateTriggerSigningSecretResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Generates a signing secret for providers that use one Scalekit creates. The plaintext `signing_secret` and `url_with_secret` are returned only in this response and are left out of `repr()`. Not retried on `UNAVAILABLE`, because a retry would replace the secret. Providers that sign their own events raise `ScalekitBadRequestException` (`TRIGGER_SIGNING_SECRET_NOT_GENERATABLE`).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+generated = scalekit_client.actions.triggers.generate_signing_secret("conn_123")
+save_to_provider(generated.url_with_secret)  # your code; store it securely
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**connection_id:** `str` - The connection (`conn_...`)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">list_delivery_attempts_by_endpoint</a>(endpoint_id, *, page_size?) -> ListTriggerDeliveryAttemptsByEndpointResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists the most recent attempts to deliver trigger events to one of your endpoints (one page, no token). An unknown endpoint raises `ScalekitBadRequestException` (400), not `ScalekitNotFoundException`.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+page = scalekit_client.actions.triggers.list_delivery_attempts_by_endpoint("ep_123", page_size=20)
+for attempt in page.attempts:
+    print(attempt.msg_id, attempt.status, attempt.response_status_code, attempt.response_duration)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**endpoint_id:** `str` - Your delivery endpoint
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_size:** `Optional[int]` - Attempts to return; server default 20, capped at 100
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">list_deliveries</a>(endpoint_id, *, page_size?, page_token?, status?, channel?, after?, before?) -> ListTriggerDeliveriesByEndpointResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists trigger events sent to one of your endpoints, newest first, one page at a time. `after` and `before` must be timezone-aware. An unknown endpoint or `channel` raises `ScalekitBadRequestException` (400).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from datetime import datetime, timedelta, timezone
+from scalekit.actions import TriggerDeliveryStatus
+
+page = scalekit_client.actions.triggers.list_deliveries(
+    "ep_123",
+    status=TriggerDeliveryStatus.FAILED,
+    after=datetime.now(timezone.utc) - timedelta(days=1),
+)
+print([d.msg_id for d in page.deliveries], page.next_page_token)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**endpoint_id:** `str` - Your delivery endpoint
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_size:** `Optional[int]` - Messages per page; server default 20, capped at 100
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_token:** `Optional[str]` - `next_page_token` of a previous page, with the same filters
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**status:** `Optional[TriggerDeliveryStatus | str | int]` - Only messages in this delivery state
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**channel:** `Optional[str]` - Only messages for this connection (`conn_...`) or subscription (`trgs_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `Optional[datetime]` - Only messages after this aware instant (at most 90 days back)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**before:** `Optional[datetime]` - Only messages before this aware instant
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">list_delivery_attempts_by_message</a>(endpoint_id, msg_id) -> ListTriggerDeliveryAttemptsByMessageResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists up to 50 attempts to deliver one message to one endpoint, oldest first; `truncated` says whether more exist. An unknown endpoint or message raises `ScalekitBadRequestException` (400).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+page = scalekit_client.actions.triggers.list_delivery_attempts_by_message("ep_123", "msg_123")
+print([(a.status, a.response_status_code) for a in page.attempts], page.truncated)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**endpoint_id:** `str` - Your delivery endpoint
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**msg_id:** `str` - The message (`msg_...`)
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">lookup_delivery</a>(delivery_id) -> LookupTriggerDeliveryResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Looks up one delivered message by its message ID (`msg_...`) or by the event ID your endpoint received (`TriggerEvent.dedupe_key`), with up to 50 attempts. Not found raises `ScalekitNotFoundException` with `error_code` `NOT_FOUND`.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+found = scalekit_client.actions.triggers.lookup_delivery(event.dedupe_key)
+print(found.msg_id, found.trigger_name, [a.status for a in found.attempts])
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**delivery_id:** `str` - A message ID (`msg_...`) or an event ID
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">batch_lookup_deliveries</a>(delivery_ids) -> BatchLookupTriggerDeliveriesResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Looks up 1 to 25 messages by message ID or event ID. Every ID gets an outcome in `results` (`FOUND`, `NOT_FOUND`, `RATE_LIMITED`, `FAILED`, `NOT_ATTEMPTED`) and those never raise; attempts carry no response bodies.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+batch = scalekit_client.actions.triggers.batch_lookup_deliveries(["msg_1", "msg_2"])
+found = [r.delivery for r in batch.results if r.delivery is not None]
+print(batch.found_count)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**delivery_ids:** `Sequence[str]` - Message IDs or event IDs, unique
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">batch_resend_deliveries</a>(targets) -> BatchResendTriggerDeliveriesResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Sends 1 to 50 messages to endpoints again; each target makes a real delivery attempt and gets an outcome in `results` (`QUEUED`, `NOT_FOUND`, `RATE_LIMITED`, `FAILED`, `NOT_ATTEMPTED`) that never raises. Not retried on `UNAVAILABLE`, because a retry could deliver twice.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+batch = scalekit_client.actions.triggers.batch_resend_deliveries(
+    [{"msg_id": "msg_123", "endpoint_id": "ep_123"}]
+)
+print(batch.queued_count, [(r.msg_id, r.outcome) for r in batch.results])
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**targets:** `Sequence[TriggerDeliveryResendTarget | TriggerDeliveryResendTargetParam]` - Models or `{"msg_id": ..., "endpoint_id": ...}` dicts
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">recover_deliveries</a>(endpoint_id, *, since, until?) -> RecoverTriggerDeliveriesResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Resends every message that failed to reach an endpoint between `since` and `until` (default now; at most 14 days, not in the future). Not retried on `UNAVAILABLE`. `ScalekitInternalServerException` means the recovery may be running anyway: check the endpoint's deliveries before calling again. An unknown endpoint raises `ScalekitNotFoundException` (`RESOURCE_NOT_FOUND`).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from datetime import datetime, timedelta, timezone
+
+task = scalekit_client.actions.triggers.recover_deliveries(
+    "ep_123", since=datetime.now(timezone.utc) - timedelta(hours=6)
+)
+print(task.task_id, task.status)  # "running" or "finished"
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**endpoint_id:** `str` - Your delivery endpoint (`ep_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**since:** `datetime` - Start of the range, timezone-aware (keyword only)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**until:** `Optional[datetime]` - End of the range, timezone-aware; default now
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
