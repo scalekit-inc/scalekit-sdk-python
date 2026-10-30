@@ -381,7 +381,9 @@ class ResourceClient:
         Pass consent_ids to fetch specific consents by ID. Pass user_ids to match
         specific external user IDs exactly and case-sensitively. Pass search for a
         case-insensitive substring match. When several are given, the priority is
-        consent_ids, then user_ids, then search; the lower ones are ignored.
+        consent_ids, then user_ids, then search; the lower ones are ignored. Blank-only
+        consent_ids are ignored. An older server ignores consent_ids, so confirm each
+        returned id is one you passed before revoking.
 
         :param resource_id      : Resource id to list consents for (format: res_xxxxx)
         :type                   : ``` str ```
@@ -394,7 +396,8 @@ class ResourceClient:
         :param user_ids         : Exact match on external user IDs (max 25). Ignored when consent_ids is set
         :type                   : ``` list ```
         :param consent_ids      : Exact match on consent IDs (format: usrcnst_xxxxx), max 25 distinct.
-                                  IDs that do not exist or belong to another resource are omitted from the result
+                                  Blank-only values are ignored. IDs that do not exist or belong to another
+                                  resource are omitted from the result
         :type                   : ``` list ```
         :returns:
             List Resource User Consents Response

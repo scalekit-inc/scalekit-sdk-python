@@ -6668,7 +6668,7 @@ scalekit_client.resources.delete_resource_client_secret('res_123456', 'm2m_12345
 
 Lists the end-user consents granted against a resource, with pagination. Use this to audit who authorized a client, and to find the `consent_id` you need before revoking.
 
-Filter in one of three ways. Pass `consent_ids` to fetch specific consents by ID, for example to find the `client_id` you need to revoke a consent you already hold the ID of. Pass `user_ids` to match external user IDs exactly and case-sensitively. Pass `search` for a case-insensitive substring match. When you give more than one, the priority is `consent_ids`, then `user_ids`, then `search`, and the lower-priority ones are ignored without an error.
+Filter in one of three ways. Pass `consent_ids` to fetch specific consents by ID, for example to find the `client_id` you need to revoke a consent you already hold the ID of. Pass `user_ids` to match external user IDs exactly and case-sensitively. Pass `search` for a case-insensitive substring match. When you give more than one, the priority is `consent_ids`, then `user_ids`, then `search`, and the lower-priority ones are ignored without an error. Blank-only `consent_ids` values are ignored, so the next filter applies instead.
 
 When you filter by `consent_ids`, check that every returned `id` is one you asked for before you revoke anything. A server that predates this filter ignores it and returns the unfiltered first page. Do not combine `consent_ids` with `user_ids` as an ownership check, because `consent_ids` overrides `user_ids`. Compare `external_user_id` on the returned consent instead.
 
