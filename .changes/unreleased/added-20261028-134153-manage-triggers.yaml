@@ -1,6 +1,6 @@
 kind: added
 body: |
-  `client.actions.triggers` now manages AgentKit triggers: list a connection's triggers and eligible accounts, create and delete subscriptions singly or in batches, set up the webhook URL and rotate its signing secret, read activity and usage, and inspect, resend or recover deliveries. Results are typed, frozen models with timezone-aware `datetime`, `timedelta` and enum fields, and calls that could apply twice are not retried. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/v2.22.0/REFERENCE.md#triggers)
+  `client.actions.triggers` now manages AgentKit triggers: list a connection's triggers and eligible accounts, create and delete subscriptions singly or in batches, set up the webhook URL and rotate its signing secret, read activity and usage, and inspect, resend or recover deliveries. Results are typed, frozen models with timezone-aware `datetime`, `timedelta` and enum fields, and calls that could apply twice are not retried. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/v2.23.0/REFERENCE.md#triggers)
 
   ```python
   page = client.actions.triggers.list_eligible_accounts("conn_123", "example.item.created")
