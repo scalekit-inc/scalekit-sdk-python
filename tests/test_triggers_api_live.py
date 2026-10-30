@@ -1,52 +1,30 @@
-"""Live tests for client.actions.triggers against a Scalekit environment.
+"""Live negative tests for client.actions.triggers against a Scalekit environment.
 
 Skipped unless these are set (tests/.env is loaded like BaseTest does):
   SCALEKIT_ENVIRONMENT_URL (or SCALEKIT_ENV_URL), SCALEKIT_CLIENT_ID, SCALEKIT_CLIENT_SECRET
-and also skipped when triggers are not available for that environment (checked once).
 
-Optional fixtures; each case that needs one is skipped when it is missing:
-  SCALEKIT_TEST_TRIGGER_CONNECTION_ID       a connection that offers a webhook trigger whose
-                                            provider signs its own events (no webhook trigger
-                                            has provides_bearer_secret); the secret-generation
-                                            case skips otherwise, so it never replaces the
-                                            fixture's secret
-  SCALEKIT_TEST_TRIGGER_POLL_CONNECTION_ID  a connection that offers a poll trigger
-  SCALEKIT_TEST_TRIGGER_POLL_ACCOUNT_ID     a connected account (ca_...) on that connection
-  SCALEKIT_TEST_TRIGGER_POLL_TRIGGER        the poll trigger name (default: the first usable one)
-  SCALEKIT_TEST_TRIGGER_POLL_CONFIG         JSON object of config values for that trigger
-  SCALEKIT_TEST_TRIGGER_ENDPOINT_ID         a delivery endpoint (ep_...)
+Nothing else is needed. Every case sends IDs that name nothing, or arguments the server
+refuses, so no test creates, changes or delivers anything in the environment.
 
-Every subscription a test creates is deleted afterwards, even when the test fails.
+- Arguments the server refuses on their own (a batch that is too long, a signing secret that
+  is too short, a usage range and a period together) are refused whether or not triggers are
+  enabled for the environment, so those cases always run.
+- An environment without triggers answers every other call with 404 ``RESOURCE_NOT_FOUND``
+  ("not found"). One case checks exactly that and runs only there; the cases that need
+  triggers enabled skip there.
 
-Not run live, on purpose: set_signing_secret, confirm_signing_secret_rotation,
-batch_resend_deliveries and recover_deliveries. The first two change the signing secret
-of the shared fixture connection (a rotation that is not finished leaves the provider's
-events failing verification for everyone using it); the last two make real redelivery
-attempts to the fixture endpoint. Their request mapping, retry policy and error mapping
-are covered offline in test_triggers_api.py.
+Positive behaviour (subscriptions, signing secrets, deliveries) needs connections and a
+delivery endpoint to exist, so it is covered offline in test_triggers_api.py.
 """
 
-import contextlib
-import json
 import os
-import secrets
-import string
 import unittest
-from datetime import timedelta
-from urllib.parse import urlsplit
+from datetime import date, datetime, timedelta, timezone
 
 from scalekit import ScalekitClient
-from scalekit.actions import (
-    DetectionMode,
-    TriggerDeliveryLookupOutcome,
-    TriggerSubscribeOutcome,
-    TriggerSubscription,
-    TriggerSubscriptionDeleteOutcome,
-    TriggerUsageBucket,
-)
+from scalekit.actions import TriggerSubscriptionDeleteOutcome
 from scalekit.common.exceptions import (
     ScalekitBadRequestException,
-    ScalekitConflictException,
     ScalekitNotFoundException,
 )
 
@@ -57,23 +35,18 @@ try:
 except ImportError:  # pragma: no cover - dotenv is a dev dependency
     pass
 
+# Well formed, and outside the range of IDs any environment issues.
+UNKNOWN_CONNECTION = "conn_912345678901234567"
+UNKNOWN_ACCOUNT = "ca_912345678901234567"
+UNKNOWN_SUBSCRIPTION = "trgs_912345678901234567"
+UNKNOWN_ENDPOINT = "ep_sdklivetestunknown"
+
 
 def _env(name):
     return os.environ.get(name) or None
 
 
-def _unknown_msg_id():
-    """A message ID with a valid shape that no environment holds."""
-    alphabet = string.ascii_letters + string.digits
-    return "msg_" + "".join(secrets.choice(alphabet) for _ in range(27))
-
-
-def _unknown_numeric_id(prefix):
-    """An ID with a valid shape that no environment holds."""
-    return f"{prefix}{secrets.randbelow(10**17) + 9 * 10**17}"
-
-
-class TestTriggersApiLive(unittest.TestCase):
+class TestTriggersApiLiveNegative(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         env_url = _env("SCALEKIT_ENVIRONMENT_URL") or _env("SCALEKIT_ENV_URL")
@@ -90,316 +63,337 @@ class TestTriggersApiLive(unittest.TestCase):
         ]
         if missing:
             raise unittest.SkipTest(f"live trigger tests need {', '.join(missing)}")
-        cls.triggers = ScalekitClient(env_url, client_id, client_secret).actions.triggers
-        # An environment without triggers answers every trigger call with 404
-        # RESOURCE_NOT_FOUND. get_activity takes no IDs, so that answer from it can only
-        # mean triggers are not available here; any other error fails the class setup.
+        cls.client = ScalekitClient(env_url, client_id, client_secret)
+        # get_activity takes no IDs, so a 404 RESOURCE_NOT_FOUND from it can only mean
+        # triggers are not enabled for the environment. Any other error fails the setup.
         try:
-            cls.triggers.get_activity()
+            cls.client.actions.triggers.get_activity()
+            cls.enabled = True
         except ScalekitNotFoundException as exc:
             if exc.error_code != "RESOURCE_NOT_FOUND":
                 raise
-            raise unittest.SkipTest(
-                "live trigger tests need triggers to be available for this environment"
-            ) from exc
-        cls.webhook_connection = _env("SCALEKIT_TEST_TRIGGER_CONNECTION_ID")
-        cls.poll_connection = _env("SCALEKIT_TEST_TRIGGER_POLL_CONNECTION_ID")
-        cls.poll_account = _env("SCALEKIT_TEST_TRIGGER_POLL_ACCOUNT_ID")
-        cls.poll_trigger = _env("SCALEKIT_TEST_TRIGGER_POLL_TRIGGER")
-        raw_config = _env("SCALEKIT_TEST_TRIGGER_POLL_CONFIG")
-        cls.poll_config = json.loads(raw_config) if raw_config else None
-        cls.endpoint = _env("SCALEKIT_TEST_TRIGGER_ENDPOINT_ID")
+            cls.enabled = False
 
-    # Fixture helpers
+    def _needs_triggers(self):
+        if not self.enabled:
+            self.skipTest("triggers are not enabled for this environment")
 
-    def _need(self, **values):
-        missing = [name for name, value in values.items() if not value]
-        if missing:
-            self.skipTest(f"needs {', '.join(missing)}")
+    def assert_refused(self, exception_class, error_code, call, message=None):
+        """``call`` raises ``exception_class`` with ``error_code`` (and ``message`` in its text)."""
+        with self.assertRaises(exception_class) as ctx:
+            call()
+        self.assertEqual(ctx.exception.error_code, error_code, ctx.exception.message)
+        if message is not None:
+            self.assertIn(message, ctx.exception.message)
+        return ctx.exception
 
-    def _poll_fixture(self):
-        self._need(
-            SCALEKIT_TEST_TRIGGER_POLL_CONNECTION_ID=self.poll_connection,
-            SCALEKIT_TEST_TRIGGER_POLL_ACCOUNT_ID=self.poll_account,
+    # Triggers not enabled for the environment
+
+    def test_environment_without_triggers_answers_not_found(self):
+        if self.enabled:
+            self.skipTest("triggers are enabled for this environment")
+        triggers = self.client.actions.triggers
+        for name, call in (
+            ("get_activity", triggers.get_activity),
+            ("get_usage", lambda: triggers.get_usage(period="24h")),
+            ("list_available", lambda: triggers.list_available(UNKNOWN_CONNECTION)),
+            ("lookup_delivery", lambda: triggers.lookup_delivery("msg_sdklivetestunknown")),
+        ):
+            with self.subTest(name):
+                exc = self.assert_refused(ScalekitNotFoundException, "RESOURCE_NOT_FOUND", call)
+                self.assertEqual(exc.http_status, 404)
+                # "connection not found" would mean triggers are enabled after all.
+                self.assertNotIn("connection", exc.message)
+
+    # Arguments refused before triggers are looked at (run in every environment)
+
+    def test_batch_create_with_more_than_100_accounts_is_refused(self):
+        exc = self.assert_refused(
+            ScalekitBadRequestException,
+            "INVALID_ARGUMENT",
+            lambda: self.client.actions.triggers.batch_create_subscriptions(
+                UNKNOWN_CONNECTION,
+                "example.item.created",
+                connected_account_ids=[f"ca_{i}" for i in range(1, 102)],
+            ),
         )
-        if self.poll_trigger:
-            return self.poll_trigger
-        catalogue = self.triggers.list_available(self.poll_connection)
-        for trigger in catalogue.triggers:
-            if trigger.mode == DetectionMode.POLL and trigger.available:
-                return trigger.name
-        self.skipTest("the poll connection offers no usable poll trigger")
-        return None  # unreachable; skipTest raises
+        self.assertEqual(exc.http_status, 400)
 
-    def _delete_later(self, connection_id, subscription_id):
-        def cleanup():
-            with contextlib.suppress(ScalekitNotFoundException):  # the test deleted it
-                self.triggers.delete_subscription(connection_id, subscription_id)
-
-        self.addCleanup(cleanup)
-
-    def _subscribe(self, trigger_name):
-        subscription = self.triggers.create_subscription(
-            self.poll_connection,
-            trigger_name,
-            connected_account_id=self.poll_account,
-            config=self.poll_config,
+    def test_batch_create_with_a_repeated_account_is_refused(self):
+        self.assert_refused(
+            ScalekitBadRequestException,
+            "INVALID_ARGUMENT",
+            lambda: self.client.actions.triggers.batch_create_subscriptions(
+                UNKNOWN_CONNECTION,
+                "example.item.created",
+                connected_account_ids=[UNKNOWN_ACCOUNT, UNKNOWN_ACCOUNT],
+            ),
         )
-        self._delete_later(self.poll_connection, subscription.id)
-        return subscription
 
-    def _account_subscription_ids(self, trigger_name):
-        """IDs of the fixture account's subscriptions to `trigger_name` (every page)."""
-        ids, token = [], None
-        for _ in range(50):  # bounded: 5,000 subscriptions
-            page = self.triggers.list_subscriptions(
-                self.poll_connection, trigger_name=trigger_name, page_size=100, page_token=token
-            )
-            ids += [s.id for s in page.subscriptions if s.connected_account_id == self.poll_account]
-            token = page.next_page_token
-            if not token:
-                break
-        return ids
+    def test_get_usage_with_a_period_and_a_range_is_refused(self):
+        self.assert_refused(
+            ScalekitBadRequestException,
+            "INVALID_ARGUMENT",
+            lambda: self.client.actions.triggers.get_usage(
+                period="7d", from_date="2026-10-01", to_date="2026-10-02"
+            ),
+        )
 
-    # Catalogue
+    def test_get_usage_without_a_period_or_range_is_refused(self):
+        self.assert_refused(
+            ScalekitBadRequestException,
+            "INVALID_ARGUMENT",
+            lambda: self.client.actions.triggers.get_usage(),
+        )
 
-    def test_list_available_webhook_connection(self):
-        self._need(SCALEKIT_TEST_TRIGGER_CONNECTION_ID=self.webhook_connection)
-        page = self.triggers.list_available(self.webhook_connection)
-        self.assertTrue(page.triggers, "the connection offers no triggers")
-        self.assertTrue(any(t.mode == DetectionMode.WEBHOOK for t in page.triggers))
-        for trigger in page.triggers:
-            self.assertTrue(trigger.name)
+    def test_get_usage_with_an_unsupported_period_is_refused(self):
+        self.assert_refused(
+            ScalekitBadRequestException,
+            "INVALID_ARGUMENT",
+            lambda: self.client.actions.triggers.get_usage(period="1d"),
+        )
+
+    def test_signing_secret_shorter_than_8_characters_is_refused(self):
+        self.assert_refused(
+            ScalekitBadRequestException,
+            "INVALID_ARGUMENT",
+            lambda: self.client.actions.triggers.set_signing_secret(
+                UNKNOWN_CONNECTION, signing_secret="abc"
+            ),
+        )
+
+    def test_malformed_message_id_is_refused(self):
+        self.assert_refused(
+            ScalekitBadRequestException,
+            "INVALID_ARGUMENT",
+            lambda: self.client.actions.triggers.list_delivery_attempts_by_message(
+                UNKNOWN_ENDPOINT, "not-a-message-id"
+            ),
+        )
+
+    def test_batch_lookup_of_more_than_25_ids_is_refused(self):
+        self.assert_refused(
+            ScalekitBadRequestException,
+            "INVALID_ARGUMENT",
+            lambda: self.client.actions.triggers.batch_lookup_deliveries(
+                [f"msg_sdklivetest{i}" for i in range(26)]
+            ),
+        )
+
+    # Unknown or malformed IDs (need triggers enabled)
 
     def test_unknown_connection_is_not_found(self):
-        with self.assertRaises(ScalekitNotFoundException) as ctx:
-            self.triggers.list_available(_unknown_numeric_id("conn_"))
-        self.assertEqual(ctx.exception.error_code, "RESOURCE_NOT_FOUND")
+        self._needs_triggers()
+        triggers = self.client.actions.triggers
+        for name, call in (
+            ("list_available", lambda: triggers.list_available(UNKNOWN_CONNECTION)),
+            (
+                "list_eligible_accounts",
+                lambda: triggers.list_eligible_accounts(UNKNOWN_CONNECTION, "example.item.created"),
+            ),
+            ("list_subscriptions", lambda: triggers.list_subscriptions(UNKNOWN_CONNECTION)),
+            (
+                "create_subscription",
+                lambda: triggers.create_subscription(
+                    UNKNOWN_CONNECTION,
+                    "example.item.created",
+                    connected_account_id=UNKNOWN_ACCOUNT,
+                ),
+            ),
+            (
+                "batch_create_subscriptions",
+                lambda: triggers.batch_create_subscriptions(
+                    UNKNOWN_CONNECTION,
+                    "example.item.created",
+                    connected_account_ids=[UNKNOWN_ACCOUNT],
+                ),
+            ),
+            ("get_ingress_endpoint", lambda: triggers.get_ingress_endpoint(UNKNOWN_CONNECTION)),
+            (
+                "create_ingress_endpoint",
+                lambda: triggers.create_ingress_endpoint(UNKNOWN_CONNECTION),
+            ),
+            (
+                "set_signing_secret",
+                lambda: triggers.set_signing_secret(
+                    UNKNOWN_CONNECTION, signing_secret="sdk-live-test-secret"
+                ),
+            ),
+            (
+                "confirm_signing_secret_rotation",
+                lambda: triggers.confirm_signing_secret_rotation(UNKNOWN_CONNECTION),
+            ),
+            (
+                "generate_signing_secret",
+                lambda: triggers.generate_signing_secret(UNKNOWN_CONNECTION),
+            ),
+        ):
+            with self.subTest(name):
+                exc = self.assert_refused(
+                    ScalekitNotFoundException,
+                    "RESOURCE_NOT_FOUND",
+                    call,
+                    message="connection not found",
+                )
+                self.assertEqual(exc.http_status, 404)
 
-    def test_list_eligible_accounts(self):
-        trigger_name = self._poll_fixture()
-        page = self.triggers.list_eligible_accounts(
-            self.poll_connection, trigger_name, page_size=100
-        )
-        self.assertGreaterEqual(page.total_size, len(page.accounts))
-        ids = [a.id for a in page.accounts]
-        while page.next_page_token and self.poll_account not in ids:
-            page = self.triggers.list_eligible_accounts(
-                self.poll_connection, trigger_name, page_size=100, page_token=page.next_page_token
-            )
-            ids += [a.id for a in page.accounts]
-        self.assertIn(self.poll_account, ids)
-
-    def test_list_subscriptions(self):
-        self._need(SCALEKIT_TEST_TRIGGER_POLL_CONNECTION_ID=self.poll_connection)
-        page = self.triggers.list_subscriptions(self.poll_connection, page_size=10)
-        self.assertLessEqual(len(page.subscriptions), 10)
-        self.assertGreaterEqual(page.total_size, len(page.subscriptions))
-        self.assertTrue(all(isinstance(s, TriggerSubscription) for s in page.subscriptions))
-
-    # Subscriptions
-
-    def test_create_list_and_delete_subscription(self):
-        trigger_name = self._poll_fixture()
-        subscription = self._subscribe(trigger_name)
-        self.assertTrue(subscription.id.startswith("trgs_"))
-        self.assertEqual(subscription.connected_account_id, self.poll_account)
-        self.assertEqual(subscription.trigger_name, trigger_name)
-        self.assertIsInstance(subscription.effective_interval, timedelta)
-        self.assertIsNotNone(subscription.created_at)
-        self.assertEqual(subscription.created_at.utcoffset(), timedelta(0))
-
-        page = self.triggers.list_subscriptions(
-            self.poll_connection, trigger_name=trigger_name, page_size=100
-        )
-        ids = [s.id for s in page.subscriptions]
-        while page.next_page_token and subscription.id not in ids:
-            page = self.triggers.list_subscriptions(
-                self.poll_connection,
-                trigger_name=trigger_name,
-                page_size=100,
-                page_token=page.next_page_token,
-            )
-            ids += [s.id for s in page.subscriptions]
-        self.assertIn(subscription.id, ids)
-
-        self.triggers.delete_subscription(self.poll_connection, subscription.id)
-        with self.assertRaises(ScalekitNotFoundException):
-            self.triggers.delete_subscription(self.poll_connection, subscription.id)
-
-    def test_duplicate_subscription_conflicts(self):
-        trigger_name = self._poll_fixture()
-        self._subscribe(trigger_name)
-        with self.assertRaises(ScalekitConflictException) as ctx:
-            self._subscribe(trigger_name)
-        self.assertEqual(ctx.exception.error_code, "RESOURCE_ALREADY_EXISTS")
-
-    def test_batch_create_reports_unknown_account_per_item(self):
-        trigger_name = self._poll_fixture()
-        unknown = _unknown_numeric_id("ca_")
-        batch = self.triggers.batch_create_subscriptions(
-            self.poll_connection,
-            trigger_name,
-            connected_account_ids=[self.poll_account, unknown],
-            config=self.poll_config,
-        )
-        for result in batch.results:
-            # ALREADY_SUBSCRIBED returns a subscription that may predate this test; leave it.
-            if (
-                result.outcome == TriggerSubscribeOutcome.CREATED
-                and result.subscription is not None
-            ):
-                self._delete_later(self.poll_connection, result.subscription.id)
-        outcomes = {r.connected_account_id: r.outcome for r in batch.results}
-        self.assertEqual(outcomes[unknown], TriggerSubscribeOutcome.NOT_FOUND)
-        self.assertIn(
-            outcomes[self.poll_account],
-            (TriggerSubscribeOutcome.CREATED, TriggerSubscribeOutcome.ALREADY_SUBSCRIBED),
+    def test_malformed_connection_id_is_refused(self):
+        self._needs_triggers()
+        self.assert_refused(
+            ScalekitBadRequestException,
+            "INVALID_ARGUMENT",
+            lambda: self.client.actions.triggers.list_available("conn_not-a-number"),
+            message="invalid connection_id",
         )
 
-    def test_batch_delete_by_trigger_and_account(self):
-        trigger_name = self._poll_fixture()
-        if self._account_subscription_ids(trigger_name):
-            # This selector deletes every subscription the account holds to the trigger.
-            self.skipTest("the fixture account already holds subscriptions to this trigger")
-        subscription = self._subscribe(trigger_name)  # cleanup registered as a fallback
-
-        batch = self.triggers.batch_delete_subscriptions(
-            self.poll_connection,
-            trigger_name=trigger_name,
-            connected_account_ids=[self.poll_account],
-        )
-        self.assertEqual(batch.deleted_count, 1)
-        self.assertEqual(
-            [(r.subscription_id, r.outcome) for r in batch.results],
-            [(subscription.id, TriggerSubscriptionDeleteOutcome.DELETED)],
+    def test_delete_unknown_subscription_is_not_found(self):
+        self._needs_triggers()
+        self.assert_refused(
+            ScalekitNotFoundException,
+            "RESOURCE_NOT_FOUND",
+            lambda: self.client.actions.triggers.delete_subscription(
+                UNKNOWN_CONNECTION, UNKNOWN_SUBSCRIPTION
+            ),
+            message="trigger subscription not found",
         )
 
-        again = self.triggers.batch_delete_subscriptions(
-            self.poll_connection,
-            trigger_name=trigger_name,
-            connected_account_ids=[self.poll_account],
+    def test_delete_malformed_subscription_id_is_refused(self):
+        self._needs_triggers()
+        self.assert_refused(
+            ScalekitBadRequestException,
+            "INVALID_ARGUMENT",
+            lambda: self.client.actions.triggers.delete_subscription(
+                UNKNOWN_CONNECTION, "trgs_not-a-number"
+            ),
+            message="invalid subscription_id",
         )
-        self.assertEqual(again.deleted_count, 0)
-        self.assertEqual(len(again.results), 1)
-        self.assertEqual(again.results[0].connected_account_id, self.poll_account)
-        self.assertEqual(again.results[0].outcome, TriggerSubscriptionDeleteOutcome.NOT_FOUND)
 
-    # Ingress endpoint, signing secret, activity, usage
+    def test_batch_delete_reports_unknown_subscriptions_per_item(self):
+        self._needs_triggers()
+        batch = self.client.actions.triggers.batch_delete_subscriptions(
+            UNKNOWN_CONNECTION, subscription_ids=[UNKNOWN_SUBSCRIPTION]
+        )
+        self.assertEqual(batch.deleted_count, 0)
+        self.assertEqual(len(batch.results), 1)
+        self.assertEqual(batch.results[0].subscription_id, UNKNOWN_SUBSCRIPTION)
+        self.assertEqual(batch.results[0].outcome, TriggerSubscriptionDeleteOutcome.NOT_FOUND)
 
-    def test_create_then_get_ingress_endpoint(self):
-        self._need(SCALEKIT_TEST_TRIGGER_CONNECTION_ID=self.webhook_connection)
-        created = self.triggers.create_ingress_endpoint(self.webhook_connection)
-        again = self.triggers.create_ingress_endpoint(self.webhook_connection)  # idempotent
-        fetched = self.triggers.get_ingress_endpoint(self.webhook_connection)
-        self.assertEqual(created.id, again.id)
-        self.assertEqual(created.id, fetched.id)
-        self.assertEqual(fetched.connection_id, self.webhook_connection)
-        # The scheme depends on the environment (a local stack may serve plain http).
-        url = urlsplit(fetched.url)
-        self.assertIn(url.scheme, ("http", "https"))
-        self.assertTrue(url.netloc)
-        self.assertGreater(len(url.path.strip("/")), 0)  # ends in the connection's token
-        self.assertEqual(fetched.url, created.url)
-        self.assertNotIn(fetched.url, repr(fetched))
+    def test_batch_delete_needs_exactly_one_selector(self):
+        self._needs_triggers()
+        triggers = self.client.actions.triggers
+        for name, call in (
+            (
+                "both",
+                lambda: triggers.batch_delete_subscriptions(
+                    UNKNOWN_CONNECTION,
+                    subscription_ids=[UNKNOWN_SUBSCRIPTION],
+                    trigger_name="example.item.created",
+                ),
+            ),
+            ("neither", lambda: triggers.batch_delete_subscriptions(UNKNOWN_CONNECTION)),
+        ):
+            with self.subTest(name):
+                self.assert_refused(
+                    ScalekitBadRequestException, "INVALID_ARGUMENT", call, message="selector"
+                )
 
-    def test_generate_signing_secret_refused_for_self_signing_provider(self):
-        self._need(SCALEKIT_TEST_TRIGGER_CONNECTION_ID=self.webhook_connection)
-        # On a provider whose secret Scalekit generates, this call would succeed and replace the
-        # shared fixture's secret. The server refuses exactly when the provider's webhook
-        # verification does not use a generated secret, which the catalogue reports per webhook
-        # trigger as provides_bearer_secret (requires_signing_secret is a different predicate).
-        catalogue = self.triggers.list_available(self.webhook_connection)
-        webhook = [t for t in catalogue.triggers if t.mode == DetectionMode.WEBHOOK]
-        if not webhook:
-            self.skipTest("the webhook fixture connection lists no webhook trigger")
-        if any(t.provides_bearer_secret for t in webhook):
-            self.skipTest(
-                "the webhook fixture's provider uses a Scalekit-generated secret; generating one "
-                "would replace it"
-            )
-        self.triggers.create_ingress_endpoint(self.webhook_connection)  # idempotent
-        try:
-            generated = self.triggers.generate_signing_secret(self.webhook_connection)
-        except ScalekitBadRequestException as exc:
-            self.assertEqual(exc.error_code, "TRIGGER_SIGNING_SECRET_NOT_GENERATABLE")
-        else:
-            endpoint_id = generated.endpoint.id if generated.endpoint else "?"
-            self.fail(
-                "generate_signing_secret succeeded on SCALEKIT_TEST_TRIGGER_CONNECTION_ID, whose "
-                "provider should sign its own events; the fixture connection now has a "
-                f"Scalekit-generated secret (endpoint {endpoint_id}) and its provider "
-                "configuration must be checked"
-            )
+    def test_get_usage_with_from_after_to_is_refused(self):
+        self._needs_triggers()
+        today = datetime.now(timezone.utc).date()
+        self.assert_refused(
+            ScalekitBadRequestException,
+            "INVALID_ARGUMENT",
+            lambda: self.client.actions.triggers.get_usage(
+                from_date=today - timedelta(days=1), to_date=today - timedelta(days=5)
+            ),
+        )
 
-    def test_get_usage_24h(self):
-        try:
-            usage = self.triggers.get_usage(period="24h")
-        except ScalekitNotFoundException as exc:
-            self.assertEqual(exc.error_code, "TRIGGER_USAGE_NOT_METERED")
-            return
-        self.assertEqual(usage.period, "24h")
-        self.assertEqual(usage.bucket, TriggerUsageBucket.HOUR)
-        self.assertEqual(usage.days, [])
-        self.assertIsNotNone(usage.today)
-        self.assertEqual(usage.to_date, usage.today)
-        self.assertIsNotNone(usage.current_hour)
-        self.assertEqual(usage.current_hour.utcoffset(), timedelta(0))
-        self.assertLessEqual(len(usage.hours), 24)
-        for hour in usage.hours:
-            self.assertEqual(hour.start.utcoffset(), timedelta(0))
-            self.assertLessEqual(hour.start, usage.current_hour)
-            self.assertGreater(hour.units, 0)
+    def test_get_usage_starting_in_the_future_is_refused(self):
+        self._needs_triggers()
+        today = datetime.now(timezone.utc).date()
+        self.assert_refused(
+            ScalekitBadRequestException,
+            "INVALID_ARGUMENT",
+            lambda: self.client.actions.triggers.get_usage(
+                from_date=today + timedelta(days=3), to_date=today + timedelta(days=4)
+            ),
+        )
 
-    def test_get_activity(self):
-        activity = self.triggers.get_activity()
-        self.assertGreater(activity.window, timedelta(0))
-        self.assertIn("received", activity.counts)
-        self.assertFalse(activity.explains_individual_events)
+    def test_list_deliveries_refuses_bad_filters(self):
+        # Checked before the delivery endpoint is looked up, so the endpoint need not exist.
+        self._needs_triggers()
+        triggers = self.client.actions.triggers
+        now = datetime.now(timezone.utc)
+        for name, call in (
+            (
+                "after later than before",
+                lambda: triggers.list_deliveries(
+                    UNKNOWN_ENDPOINT, after=now, before=now - timedelta(hours=1)
+                ),
+            ),
+            (
+                "malformed page_token",
+                lambda: triggers.list_deliveries(UNKNOWN_ENDPOINT, page_token="not-a-token"),
+            ),
+            (
+                "channel that is not a connection or subscription",
+                lambda: triggers.list_deliveries(UNKNOWN_ENDPOINT, channel="slack"),
+            ),
+        ):
+            with self.subTest(name):
+                self.assert_refused(ScalekitBadRequestException, "INVALID_ARGUMENT", call)
 
-    # Deliveries
+    def test_lookup_by_attempt_id_is_refused(self):
+        self._needs_triggers()
+        triggers = self.client.actions.triggers
+        self.assert_refused(
+            ScalekitBadRequestException,
+            "INVALID_ARGUMENT",
+            lambda: triggers.lookup_delivery("atmpt_sdklivetest"),
+            message="attempt ids are not accepted",
+        )
+        self.assert_refused(
+            ScalekitBadRequestException,
+            "INVALID_ARGUMENT",
+            lambda: triggers.batch_lookup_deliveries(["atmpt_sdklivetest"]),
+            message="attempt ids are not accepted",
+        )
 
-    def test_lookup_unknown_delivery_is_not_found(self):
-        with self.assertRaises(ScalekitNotFoundException) as ctx:
-            self.triggers.lookup_delivery(_unknown_msg_id())
-        self.assertEqual(ctx.exception.error_code, "NOT_FOUND")
+    def test_batch_resend_with_a_repeated_target_is_refused(self):
+        self._needs_triggers()
+        target = {"msg_id": "msg_sdklivetest", "endpoint_id": UNKNOWN_ENDPOINT}
+        self.assert_refused(
+            ScalekitBadRequestException,
+            "INVALID_ARGUMENT",
+            lambda: self.client.actions.triggers.batch_resend_deliveries([target, dict(target)]),
+            message="duplicate target",
+        )
 
-    def test_batch_lookup_reports_per_item_outcomes(self):
-        unknown = _unknown_msg_id()
-        known = None
-        if self.endpoint:
-            page = self.triggers.list_deliveries(self.endpoint, page_size=1)
-            if page.deliveries:
-                known = page.deliveries[0].msg_id
-        ids = [unknown] if known is None else [unknown, known]
-
-        batch = self.triggers.batch_lookup_deliveries(ids)  # per-item outcomes never raise
-
-        outcomes = {r.id: r for r in batch.results}
-        self.assertEqual(set(outcomes), set(ids))
-        self.assertEqual(outcomes[unknown].outcome, TriggerDeliveryLookupOutcome.NOT_FOUND)
-        self.assertIsNone(outcomes[unknown].delivery)
-        if known is None:
-            self.assertEqual(batch.found_count, 0)
-            return
-        self.assertEqual(outcomes[known].outcome, TriggerDeliveryLookupOutcome.FOUND)
-        self.assertIsNotNone(outcomes[known].delivery)
-        self.assertEqual(outcomes[known].delivery.msg_id, known)
-        self.assertEqual(batch.found_count, 1)
-
-    def test_deliveries_on_endpoint(self):
-        self._need(SCALEKIT_TEST_TRIGGER_ENDPOINT_ID=self.endpoint)
-        page = self.triggers.list_deliveries(self.endpoint, page_size=5)
-        self.assertLessEqual(len(page.deliveries), 5)
-        attempts = self.triggers.list_delivery_attempts_by_endpoint(self.endpoint, page_size=5)
-        self.assertLessEqual(len(attempts.attempts), 5)
-        if not page.deliveries:
-            return
-        delivery = page.deliveries[0]
-        by_message = self.triggers.list_delivery_attempts_by_message(self.endpoint, delivery.msg_id)
-        self.assertTrue(all(a.msg_id == delivery.msg_id for a in by_message.attempts))
-        found = self.triggers.lookup_delivery(delivery.msg_id)
-        self.assertEqual(found.msg_id, delivery.msg_id)
+    def test_recover_deliveries_refuses_a_bad_window(self):
+        # The window is checked before the delivery endpoint is looked up.
+        self._needs_triggers()
+        triggers = self.client.actions.triggers
+        now = datetime.now(timezone.utc)
+        for name, call in (
+            (
+                "since in the future",
+                lambda: triggers.recover_deliveries(UNKNOWN_ENDPOINT, since=now + timedelta(hours=1)),
+            ),
+            (
+                "until before since",
+                lambda: triggers.recover_deliveries(
+                    UNKNOWN_ENDPOINT,
+                    since=now - timedelta(hours=1),
+                    until=now - timedelta(hours=2),
+                ),
+            ),
+            (
+                "longer than 14 days",
+                lambda: triggers.recover_deliveries(UNKNOWN_ENDPOINT, since=now - timedelta(days=15)),
+            ),
+        ):
+            with self.subTest(name):
+                self.assert_refused(ScalekitBadRequestException, "INVALID_ARGUMENT", call)
 
 
 if __name__ == "__main__":
