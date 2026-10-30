@@ -1,6 +1,6 @@
 kind: added
 body: |
-  `client.resources.list_user_consents(resource_id, consent_ids=[...])` fetches specific end-user consents by ID, for example to look up the `client_id` needed to revoke a consent. `consent_ids` takes up to 25 distinct IDs in the `usrcnst_<positive integer>` format and takes precedence over `user_ids` and `search`; IDs that do not exist or belong to another resource are omitted from the result.
+  `client.resources.list_user_consents(resource_id, consent_ids=[...])` fetches specific end-user consents by ID, for example to look up the `client_id` needed to revoke a consent. `consent_ids` takes up to 25 distinct IDs in the `usrcnst_<positive integer>` format and takes precedence over `user_ids` and `search`; IDs that do not exist or belong to another resource are omitted from the result. An older server ignores `consent_ids`, so confirm each returned `id` is one you asked for before revoking.
 
   ```python
   response = client.resources.list_user_consents(
