@@ -7516,7 +7516,57 @@ response = scalekit_client.actions.providers.create_custom_provider(
         ],
     )
 )
+
+# API key sent as several HTTP headers (multiple-headers mode): set header_name
+# on every credential field. Each field's value is sent as its own header.
+response = scalekit_client.actions.providers.create_custom_provider(
+    CreateCustomProviderRequest(
+        display_name="Acme API",
+        proxy_url="https://api.acme.com",
+        auth_patterns=[
+            AuthPattern(
+                type="API_KEY",
+                display_name="API Key",
+                fields=[
+                    AuthField(
+                        field_name="key_id",
+                        header_name="X-Key-Id",
+                        label="Key ID",
+                        input_type="text",
+                        required=True,
+                    ),
+                    AuthField(
+                        field_name="secret",
+                        header_name="X-Secret",
+                        label="Secret",
+                        input_type="password",
+                        required=True,
+                    ),
+                ],
+            )
+        ],
+    )
+)
+
+# Then connect an account with one credential per header. Create a connection on the
+# connector first. The dict under "static_auth" is the credentials themselves: do not
+# wrap it in a "details" key. Keys are each field's field_name or its header_name.
+scalekit_client.actions.create_connected_account(
+    connection_name="acme-api",  # a connection created on this connector
+    identifier="user_123",
+    authorization_details={"static_auth": {"key_id": "abc", "secret": "xyz"}},
+)
 ```
+
+**Multiple-headers mode.** Setting `header_name` on a credential field of an `API_KEY` pattern puts the pattern in multiple-headers mode.
+
+- Every credential field must set `header_name`. Fields with `is_path_param=True` are exempt.
+- A header name uses letters, `.`, `_` and `-` only, no digits or spaces. It must be unique ignoring case, and at most 10 headers are allowed. Reserved names such as `Host` and `Content-Length` are rejected.
+- The server derives each stored `field_name` from the header name (lowercased, with `-`, `.` and spaces turned into `_`).
+- `auth_header_key_override` applies only to single-key patterns and is ignored in multiple-headers mode.
+- Renaming or removing a header on an existing connector breaks the connected accounts that use it until they are authorized again.
+- Creating or updating a multiple-headers connector needs the `api_key_multi_header` feature enabled for the environment; without it the call fails with `FEATURE_NOT_ENABLED`.
+- Invalid header settings fail with `INVALID_HEADER_CONFIG`. For a connected account, an unknown key fails with `UNKNOWN_HEADER_FIELD` and a missing required header with `MISSING_REQUIRED_HEADER`.
 </dd>
 </dl>
 </dd>
@@ -7548,7 +7598,7 @@ response = scalekit_client.actions.providers.create_custom_provider(
     - `required: bool` - Whether the user must fill the field.
     - `options: List[AuthFieldOption]` - Choices for a `"select"` field, each with `value`, `display_name`, `description`, and `default`.
     - `is_path_param: bool` - The value is substituted into the request path rather than sent as a credential.
-    - `header_name: str` - On `API_KEY`, inject this field's value as this exact HTTP header (enables multiple-headers mode).
+    - `header_name: str` - On `API_KEY`, inject this field's value as this exact HTTP header (case preserved). Setting it on any field enables multiple-headers mode, so set it on every credential field. Leave it empty for single-key mode, which uses `auth_header_key_override`.
   - `account_fields: List[AuthField]` - Inputs collected per connected account rather than once per connection.
   - `allowed_proxy_domains: List[str]` - Domains proxied requests may be routed to.
 - `icon_src: str` - URL of the provider's icon image. Defaults to empty string.

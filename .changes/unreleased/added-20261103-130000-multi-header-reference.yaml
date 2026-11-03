@@ -1,0 +1,8 @@
+kind: added
+body: |
+  `REFERENCE.md` now documents multi-header `API_KEY` connectors: set `header_name` on every credential field of a custom provider's `API_KEY` pattern so each credential is sent as its own HTTP header, then connect an account with one credential per header through `authorization_details={"static_auth": {...}}`. The section lists the rules a caller can hit (header-name characters, limit and uniqueness, the `api_key_multi_header` feature) and the error codes `INVALID_HEADER_CONFIG`, `UNKNOWN_HEADER_FIELD` and `MISSING_REQUIRED_HEADER`. No code change: `AuthField.header_name` is already supported.
+time: '2026-11-03T13:00:00.000000+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: SK-3016
+  Migration: ''
