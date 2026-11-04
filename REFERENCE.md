@@ -6654,7 +6654,7 @@ scalekit_client.resources.delete_resource_client_secret('res_123456', 'm2m_12345
 </dl>
 </details>
 
-<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">list_user_consents</a>(resource_id, search?, page_size?, page_token?, user_ids?) -> ListResourceUserConsentsResponse</code></summary>
+<details><summary><code>client.resources.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/resource.py">list_user_consents</a>(resource_id, search?, page_size?, page_token?, user_ids?, consent_ids?) -> ListResourceUserConsentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6668,7 +6668,9 @@ scalekit_client.resources.delete_resource_client_secret('res_123456', 'm2m_12345
 
 Lists the end-user consents granted against a resource, with pagination. Use this to audit who authorized a client, and to find the `consent_id` you need before revoking.
 
-Filter by user in one of two ways. Pass `user_ids` to match external user IDs exactly and case-sensitively. Pass `search` for a case-insensitive substring match. When you give both, `user_ids` wins and `search` is ignored.
+Filter in one of three ways. Pass `consent_ids` to fetch specific consents by ID, for example to find the `client_id` you need to revoke a consent you already hold the ID of. Pass `user_ids` to match external user IDs exactly and case-sensitively. Pass `search` for a case-insensitive substring match. When you give more than one, the priority is `consent_ids`, then `user_ids`, then `search`, and the lower-priority ones are ignored without an error. Blank-only `consent_ids` values are ignored, so the next filter applies instead.
+
+When you filter by `consent_ids`, check that every returned `id` is one you asked for before you revoke anything. A server that predates this filter ignores it and returns the unfiltered first page. Do not combine `consent_ids` with `user_ids` as an ownership check, because `consent_ids` overrides `user_ids`. Compare `external_user_id` on the returned consent instead.
 
 Consents with `id`, `external_user_id`, `client_id`, `client_name`, `scopes`, and `granted_at`, plus `total_size` and the `next_page_token` / `prev_page_token` cursors.
 </dd>
@@ -6688,7 +6690,7 @@ Consents with `id`, `external_user_id`, `client_id`, `client_name`, `scopes`, an
 response = scalekit_client.resources.list_user_consents(
     'res_123456',
     page_size=20,
-    user_ids=['usr_123456']  # optional; takes precedence over search
+    consent_ids=['usrcnst_102709535608668163', 'usrcnst_102709535608668164']  # optional; takes precedence over user_ids and search
 )
 
 print(response[0].total_size, response[0].next_page_token)
@@ -6716,7 +6718,7 @@ for consent in response[0].consents:
 <dl>
 <dd>
 
-**search:** `Optional[str]` - Case-insensitive substring match on external user IDs. Ignored when `user_ids` is set.
+**search:** `Optional[str]` - Case-insensitive substring match on external user IDs. Ignored when `consent_ids` or `user_ids` is set.
 
 </dd>
 </dl>
@@ -6740,7 +6742,15 @@ for consent in response[0].consents:
 <dl>
 <dd>
 
-**user_ids:** `Optional[List[str]]` - Exact match on external user IDs, max 25. Takes precedence over `search`.
+**user_ids:** `Optional[List[str]]` - Exact match on external user IDs, max 25. Ignored when `consent_ids` is set; takes precedence over `search`.
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**consent_ids:** `Optional[List[str]]` - Exact match on consent IDs (format `usrcnst_xxxxx`), max 25 distinct. IDs that do not exist or belong to another resource are omitted from the result. Takes precedence over `user_ids` and `search`.
 
 </dd>
 </dl>

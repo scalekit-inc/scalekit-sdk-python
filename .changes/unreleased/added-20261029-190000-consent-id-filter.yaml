@@ -1,0 +1,17 @@
+kind: added
+body: |
+  `client.resources.list_user_consents(resource_id, consent_ids=[...])` fetches specific end-user consents by ID, for example to look up the `client_id` needed to revoke a consent. `consent_ids` takes up to 25 distinct IDs in the `usrcnst_<positive integer>` format and takes precedence over `user_ids` and `search`; IDs that do not exist or belong to another resource are omitted from the result. An older server ignores `consent_ids`, so confirm each returned `id` is one you asked for before revoking.
+
+  ```python
+  response = client.resources.list_user_consents(
+      "res_123456",
+      consent_ids=["usrcnst_102709535608668163", "usrcnst_102709535608668164"],
+  )
+  for consent in response[0].consents:
+      print(consent.id, consent.client_id)
+  ```
+time: '2026-10-29T19:00:00.000000+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: SK-2861
+  Migration: ''
