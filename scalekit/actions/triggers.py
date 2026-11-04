@@ -1,20 +1,48 @@
-"""Verify and parse trigger events that Scalekit delivers to your endpoint."""
+"""Manage AgentKit triggers, and verify the trigger events Scalekit delivers to you."""
 
 from __future__ import annotations
 
 import json
 import re
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping, Sequence
+from datetime import date, datetime, timedelta
 from typing import Protocol
 
 from pydantic import ValidationError
 
+from scalekit._convert import date_to_str, enum_to_proto, str_list, timedelta_to_seconds
 from scalekit.actions.models.trigger_event import TriggerEvent
+from scalekit.actions.models.triggers import (
+    BatchCreateTriggerSubscriptionsResponse,
+    BatchDeleteTriggerSubscriptionsResponse,
+    BatchLookupTriggerDeliveriesResponse,
+    BatchResendTriggerDeliveriesResponse,
+    GenerateTriggerSigningSecretResponse,
+    GetTriggerActivityResponse,
+    GetTriggerUsageResponse,
+    ListAvailableTriggersResponse,
+    ListEligibleAccountsResponse,
+    ListTriggerDeliveriesByEndpointResponse,
+    ListTriggerDeliveryAttemptsByEndpointResponse,
+    ListTriggerDeliveryAttemptsByMessageResponse,
+    ListTriggerSubscriptionsResponse,
+    LookupTriggerDeliveryResponse,
+    RecoverTriggerDeliveriesResponse,
+    TriggerDeliveryResendTarget,
+    TriggerDeliveryResendTargetParam,
+    TriggerDeliveryStatus,
+    TriggerIngressEndpoint,
+    TriggerSubscription,
+    TriggerSubscriptionStatus,
+    TriggerUsagePeriod,
+)
 from scalekit.common._webhook_signature import verify_payload_signature
 from scalekit.common.exceptions import (
     ScalekitTriggerEventParseException,
     WebhookVerificationError,
 )
+from scalekit.triggers import TriggersClient
+from scalekit.v1.triggers import triggers_pb2 as pb
 
 __all__ = ["ActionTriggers", "HeadersLike", "verify_trigger_event"]
 
@@ -237,12 +265,757 @@ def verify_trigger_event(
         raise ScalekitTriggerEventParseException(_describe(exc)) from exc
 
 
-class ActionTriggers:
-    """Trigger event helpers, available as ``client.actions.triggers``.
+def _resend_target(
+    target: TriggerDeliveryResendTarget | TriggerDeliveryResendTargetParam,
+) -> pb.TriggerDeliveryResendTarget:
+    if isinstance(target, TriggerDeliveryResendTarget):
+        return pb.TriggerDeliveryResendTarget(msg_id=target.msg_id, endpoint_id=target.endpoint_id)
+    if isinstance(target, Mapping):
+        missing = [key for key in ("msg_id", "endpoint_id") if key not in target]
+        if missing:
+            raise TypeError(f"resend target is missing {', '.join(missing)}: {dict(target)!r}")
+        return pb.TriggerDeliveryResendTarget(
+            msg_id=target["msg_id"], endpoint_id=target["endpoint_id"]
+        )
+    raise TypeError(
+        "each target must be a TriggerDeliveryResendTarget or a dict with msg_id and "
+        f"endpoint_id, got {type(target).__name__}"
+    )
 
-    Every method is local (no network call), so it is safe to call from both sync
-    and async request handlers.
+
+class ActionTriggers:
+    """AgentKit triggers, available as ``client.actions.triggers``.
+
+    ``verify_event`` is local (no network call), so it is safe in both sync and async
+    request handlers. Every other method calls Scalekit and blocks the calling thread;
+    inside ``async def`` run it with ``await asyncio.to_thread(...)``.
+
+    Server errors raise the ``ScalekitServerException`` subclass for the status, with
+    a stable ``error_code``: ``ScalekitBadRequestException`` (400),
+    ``ScalekitNotFoundException`` (404, including ``RESOURCE_NOT_FOUND`` when triggers
+    are not enabled for the environment), ``ScalekitConflictException`` (409),
+    ``ScalekitTooManyRequestsException`` (429, never retried),
+    ``ScalekitServiceUnavailableException`` (503) and
+    ``ScalekitInternalServerException`` (500). Batch methods report per-item outcomes
+    in ``results`` instead of raising. Arguments that cannot be sent (an empty required
+    ID, a naive ``datetime``, a fractional-second interval, an unknown enum name) raise
+    ``ValueError`` before any request.
+
+    Example:
+        >>> for trigger in client.actions.triggers.list_available("conn_123").triggers:
+        ...     print(trigger.name, trigger.available)
     """
+
+    def __init__(self, *, triggers_client: TriggersClient | None = None) -> None:
+        self._triggers_client = triggers_client
+
+    def _client(self) -> TriggersClient:
+        if self._triggers_client is None:
+            raise ValueError("Triggers client not initialized.")
+        return self._triggers_client
+
+    # Catalogue and subscriptions
+
+    def list_available(self, connection_id: str) -> ListAvailableTriggersResponse:
+        """List every trigger a connection offers and whether each is usable there.
+
+        Args:
+            connection_id: The connection (``conn_...``).
+
+        Returns:
+            All triggers (not paginated), plus ``connection_uses_shared_app``.
+
+        Raises:
+            ValueError: ``connection_id`` is empty.
+            ScalekitNotFoundException: The connection does not exist in this
+                environment (``RESOURCE_NOT_FOUND``).
+            ScalekitBadRequestException: ``connection_id`` is malformed.
+
+        Example:
+            >>> page = client.actions.triggers.list_available("conn_123")
+            >>> [t.name for t in page.triggers if t.available]
+        """
+        response = self._client().list_available_triggers(connection_id)
+        return ListAvailableTriggersResponse.from_proto(response[0])
+
+    def list_eligible_accounts(
+        self,
+        connection_id: str,
+        trigger_name: str,
+        *,
+        query: str | None = None,
+        page_size: int | None = None,
+        page_token: str | None = None,
+    ) -> ListEligibleAccountsResponse:
+        """List a connection's connected accounts and whether each can subscribe.
+
+        Args:
+            connection_id: The connection (``conn_...``).
+            trigger_name: ``AvailableTrigger.name``.
+            query: Filter accounts by identifier.
+            page_size: Accounts per page; the server default is 10 and values above
+                100 are capped.
+            page_token: ``next_page_token`` or ``prev_page_token`` of a previous page.
+
+        Returns:
+            One page of accounts with their eligibility and health.
+
+        Raises:
+            ValueError: ``connection_id`` or ``trigger_name`` is empty.
+            ScalekitNotFoundException: Unknown connection or trigger.
+            ScalekitBadRequestException: Malformed page token.
+
+        Example:
+            >>> page = client.actions.triggers.list_eligible_accounts(
+            ...     "conn_123", "item.created", page_size=50)
+            >>> ids = [a.id for a in page.accounts if a.eligible]
+        """
+        response = self._client().list_eligible_accounts(
+            connection_id,
+            trigger_name,
+            query=query,
+            page_size=page_size,
+            page_token=page_token,
+        )
+        return ListEligibleAccountsResponse.from_proto(response[0])
+
+    def list_subscriptions(
+        self,
+        connection_id: str,
+        *,
+        trigger_name: str | None = None,
+        statuses: Sequence[TriggerSubscriptionStatus | str | int] | None = None,
+        page_size: int | None = None,
+        page_token: str | None = None,
+    ) -> ListTriggerSubscriptionsResponse:
+        """List a connection's trigger subscriptions, one page at a time.
+
+        Args:
+            connection_id: The connection (``conn_...``).
+            trigger_name: Only subscriptions to this trigger.
+            statuses: Only subscriptions in these states: ``TriggerSubscriptionStatus``
+                members, their names, or raw numbers.
+            page_size: Subscriptions per page; the server caps it at 100.
+            page_token: ``next_page_token`` or ``prev_page_token`` of a previous page.
+
+        Returns:
+            One page of subscriptions, ``total_size`` and ``status_counts``.
+
+        Raises:
+            ValueError: ``connection_id`` is empty or a status name is unknown.
+            ScalekitNotFoundException: Unknown connection.
+            ScalekitBadRequestException: A status the server does not accept.
+
+        Example:
+            >>> page = client.actions.triggers.list_subscriptions(
+            ...     "conn_123", statuses=[TriggerSubscriptionStatus.PAUSED_CREDENTIAL])
+            >>> [s.connected_account_id for s in page.subscriptions]
+        """
+        encoded: list[int] | None = None
+        if statuses is not None:
+            if isinstance(statuses, (str, bytes)):
+                raise TypeError("statuses must be a list, not a single string")
+            encoded = [enum_to_proto(pb.TriggerSubscriptionStatus, s, "statuses") for s in statuses]
+        response = self._client().list_trigger_subscriptions(
+            connection_id,
+            trigger_name=trigger_name,
+            statuses=encoded,
+            page_size=page_size,
+            page_token=page_token,
+        )
+        return ListTriggerSubscriptionsResponse.from_proto(response[0])
+
+    def create_subscription(
+        self,
+        connection_id: str,
+        trigger_name: str,
+        *,
+        connected_account_id: str | None = None,
+        interval: timedelta | None = None,
+        config: Mapping[str, str] | None = None,
+    ) -> TriggerSubscription:
+        """Subscribe a connected account, or the whole connection, to a trigger.
+
+        Not retried on ``UNAVAILABLE``: a retry could create the subscription twice.
+        Creating the same subscription again raises ``ScalekitConflictException``.
+
+        Args:
+            connection_id: The connection (``conn_...``).
+            trigger_name: ``AvailableTrigger.name``.
+            connected_account_id: The account (``ca_...``). Leave out only for a
+                connection-scoped trigger.
+            interval: Poll interval for a poll trigger, in whole seconds; at least the
+                trigger's ``min_interval``. Leave out for the default and for webhook
+                triggers.
+            config: Values for the trigger's ``config_fields``.
+
+        Returns:
+            The new subscription.
+
+        Raises:
+            ValueError: An empty ID, or ``interval`` is not whole seconds.
+            ScalekitConflictException: The same subscription already exists
+                (``RESOURCE_ALREADY_EXISTS``).
+            ScalekitNotFoundException: Unknown connection, trigger or account.
+            ScalekitBadRequestException: The account is refused (missing scopes,
+                unhealthy, no consent; the message says how to fix it), the account
+                is missing for an account-scoped trigger, or ``interval``/``config``
+                is invalid.
+            ScalekitServiceUnavailableException: The subscription may or may not have
+                been created (the call is not retried); check ``list_subscriptions``
+                before calling again.
+            ScalekitGatewayTimeoutException: The deadline passed; the subscription may
+                still have been created, so check ``list_subscriptions`` before calling
+                again.
+
+        Example:
+            >>> sub = client.actions.triggers.create_subscription(
+            ...     "conn_123", "item.created", connected_account_id="ca_123",
+            ...     interval=timedelta(minutes=5))
+            >>> sub.id, sub.effective_interval
+        """
+        interval_seconds = None if interval is None else timedelta_to_seconds(interval, "interval")
+        response = self._client().create_trigger_subscription(
+            connection_id,
+            trigger_name,
+            connected_account_id=connected_account_id,
+            interval_seconds=interval_seconds,
+            config=config,
+        )
+        return TriggerSubscription.from_proto(response[0])
+
+    def batch_create_subscriptions(
+        self,
+        connection_id: str,
+        trigger_name: str,
+        *,
+        connected_account_ids: Sequence[str] | None = None,
+        interval: timedelta | None = None,
+        config: Mapping[str, str] | None = None,
+    ) -> BatchCreateTriggerSubscriptionsResponse:
+        """Subscribe up to 100 connected accounts to a trigger in one call.
+
+        Not atomic: each account gets its own outcome in ``results`` (``CREATED``,
+        ``ALREADY_SUBSCRIBED``, ``REFUSED``, ``NOT_FOUND``, ``FAILED``), and those never
+        raise. Safe to call again for the ``FAILED`` ones. For a connection-scoped
+        trigger, leave ``connected_account_ids`` out.
+
+        Args:
+            connection_id: The connection (``conn_...``).
+            trigger_name: ``AvailableTrigger.name``.
+            connected_account_ids: The accounts (``ca_...``), unique.
+            interval: Poll interval, in whole seconds (see ``create_subscription``).
+            config: Values for the trigger's ``config_fields``.
+
+        Returns:
+            Per-account results and ``created_count``.
+
+        Raises:
+            ValueError: An empty ID, or ``interval`` is not whole seconds.
+            ScalekitNotFoundException: Unknown connection or trigger.
+            ScalekitBadRequestException: A malformed or repeated account ID, no
+                accounts for an account-scoped trigger, or invalid ``interval``/``config``.
+
+        Example:
+            >>> batch = client.actions.triggers.batch_create_subscriptions(
+            ...     "conn_123", "item.created", connected_account_ids=["ca_1", "ca_2"])
+            >>> [(r.connected_account_id, r.outcome) for r in batch.results]
+        """
+        interval_seconds = None if interval is None else timedelta_to_seconds(interval, "interval")
+        response = self._client().batch_create_trigger_subscriptions(
+            connection_id,
+            trigger_name,
+            connected_account_ids=connected_account_ids,
+            interval_seconds=interval_seconds,
+            config=config,
+        )
+        return BatchCreateTriggerSubscriptionsResponse.from_proto(response[0])
+
+    def delete_subscription(self, connection_id: str, subscription_id: str) -> None:
+        """Delete one trigger subscription.
+
+        Retried on ``UNAVAILABLE``, so a ``ScalekitNotFoundException`` can also mean an
+        earlier attempt of this same call already deleted it.
+
+        Args:
+            connection_id: The connection (``conn_...``).
+            subscription_id: The subscription (``trgs_...``).
+
+        Raises:
+            ValueError: An empty ID.
+            ScalekitNotFoundException: No such subscription on this connection.
+            ScalekitBadRequestException: Malformed ``subscription_id``.
+
+        Example:
+            >>> client.actions.triggers.delete_subscription("conn_123", "trgs_123")
+        """
+        self._client().delete_trigger_subscription(connection_id, subscription_id)
+
+    def batch_delete_subscriptions(
+        self,
+        connection_id: str,
+        *,
+        subscription_ids: Sequence[str] | None = None,
+        trigger_name: str | None = None,
+        connected_account_ids: Sequence[str] | None = None,
+    ) -> BatchDeleteTriggerSubscriptionsResponse:
+        """Delete many trigger subscriptions in one call.
+
+        Choose one selector: ``subscription_ids`` (up to 100), or ``trigger_name`` with
+        ``connected_account_ids`` (up to 100). Each subscription gets its own outcome
+        in ``results`` (``DELETED``, ``NOT_FOUND``, ``FAILED``, ``NOT_ATTEMPTED``), and
+        those never raise. Safe to call again.
+
+        Args:
+            connection_id: The connection (``conn_...``).
+            subscription_ids: The subscriptions to delete (``trgs_...``).
+            trigger_name: With ``connected_account_ids``: the trigger to unsubscribe.
+            connected_account_ids: With ``trigger_name``: the accounts (``ca_...``).
+
+        Returns:
+            Per-subscription results and ``deleted_count``.
+
+        Raises:
+            ValueError: ``connection_id`` is empty.
+            ScalekitBadRequestException: Not exactly one selector, or a malformed or
+                repeated ID.
+            ScalekitTooManyRequestsException: Rate limited (``RATE_LIMITED``).
+
+        Example:
+            >>> batch = client.actions.triggers.batch_delete_subscriptions(
+            ...     "conn_123", subscription_ids=["trgs_1", "trgs_2"])
+            >>> batch.deleted_count
+        """
+        response = self._client().batch_delete_trigger_subscriptions(
+            connection_id,
+            subscription_ids=subscription_ids,
+            trigger_name=trigger_name,
+            connected_account_ids=connected_account_ids,
+        )
+        return BatchDeleteTriggerSubscriptionsResponse.from_proto(response[0])
+
+    # Activity and usage
+
+    def get_activity(self) -> GetTriggerActivityResponse:
+        """Count what happened to this environment's trigger events recently.
+
+        Returns:
+            Counts per outcome over ``window``, plus signature and degraded flags.
+
+        Raises:
+            ScalekitNotFoundException: Triggers are not enabled for the environment.
+
+        Example:
+            >>> activity = client.actions.triggers.get_activity()
+            >>> if activity.signature_banner:
+            ...     print("check the signing secret")
+        """
+        response = self._client().get_trigger_activity()
+        return GetTriggerActivityResponse.from_proto(response[0])
+
+    def get_usage(
+        self,
+        *,
+        period: TriggerUsagePeriod | str | None = None,
+        from_date: date | str | None = None,
+        to_date: date | str | None = None,
+    ) -> GetTriggerUsageResponse:
+        """Read metered trigger deliveries for a preset period or a UTC date range.
+
+        Pass either ``period`` or both ``from_date`` and ``to_date``. The server
+        checks the combination and clamps the range to the last 30 days.
+
+        Args:
+            period: ``"24h"`` (hourly counts) or ``"7d"``/``"30d"`` (daily counts).
+            from_date: First UTC date, inclusive: a ``date``, an aware ``datetime``
+                (its UTC date is used) or a ``"YYYY-MM-DD"`` string.
+            to_date: Last UTC date, inclusive, in the same forms.
+
+        Returns:
+            Daily or hourly counts and the range actually read.
+
+        Raises:
+            ValueError: A date that is not a real ``YYYY-MM-DD`` date or a naive
+                ``datetime``.
+            ScalekitBadRequestException: An invalid combination or range.
+            ScalekitNotFoundException: Usage is not metered for this environment
+                (``TRIGGER_USAGE_NOT_METERED``).
+            ScalekitServiceUnavailableException: Usage cannot be read right now.
+
+        Example:
+            >>> usage = client.actions.triggers.get_usage(period="24h")
+            >>> [(h.start, h.units) for h in usage.hours]
+        """
+        response = self._client().get_trigger_usage(
+            period=period,
+            from_date=None if from_date is None else date_to_str(from_date, "from_date"),
+            to_date=None if to_date is None else date_to_str(to_date, "to_date"),
+        )
+        return GetTriggerUsageResponse.from_proto(response[0])
+
+    # Ingress endpoint and signing secret
+
+    def get_ingress_endpoint(self, connection_id: str) -> TriggerIngressEndpoint:
+        """Read the webhook URL a provider sends a connection's events to.
+
+        Args:
+            connection_id: The connection (``conn_...``).
+
+        Returns:
+            The URL and the state of its signing secret (never the secret itself).
+
+        Raises:
+            ValueError: ``connection_id`` is empty.
+            ScalekitNotFoundException: No webhook URL yet
+                (``TRIGGER_INGRESS_ENDPOINT_NOT_CREATED``; call
+                ``create_ingress_endpoint``), or unknown connection
+                (``RESOURCE_NOT_FOUND``).
+
+        Example:
+            >>> endpoint = client.actions.triggers.get_ingress_endpoint("conn_123")
+            >>> endpoint.signing_secret_configured
+        """
+        response = self._client().get_trigger_ingress_endpoint(connection_id)
+        return TriggerIngressEndpoint.from_proto(response[0])
+
+    def create_ingress_endpoint(self, connection_id: str) -> TriggerIngressEndpoint:
+        """Create a connection's webhook URL, or return the existing one.
+
+        Args:
+            connection_id: The connection (``conn_...``).
+
+        Returns:
+            The URL to paste into the provider's app configuration.
+
+        Raises:
+            ValueError: ``connection_id`` is empty.
+            ScalekitBadRequestException: The connection has no webhook trigger
+                (``TRIGGER_INGRESS_NOT_APPLICABLE``), or its trigger definitions are
+                unavailable (``TRIGGER_INGRESS_DEFINITIONS_UNAVAILABLE``).
+            ScalekitNotFoundException: Unknown connection.
+
+        Example:
+            >>> endpoint = client.actions.triggers.create_ingress_endpoint("conn_123")
+            >>> print("paste into the provider:", endpoint.url)
+        """
+        response = self._client().create_trigger_ingress_endpoint(connection_id)
+        return TriggerIngressEndpoint.from_proto(response[0])
+
+    def set_signing_secret(
+        self, connection_id: str, *, signing_secret: str
+    ) -> TriggerIngressEndpoint:
+        """Store the signing secret the provider signs its events with.
+
+        The first call stores it. A call with a different secret starts a rotation:
+        both secrets are accepted until ``confirm_signing_secret_rotation`` or for 24
+        hours. Not retried on ``UNAVAILABLE``, because a retry could advance the
+        rotation.
+
+        Args:
+            connection_id: The connection (``conn_...``).
+            signing_secret: The secret from the provider's app configuration (8-4096
+                characters; surrounding whitespace is trimmed by the server).
+
+        Returns:
+            The endpoint, with ``masked_signing_secret`` and rotation state.
+
+        Raises:
+            ValueError: ``connection_id`` is empty.
+            ScalekitBadRequestException: The secret is too short, or this provider uses
+                a secret Scalekit generates (``TRIGGER_SIGNING_SECRET_GENERATED_ONLY``;
+                call ``generate_signing_secret``).
+            ScalekitConflictException: A rotation is already in progress.
+            ScalekitNotFoundException: No webhook URL yet
+                (``TRIGGER_INGRESS_ENDPOINT_NOT_CREATED``).
+
+        Example:
+            >>> endpoint = client.actions.triggers.set_signing_secret(
+            ...     "conn_123", signing_secret=os.environ["PROVIDER_SIGNING_SECRET"])
+            >>> endpoint.rotation_in_progress
+        """
+        response = self._client().set_trigger_signing_secret(
+            connection_id, signing_secret=signing_secret
+        )
+        return TriggerIngressEndpoint.from_proto(response[0])
+
+    def confirm_signing_secret_rotation(
+        self, connection_id: str, *, signing_secret_rotation_id: int | None = None
+    ) -> TriggerIngressEndpoint:
+        """Finish a signing-secret rotation so only the new secret is accepted.
+
+        Args:
+            connection_id: The connection (``conn_...``).
+            signing_secret_rotation_id: ``TriggerIngressEndpoint.signing_secret_rotation_id``
+                of the rotation to confirm. Required while a rotation is in progress;
+                ignored when none is.
+
+        Returns:
+            The endpoint after the confirmation.
+
+        Raises:
+            ValueError: ``connection_id`` is empty.
+            ScalekitBadRequestException: The rotation ID is missing or names an older
+                rotation.
+            ScalekitNotFoundException: No webhook URL yet.
+
+        Example:
+            >>> endpoint = client.actions.triggers.get_ingress_endpoint("conn_123")
+            >>> client.actions.triggers.confirm_signing_secret_rotation(
+            ...     "conn_123", signing_secret_rotation_id=endpoint.signing_secret_rotation_id)
+        """
+        response = self._client().confirm_trigger_signing_secret_rotation(
+            connection_id, signing_secret_rotation_id=signing_secret_rotation_id
+        )
+        return TriggerIngressEndpoint.from_proto(response[0])
+
+    def generate_signing_secret(self, connection_id: str) -> GenerateTriggerSigningSecretResponse:
+        """Generate a signing secret, for providers that use one Scalekit creates.
+
+        The secret is returned in plaintext only in this response; it is left out of
+        ``repr()``. Not retried on ``UNAVAILABLE``: a retry would replace the secret.
+
+        Args:
+            connection_id: The connection (``conn_...``).
+
+        Returns:
+            The endpoint, the secret and the URL that includes it.
+
+        Raises:
+            ValueError: ``connection_id`` is empty.
+            ScalekitBadRequestException: The provider signs its own events
+                (``TRIGGER_SIGNING_SECRET_NOT_GENERATABLE``; use ``set_signing_secret``).
+            ScalekitConflictException: A rotation is in progress.
+            ScalekitNotFoundException: No webhook URL yet.
+
+        Example:
+            >>> generated = client.actions.triggers.generate_signing_secret("conn_123")
+            >>> save_to_provider(generated.url_with_secret)
+        """
+        response = self._client().generate_trigger_signing_secret(connection_id)
+        return GenerateTriggerSigningSecretResponse.from_proto(response[0])
+
+    # Deliveries
+
+    def list_delivery_attempts_by_endpoint(
+        self, endpoint_id: str, *, page_size: int | None = None
+    ) -> ListTriggerDeliveryAttemptsByEndpointResponse:
+        """List the most recent attempts to deliver trigger events to one of your endpoints.
+
+        Args:
+            endpoint_id: Your delivery endpoint.
+            page_size: Attempts to return; the server default is 20, capped at 100.
+
+        Returns:
+            The attempts (one page; there is no page token).
+
+        Raises:
+            ValueError: ``endpoint_id`` is empty.
+            ScalekitBadRequestException: Unknown or malformed endpoint (this method
+                answers an unknown endpoint with 400, not 404).
+
+        Example:
+            >>> page = client.actions.triggers.list_delivery_attempts_by_endpoint("ep_123")
+            >>> [(a.msg_id, a.status) for a in page.attempts]
+        """
+        response = self._client().list_trigger_delivery_attempts_by_endpoint(
+            endpoint_id, page_size=page_size
+        )
+        return ListTriggerDeliveryAttemptsByEndpointResponse.from_proto(response[0])
+
+    def list_deliveries(
+        self,
+        endpoint_id: str,
+        *,
+        page_size: int | None = None,
+        page_token: str | None = None,
+        status: TriggerDeliveryStatus | str | int | None = None,
+        channel: str | None = None,
+        after: datetime | None = None,
+        before: datetime | None = None,
+    ) -> ListTriggerDeliveriesByEndpointResponse:
+        """List trigger events sent to one of your endpoints, newest first.
+
+        Args:
+            endpoint_id: Your delivery endpoint.
+            page_size: Messages per page; the server default is 20, capped at 100.
+            page_token: ``next_page_token`` of a previous page (with the same filters).
+            status: Only messages in this delivery state.
+            channel: Only messages for this connection (``conn_...``) or subscription
+                (``trgs_...``).
+            after: Only messages after this aware instant (at most 90 days back).
+            before: Only messages before this aware instant.
+
+        Returns:
+            One page of messages and ``next_page_token``.
+
+        Raises:
+            ValueError: ``endpoint_id`` is empty, a naive ``datetime``, or an unknown
+                status name.
+            ScalekitBadRequestException: Unknown endpoint (400, not 404), unknown
+                ``channel``, or ``after`` later than ``before``.
+            ScalekitTooManyRequestsException: Rate limited.
+
+        Example:
+            >>> page = client.actions.triggers.list_deliveries(
+            ...     "ep_123", status=TriggerDeliveryStatus.FAILED,
+            ...     after=datetime.now(timezone.utc) - timedelta(days=1))
+            >>> [d.msg_id for d in page.deliveries]
+        """
+        encoded = (
+            None if status is None else enum_to_proto(pb.TriggerDeliveryStatus, status, "status")
+        )
+        response = self._client().list_trigger_deliveries_by_endpoint(
+            endpoint_id,
+            page_size=page_size,
+            page_token=page_token,
+            status=encoded,
+            channel=channel,
+            after=after,
+            before=before,
+        )
+        return ListTriggerDeliveriesByEndpointResponse.from_proto(response[0])
+
+    def list_delivery_attempts_by_message(
+        self, endpoint_id: str, msg_id: str
+    ) -> ListTriggerDeliveryAttemptsByMessageResponse:
+        """List every attempt to deliver one message to one of your endpoints.
+
+        Args:
+            endpoint_id: Your delivery endpoint.
+            msg_id: The message (``msg_...``).
+
+        Returns:
+            Up to 50 attempts, oldest first, and ``truncated``.
+
+        Raises:
+            ValueError: An empty ID.
+            ScalekitBadRequestException: Unknown endpoint or message (400, not 404).
+
+        Example:
+            >>> page = client.actions.triggers.list_delivery_attempts_by_message(
+            ...     "ep_123", "msg_123")
+            >>> [a.response_status_code for a in page.attempts]
+        """
+        response = self._client().list_trigger_delivery_attempts_by_message(endpoint_id, msg_id)
+        return ListTriggerDeliveryAttemptsByMessageResponse.from_proto(response[0])
+
+    def lookup_delivery(self, delivery_id: str) -> LookupTriggerDeliveryResponse:
+        """Look up one delivered message by its message ID or by its event ID.
+
+        Args:
+            delivery_id: A message ID (``msg_...``) or the event ID your endpoint
+                received (``TriggerEvent.dedupe_key``).
+
+        Returns:
+            The message, its trigger and up to 50 attempts.
+
+        Raises:
+            ValueError: ``delivery_id`` is empty.
+            ScalekitNotFoundException: Not found (``error_code`` is ``NOT_FOUND``).
+            ScalekitBadRequestException: Malformed ID (an attempt ID is refused).
+            ScalekitTooManyRequestsException: Rate limited.
+
+        Example:
+            >>> found = client.actions.triggers.lookup_delivery(event.dedupe_key)
+            >>> [a.status for a in found.attempts]
+        """
+        response = self._client().lookup_trigger_delivery(delivery_id)
+        return LookupTriggerDeliveryResponse.from_proto(response[0])
+
+    def batch_lookup_deliveries(
+        self, delivery_ids: Sequence[str]
+    ) -> BatchLookupTriggerDeliveriesResponse:
+        """Look up 1 to 25 delivered messages by message ID or event ID.
+
+        Each ID gets its own outcome in ``results`` (``FOUND``, ``NOT_FOUND``,
+        ``RATE_LIMITED``, ``FAILED``, ``NOT_ATTEMPTED``), and those never raise.
+        Attempts in the results carry no response bodies.
+
+        Args:
+            delivery_ids: Message IDs (``msg_...``) or event IDs, unique.
+
+        Returns:
+            Per-ID results and ``found_count``.
+
+        Raises:
+            ScalekitBadRequestException: An empty, repeated or malformed list.
+            ScalekitTooManyRequestsException: Rate limited.
+
+        Example:
+            >>> batch = client.actions.triggers.batch_lookup_deliveries(["msg_1", "msg_2"])
+            >>> batch.found_count
+        """
+        response = self._client().batch_lookup_trigger_deliveries(
+            str_list("delivery_ids", delivery_ids)
+        )
+        return BatchLookupTriggerDeliveriesResponse.from_proto(response[0])
+
+    def batch_resend_deliveries(
+        self, targets: Sequence[TriggerDeliveryResendTarget | TriggerDeliveryResendTargetParam]
+    ) -> BatchResendTriggerDeliveriesResponse:
+        """Send 1 to 50 messages to endpoints again.
+
+        Each target makes a real delivery attempt and gets its own outcome in
+        ``results`` (``QUEUED``, ``NOT_FOUND``, ``RATE_LIMITED``, ``FAILED``,
+        ``NOT_ATTEMPTED``), which never raise. Not retried on ``UNAVAILABLE``: a retry
+        could deliver the messages twice.
+
+        Args:
+            targets: ``TriggerDeliveryResendTarget`` models or
+                ``{"msg_id": "msg_...", "endpoint_id": "ep_..."}`` dicts.
+
+        Returns:
+            Per-target results and ``queued_count``.
+
+        Raises:
+            TypeError: A target is neither a model nor a dict.
+            ScalekitBadRequestException: An empty, repeated or malformed target list.
+            ScalekitTooManyRequestsException: Rate limited.
+
+        Example:
+            >>> batch = client.actions.triggers.batch_resend_deliveries(
+            ...     [{"msg_id": "msg_123", "endpoint_id": "ep_123"}])
+            >>> batch.queued_count
+        """
+        response = self._client().batch_resend_trigger_deliveries(
+            [_resend_target(t) for t in targets]
+        )
+        return BatchResendTriggerDeliveriesResponse.from_proto(response[0])
+
+    def recover_deliveries(
+        self, endpoint_id: str, *, since: datetime, until: datetime | None = None
+    ) -> RecoverTriggerDeliveriesResponse:
+        """Resend every message that failed to reach an endpoint in a time range.
+
+        Not retried on ``UNAVAILABLE``. A ``ScalekitInternalServerException`` here
+        means the recovery may be running anyway: check the endpoint's deliveries
+        before calling again.
+
+        Args:
+            endpoint_id: Your delivery endpoint (``ep_...``).
+            since: Start of the range, an aware instant not in the future.
+            until: End of the range (default now), at most 14 days after ``since``.
+
+        Returns:
+            The recovery task and its status (``"running"`` or ``"finished"``).
+
+        Raises:
+            ValueError: ``endpoint_id`` or ``since`` is missing, or a naive ``datetime``.
+            ScalekitBadRequestException: An invalid range.
+            ScalekitNotFoundException: Unknown endpoint (``RESOURCE_NOT_FOUND``).
+            ScalekitTooManyRequestsException: Rate limited.
+            ScalekitInternalServerException: The start was not confirmed; it may be
+                running.
+
+        Example:
+            >>> task = client.actions.triggers.recover_deliveries(
+            ...     "ep_123", since=datetime.now(timezone.utc) - timedelta(hours=6))
+            >>> task.status
+        """
+        response = self._client().recover_trigger_deliveries(endpoint_id, since=since, until=until)
+        return RecoverTriggerDeliveriesResponse.from_proto(response[0])
+
+    # Local verification
 
     def verify_event(
         self,

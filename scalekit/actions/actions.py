@@ -27,6 +27,7 @@ from scalekit.actions.modifier import (
 from scalekit.actions._proxy_path import ProxySession, ensure_under_proxy_prefix
 from scalekit.common.exceptions import ScalekitNotFoundException
 from scalekit.actions.triggers import ActionTriggers
+from scalekit.triggers import TriggersClient
 from scalekit.mcp import _check_connection_token_args
 from scalekit.v1.tools.tools_pb2 import Filter
 from google.protobuf.wrappers_pb2 import BoolValue
@@ -37,7 +38,15 @@ from google.protobuf.wrappers_pb2 import BoolValue
 class ActionClient:
     """Class definition for Connect Client"""
 
-    def __init__(self,tools_client, connected_accounts_client, mcp_client=None, providers_client=None):
+    def __init__(
+        self,
+        tools_client,
+        connected_accounts_client,
+        mcp_client=None,
+        providers_client=None,
+        *,
+        triggers_client: TriggersClient | None = None,
+    ):
         """
         Initialize ActionClient with tools, connected accounts, and MCP dependencies
 
@@ -49,6 +58,9 @@ class ActionClient:
         :type: McpClient
         :param providers_client: ProvidersClient instance (optional)
         :type: ProvidersClient
+        :param triggers_client: TriggersClient instance (optional, keyword only);
+            required by the networked ``triggers`` methods
+        :type: TriggersClient
 
         :returns:
             None
@@ -60,6 +72,7 @@ class ActionClient:
         self._mcp_actions = None
         self._providers_client = providers_client
         self._providers_actions = None
+        self._triggers_client = triggers_client
         self._triggers_actions: ActionTriggers | None = None
         self._modifiers: List[Modifier] = []
         self._google = None
@@ -112,14 +125,20 @@ class ActionClient:
 
     @property
     def triggers(self) -> ActionTriggers:
-        """Verify and parse trigger events delivered to your endpoint (local, no network).
+        """Manage AgentKit triggers, and verify the trigger events delivered to you.
+
+        ``verify_event`` is local (no network call). The other methods (catalogue,
+        subscriptions, webhook URL and signing secret, activity, usage, deliveries)
+        call Scalekit and need the triggers client that ``ScalekitClient`` wires in;
+        without one they raise ``ValueError``.
 
         Example:
             >>> event = client.actions.triggers.verify_event(
             ...     body, headers=request.headers, secret=secret)
+            >>> page = client.actions.triggers.list_subscriptions("conn_123")
         """
         if self._triggers_actions is None:
-            self._triggers_actions = ActionTriggers()
+            self._triggers_actions = ActionTriggers(triggers_client=self._triggers_client)
         return self._triggers_actions
 
     @property
