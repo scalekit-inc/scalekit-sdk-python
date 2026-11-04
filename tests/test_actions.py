@@ -546,10 +546,11 @@ class TestConnect(BaseTest):
             self.assertTrue(hasattr(result, 'connected_account'))
             self.assertIsNotNone(result.connected_account)
             self.assertEqual(result.connected_account.identifier, test_id)
-            auth = result.connected_account.authorization_details.get("static_auth", {})
-            self.assertEqual(auth.get("domain"), "testdomain.freshdesk.com")
-            self.assertEqual(auth.get("username"), "testusername")
-            self.assertEqual(auth.get("password"), "testpassword")
+            # Create does not echo the stored credential: authorization_details is returned only
+            # where connected_account_auth_details is enabled for the environment, so the test
+            # checks that the account exists instead. The status depends on the environment's
+            # hosted-widget and credential-import settings.
+            self.assertIn(result.connected_account.status, ("ACTIVE", "PENDING_AUTH"))
 
             # Clean up - delete the created account
             self.scalekit_client.connect.delete_connected_account(
@@ -1212,11 +1213,10 @@ class TestConnect(BaseTest):
             self.assertIsInstance(create_result, CreateConnectedAccountResponse)
             self.assertEqual(create_result.connected_account.identifier, test_id)
 
-            # Verify initial static auth details
-            initial_auth = create_result.connected_account.authorization_details.get("static_auth", {})
-            self.assertEqual(initial_auth.get("domain"), "initial.freshdesk.com")
-            self.assertEqual(initial_auth.get("username"), "initial_user")
-            self.assertEqual(initial_auth.get("password"), "initial_password")
+            # Create and update do not echo the stored credential (authorization_details is returned
+            # only where connected_account_auth_details is enabled), so check the account instead.
+            # The create status depends on the environment's hosted-widget and credential-import settings.
+            self.assertIn(create_result.connected_account.status, ("ACTIVE", "PENDING_AUTH"))
 
             # Now update the connected account with new static auth details
             update_result = self.scalekit_client.actions.update_connected_account(
@@ -1231,11 +1231,8 @@ class TestConnect(BaseTest):
             self.assertIsNotNone(update_result.connected_account)
             self.assertEqual(update_result.connected_account.identifier, test_id)
 
-            # Verify updated static auth details
-            updated_auth = update_result.connected_account.authorization_details.get("static_auth", {})
-            self.assertEqual(updated_auth.get("domain"), "updated.freshdesk.com")
-            self.assertEqual(updated_auth.get("username"), "updated_user")
-            self.assertEqual(updated_auth.get("password"), "updated_password")
+            # An update with a static credential always activates the account.
+            self.assertEqual(update_result.connected_account.status, "ACTIVE")
 
             # Clean up - delete the created account
             self.scalekit_client.actions.delete_connected_account(
