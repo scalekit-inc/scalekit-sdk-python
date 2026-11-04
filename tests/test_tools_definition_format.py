@@ -9,6 +9,7 @@ definition_format=JSON_STRING and rebuilds `definition` from
 
 These tests never touch the network: grpc_exec is replaced by a stub.
 """
+import copy
 import json
 import unittest
 from unittest.mock import MagicMock
@@ -17,6 +18,7 @@ from google.protobuf import struct_pb2
 from google.protobuf.json_format import MessageToDict
 
 from scalekit.actions.types import ListToolsResponse as ActionsListToolsResponse
+from scalekit.common.exceptions import ScalekitException
 from scalekit.tools import ToolsClient
 from scalekit.v1.tools import tools_pb2
 
@@ -97,8 +99,9 @@ class TestListToolsDefinitionFormat(unittest.TestCase):
         deep = _deep_definition(60)
         struct_page = tools_pb2.ListToolsResponse()
         struct_page.tools.add(id="tol_1").definition.update(deep)  # built in place: copying would re-parse
-        with self.assertRaisesRegex(Exception, "MaxDepth"):
-            tools_pb2.ListToolsResponse.FromString(struct_page.SerializeToString())  # the bug
+        # The bug. upb says "MaxDepth"; the pure-Python backend says "too many levels of nesting".
+        with self.assertRaises(Exception):
+            tools_pb2.ListToolsResponse.FromString(struct_page.SerializeToString())
 
         as_string = tools_pb2.ListToolsResponse(tools=[_json_tool("tol_1", deep)]).SerializeToString()
         client, _ = _client(tools_pb2.ListToolsResponse.FromString(as_string))
@@ -107,12 +110,35 @@ class TestListToolsDefinitionFormat(unittest.TestCase):
 
         self.assertEqual(MessageToDict(response.tools[0].definition), deep)
 
+    def test_deep_definition_supports_read_and_copy_operations(self):
+        deep = _deep_definition(60)
+        page = tools_pb2.ListToolsResponse(tools=[_json_tool("tol_1", deep)])
+        client, _ = _client(tools_pb2.ListToolsResponse.FromString(page.SerializeToString()))
+
+        response, _ = client.list_tools()
+        tool = response.tools[0]
+
+        self.assertEqual(MessageToDict(copy.deepcopy(tool).definition), deep)
+        copied = tools_pb2.Tool()
+        copied.CopyFrom(tool)
+        self.assertEqual(copied, tool)
+        self.assertEqual(ActionsListToolsResponse.from_proto(response).tools[0].definition, deep)
+
     def test_invalid_definition_names_the_tool(self):
         bad = tools_pb2.Tool(id="tol_bad", definition_json="{not json")
         client, _ = _client(tools_pb2.ListToolsResponse(tools=[bad]))
 
-        with self.assertRaisesRegex(ValueError, "tol_bad"):
+        with self.assertRaisesRegex(ScalekitException, "tol_bad"):
             client.list_tools()
+
+    def test_non_object_definition_names_the_tool(self):
+        for text in ("[1, 2]", '"x"', "3", "null", "NaN"):
+            with self.subTest(text=text):
+                bad = tools_pb2.Tool(id="tol_bad", definition_json=text)
+                client, _ = _client(tools_pb2.ListToolsResponse(tools=[bad]))
+
+                with self.assertRaisesRegex(ScalekitException, "tol_bad"):
+                    client.list_tools()
 
     def test_actions_model_is_unchanged(self):
         from_json, _ = _client(tools_pb2.ListToolsResponse(tools=[_json_tool("tol_1", DEFINITION)]))[0].list_tools()

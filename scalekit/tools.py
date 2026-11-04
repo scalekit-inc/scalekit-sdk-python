@@ -1,10 +1,11 @@
 import json
 from typing import Iterable, Optional
 
+from scalekit.common.exceptions import ScalekitException
 from scalekit.core import CoreClient
 from scalekit.v1.tools.tools_pb2 import *
 from scalekit.v1.tools.tools_pb2_grpc import ToolServiceStub
-from google.protobuf import empty_pb2
+from google.protobuf import empty_pb2, struct_pb2
 
 # List requests ask the server for each tool definition as JSON text
 # (definition_json) instead of a google.protobuf.Struct. A Struct costs 2-3
@@ -17,19 +18,29 @@ _LIST_DEFINITION_FORMAT = DEFINITION_FORMAT_JSON_STRING
 
 def _restore_definitions(tools: Iterable[Tool]) -> None:
     """Rebuild each tool's ``definition`` from ``definition_json`` and clear
-    ``definition_json``, so callers get the same ``Tool`` as before. Building
-    a deep Struct in memory is fine; only decoding one from the wire hits the
-    limit. A server that does not know ``definition_format`` keeps sending
-    ``definition``, and the tool is left as it is."""
+    ``definition_json``, so callers get the same ``Tool`` as before. A server
+    that does not know ``definition_format`` keeps sending ``definition``, and
+    the tool is left as it is.
+
+    Building a deep Struct in memory is fine; only decoding one from protobuf
+    bytes hits the limit. So a definition nested deeper than about 33 levels
+    can be read, compared, deep-copied and converted with ``MessageToDict``,
+    but anything that serializes and re-parses it (pickle, ``copy.copy``,
+    ``MergeFrom``, passing it to a message constructor) still fails in Python
+    protobuf. Before this change, listing such a tool failed outright."""
     for tool in tools:
         if not tool.HasField("definition_json"):
             continue
         try:
             definition = json.loads(tool.definition_json)
-        except ValueError as exc:
-            raise ValueError(f"Tool {tool.id} has an invalid definition: {exc}") from exc
-        tool.definition.Clear()
-        tool.definition.update(definition)
+            if not isinstance(definition, dict):
+                raise ValueError("expected a JSON object")
+            restored = struct_pb2.Struct()
+            restored.update(definition)
+        except (ValueError, TypeError, AttributeError) as exc:
+            raise ScalekitException(f"Tool {tool.id} has an invalid definition: {exc}") from exc
+        # CopyFrom keeps the deep Struct in memory; MergeFrom would re-parse it.
+        tool.definition.CopyFrom(restored)
         tool.ClearField("definition_json")
 
 

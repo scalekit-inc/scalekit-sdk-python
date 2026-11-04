@@ -1,6 +1,6 @@
 kind: fixed
 body: |
-  `client.actions.list_tools()`, `client.tools.list_tools()` and `client.tools.list_scoped_tools()` (and the LangChain and Google ADK tool loaders that call it) no longer fail with `StatusCode.INTERNAL: Exception deserializing response!` when a page contains a tool whose definition is nested 34 or more levels deep. The SDK now asks the server for each definition as JSON text and turns it back into `definition`, so the returned tools look exactly as before. Servers that do not support this keep returning `definition` as before, and the SDK passes it through unchanged.
+  `client.actions.list_tools()`, `client.tools.list_tools()` and `client.tools.list_scoped_tools()` (and the LangChain and Google ADK tool loaders that call it) no longer fail with `StatusCode.INTERNAL: Exception deserializing response!` when a page contains a tool whose definition is nested 34 or more levels deep. The SDK now asks the server for each definition as JSON text and turns it back into `definition`, so the returned tools look exactly as before. Servers that do not support this keep returning `definition` as before, and the SDK passes it through unchanged. A definition that deep can be read, compared, deep-copied and converted with `MessageToDict`, but Python protobuf still cannot pickle it or re-parse it from bytes.
 time: '2026-11-04T19:00:00.000000+00:00'
 custom:
   Breaking: 'No'
