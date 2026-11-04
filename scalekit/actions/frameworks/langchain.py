@@ -2,7 +2,7 @@ from typing import Optional, Any, Dict, List, Callable
 from langchain_core.tools import StructuredTool
 from scalekit.tools import ToolsClient
 from scalekit.v1.tools.tools_pb2 import ScopedToolFilter
-from scalekit.actions.frameworks.util import extract_tool_metadata
+from scalekit.actions.frameworks.util import extract_tool_metadata, warn_truncated_tools
 
 
 class LangChain:
@@ -20,7 +20,8 @@ class LangChain:
         tool_names: Optional[List[str]] = None,
         connection_names: Optional[List[str]] = None,
         page_size: Optional[int] = None,
-        page_token: Optional[str] = None
+        page_token: Optional[str] = None,
+        fetch_all: bool = False
     ) -> List[StructuredTool]:
         """
         Get scoped tools from Scalekit and convert them to LangChain StructuredTools
@@ -29,9 +30,27 @@ class LangChain:
         :param providers: List of provider names to filter by
         :param tool_names: List of tool names to filter by
         :param connection_names: List of connection names to filter by
-        :param page_size: Maximum number of tools to return per page  
-        :param page_token: Token from a previous response for pagination
+        :param page_size: Maximum number of tools per request
+        :param page_token: Cursor from a previous call; returns just that page
+        :param fetch_all: Follow pagination to the end and return every matching
+            tool. Off by default -- see the note below.
         :returns: List of LangChain StructuredTools
+
+        Pagination: this returns a plain list, so there is no cursor for the
+        caller to continue with. A single page therefore used to truncate the
+        agent's toolset *silently* -- a connector with 217 tools handed back 100
+        and the agent simply could not see the rest.
+
+        The default is still one page, because auto-paging everything would hide
+        an unbounded number of round trips behind one innocuous call (a workspace
+        catalog here runs to ~20,000 tools) and would produce a tool list far too
+        large to bind to a model usefully. Instead, truncation now emits a warning
+        naming exactly how many tools were dropped, so it cannot pass unnoticed.
+
+        Narrow with ``connection_names``/``providers``, raise ``page_size``, or
+        pass ``fetch_all=True`` when you genuinely want the whole set. For a large
+        catalog prefer ``tools.search_tools``, which ranks by the job to be done
+        instead of returning everything.
         """
         if identifier is None or identifier == "":
             raise ValueError("Identifier must be provided to get tools")
@@ -45,20 +64,36 @@ class LangChain:
                 connection_names=connection_names or []
             )
 
-        # Call list_scoped_tools which returns (response, metadata) tuple
-        result_tuple = self.tools.list_scoped_tools(identifier, scoped_filter, page_size, page_token)
-        
-        # Extract the response[0] (the actual ListScopedToolsResponse proto object)
-        response = result_tuple[0]
-        
+        cursor = page_token
         structured_tools = []
-        for scoped_tool in response.tools:
-            structured_tool = self._convert_tool_to_structured_tool(
-                scoped_tool.tool,
-                scoped_tool.connected_account_id
+        seen_cursors = set()
+
+        while True:
+            response = self.tools.list_scoped_tools(
+                identifier, scoped_filter, page_size, cursor
             )
-            structured_tools.append(structured_tool)
-            
+
+            for scoped_tool in response.tools:
+                structured_tools.append(
+                    self._convert_tool_to_structured_tool(
+                        scoped_tool.tool,
+                        scoped_tool.connected_account_id,
+                    )
+                )
+
+            cursor = getattr(response, "next_page_token", "") or ""
+            if not cursor:
+                break
+            # Caller drove the cursor, or the server repeated one: stop either way.
+            if page_token or cursor in seen_cursors:
+                break
+            if not fetch_all:
+                warn_truncated_tools(
+                    len(structured_tools), getattr(response, "total_size", 0)
+                )
+                break
+            seen_cursors.add(cursor)
+
         return structured_tools
     
     def _convert_tool_to_structured_tool(self, tool, connected_account_id: str) -> StructuredTool:

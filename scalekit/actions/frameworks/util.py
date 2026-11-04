@@ -71,3 +71,27 @@ def build_mcp_tool_from_spec(spec: Dict[str, Any]) -> McpBaseTool:
         annotations=annotations,
     )
     return mcp_tool
+
+def warn_truncated_tools(returned: int, total: int) -> None:
+    """Warn that a framework adapter returned only the first page of tools.
+
+    Adapters return a plain list with no cursor, so a partial result is otherwise
+    indistinguishable from a complete one — the agent just behaves as though the
+    missing tools do not exist. Make that loud instead of silent.
+    """
+    import warnings
+
+    if total and total > returned:
+        detail = f"{returned} of {total} tools"
+        missing = f"{total - returned} were not returned"
+    else:
+        detail = f"{returned} tools"
+        missing = "more were not returned"
+
+    warnings.warn(
+        f"get_tools() returned only the first page: {detail}; {missing}. "
+        f"Your agent cannot use the rest. Narrow with connection_names/providers, "
+        f"raise page_size, or pass fetch_all=True. For a large catalog prefer "
+        f"tools.search_tools(), which ranks tools by the job to be done.",
+        stacklevel=3,
+    )
