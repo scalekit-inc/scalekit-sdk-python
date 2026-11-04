@@ -16,12 +16,19 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
+class DefinitionFormat(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    DEFINITION_FORMAT_UNSPECIFIED: _ClassVar[DefinitionFormat]
+    DEFINITION_FORMAT_JSON_STRING: _ClassVar[DefinitionFormat]
+
 class ToolReadinessState(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
     TOOL_READINESS_STATE_UNSPECIFIED: _ClassVar[ToolReadinessState]
     TOOL_READINESS_STATE_READY: _ClassVar[ToolReadinessState]
     TOOL_READINESS_STATE_NEEDS_CONNECTION: _ClassVar[ToolReadinessState]
     TOOL_READINESS_STATE_NEEDS_REAUTH: _ClassVar[ToolReadinessState]
+DEFINITION_FORMAT_UNSPECIFIED: DefinitionFormat
+DEFINITION_FORMAT_JSON_STRING: DefinitionFormat
 TOOL_READINESS_STATE_UNSPECIFIED: ToolReadinessState
 TOOL_READINESS_STATE_READY: ToolReadinessState
 TOOL_READINESS_STATE_NEEDS_CONNECTION: ToolReadinessState
@@ -40,7 +47,7 @@ class CreateToolResponse(_message.Message):
     def __init__(self, tool: _Optional[_Union[Tool, _Mapping]] = ...) -> None: ...
 
 class Tool(_message.Message):
-    __slots__ = ("id", "provider", "definition", "metadata", "tags", "is_default", "updated_at")
+    __slots__ = ("id", "provider", "definition", "metadata", "tags", "is_default", "updated_at", "definition_json")
     ID_FIELD_NUMBER: _ClassVar[int]
     PROVIDER_FIELD_NUMBER: _ClassVar[int]
     DEFINITION_FIELD_NUMBER: _ClassVar[int]
@@ -48,6 +55,7 @@ class Tool(_message.Message):
     TAGS_FIELD_NUMBER: _ClassVar[int]
     IS_DEFAULT_FIELD_NUMBER: _ClassVar[int]
     UPDATED_AT_FIELD_NUMBER: _ClassVar[int]
+    DEFINITION_JSON_FIELD_NUMBER: _ClassVar[int]
     id: str
     provider: str
     definition: _struct_pb2.Struct
@@ -55,7 +63,8 @@ class Tool(_message.Message):
     tags: _containers.RepeatedScalarFieldContainer[str]
     is_default: _wrappers_pb2.BoolValue
     updated_at: _timestamp_pb2.Timestamp
-    def __init__(self, id: _Optional[str] = ..., provider: _Optional[str] = ..., definition: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., metadata: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., tags: _Optional[_Iterable[str]] = ..., is_default: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+    definition_json: str
+    def __init__(self, id: _Optional[str] = ..., provider: _Optional[str] = ..., definition: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., metadata: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., tags: _Optional[_Iterable[str]] = ..., is_default: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., definition_json: _Optional[str] = ...) -> None: ...
 
 class ScopedTool(_message.Message):
     __slots__ = ("tool", "identifier", "connected_account_id")
@@ -68,14 +77,16 @@ class ScopedTool(_message.Message):
     def __init__(self, tool: _Optional[_Union[Tool, _Mapping]] = ..., identifier: _Optional[str] = ..., connected_account_id: _Optional[str] = ...) -> None: ...
 
 class ListToolsRequest(_message.Message):
-    __slots__ = ("filter", "page_size", "page_token")
+    __slots__ = ("filter", "page_size", "page_token", "definition_format")
     FILTER_FIELD_NUMBER: _ClassVar[int]
     PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
     PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    DEFINITION_FORMAT_FIELD_NUMBER: _ClassVar[int]
     filter: Filter
     page_size: int
     page_token: str
-    def __init__(self, filter: _Optional[_Union[Filter, _Mapping]] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ...) -> None: ...
+    definition_format: DefinitionFormat
+    def __init__(self, filter: _Optional[_Union[Filter, _Mapping]] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ..., definition_format: _Optional[_Union[DefinitionFormat, str]] = ...) -> None: ...
 
 class Filter(_message.Message):
     __slots__ = ("summary", "provider", "identifier", "tool_name", "query", "connector", "organization_id", "user_id", "connected_account_id")
@@ -144,18 +155,20 @@ class ExecuteToolResponse(_message.Message):
     def __init__(self, data: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., execution_id: _Optional[str] = ...) -> None: ...
 
 class RefreshToolsRequest(_message.Message):
-    __slots__ = ("identifier", "connected_account_id", "connector", "organization_id", "user_id")
+    __slots__ = ("identifier", "connected_account_id", "connector", "organization_id", "user_id", "definition_format")
     IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
     CONNECTED_ACCOUNT_ID_FIELD_NUMBER: _ClassVar[int]
     CONNECTOR_FIELD_NUMBER: _ClassVar[int]
     ORGANIZATION_ID_FIELD_NUMBER: _ClassVar[int]
     USER_ID_FIELD_NUMBER: _ClassVar[int]
+    DEFINITION_FORMAT_FIELD_NUMBER: _ClassVar[int]
     identifier: str
     connected_account_id: str
     connector: str
     organization_id: str
     user_id: str
-    def __init__(self, identifier: _Optional[str] = ..., connected_account_id: _Optional[str] = ..., connector: _Optional[str] = ..., organization_id: _Optional[str] = ..., user_id: _Optional[str] = ...) -> None: ...
+    definition_format: DefinitionFormat
+    def __init__(self, identifier: _Optional[str] = ..., connected_account_id: _Optional[str] = ..., connector: _Optional[str] = ..., organization_id: _Optional[str] = ..., user_id: _Optional[str] = ..., definition_format: _Optional[_Union[DefinitionFormat, str]] = ...) -> None: ...
 
 class RefreshToolsResponse(_message.Message):
     __slots__ = ("tools", "total_size")
@@ -200,16 +213,18 @@ class DeleteToolRequest(_message.Message):
     def __init__(self, id: _Optional[str] = ...) -> None: ...
 
 class ListScopedToolsRequest(_message.Message):
-    __slots__ = ("identifier", "filter", "page_size", "page_token")
+    __slots__ = ("identifier", "filter", "page_size", "page_token", "definition_format")
     IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
     FILTER_FIELD_NUMBER: _ClassVar[int]
     PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
     PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    DEFINITION_FORMAT_FIELD_NUMBER: _ClassVar[int]
     identifier: str
     filter: ScopedToolFilter
     page_size: int
     page_token: str
-    def __init__(self, identifier: _Optional[str] = ..., filter: _Optional[_Union[ScopedToolFilter, _Mapping]] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ...) -> None: ...
+    definition_format: DefinitionFormat
+    def __init__(self, identifier: _Optional[str] = ..., filter: _Optional[_Union[ScopedToolFilter, _Mapping]] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ..., definition_format: _Optional[_Union[DefinitionFormat, str]] = ...) -> None: ...
 
 class ListScopedToolsResponse(_message.Message):
     __slots__ = ("next_page_token", "total_size", "prev_page_token", "tools")
@@ -234,14 +249,16 @@ class ScopedToolFilter(_message.Message):
     def __init__(self, providers: _Optional[_Iterable[str]] = ..., tool_names: _Optional[_Iterable[str]] = ..., connection_names: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class ListAvailableToolsRequest(_message.Message):
-    __slots__ = ("identifier", "page_size", "page_token")
+    __slots__ = ("identifier", "page_size", "page_token", "definition_format")
     IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
     PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
     PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    DEFINITION_FORMAT_FIELD_NUMBER: _ClassVar[int]
     identifier: str
     page_size: int
     page_token: str
-    def __init__(self, identifier: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ...) -> None: ...
+    definition_format: DefinitionFormat
+    def __init__(self, identifier: _Optional[str] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ..., definition_format: _Optional[_Union[DefinitionFormat, str]] = ...) -> None: ...
 
 class ListAvailableToolsResponse(_message.Message):
     __slots__ = ("next_page_token", "total_size", "prev_page_token", "tools")
