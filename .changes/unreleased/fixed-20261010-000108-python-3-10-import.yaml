@@ -1,0 +1,8 @@
+kind: fixed
+body: |
+  `import scalekit` no longer fails on Python 3.10. Previously it raised `TypeError: typing.Optional requires a single type`; the SDK now imports and runs on Python 3.10.
+time: '2026-10-10T00:01:08.210495+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: ''
+  Migration: ''
