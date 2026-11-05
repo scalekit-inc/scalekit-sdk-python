@@ -372,14 +372,17 @@ class TestExecuteToolOptsOutOfTransientRetryKwarg(unittest.TestCase):
         self.assertEqual(kwargs["timeout"], self.core_client.tool_call_timeout_s)
 
     def test_list_tools_uses_tool_call_timeout(self):
-        with patch.object(self.core_client, "grpc_exec", return_value="ok") as mock_exec:
+        # grpc_exec returns with_call's (response, call); list_tools reads the response.
+        from scalekit.v1.tools.tools_pb2 import ListToolsResponse
+        with patch.object(self.core_client, "grpc_exec", return_value=(ListToolsResponse(), MagicMock())) as mock_exec:
             self.tools.list_tools()
 
         _, kwargs = mock_exec.call_args
         self.assertEqual(kwargs["timeout"], self.core_client.tool_call_timeout_s)
 
     def test_list_scoped_tools_uses_tool_call_timeout(self):
-        with patch.object(self.core_client, "grpc_exec", return_value="ok") as mock_exec:
+        from scalekit.v1.tools.tools_pb2 import ListScopedToolsResponse
+        with patch.object(self.core_client, "grpc_exec", return_value=(ListScopedToolsResponse(), MagicMock())) as mock_exec:
             self.tools.list_scoped_tools(identifier="user@example.com")
 
         _, kwargs = mock_exec.call_args
