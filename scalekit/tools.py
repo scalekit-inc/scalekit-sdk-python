@@ -37,7 +37,7 @@ def _restore_definitions(tools: Iterable[Tool]) -> None:
                 raise ValueError("expected a JSON object")
             restored = struct_pb2.Struct()
             restored.update(definition)
-        except (ValueError, TypeError, AttributeError) as exc:
+        except (ValueError, TypeError, AttributeError, OverflowError) as exc:
             raise ScalekitException(f"Tool {tool.id} has an invalid definition: {exc}") from exc
         # CopyFrom keeps the deep Struct in memory; MergeFrom would re-parse it.
         tool.definition.CopyFrom(restored)
