@@ -146,6 +146,9 @@ class TriggerSubscribeOutcome(str, Enum):
     NOT_FOUND = "NOT_FOUND"
     FAILED = "FAILED"
     """Could not be created this time; safe to retry."""
+    NOT_ATTEMPTED = "NOT_ATTEMPTED"
+    """Not tried: an earlier account stopped the batch or its time ran out. Nothing was
+    created for the account; ``reason`` says which, and retrying is safe."""
 
 
 class TriggerSubscriptionDeleteOutcome(str, Enum):
@@ -295,6 +298,11 @@ class AvailableTrigger(_TriggerModel):
             whole connection.
         requires_signing_secret: The provider signs its events with a secret you set
             with ``set_signing_secret``.
+        ingress_per_account: ``True`` when events arrive through one webhook URL per
+            connected account instead of one per connection. Create each URL and set
+            its secret by passing ``connected_account_id`` to
+            ``create_ingress_endpoint`` and the signing-secret methods. Always
+            ``False`` for poll triggers.
 
     Example:
         >>> page = client.actions.triggers.list_available("conn_123")
@@ -320,6 +328,7 @@ class AvailableTrigger(_TriggerModel):
     register_hint: str = ""
     secret_hint: str = ""
     provides_bearer_secret: bool = False
+    ingress_per_account: bool = False
 
     @classmethod
     def from_proto(cls, proto: pb.AvailableTrigger) -> AvailableTrigger:
@@ -352,6 +361,7 @@ class AvailableTrigger(_TriggerModel):
             register_hint=proto.register_hint,
             secret_hint=proto.secret_hint,
             provides_bearer_secret=proto.provides_bearer_secret,
+            ingress_per_account=proto.ingress_per_account,
         )
 
 
@@ -843,6 +853,12 @@ class TriggerIngressEndpoint(_TriggerModel):
             accepted; ``None`` when no rotation is in progress.
         signing_secret_rotation_id: The latest rotation; pass it to
             ``confirm_signing_secret_rotation``. ``0`` when none ever started.
+        connected_account_id: The connected account this URL delivers to, when
+            ``scope`` is ``DeliveryScope.ACCOUNT``; ``""`` for the connection's URL.
+        scope: ``DeliveryScope.CONNECTION`` for the connection's URL,
+            ``DeliveryScope.ACCOUNT`` for one connected account's own URL; ``None``
+            when the server did not say. A scope this SDK version does not know is a
+            plain ``str``.
 
     Example:
         >>> endpoint = client.actions.triggers.create_ingress_endpoint("conn_123")
@@ -857,6 +873,8 @@ class TriggerIngressEndpoint(_TriggerModel):
     rotation_in_progress: bool = False
     previous_signing_secret_expires_at: datetime | None = None
     signing_secret_rotation_id: int = 0
+    connected_account_id: str = ""
+    scope: DeliveryScope | str | None = None
 
     @classmethod
     def from_proto(cls, proto: pb.TriggerIngressEndpoint) -> TriggerIngressEndpoint:
@@ -872,6 +890,8 @@ class TriggerIngressEndpoint(_TriggerModel):
                 proto, "previous_signing_secret_expires_at"
             ),
             signing_secret_rotation_id=proto.signing_secret_rotation_id,
+            connected_account_id=proto.connected_account_id,
+            scope=enum_from_proto(DeliveryScope, pb.TriggerDeliveryScope, proto.scope),
         )
 
 

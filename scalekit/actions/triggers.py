@@ -10,7 +10,7 @@ from typing import Protocol
 
 from pydantic import ValidationError
 
-from scalekit._convert import date_to_str, enum_to_proto, str_list, timedelta_to_seconds
+from scalekit._convert import date_to_str, enum_to_proto, require, str_list, timedelta_to_seconds
 from scalekit.actions.models.trigger_event import TriggerEvent
 from scalekit.actions.models.triggers import (
     BatchCreateTriggerSubscriptionsResponse,
@@ -66,6 +66,17 @@ class HeadersLike(Protocol):
     def items(self) -> Iterable[tuple[str, str]]:
         """Return ``(name, value)`` pairs for every header."""
         ...
+
+
+def _account_id(value: str | None) -> str | None:
+    """Pass ``connected_account_id`` through, refusing ``""``.
+
+    The server reads an empty ID as "not given", so ``""`` would quietly act on the
+    connection's own URL instead of failing; ``None`` is the way to leave it out.
+    """
+    if value is not None:
+        require("connected_account_id", value)
+    return value
 
 
 # Separator a server or proxy puts between repeated header values it joins into one
@@ -496,8 +507,9 @@ class ActionTriggers:
         """Subscribe up to 100 connected accounts to a trigger in one call.
 
         Not atomic: each account gets its own outcome in ``results`` (``CREATED``,
-        ``ALREADY_SUBSCRIBED``, ``REFUSED``, ``NOT_FOUND``, ``FAILED``), and those never
-        raise. Safe to call again for the ``FAILED`` ones. For a connection-scoped
+        ``ALREADY_SUBSCRIBED``, ``REFUSED``, ``NOT_FOUND``, ``FAILED``,
+        ``NOT_ATTEMPTED``), and those never raise. Safe to call again for the ``FAILED``
+        and ``NOT_ATTEMPTED`` ones (nothing was created for them). For a connection-scoped
         trigger, leave ``connected_account_ids`` out.
 
         Args:
@@ -655,54 +667,81 @@ class ActionTriggers:
 
     # Ingress endpoint and signing secret
 
-    def get_ingress_endpoint(self, connection_id: str) -> TriggerIngressEndpoint:
-        """Read the webhook URL a provider sends a connection's events to.
+    def get_ingress_endpoint(
+        self, connection_id: str, *, connected_account_id: str | None = None
+    ) -> TriggerIngressEndpoint:
+        """Read the webhook URL a provider sends events to, and its signing-secret state.
 
         Args:
             connection_id: The connection (``conn_...``).
+            connected_account_id: Act on this connected account's own webhook URL
+                (``ca_...``), for a trigger whose ``AvailableTrigger.ingress_per_account``
+                is ``True``. Leave it out to act on the connection's URL. The server
+                answers an account that is not on this connection as not found.
 
         Returns:
             The URL and the state of its signing secret (never the secret itself).
 
         Raises:
-            ValueError: ``connection_id`` is empty.
+            ValueError: ``connection_id`` or ``connected_account_id`` is empty.
             ScalekitNotFoundException: No webhook URL yet
                 (``TRIGGER_INGRESS_ENDPOINT_NOT_CREATED``; call
-                ``create_ingress_endpoint``), or unknown connection
-                (``RESOURCE_NOT_FOUND``).
+                ``create_ingress_endpoint``), or unknown connection or connected
+                account (``RESOURCE_NOT_FOUND``).
 
         Example:
             >>> endpoint = client.actions.triggers.get_ingress_endpoint("conn_123")
             >>> endpoint.signing_secret_configured
+            >>> account_endpoint = client.actions.triggers.get_ingress_endpoint(
+            ...     "conn_123", connected_account_id="ca_456")
+            >>> account_endpoint.scope
         """
-        response = self._client().get_trigger_ingress_endpoint(connection_id)
+        response = self._client().get_trigger_ingress_endpoint(
+            connection_id, connected_account_id=_account_id(connected_account_id)
+        )
         return TriggerIngressEndpoint.from_proto(response[0])
 
-    def create_ingress_endpoint(self, connection_id: str) -> TriggerIngressEndpoint:
-        """Create a connection's webhook URL, or return the existing one.
+    def create_ingress_endpoint(
+        self, connection_id: str, *, connected_account_id: str | None = None
+    ) -> TriggerIngressEndpoint:
+        """Create a webhook URL, or return the existing one.
 
         Args:
             connection_id: The connection (``conn_...``).
+            connected_account_id: Act on this connected account's own webhook URL
+                (``ca_...``), for a trigger whose ``AvailableTrigger.ingress_per_account``
+                is ``True``. Leave it out to act on the connection's URL. The server
+                answers an account that is not on this connection as not found.
 
         Returns:
             The URL to paste into the provider's app configuration.
 
         Raises:
-            ValueError: ``connection_id`` is empty.
+            ValueError: ``connection_id`` or ``connected_account_id`` is empty.
             ScalekitBadRequestException: The connection has no webhook trigger
-                (``TRIGGER_INGRESS_NOT_APPLICABLE``), or its trigger definitions are
-                unavailable (``TRIGGER_INGRESS_DEFINITIONS_UNAVAILABLE``).
-            ScalekitNotFoundException: Unknown connection.
+                (``TRIGGER_INGRESS_NOT_APPLICABLE``), its trigger definitions are
+                unavailable (``TRIGGER_INGRESS_DEFINITIONS_UNAVAILABLE``), or the
+                request does not fit how the connection's webhook triggers are
+                delivered (``TRIGGER_INGRESS_SCOPE_MISMATCH``).
+            ScalekitNotFoundException: Unknown connection or connected account.
 
         Example:
             >>> endpoint = client.actions.triggers.create_ingress_endpoint("conn_123")
             >>> print("paste into the provider:", endpoint.url)
+            >>> account_endpoint = client.actions.triggers.create_ingress_endpoint(
+            ...     "conn_123", connected_account_id="ca_456")
         """
-        response = self._client().create_trigger_ingress_endpoint(connection_id)
+        response = self._client().create_trigger_ingress_endpoint(
+            connection_id, connected_account_id=_account_id(connected_account_id)
+        )
         return TriggerIngressEndpoint.from_proto(response[0])
 
     def set_signing_secret(
-        self, connection_id: str, *, signing_secret: str
+        self,
+        connection_id: str,
+        *,
+        signing_secret: str,
+        connected_account_id: str | None = None,
     ) -> TriggerIngressEndpoint:
         """Store the signing secret the provider signs its events with.
 
@@ -715,31 +754,46 @@ class ActionTriggers:
             connection_id: The connection (``conn_...``).
             signing_secret: The secret from the provider's app configuration (8-4096
                 characters; surrounding whitespace is trimmed by the server).
+            connected_account_id: Act on this connected account's own webhook URL
+                (``ca_...``), for a trigger whose ``AvailableTrigger.ingress_per_account``
+                is ``True``. Leave it out to act on the connection's URL. The server
+                answers an account that is not on this connection as not found.
 
         Returns:
             The endpoint, with ``masked_signing_secret`` and rotation state.
 
         Raises:
-            ValueError: ``connection_id`` is empty.
+            ValueError: ``connection_id`` or ``connected_account_id`` is empty.
             ScalekitBadRequestException: The secret is too short, or this provider uses
                 a secret Scalekit generates (``TRIGGER_SIGNING_SECRET_GENERATED_ONLY``;
                 call ``generate_signing_secret``).
             ScalekitConflictException: A rotation is already in progress.
             ScalekitNotFoundException: No webhook URL yet
-                (``TRIGGER_INGRESS_ENDPOINT_NOT_CREATED``).
+                (``TRIGGER_INGRESS_ENDPOINT_NOT_CREATED``), or unknown connection or
+                connected account.
 
         Example:
             >>> endpoint = client.actions.triggers.set_signing_secret(
             ...     "conn_123", signing_secret=os.environ["PROVIDER_SIGNING_SECRET"])
             >>> endpoint.rotation_in_progress
+            >>> client.actions.triggers.set_signing_secret(
+            ...     "conn_123",
+            ...     signing_secret=os.environ["PROVIDER_SIGNING_SECRET"],
+            ...     connected_account_id="ca_456")
         """
         response = self._client().set_trigger_signing_secret(
-            connection_id, signing_secret=signing_secret
+            connection_id,
+            signing_secret=signing_secret,
+            connected_account_id=_account_id(connected_account_id),
         )
         return TriggerIngressEndpoint.from_proto(response[0])
 
     def confirm_signing_secret_rotation(
-        self, connection_id: str, *, signing_secret_rotation_id: int | None = None
+        self,
+        connection_id: str,
+        *,
+        signing_secret_rotation_id: int | None = None,
+        connected_account_id: str | None = None,
     ) -> TriggerIngressEndpoint:
         """Finish a signing-secret rotation so only the new secret is accepted.
 
@@ -748,15 +802,20 @@ class ActionTriggers:
             signing_secret_rotation_id: ``TriggerIngressEndpoint.signing_secret_rotation_id``
                 of the rotation to confirm. Required while a rotation is in progress;
                 ignored when none is.
+            connected_account_id: Act on this connected account's own webhook URL
+                (``ca_...``), for a trigger whose ``AvailableTrigger.ingress_per_account``
+                is ``True``. Leave it out to act on the connection's URL. The server
+                answers an account that is not on this connection as not found.
 
         Returns:
             The endpoint after the confirmation.
 
         Raises:
-            ValueError: ``connection_id`` is empty.
+            ValueError: ``connection_id`` or ``connected_account_id`` is empty.
             ScalekitBadRequestException: The rotation ID is missing or names an older
                 rotation.
-            ScalekitNotFoundException: No webhook URL yet.
+            ScalekitNotFoundException: No webhook URL yet, or unknown connection or
+                connected account.
 
         Example:
             >>> endpoint = client.actions.triggers.get_ingress_endpoint("conn_123")
@@ -764,11 +823,15 @@ class ActionTriggers:
             ...     "conn_123", signing_secret_rotation_id=endpoint.signing_secret_rotation_id)
         """
         response = self._client().confirm_trigger_signing_secret_rotation(
-            connection_id, signing_secret_rotation_id=signing_secret_rotation_id
+            connection_id,
+            signing_secret_rotation_id=signing_secret_rotation_id,
+            connected_account_id=_account_id(connected_account_id),
         )
         return TriggerIngressEndpoint.from_proto(response[0])
 
-    def generate_signing_secret(self, connection_id: str) -> GenerateTriggerSigningSecretResponse:
+    def generate_signing_secret(
+        self, connection_id: str, *, connected_account_id: str | None = None
+    ) -> GenerateTriggerSigningSecretResponse:
         """Generate a signing secret, for providers that use one Scalekit creates.
 
         The secret is returned in plaintext only in this response; it is left out of
@@ -776,22 +839,31 @@ class ActionTriggers:
 
         Args:
             connection_id: The connection (``conn_...``).
+            connected_account_id: Act on this connected account's own webhook URL
+                (``ca_...``), for a trigger whose ``AvailableTrigger.ingress_per_account``
+                is ``True``. Leave it out to act on the connection's URL. The server
+                answers an account that is not on this connection as not found.
 
         Returns:
             The endpoint, the secret and the URL that includes it.
 
         Raises:
-            ValueError: ``connection_id`` is empty.
+            ValueError: ``connection_id`` or ``connected_account_id`` is empty.
             ScalekitBadRequestException: The provider signs its own events
                 (``TRIGGER_SIGNING_SECRET_NOT_GENERATABLE``; use ``set_signing_secret``).
             ScalekitConflictException: A rotation is in progress.
-            ScalekitNotFoundException: No webhook URL yet.
+            ScalekitNotFoundException: No webhook URL yet, or unknown connection or
+                connected account.
 
         Example:
             >>> generated = client.actions.triggers.generate_signing_secret("conn_123")
             >>> save_to_provider(generated.url_with_secret)
+            >>> client.actions.triggers.generate_signing_secret(
+            ...     "conn_123", connected_account_id="ca_456")
         """
-        response = self._client().generate_trigger_signing_secret(connection_id)
+        response = self._client().generate_trigger_signing_secret(
+            connection_id, connected_account_id=_account_id(connected_account_id)
+        )
         return GenerateTriggerSigningSecretResponse.from_proto(response[0])
 
     # Deliveries
