@@ -6,6 +6,134 @@ All notable changes to this SDK are documented in this file. The format follows
 
 Sections up to and including 2.20.0 were imported from [GitHub Releases](https://github.com/scalekit-inc/scalekit-sdk-python/releases). Their wording is kept, with small corrections.
 
+## [2.24.0] - 2026-11-06
+
+This release adds per-connected-account trigger webhook URLs and signing secrets through an optional `connected_account_id` on the trigger ingress methods, a `NOT_ATTEMPTED` outcome for batch trigger subscriptions, and `client.actions.upload_resumable` for large uploads. `ScalekitClient` now sends API version `20261106`. It also includes a fix for `client.actions.request` and `client.connect.request` sending credentials outside the proxy path (affects `>=2.4.17, <2.20.1`); upgrade promptly if you run an older version.
+
+### Added
+
+- `client.actions.upload_resumable(connection_name, identifier, path, data=...)` uploads a file of any size to Google Drive, Cloud Storage and YouTube through a connected account: the content is sent in chunks (4 MiB by default), a failed chunk resumes instead of restarting, and the call returns the created resource as a dict. `data` takes `bytes`, a binary file object or a `pathlib.Path`; if the upload session expires, the call raises `ScalekitUploadSessionExpiredException` and does not start a new one. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/v2.24.0/AGENTKIT.md#http-proxy)
+
+  ```python
+  from pathlib import Path
+
+  file = client.actions.upload_resumable(
+      "googledrive",
+      "user_123",
+      "/upload/drive/v3/files",
+      data=Path("video.mp4"),
+      content_type="video/mp4",
+      metadata={"name": "video.mp4"},
+      on_progress=lambda p: print(p.bytes_committed, p.total_bytes),
+  )
+  print(file["id"])
+  ```
+
+- `client.actions.mcp.create_session_token(connection_name=..., identifier=...)` mints a session token for a connection's own MCP server (`<environment URL>/mcp/v3/connections/<connection name>`), which serves all of that connection's tools without an MCP configuration. Pass exactly one of `mcp_config_id` or the new keyword-only `connection_name`; `expiry` and `access_level` work for both, and `access_level="READ_ONLY"` limits the token to read-only tools. The URL path is case-sensitive, so connect with the connection's name exactly as stored. Existing calls with `mcp_config_id`, positional or keyword, are unchanged. `client.mcp.create_session_token` takes the same arguments and returns the raw `(response, call)` tuple. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/v2.24.0/AGENTKIT.md#mcp-mcpclient)
+
+  ```python
+  from datetime import timedelta
+
+  resp = client.actions.mcp.create_session_token(
+      connection_name="gmail",
+      identifier="user_123",
+      expiry=timedelta(minutes=15),
+      access_level="READ_ONLY",
+  )
+  headers = {"Authorization": f"Bearer {resp.token}"}
+  ```
+
+- `scalekit.verify_trigger_event(body, headers=..., secret=...)` and `client.actions.triggers.verify_event(...)` verify the signature of a trigger event delivered to your endpoint and return it as a typed `TriggerEvent`; the standalone function needs no client. Any verification failure raises `WebhookVerificationError`, and a correctly signed body that is not a valid trigger event raises the new subclass `ScalekitTriggerEventParseException`. Delivery is at least once, so deduplicate on `dedupe_key` plus the connected account. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/v2.24.0/AGENTKIT.md#trigger-events)
+
+  ```python
+  import os
+  from flask import Flask, request
+  from scalekit import verify_trigger_event
+  from scalekit.common.exceptions import WebhookVerificationError
+
+  app = Flask(__name__)
+
+  @app.post("/triggers")
+  def triggers():
+      try:  # pass the raw body, before any JSON parsing
+          event = verify_trigger_event(request.get_data(), headers=request.headers, secret=os.environ["SCALEKIT_TRIGGER_SECRET"])
+      except WebhookVerificationError:  # bad signature, stale timestamp or malformed event
+          return "", 400
+      enqueue(event)  # your handler: deduplicate on event.dedupe_key + the connected account
+      return "", 204
+  ```
+
+- `client.actions` responses now include fields the API already returned but the Python models left out. A connected account from `list_connected_accounts` gains `id`, `connection_id` and `is_org_wide_credential`, so you can pass its `id` straight to `get`, `update` and `delete` by connected account id. A connected account from `get_connected_account_auth` gains `connection_id` and `is_org_wide_credential`. A provider from `list_providers` gains `id`, `categories`, `display_priority` and `coming_soon`, and the `list_providers` response gains `prev_page_token` for paging backwards. All new fields have defaults, so existing code keeps working and nothing you read today changes. The `list_providers` documentation now says what it does: with no `provider_type` it returns only the built-in providers, and `ProviderType.ALL` or `ProviderType.CUSTOM` includes your custom providers (it used to say it returns all providers). The `get_magic_link_for_connected_account` example in `AGENTKIT.md` and `REFERENCE.md` now reads the link from `response[0].link`; it used `response[0].magic_link`, which does not exist and raised `AttributeError`. The `request` docs now say that the proxy call times out after 30 seconds by default and that you can pass `timeout=<seconds>` for slower provider calls. The method documentation now lists parameters that existed but were not documented: `connection_name` on `client.tools.execute_tool`, `connection_names` on `list_connected_accounts`, `state` and `user_verify_url` on `get_magic_link_for_connected_account`, and `filter_mcp_server_url` on `client.mcp.list_configs`. `ensure_instance` is documented with `name` as the required first argument (it was shown as optional, and leaving it out raises `TypeError`). Two `REFERENCE.md` examples that read `session.id` and `client.id` now use `session.session_id` and `client.client_id`, which are the real field names. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/v2.24.0/REFERENCE.md#connected-accounts)
+
+- `list_connected_accounts` (on `client.connected_accounts` and `client.actions`) now takes `query` and `is_org_wide_credential`. `query` searches connected accounts by text (up to 100 characters, ignoring case) across the account identifier, the provider, the connection name and the provider's display name. Before, `client.actions.list_connected_accounts(query=...)` was accepted but silently ignored, and returned every account. `is_org_wide_credential=True` returns only the account that holds the shared credential of an organization-wide connection, and `False` returns only the per-user accounts; leave it unset to get both. When `query` is given, only the connection name and the paging options narrow the search, so use `identifier`, `provider`, `connection_names` and `is_org_wide_credential` without it. Both parameters are optional and added after the existing ones, so existing calls behave as before. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/v2.24.0/REFERENCE.md#connected-accounts)
+
+- `client.actions.mcp.create_config(...)` and `update_config(...)` take an optional `tool_exposure` (`"DIRECT"` or `"META"`), and `McpConfig.tool_exposure` reports it. `DIRECT` (the default) lists every mapped tool and allows at most 25 connections; `META` gives agents five search and execute tools with no connection limit and must be enabled for your environment. Existing code keeps working: leave `tool_exposure` out and you get `DIRECT`, and an update that omits it never changes the stored mode. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/v2.24.0/AGENTKIT.md#mcp-mcpclient)
+
+  ```python
+  config = client.actions.mcp.create_config(
+      name="support-agent",
+      connection_tool_mappings=[...],
+      tool_exposure="META",
+  )
+  client.actions.mcp.update_config(config_id, tool_exposure="DIRECT")
+  ```
+
+- New `client.actions` methods manage AgentKit connections: `create_connection`, `get_connection`, `list_app_connections`, `update_connection` and `delete_connection`. Updates send only what you pass (a list or map passed empty clears it), connections are addressed by name or id, and failures raise typed `AgentKitConnectionError` subclasses with `code`, `step` and `retryable`. Typed settings (`OAuthSettings`, `GoogleDWDSettings`, `ProviderConfigurations`, `AuthMode`) live in `scalekit.actions.connections`. Existing methods are unchanged. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/v2.24.0/AGENTKIT.md#agentkit-connections)
+
+  ```python
+  from scalekit.actions.connections import OAuthSettings
+
+  client.actions.create_connection("gmail", connection_name="gmail-work")
+  client.actions.update_connection("gmail-work", oauth=OAuthSettings(client_id="...", client_secret="..."))
+  conn = client.actions.get_connection("gmail-work")
+  ```
+
+- `client.actions.triggers` now manages AgentKit triggers: list a connection's triggers and eligible accounts, create and delete subscriptions singly or in batches, set up the webhook URL and rotate its signing secret, read activity and usage, and inspect, resend or recover deliveries. Results are typed, frozen models with timezone-aware `datetime`, `timedelta` and enum fields, and calls that could apply twice are not retried. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/v2.24.0/REFERENCE.md#triggers)
+
+  ```python
+  page = client.actions.triggers.list_eligible_accounts("conn_123", "example.item.created")
+  batch = client.actions.triggers.batch_create_subscriptions(
+      "conn_123",
+      "example.item.created",
+      connected_account_ids=[a.id for a in page.accounts if a.eligible],
+  )
+  for r in batch.results:
+      print(r.connected_account_id, r.outcome)  # TriggerSubscribeOutcome.CREATED, .REFUSED, ...
+  ```
+
+- `client.resources.list_user_consents(resource_id, consent_ids=[...])` fetches specific end-user consents by ID, for example to look up the `client_id` needed to revoke a consent. `consent_ids` takes up to 25 distinct IDs in the `usrcnst_<positive integer>` format and takes precedence over `user_ids` and `search`; IDs that do not exist or belong to another resource are omitted from the result. An older server ignores `consent_ids`, so confirm each returned `id` is one you asked for before revoking. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/v2.24.0/REFERENCE.md#resources)
+
+  ```python
+  response = client.resources.list_user_consents(
+      "res_123456",
+      consent_ids=["usrcnst_102709535608668163", "usrcnst_102709535608668164"],
+  )
+  for consent in response[0].consents:
+      print(consent.id, consent.client_id)
+  ```
+
+- `client.actions.triggers.create_ingress_endpoint` and the other ingress and signing-secret methods take a keyword-only `connected_account_id` for triggers that deliver to one webhook URL per connected account (`AvailableTrigger.ingress_per_account`). `TriggerIngressEndpoint` gains `scope` and `connected_account_id`. Leaving it out still acts on the connection's URL. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/v2.24.0/REFERENCE.md#triggers)
+
+  ```python
+  endpoint = client.actions.triggers.create_ingress_endpoint(
+      "conn_123", connected_account_id="ca_456"
+  )
+  ```
+
+- `TriggerSubscribeOutcome.NOT_ATTEMPTED` reports accounts that `client.actions.triggers.batch_create_subscriptions` did not try because an earlier account stopped the batch or time ran out. Nothing was created for them, so call again for those accounts. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/v2.24.0/REFERENCE.md#triggers)
+
+### Changed
+
+- `ScalekitClient` now sends API version `20261106` in the `x-api-version` header on every request, so calls are served at that API version. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/v2.24.0/REFERENCE.md#scalekitclient)
+
+### Security
+
+- `client.actions.request(...)` and `client.connect.request(...)` could send the client's bearer token and the `connection_name` and `identifier` headers outside `<environment URL>/proxy/` when `path` resolved outside that prefix or a proxied API redirected outside it. They now raise `ValueError` before sending anything when `path` could be routed outside the prefix: for example through `..` segments, including percent-encoded or backslash forms, or `v1/users`, which without a leading `/` would be sent to `/proxyv1/users`. With an `http://` environment URL, the check also covers the URL a forward proxy would receive, whether or not one is configured. A redirect outside the prefix is still followed, but without those credentials. Every other path and redirect is sent exactly as before.
+
+  - **Affected versions:** `>=2.4.17, <2.20.1`
+  - **Patched versions:** `2.20.1`
+  - **Action:** upgrade. This matters most if you build `path` from untrusted input, such as values supplied by end users or by an AI agent, or call APIs whose responses you do not control. If a call now raises `ValueError` for a path such as `v1/users`, add the leading `/`.
+
 ## [2.20.0] - 2026-10-05
 
 ### Changes
@@ -470,6 +598,7 @@ Developers can now delete SSO connections and SCIM directories through the SDK.
 
 - First Release of the official Scalekit Python SDK
 
+[2.24.0]: https://github.com/scalekit-inc/scalekit-sdk-python/compare/v2.23.0...v2.24.0
 [2.20.0]: https://github.com/scalekit-inc/scalekit-sdk-python/releases/tag/v2.20.0
 [2.19.1]: https://github.com/scalekit-inc/scalekit-sdk-python/releases/tag/v2.19.1
 [2.19.0]: https://github.com/scalekit-inc/scalekit-sdk-python/releases/tag/v2.19.0
