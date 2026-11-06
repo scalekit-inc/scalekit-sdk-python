@@ -227,59 +227,99 @@ class TriggersClient:
     # Ingress endpoint and signing secret
 
     def get_trigger_ingress_endpoint(
-        self, connection_id: str
+        self, connection_id: str, *, connected_account_id: str | None = None
     ) -> tuple[pb.TriggerIngressEndpoint, grpc.Call]:
-        """Read a connection's webhook URL and signing-secret state."""
+        """Read a webhook URL and signing-secret state.
+
+        Reads the connection's URL, or one connected account's own URL when
+        ``connected_account_id`` is given. The ID is sent as given: the server treats
+        ``""`` as omitted, and validates the rest.
+        """
         require("connection_id", connection_id)
+        request = pb.GetTriggerIngressEndpointRequest(connection_id=connection_id)
+        if connected_account_id is not None:
+            request.connected_account_id = connected_account_id
         return self.core_client.grpc_exec(
             self.trigger_service.GetTriggerIngressEndpoint.with_call,
-            pb.GetTriggerIngressEndpointRequest(connection_id=connection_id),
+            request,
         )
 
     def create_trigger_ingress_endpoint(
-        self, connection_id: str
+        self, connection_id: str, *, connected_account_id: str | None = None
     ) -> tuple[pb.TriggerIngressEndpoint, grpc.Call]:
-        """Create a connection's webhook URL, or return the existing one."""
+        """Create a webhook URL, or return the existing one.
+
+        Creates the connection's URL, or one connected account's own URL when
+        ``connected_account_id`` is given.
+        """
         require("connection_id", connection_id)
+        request = pb.CreateTriggerIngressEndpointRequest(connection_id=connection_id)
+        if connected_account_id is not None:
+            request.connected_account_id = connected_account_id
         return self.core_client.grpc_exec(
             self.trigger_service.CreateTriggerIngressEndpoint.with_call,
-            pb.CreateTriggerIngressEndpointRequest(connection_id=connection_id),
+            request,
         )
 
     def set_trigger_signing_secret(
-        self, connection_id: str, *, signing_secret: str
+        self,
+        connection_id: str,
+        *,
+        signing_secret: str,
+        connected_account_id: str | None = None,
     ) -> tuple[pb.TriggerIngressEndpoint, grpc.Call]:
-        """Store the provider's signing secret, or start a rotation. Not retried."""
+        """Store the provider's signing secret, or start a rotation. Not retried.
+
+        Acts on one connected account's URL when ``connected_account_id`` is given.
+        """
         require("connection_id", connection_id)
+        request = pb.SetTriggerSigningSecretRequest(
+            connection_id=connection_id, signing_secret=signing_secret
+        )
+        if connected_account_id is not None:
+            request.connected_account_id = connected_account_id
         return self.core_client.grpc_exec(
             self.trigger_service.SetTriggerSigningSecret.with_call,
-            pb.SetTriggerSigningSecretRequest(
-                connection_id=connection_id, signing_secret=signing_secret
-            ),
+            request,
             retry_on_unavailable=False,
         )
 
     def confirm_trigger_signing_secret_rotation(
-        self, connection_id: str, *, signing_secret_rotation_id: int | None = None
+        self,
+        connection_id: str,
+        *,
+        signing_secret_rotation_id: int | None = None,
+        connected_account_id: str | None = None,
     ) -> tuple[pb.TriggerIngressEndpoint, grpc.Call]:
-        """Confirm a signing-secret rotation so the previous secret stops being accepted."""
+        """Confirm a signing-secret rotation so the previous secret stops being accepted.
+
+        Acts on one connected account's URL when ``connected_account_id`` is given.
+        """
         require("connection_id", connection_id)
         request = pb.ConfirmTriggerSigningSecretRotationRequest(connection_id=connection_id)
         if signing_secret_rotation_id is not None:
             request.signing_secret_rotation_id = signing_secret_rotation_id
+        if connected_account_id is not None:
+            request.connected_account_id = connected_account_id
         return self.core_client.grpc_exec(
             self.trigger_service.ConfirmTriggerSigningSecretRotation.with_call,
             request,
         )
 
     def generate_trigger_signing_secret(
-        self, connection_id: str
+        self, connection_id: str, *, connected_account_id: str | None = None
     ) -> tuple[pb.GenerateTriggerSigningSecretResponse, grpc.Call]:
-        """Generate a signing secret for providers that use one Scalekit creates. Not retried."""
+        """Generate a signing secret for providers that use one Scalekit creates. Not retried.
+
+        Acts on one connected account's URL when ``connected_account_id`` is given.
+        """
         require("connection_id", connection_id)
+        request = pb.GenerateTriggerSigningSecretRequest(connection_id=connection_id)
+        if connected_account_id is not None:
+            request.connected_account_id = connected_account_id
         return self.core_client.grpc_exec(
             self.trigger_service.GenerateTriggerSigningSecret.with_call,
-            pb.GenerateTriggerSigningSecretRequest(connection_id=connection_id),
+            request,
             retry_on_unavailable=False,
         )
 

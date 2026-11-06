@@ -1080,7 +1080,10 @@ page = scalekit_client.actions.triggers.list_eligible_accounts("conn_123", poll.
 batch = scalekit_client.actions.triggers.batch_create_subscriptions(
     "conn_123", poll.name, connected_account_ids=[a.id for a in page.accounts if a.eligible]
 )
-retry_later = [r.connected_account_id for r in batch.results if r.outcome == TriggerSubscribeOutcome.FAILED]
+retry_later = [
+    r.connected_account_id for r in batch.results
+    if r.outcome in (TriggerSubscribeOutcome.FAILED, TriggerSubscribeOutcome.NOT_ATTEMPTED)
+]
 ```
 
 `actions.triggers.create_subscription` is never retried on `UNAVAILABLE`, because a retry could create the subscription twice; `actions.triggers.batch_create_subscriptions` is safe to call again (an existing one comes back as `ALREADY_SUBSCRIBED`).
@@ -1104,6 +1107,13 @@ if endpoint.rotation_in_progress:
 ```
 
 `actions.triggers.set_signing_secret` and `actions.triggers.generate_signing_secret` are never retried on `UNAVAILABLE`. Until a secret is stored the URL answers events with `503`, so the provider retries them.
+
+**One URL per connected account.** Some webhook triggers are delivered through one URL per connected account instead of one per connection; `actions.triggers.list_available` marks them with `ingress_per_account=True`. For those, pass `connected_account_id` (keyword-only, `ca_...`) to `create_ingress_endpoint`, `get_ingress_endpoint`, `set_signing_secret`, `confirm_signing_secret_rotation` and `generate_signing_secret`, and register each account's URL in that account's own provider settings. The returned `TriggerIngressEndpoint` has `scope` (`DeliveryScope.ACCOUNT` or `DeliveryScope.CONNECTION`) and `connected_account_id`. Leaving `connected_account_id` out keeps acting on the connection's URL; an empty string raises `ValueError`.
+
+```python
+endpoint = scalekit_client.actions.triggers.create_ingress_endpoint("conn_123", connected_account_id="ca_456")
+print("paste into this account's provider settings:", endpoint.url)
+```
 
 **Activity, usage and deliveries**
 

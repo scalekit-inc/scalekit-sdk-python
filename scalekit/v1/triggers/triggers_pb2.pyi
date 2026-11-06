@@ -81,6 +81,7 @@ class BatchSubscribeOutcome(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     REFUSED: _ClassVar[BatchSubscribeOutcome]
     NOT_FOUND: _ClassVar[BatchSubscribeOutcome]
     FAILED: _ClassVar[BatchSubscribeOutcome]
+    NOT_ATTEMPTED: _ClassVar[BatchSubscribeOutcome]
 
 class BatchDeleteOutcome(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
@@ -176,6 +177,7 @@ ALREADY_SUBSCRIBED: BatchSubscribeOutcome
 REFUSED: BatchSubscribeOutcome
 NOT_FOUND: BatchSubscribeOutcome
 FAILED: BatchSubscribeOutcome
+NOT_ATTEMPTED: BatchSubscribeOutcome
 BATCH_DELETE_OUTCOME_UNSPECIFIED: BatchDeleteOutcome
 BATCH_DELETE_OUTCOME_DELETED: BatchDeleteOutcome
 BATCH_DELETE_OUTCOME_NOT_FOUND: BatchDeleteOutcome
@@ -234,7 +236,7 @@ class ConfigField(_message.Message):
     def __init__(self, key: _Optional[str] = ..., display_name: _Optional[str] = ..., help_text: _Optional[str] = ..., placeholder: _Optional[str] = ..., required: bool = ...) -> None: ...
 
 class AvailableTrigger(_message.Message):
-    __slots__ = ("name", "display_name", "description", "provider", "mode", "required_scopes", "min_interval_seconds", "default_interval_seconds", "config_fields", "available", "reason", "remedy", "delivery_scope", "platform_credentials", "refusal_code", "requires_signing_secret", "register_hint", "secret_hint", "provides_bearer_secret")
+    __slots__ = ("name", "display_name", "description", "provider", "mode", "required_scopes", "min_interval_seconds", "default_interval_seconds", "config_fields", "available", "reason", "remedy", "delivery_scope", "platform_credentials", "refusal_code", "requires_signing_secret", "register_hint", "secret_hint", "provides_bearer_secret", "ingress_per_account")
     NAME_FIELD_NUMBER: _ClassVar[int]
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
@@ -254,6 +256,7 @@ class AvailableTrigger(_message.Message):
     REGISTER_HINT_FIELD_NUMBER: _ClassVar[int]
     SECRET_HINT_FIELD_NUMBER: _ClassVar[int]
     PROVIDES_BEARER_SECRET_FIELD_NUMBER: _ClassVar[int]
+    INGRESS_PER_ACCOUNT_FIELD_NUMBER: _ClassVar[int]
     name: str
     display_name: str
     description: str
@@ -273,7 +276,8 @@ class AvailableTrigger(_message.Message):
     register_hint: str
     secret_hint: str
     provides_bearer_secret: bool
-    def __init__(self, name: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., provider: _Optional[str] = ..., mode: _Optional[_Union[TriggerMode, str]] = ..., required_scopes: _Optional[_Iterable[_Union[RequiredScope, _Mapping]]] = ..., min_interval_seconds: _Optional[int] = ..., default_interval_seconds: _Optional[int] = ..., config_fields: _Optional[_Iterable[_Union[ConfigField, _Mapping]]] = ..., available: bool = ..., reason: _Optional[str] = ..., remedy: _Optional[str] = ..., delivery_scope: _Optional[_Union[TriggerDeliveryScope, str]] = ..., platform_credentials: _Optional[_Union[TriggerPlatformCredentials, str]] = ..., refusal_code: _Optional[_Union[TriggerRefusalCode, str]] = ..., requires_signing_secret: bool = ..., register_hint: _Optional[str] = ..., secret_hint: _Optional[str] = ..., provides_bearer_secret: bool = ...) -> None: ...
+    ingress_per_account: bool
+    def __init__(self, name: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., provider: _Optional[str] = ..., mode: _Optional[_Union[TriggerMode, str]] = ..., required_scopes: _Optional[_Iterable[_Union[RequiredScope, _Mapping]]] = ..., min_interval_seconds: _Optional[int] = ..., default_interval_seconds: _Optional[int] = ..., config_fields: _Optional[_Iterable[_Union[ConfigField, _Mapping]]] = ..., available: bool = ..., reason: _Optional[str] = ..., remedy: _Optional[str] = ..., delivery_scope: _Optional[_Union[TriggerDeliveryScope, str]] = ..., platform_credentials: _Optional[_Union[TriggerPlatformCredentials, str]] = ..., refusal_code: _Optional[_Union[TriggerRefusalCode, str]] = ..., requires_signing_secret: bool = ..., register_hint: _Optional[str] = ..., secret_hint: _Optional[str] = ..., provides_bearer_secret: bool = ..., ingress_per_account: bool = ...) -> None: ...
 
 class EligibleAccount(_message.Message):
     __slots__ = ("id", "identifier", "eligible", "reason", "remedy", "health")
@@ -609,7 +613,7 @@ class TriggerUsageDay(_message.Message):
     def __init__(self, date: _Optional[str] = ..., units: _Optional[int] = ...) -> None: ...
 
 class TriggerIngressEndpoint(_message.Message):
-    __slots__ = ("id", "connection_id", "url", "signing_secret_configured", "masked_signing_secret", "rotation_in_progress", "previous_signing_secret_expires_at", "signing_secret_rotation_id")
+    __slots__ = ("id", "connection_id", "url", "signing_secret_configured", "masked_signing_secret", "rotation_in_progress", "previous_signing_secret_expires_at", "signing_secret_rotation_id", "connected_account_id", "scope")
     ID_FIELD_NUMBER: _ClassVar[int]
     CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
     URL_FIELD_NUMBER: _ClassVar[int]
@@ -618,6 +622,8 @@ class TriggerIngressEndpoint(_message.Message):
     ROTATION_IN_PROGRESS_FIELD_NUMBER: _ClassVar[int]
     PREVIOUS_SIGNING_SECRET_EXPIRES_AT_FIELD_NUMBER: _ClassVar[int]
     SIGNING_SECRET_ROTATION_ID_FIELD_NUMBER: _ClassVar[int]
+    CONNECTED_ACCOUNT_ID_FIELD_NUMBER: _ClassVar[int]
+    SCOPE_FIELD_NUMBER: _ClassVar[int]
     id: str
     connection_id: str
     url: str
@@ -626,41 +632,53 @@ class TriggerIngressEndpoint(_message.Message):
     rotation_in_progress: bool
     previous_signing_secret_expires_at: _timestamp_pb2.Timestamp
     signing_secret_rotation_id: int
-    def __init__(self, id: _Optional[str] = ..., connection_id: _Optional[str] = ..., url: _Optional[str] = ..., signing_secret_configured: bool = ..., masked_signing_secret: _Optional[str] = ..., rotation_in_progress: bool = ..., previous_signing_secret_expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., signing_secret_rotation_id: _Optional[int] = ...) -> None: ...
+    connected_account_id: str
+    scope: TriggerDeliveryScope
+    def __init__(self, id: _Optional[str] = ..., connection_id: _Optional[str] = ..., url: _Optional[str] = ..., signing_secret_configured: bool = ..., masked_signing_secret: _Optional[str] = ..., rotation_in_progress: bool = ..., previous_signing_secret_expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., signing_secret_rotation_id: _Optional[int] = ..., connected_account_id: _Optional[str] = ..., scope: _Optional[_Union[TriggerDeliveryScope, str]] = ...) -> None: ...
 
 class GetTriggerIngressEndpointRequest(_message.Message):
-    __slots__ = ("connection_id",)
+    __slots__ = ("connection_id", "connected_account_id")
     CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
+    CONNECTED_ACCOUNT_ID_FIELD_NUMBER: _ClassVar[int]
     connection_id: str
-    def __init__(self, connection_id: _Optional[str] = ...) -> None: ...
+    connected_account_id: str
+    def __init__(self, connection_id: _Optional[str] = ..., connected_account_id: _Optional[str] = ...) -> None: ...
 
 class CreateTriggerIngressEndpointRequest(_message.Message):
-    __slots__ = ("connection_id",)
+    __slots__ = ("connection_id", "connected_account_id")
     CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
+    CONNECTED_ACCOUNT_ID_FIELD_NUMBER: _ClassVar[int]
     connection_id: str
-    def __init__(self, connection_id: _Optional[str] = ...) -> None: ...
+    connected_account_id: str
+    def __init__(self, connection_id: _Optional[str] = ..., connected_account_id: _Optional[str] = ...) -> None: ...
 
 class SetTriggerSigningSecretRequest(_message.Message):
-    __slots__ = ("connection_id", "signing_secret")
+    __slots__ = ("connection_id", "signing_secret", "connected_account_id")
     CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
     SIGNING_SECRET_FIELD_NUMBER: _ClassVar[int]
+    CONNECTED_ACCOUNT_ID_FIELD_NUMBER: _ClassVar[int]
     connection_id: str
     signing_secret: str
-    def __init__(self, connection_id: _Optional[str] = ..., signing_secret: _Optional[str] = ...) -> None: ...
+    connected_account_id: str
+    def __init__(self, connection_id: _Optional[str] = ..., signing_secret: _Optional[str] = ..., connected_account_id: _Optional[str] = ...) -> None: ...
 
 class ConfirmTriggerSigningSecretRotationRequest(_message.Message):
-    __slots__ = ("connection_id", "signing_secret_rotation_id")
+    __slots__ = ("connection_id", "signing_secret_rotation_id", "connected_account_id")
     CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
     SIGNING_SECRET_ROTATION_ID_FIELD_NUMBER: _ClassVar[int]
+    CONNECTED_ACCOUNT_ID_FIELD_NUMBER: _ClassVar[int]
     connection_id: str
     signing_secret_rotation_id: int
-    def __init__(self, connection_id: _Optional[str] = ..., signing_secret_rotation_id: _Optional[int] = ...) -> None: ...
+    connected_account_id: str
+    def __init__(self, connection_id: _Optional[str] = ..., signing_secret_rotation_id: _Optional[int] = ..., connected_account_id: _Optional[str] = ...) -> None: ...
 
 class GenerateTriggerSigningSecretRequest(_message.Message):
-    __slots__ = ("connection_id",)
+    __slots__ = ("connection_id", "connected_account_id")
     CONNECTION_ID_FIELD_NUMBER: _ClassVar[int]
+    CONNECTED_ACCOUNT_ID_FIELD_NUMBER: _ClassVar[int]
     connection_id: str
-    def __init__(self, connection_id: _Optional[str] = ...) -> None: ...
+    connected_account_id: str
+    def __init__(self, connection_id: _Optional[str] = ..., connected_account_id: _Optional[str] = ...) -> None: ...
 
 class GenerateTriggerSigningSecretResponse(_message.Message):
     __slots__ = ("endpoint", "signing_secret", "url_with_secret")
