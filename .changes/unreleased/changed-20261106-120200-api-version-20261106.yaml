@@ -1,0 +1,8 @@
+kind: changed
+body: |
+  `ScalekitClient` now sends API version `20261106` in the `x-api-version` header on every request, so calls are served at that API version. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/v2.24.0/REFERENCE.md#scalekitclient)
+time: '2026-11-06T12:02:00.000000+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: SK-3068
+  Migration: ''
