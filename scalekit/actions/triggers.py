@@ -10,7 +10,13 @@ from typing import Protocol
 
 from pydantic import ValidationError
 
-from scalekit._convert import date_to_str, enum_to_proto, require, str_list, timedelta_to_seconds
+from scalekit._convert import (
+    date_to_str,
+    enum_to_proto,
+    require,
+    str_list,
+    timedelta_to_seconds,
+)
 from scalekit.actions.models.trigger_event import TriggerEvent
 from scalekit.actions.models.triggers import (
     BatchCreateTriggerSubscriptionsResponse,
@@ -684,6 +690,7 @@ class ActionTriggers:
 
         Raises:
             ValueError: ``connection_id`` or ``connected_account_id`` is empty.
+            ScalekitBadRequestException: ``connected_account_id`` is malformed.
             ScalekitNotFoundException: No webhook URL yet
                 (``TRIGGER_INGRESS_ENDPOINT_NOT_CREATED``; call
                 ``create_ingress_endpoint``), or unknown connection or connected
@@ -722,7 +729,9 @@ class ActionTriggers:
                 (``TRIGGER_INGRESS_NOT_APPLICABLE``), its trigger definitions are
                 unavailable (``TRIGGER_INGRESS_DEFINITIONS_UNAVAILABLE``), or the
                 request does not fit how the connection's webhook triggers are
-                delivered (``TRIGGER_INGRESS_SCOPE_MISMATCH``).
+                delivered (``TRIGGER_INGRESS_SCOPE_MISMATCH``), ``connected_account_id``
+                is malformed, or that account is inactive or only has a pending
+                consent.
             ScalekitNotFoundException: Unknown connection or connected account.
 
         Example:
@@ -764,7 +773,8 @@ class ActionTriggers:
 
         Raises:
             ValueError: ``connection_id`` or ``connected_account_id`` is empty.
-            ScalekitBadRequestException: The secret is too short, or this provider uses
+            ScalekitBadRequestException: ``connected_account_id`` is malformed, the
+                secret is too short, or this provider uses
                 a secret Scalekit generates (``TRIGGER_SIGNING_SECRET_GENERATED_ONLY``;
                 call ``generate_signing_secret``).
             ScalekitConflictException: A rotation is already in progress.
@@ -812,8 +822,8 @@ class ActionTriggers:
 
         Raises:
             ValueError: ``connection_id`` or ``connected_account_id`` is empty.
-            ScalekitBadRequestException: The rotation ID is missing or names an older
-                rotation.
+            ScalekitBadRequestException: ``connected_account_id`` is malformed, or the
+                rotation ID is missing or names an older rotation.
             ScalekitNotFoundException: No webhook URL yet, or unknown connection or
                 connected account.
 
@@ -849,7 +859,8 @@ class ActionTriggers:
 
         Raises:
             ValueError: ``connection_id`` or ``connected_account_id`` is empty.
-            ScalekitBadRequestException: The provider signs its own events
+            ScalekitBadRequestException: ``connected_account_id`` is malformed, or the
+                provider signs its own events
                 (``TRIGGER_SIGNING_SECRET_NOT_GENERATABLE``; use ``set_signing_secret``).
             ScalekitConflictException: A rotation is in progress.
             ScalekitNotFoundException: No webhook URL yet, or unknown connection or

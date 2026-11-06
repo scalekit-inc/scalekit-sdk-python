@@ -1,0 +1,8 @@
+kind: added
+body: |
+  `TriggerSubscribeOutcome.NOT_ATTEMPTED` reports accounts that `client.actions.triggers.batch_create_subscriptions` did not try because an earlier account stopped the batch or time ran out. Nothing was created for them, so call again for those accounts. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/v2.24.0/REFERENCE.md#triggers)
+time: '2026-11-06T12:01:00.000000+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: SK-3068
+  Migration: ''

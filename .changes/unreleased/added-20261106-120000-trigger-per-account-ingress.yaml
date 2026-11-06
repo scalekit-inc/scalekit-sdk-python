@@ -1,12 +1,11 @@
 kind: added
 body: |
-  Triggers whose webhook URL is per connected account are now supported. `create_ingress_endpoint`, `get_ingress_endpoint`, `set_signing_secret`, `confirm_signing_secret_rotation` and `generate_signing_secret` on `client.actions.triggers` accept a keyword-only `connected_account_id`, and `TriggerIngressEndpoint` gains `scope` and `connected_account_id`. `AvailableTrigger.ingress_per_account` marks these triggers, and `TriggerSubscribeOutcome.NOT_ATTEMPTED` reports accounts a batch did not try (safe to retry). Leaving `connected_account_id` out keeps acting on the connection's URL.
+  `client.actions.triggers.create_ingress_endpoint` and the other ingress and signing-secret methods take a keyword-only `connected_account_id` for triggers that deliver to one webhook URL per connected account (`AvailableTrigger.ingress_per_account`). `TriggerIngressEndpoint` gains `scope` and `connected_account_id`. Leaving it out still acts on the connection's URL. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/v2.24.0/REFERENCE.md#triggers)
 
   ```python
   endpoint = client.actions.triggers.create_ingress_endpoint(
       "conn_123", connected_account_id="ca_456"
   )
-  print(endpoint.scope, endpoint.url)  # DeliveryScope.ACCOUNT, https://...
   ```
 time: '2026-11-06T12:00:00.000000+00:00'
 custom:

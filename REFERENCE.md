@@ -8689,7 +8689,7 @@ print(hourly.current_hour, [(h.start, h.units) for h in hourly.hours])
 <dl>
 <dd>
 
-Reads the webhook URL a provider sends a connection's events to, and the state of its signing secret (never the secret itself). No URL yet raises `ScalekitNotFoundException` with `error_code` `TRIGGER_INGRESS_ENDPOINT_NOT_CREATED`; an unknown connection uses `RESOURCE_NOT_FOUND`.
+Reads the webhook URL a provider sends events to, and the state of its signing secret (never the secret itself). Pass `connected_account_id` to read one connected account's own URL (triggers with `ingress_per_account`); leave it out for the connection's URL. A malformed `connected_account_id` raises `ScalekitBadRequestException`. No URL yet raises `ScalekitNotFoundException` with `error_code` `TRIGGER_INGRESS_ENDPOINT_NOT_CREATED`; an unknown connection uses `RESOURCE_NOT_FOUND`.
 </dd>
 </dl>
 </dd>
@@ -8758,7 +8758,7 @@ print(account_endpoint.scope, account_endpoint.connected_account_id)
 <dl>
 <dd>
 
-Creates the connection's webhook URL, or returns the existing one (safe to call again). Paste `url` into the provider's app configuration and treat it as confidential. A connection without a webhook trigger raises `ScalekitBadRequestException` (`TRIGGER_INGRESS_NOT_APPLICABLE`).
+Creates the connection's webhook URL, or returns the existing one (safe to call again). Pass `connected_account_id` to create one connected account's own URL (triggers with `ingress_per_account`); a malformed ID, or an inactive or consent-pending account, raises `ScalekitBadRequestException`. Paste `url` into the provider's app configuration and treat it as confidential. A connection without a webhook trigger raises `ScalekitBadRequestException` (`TRIGGER_INGRESS_NOT_APPLICABLE`).
 </dd>
 </dl>
 </dd>
@@ -8826,7 +8826,7 @@ account_endpoint = scalekit_client.actions.triggers.create_ingress_endpoint(
 <dl>
 <dd>
 
-Stores the secret the provider signs its events with. Setting a different secret later starts a rotation: both are accepted until `confirm_signing_secret_rotation` or for 24 hours; a third secret while a rotation is open raises `ScalekitConflictException`. Not retried on `UNAVAILABLE`. Providers whose secret Scalekit generates raise `ScalekitBadRequestException` (`TRIGGER_SIGNING_SECRET_GENERATED_ONLY`).
+Stores the secret the provider signs its events with, for the connection's URL or, with `connected_account_id`, one connected account's own URL (a malformed ID raises `ScalekitBadRequestException`). Setting a different secret later starts a rotation: both are accepted until `confirm_signing_secret_rotation` or for 24 hours; a third secret while a rotation is open raises `ScalekitConflictException`. Not retried on `UNAVAILABLE`. Providers whose secret Scalekit generates raise `ScalekitBadRequestException` (`TRIGGER_SIGNING_SECRET_GENERATED_ONLY`).
 </dd>
 </dl>
 </dd>
@@ -8908,7 +8908,7 @@ scalekit_client.actions.triggers.set_signing_secret(
 <dl>
 <dd>
 
-Finishes a signing-secret rotation so only the new secret is accepted. Pass the rotation's ID while one is in progress; a missing or outdated ID raises `ScalekitBadRequestException`.
+Finishes a signing-secret rotation so only the new secret is accepted, on the connection's URL or, with `connected_account_id`, one connected account's own URL (a malformed ID raises `ScalekitBadRequestException`). Pass the rotation's ID while one is in progress; a missing or outdated ID raises `ScalekitBadRequestException`.
 </dd>
 </dl>
 </dd>
@@ -8993,7 +8993,7 @@ if account_endpoint.rotation_in_progress:
 <dl>
 <dd>
 
-Generates a signing secret for providers that use one Scalekit creates. The plaintext `signing_secret` and `url_with_secret` are returned only in this response and are left out of `repr()`. Not retried on `UNAVAILABLE`, because a retry would replace the secret. Providers that sign their own events raise `ScalekitBadRequestException` (`TRIGGER_SIGNING_SECRET_NOT_GENERATABLE`).
+Generates a signing secret for providers that use one Scalekit creates, for the connection's URL or, with `connected_account_id`, one connected account's own URL (a malformed ID raises `ScalekitBadRequestException`). The plaintext `signing_secret` and `url_with_secret` are returned only in this response and are left out of `repr()`. Not retried on `UNAVAILABLE`, because a retry would replace the secret. Providers that sign their own events raise `ScalekitBadRequestException` (`TRIGGER_SIGNING_SECRET_NOT_GENERATABLE`).
 </dd>
 </dl>
 </dd>

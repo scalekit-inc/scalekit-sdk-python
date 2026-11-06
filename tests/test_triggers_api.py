@@ -1418,7 +1418,7 @@ class TestPerAccountIngress(unittest.TestCase):
 
     def test_every_batch_subscribe_outcome_has_an_sdk_enum_member(self):
         # A new server outcome that the SDK enum lacks would arrive as a bare str.
-        for name in pb.BatchSubscribeOutcome.keys():
+        for name in pb.BatchSubscribeOutcome.DESCRIPTOR.values_by_name:
             if name == "BATCH_SUBSCRIBE_OUTCOME_UNSPECIFIED":
                 continue
             with self.subTest(outcome=name):
