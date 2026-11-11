@@ -29,7 +29,10 @@ from scalekit.common.exceptions import ScalekitNotFoundException
 from scalekit.actions.triggers import ActionTriggers
 from scalekit.triggers import TriggersClient
 from scalekit.mcp import _check_connection_token_args
-from scalekit.v1.tools.tools_pb2 import Filter
+from scalekit.v1.tools.tools_pb2 import Filter, ScopedToolFilter
+from scalekit.actions.models.responses.tool_discovery_responses import (
+    ListScopedToolsResponse, ListAvailableToolsResponse, SearchToolsResponse,
+)
 from google.protobuf.wrappers_pb2 import BoolValue
 
 
@@ -293,6 +296,117 @@ class ActionClient:
         proto_response = result_tuple[0]
 
         return ListToolsResponse.from_proto(proto_response)
+
+    def list_scoped_tools(
+        self,
+        identifier: str,
+        providers: Optional[List[str]] = None,
+        tool_names: Optional[List[str]] = None,
+        connection_names: Optional[List[str]] = None,
+        page_size: Optional[int] = None,
+        page_token: Optional[str] = None,
+        **kwargs
+    ) -> ListScopedToolsResponse:
+        """
+        List the tools an identifier can run, narrowed by provider, tool name or connection.
+
+        Thin wrapper around ToolsClient.list_scoped_tools. Each result carries the connected
+        account the tool runs against. Paginated: follow ``next_page_token`` for the full set.
+
+        :param identifier: Connected-account identifier, for example a user ID or email (required)
+        :type: str
+        :param providers: Only tools from these providers, e.g. ['GMAIL', 'SLACK'] (optional)
+        :type: List[str]
+        :param tool_names: Only these tools (optional)
+        :type: List[str]
+        :param connection_names: Only tools on these connections, e.g. ['gmail-ab12cd34'] (optional)
+        :type: List[str]
+        :param page_size: Maximum number of tools to return per page (optional)
+        :type: int
+        :param page_token: Token from a previous response for pagination (optional)
+        :type: str
+
+        :returns:
+            ListScopedToolsResponse with ``tools`` (each a ScopedTool with ``tool``,
+            ``identifier`` and ``connected_account_id``) and pagination fields
+        """
+        if not identifier:
+            raise ValueError("identifier is required")
+        result_tuple = self.tools.list_scoped_tools(
+            identifier,
+            filter=ScopedToolFilter(
+                providers=providers or [],
+                tool_names=tool_names or [],
+                connection_names=connection_names or [],
+            ),
+            page_size=page_size,
+            page_token=page_token,
+        )
+        return ListScopedToolsResponse.from_proto(result_tuple[0])
+
+    def list_available_tools(
+        self,
+        identifier: str,
+        page_size: Optional[int] = None,
+        page_token: Optional[str] = None,
+        **kwargs
+    ) -> ListAvailableToolsResponse:
+        """
+        List every tool available to an identifier across all of its connected accounts.
+
+        Thin wrapper around ToolsClient.list_available_tools. Paginated: follow
+        ``next_page_token`` for the full set.
+
+        :param identifier: Connected-account identifier, for example a user ID or email (required)
+        :type: str
+        :param page_size: Maximum number of tools to return per page (optional)
+        :type: int
+        :param page_token: Token from a previous response for pagination (optional)
+        :type: str
+
+        :returns:
+            ListAvailableToolsResponse with ``tools`` (the same Tool model as list_tools)
+            and pagination fields
+        """
+        if not identifier:
+            raise ValueError("identifier is required")
+        result_tuple = self.tools.list_available_tools(
+            identifier, page_size=page_size, page_token=page_token
+        )
+        return ListAvailableToolsResponse.from_proto(result_tuple[0])
+
+    def search_tools(
+        self,
+        query: str,
+        identifier: Optional[str] = None,
+        top_k: Optional[int] = None,
+        **kwargs
+    ) -> SearchToolsResponse:
+        """
+        Find tools that fit a goal, ranked by relevance to a natural-language query.
+
+        Thin wrapper around ToolsClient.search_tools. Each result's ``score`` is comparable
+        only within one response. With ``identifier``, each result's ``connections`` lists
+        that identifier's connections for the tool's provider with a ``readiness_state`` of
+        READY, NEEDS_CONNECTION or NEEDS_REAUTH; check it before executing. An empty list
+        means the identifier has no connection for that provider.
+
+        :param query: What the agent needs to do, in plain words or keywords (required)
+        :type: str
+        :param identifier: Connected-account identifier to report readiness for (optional)
+        :type: str
+        :param top_k: Maximum number of results (optional; server default 10, max 50)
+        :type: int
+
+        :returns:
+            SearchToolsResponse with ``tools`` (each a SearchedTool with ``name``,
+            ``provider``, ``description``, ``score`` and ``connections``)
+        """
+        if not query:
+            raise ValueError("query is required")
+        result = self.tools.search_tools(query, identifier=identifier, top_k=top_k)
+        proto_response = result[0] if isinstance(result, tuple) else result
+        return SearchToolsResponse.from_proto(proto_response)
 
     def get_authorization_link(
             self,

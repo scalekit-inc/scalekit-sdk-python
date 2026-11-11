@@ -135,6 +135,38 @@ class ToolsClient:
         _restore_definitions(scoped.tool for scoped in result[0].tools if scoped.HasField("tool"))
         return result
 
+    def list_available_tools(
+        self,
+        identifier: str,
+        page_size: Optional[int] = None,
+        page_token: Optional[str] = None
+    ) -> ListAvailableToolsResponse:
+        """
+        Method to list every tool available to an identifier across its connected accounts
+
+        :param identifier       : Connected-account identifier (for example a user ID or email)
+        :type                   : ``` str ```
+        :param page_size        : Maximum number of tools to return per page
+        :type                   : ``` int ```
+        :param page_token       : Token from a previous response for pagination
+        :type                   : ``` str ```
+
+        :returns:
+            List Available Tools Response
+        """
+        result = self.core_client.grpc_exec(
+            self.tool_service.ListAvailableTools.with_call,
+            ListAvailableToolsRequest(
+                identifier=identifier,
+                page_size=page_size,
+                page_token=page_token,
+                definition_format=_LIST_DEFINITION_FORMAT,
+            ),
+            timeout=self.core_client.tool_call_timeout_s,
+        )
+        _restore_definitions(result[0].tools)
+        return result
+
     def search_tools(
         self,
         query: str,

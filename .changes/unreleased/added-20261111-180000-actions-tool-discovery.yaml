@@ -1,0 +1,8 @@
+kind: added
+body: |
+  `client.actions` gains `list_scoped_tools(identifier, providers?, tool_names?, connection_names?, page_size?, page_token?)`, `list_available_tools(identifier, page_size?, page_token?)` and `search_tools(query, identifier?, top_k?)`, so finding a tool and running it uses one client, as in the Node SDK. Like `list_tools`, they take plain keyword arguments and return typed models from `scalekit.actions.types` (`ListScopedToolsResponse`, `ListAvailableToolsResponse`, `SearchToolsResponse`); `search_tools` reports each connection's `readiness_state` as `READY`, `NEEDS_CONNECTION` or `NEEDS_REAUTH`. `client.tools.list_available_tools(identifier, page_size?, page_token?)` is new too and returns the `(response, call)` tuple like the other `client.tools` list methods. Both list methods ask for definitions as JSON text, so deeply nested tool definitions do not break them.
+time: '2026-11-11T18:00:00.000000+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: SK-3047
+  Migration: ''
