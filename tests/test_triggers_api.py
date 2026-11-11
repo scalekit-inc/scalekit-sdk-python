@@ -581,6 +581,7 @@ class TestResponseMapping(unittest.TestCase):
                 pb.AvailableTrigger,
                 ("mode", "delivery_scope", "platform_credentials", "refusal_code"),
             ),
+            (pb.TriggerIngressEndpoint, ("scope",)),
             (pb.AccountHealth, ("state", "action")),
             (pb.TriggerPollState, ("last_error_code",)),
             (pb.TriggerDelivery, ("status", "trigger_mode")),
@@ -867,6 +868,11 @@ class TestBatchOutcomes(unittest.TestCase):
                 pb.BatchCreateTriggerSubscriptionResult(
                     connected_account_id="ca_4", outcome=pb.FAILED
                 ),
+                pb.BatchCreateTriggerSubscriptionResult(
+                    connected_account_id="ca_5",
+                    outcome=pb.NOT_ATTEMPTED,
+                    reason="the request ran out of time",
+                ),
             ],
         )
         triggers, _ = _mocked(response)
@@ -879,8 +885,11 @@ class TestBatchOutcomes(unittest.TestCase):
                 TriggerSubscribeOutcome.NOT_FOUND,
                 TriggerSubscribeOutcome.REFUSED,
                 TriggerSubscribeOutcome.FAILED,
+                TriggerSubscribeOutcome.NOT_ATTEMPTED,
             ],
         )
+        self.assertIsNone(batch.results[4].subscription)  # nothing was created
+        self.assertEqual(batch.results[4].reason, "the request ran out of time")
         self.assertEqual(batch.results[0].subscription.id, "trgs_1")
         self.assertIsNone(batch.results[1].subscription)
         self.assertEqual(batch.results[1].reason, "not found")
@@ -1189,6 +1198,231 @@ class TestErrorPromotion(unittest.TestCase):
         with self.assertRaises(ScalekitTooManyRequestsException):
             triggers.list_deliveries("ep_1")
         self.assertEqual(with_call.call_count, 1)
+
+# The five calls that take `connected_account_id`: facade call, low-level call, RPC,
+# request class, and whether the RPC is retried on UNAVAILABLE.
+_PER_ACCOUNT_CALLS = {
+    "GetTriggerIngressEndpoint": (
+        lambda t, **kw: t.get_ingress_endpoint("conn_1", **kw),
+        pb.GetTriggerIngressEndpointRequest(connection_id="conn_1"),
+        True,
+    ),
+    "CreateTriggerIngressEndpoint": (
+        lambda t, **kw: t.create_ingress_endpoint("conn_1", **kw),
+        pb.CreateTriggerIngressEndpointRequest(connection_id="conn_1"),
+        True,
+    ),
+    "SetTriggerSigningSecret": (
+        lambda t, **kw: t.set_signing_secret("conn_1", signing_secret="s" * 8, **kw),
+        pb.SetTriggerSigningSecretRequest(connection_id="conn_1", signing_secret="s" * 8),
+        False,
+    ),
+    "ConfirmTriggerSigningSecretRotation": (
+        lambda t, **kw: t.confirm_signing_secret_rotation(
+            "conn_1", signing_secret_rotation_id=4, **kw
+        ),
+        pb.ConfirmTriggerSigningSecretRotationRequest(
+            connection_id="conn_1", signing_secret_rotation_id=4
+        ),
+        True,
+    ),
+    "GenerateTriggerSigningSecret": (
+        lambda t, **kw: t.generate_signing_secret("conn_1", **kw),
+        pb.GenerateTriggerSigningSecretRequest(connection_id="conn_1"),
+        False,
+    ),
+}
+
+
+class TestPerAccountIngress(unittest.TestCase):
+    """`connected_account_id` selects one account's own webhook URL; omitting it changes nothing."""
+
+    def test_account_id_is_sent_with_the_other_fields(self):
+        for rpc, (call, base, _) in _PER_ACCOUNT_CALLS.items():
+            with self.subTest(rpc=rpc):
+                triggers, core = _mocked()
+                call(triggers, connected_account_id="ca_456")
+                expected = type(base)()
+                expected.CopyFrom(base)
+                expected.connected_account_id = "ca_456"
+                self.assertEqual(_rpc(core), rpc)
+                self.assertEqual(_sent(core), expected)
+
+    def test_omitted_account_id_leaves_the_request_as_before(self):
+        for rpc, (call, base, _) in _PER_ACCOUNT_CALLS.items():
+            with self.subTest(rpc=rpc):
+                triggers, core = _mocked()
+                call(triggers)
+                self.assertEqual(_sent(core), base)
+                self.assertEqual(_sent(core).connected_account_id, "")
+                triggers, core = _mocked()
+                call(triggers, connected_account_id=None)
+                self.assertEqual(_sent(core), base)
+
+    def test_empty_account_id_raises_before_any_request(self):
+        # The server reads "" as omitted, which would silently act on the
+        # connection's own URL.
+        for rpc, (call, _, _) in _PER_ACCOUNT_CALLS.items():
+            with self.subTest(rpc=rpc):
+                triggers, core = _mocked()
+                with self.assertRaisesRegex(ValueError, "connected_account_id"):
+                    call(triggers, connected_account_id="")
+                core.grpc_exec.assert_not_called()
+
+    def test_other_account_ids_are_sent_as_given_and_left_to_the_server(self):
+        # Whitespace and over-long IDs are validated (and refused) by the server; the
+        # SDK does not trim or cap them, so an ID is never silently changed.
+        for account_id in (" ", "  ca_1  ", "ca_\u00e9", "ca_" + "x" * 500):
+            for rpc, (call, _, _) in _PER_ACCOUNT_CALLS.items():
+                with self.subTest(rpc=rpc, account_id=account_id[:12]):
+                    triggers, core = _mocked()
+                    call(triggers, connected_account_id=account_id)
+                    self.assertEqual(_sent(core).connected_account_id, account_id)
+
+    def test_non_string_account_id_raises_before_any_request(self):
+        for rpc, (call, _, _) in _PER_ACCOUNT_CALLS.items():
+            with self.subTest(rpc=rpc):
+                triggers, core = _mocked()
+                with self.assertRaises(TypeError):
+                    call(triggers, connected_account_id=123)
+                core.grpc_exec.assert_not_called()
+
+    def test_account_id_is_keyword_only(self):
+        triggers, core = _mocked()
+        with self.assertRaises(TypeError):
+            triggers.get_ingress_endpoint("conn_1", "ca_1")
+        with self.assertRaises(TypeError):
+            triggers.generate_signing_secret("conn_1", "ca_1")
+        core.grpc_exec.assert_not_called()
+
+    def test_low_level_client_sends_the_id_only_when_given(self):
+        # TriggersClient is the layer below the facade: it adds no policy, so an
+        # empty string goes through as proto3's "not set".
+        core = MagicMock()
+        core.grpc_exec.return_value = (pb.TriggerIngressEndpoint(), None)
+        low = TriggersClient.__new__(TriggersClient)
+        low.core_client = core
+        low.trigger_service = MagicMock()
+        low.get_trigger_ingress_endpoint("conn_1")
+        self.assertEqual(_sent(core).connected_account_id, "")
+        low.get_trigger_ingress_endpoint("conn_1", connected_account_id="ca_1")
+        self.assertEqual(_sent(core).connected_account_id, "ca_1")
+        low.get_trigger_ingress_endpoint("conn_1", connected_account_id="")
+        self.assertEqual(_sent(core).connected_account_id, "")
+        with self.assertRaises(ValueError):
+            low.create_trigger_ingress_endpoint("", connected_account_id="ca_1")
+
+    def test_retry_flags_are_unchanged_by_the_account_id(self):
+        for rpc, (call, _, retried) in _PER_ACCOUNT_CALLS.items():
+            for kwargs in ({}, {"connected_account_id": "ca_456"}):
+                with self.subTest(rpc=rpc, kwargs=kwargs):
+                    triggers, core = _mocked()
+                    call(triggers, **kwargs)
+                    flags = core.grpc_exec.call_args.kwargs
+                    if retried:
+                        self.assertNotIn("retry_on_unavailable", flags)
+                    else:
+                        self.assertIs(flags.get("retry_on_unavailable"), False)
+
+    def test_unavailable_with_account_id_follows_the_same_retry_rule(self):
+        for rpc, (call, _, retried) in _PER_ACCOUNT_CALLS.items():
+            with self.subTest(rpc=rpc):
+                response = (pb.TriggerIngressEndpoint(id="tie_1"), MagicMock())
+                if rpc == "GenerateTriggerSigningSecret":
+                    response = (pb.GenerateTriggerSigningSecretResponse(), MagicMock())
+                triggers, with_call = _real_core(
+                    rpc, [_make_rpc_error(StatusCode.UNAVAILABLE), response]
+                )
+                with patch("scalekit.core.time.sleep"):
+                    if retried:
+                        call(triggers, connected_account_id="ca_456")
+                        self.assertEqual(with_call.call_count, 2)
+                    else:
+                        with self.assertRaises(ScalekitServiceUnavailableException):
+                            call(triggers, connected_account_id="ca_456")
+                        self.assertEqual(with_call.call_count, 1)
+
+    def test_not_found_for_an_account_is_promoted(self):
+        triggers, _ = _real_core(
+            "GetTriggerIngressEndpoint",
+            _make_rpc_error(StatusCode.NOT_FOUND, error_code="RESOURCE_NOT_FOUND"),
+        )
+        with self.assertRaises(ScalekitNotFoundException):
+            triggers.get_ingress_endpoint("conn_1", connected_account_id="ca_other")
+
+    def test_scope_mismatch_is_a_bad_request(self):
+        triggers, _ = _real_core(
+            "CreateTriggerIngressEndpoint",
+            _make_rpc_error(
+                StatusCode.INVALID_ARGUMENT, error_code="TRIGGER_INGRESS_SCOPE_MISMATCH"
+            ),
+        )
+        with self.assertRaises(ScalekitBadRequestException) as caught:
+            triggers.create_ingress_endpoint("conn_1", connected_account_id="ca_1")
+        self.assertEqual(caught.exception.error_code, "TRIGGER_INGRESS_SCOPE_MISMATCH")
+
+    def test_endpoint_scope_and_account(self):
+        triggers, _ = _mocked(
+            pb.TriggerIngressEndpoint(
+                id="tie_1",
+                connection_id="conn_1",
+                connected_account_id="ca_456",
+                scope=pb.ACCOUNT,
+            )
+        )
+        endpoint = triggers.get_ingress_endpoint("conn_1", connected_account_id="ca_456")
+        self.assertIs(endpoint.scope, DeliveryScope.ACCOUNT)
+        self.assertEqual(endpoint.connected_account_id, "ca_456")
+
+        triggers, _ = _mocked(pb.TriggerIngressEndpoint(id="tie_2", scope=pb.CONNECTION))
+        endpoint = triggers.get_ingress_endpoint("conn_1")
+        self.assertIs(endpoint.scope, DeliveryScope.CONNECTION)
+        self.assertEqual(endpoint.connected_account_id, "")
+
+    def test_endpoint_without_scope_from_an_older_server(self):
+        triggers, _ = _mocked(pb.TriggerIngressEndpoint(id="tie_1"))
+        endpoint = triggers.get_ingress_endpoint("conn_1")
+        self.assertIsNone(endpoint.scope)  # UNSPECIFIED
+        self.assertEqual(endpoint.connected_account_id, "")
+
+    def test_unknown_scope_number_does_not_raise(self):
+        triggers, _ = _mocked(pb.TriggerIngressEndpoint(id="tie_1", scope=4242))
+        self.assertEqual(triggers.get_ingress_endpoint("conn_1").scope, "4242")
+
+    def test_generated_secret_carries_the_account_endpoint(self):
+        triggers, _ = _mocked(
+            pb.GenerateTriggerSigningSecretResponse(
+                endpoint=pb.TriggerIngressEndpoint(
+                    id="tie_1", connected_account_id="ca_456", scope=pb.ACCOUNT
+                ),
+                signing_secret="supersecretvalue123",
+            )
+        )
+        generated = triggers.generate_signing_secret("conn_1", connected_account_id="ca_456")
+        self.assertIs(generated.endpoint.scope, DeliveryScope.ACCOUNT)
+        self.assertEqual(generated.endpoint.connected_account_id, "ca_456")
+        self.assertNotIn("supersecretvalue123", repr(generated))
+
+    def test_available_trigger_ingress_per_account(self):
+        triggers, _ = _mocked(
+            pb.ListAvailableTriggersResponse(
+                triggers=[
+                    pb.AvailableTrigger(name="message.posted", ingress_per_account=True),
+                    pb.AvailableTrigger(name="poll.items", mode=pb.POLL),
+                ]
+            )
+        )
+        per_account, other = triggers.list_available("conn_1").triggers
+        self.assertIs(per_account.ingress_per_account, True)
+        self.assertIs(other.ingress_per_account, False)
+
+    def test_every_batch_subscribe_outcome_has_an_sdk_enum_member(self):
+        # A new server outcome that the SDK enum lacks would arrive as a bare str.
+        for name in pb.BatchSubscribeOutcome.DESCRIPTOR.values_by_name:
+            if name == "BATCH_SUBSCRIBE_OUTCOME_UNSPECIFIED":
+                continue
+            with self.subTest(outcome=name):
+                self.assertIn(name, TriggerSubscribeOutcome.__members__)
 
 
 class TestWiring(unittest.TestCase):

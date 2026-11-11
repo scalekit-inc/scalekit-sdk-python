@@ -8318,7 +8318,7 @@ print(sub.id, sub.status, sub.effective_interval)
 <dl>
 <dd>
 
-Subscribes up to 100 connected accounts in one call. Not atomic: every account gets an outcome in `results` (`CREATED`, `ALREADY_SUBSCRIBED`, `REFUSED`, `NOT_FOUND`, `FAILED`) and those never raise. Safe to call again for the `FAILED` ones. Leave `connected_account_ids` out for a connection-scoped trigger.
+Subscribes up to 100 connected accounts in one call. Not atomic: every account gets an outcome in `results` (`CREATED`, `ALREADY_SUBSCRIBED`, `REFUSED`, `NOT_FOUND`, `FAILED`, `NOT_ATTEMPTED`) and those never raise. Safe to call again for the `FAILED` and `NOT_ATTEMPTED` ones. Leave `connected_account_ids` out for a connection-scoped trigger.
 </dd>
 </dl>
 </dd>
@@ -8338,7 +8338,10 @@ from scalekit.actions import TriggerSubscribeOutcome
 batch = scalekit_client.actions.triggers.batch_create_subscriptions(
     "conn_123", "item.created", connected_account_ids=["ca_1", "ca_2"]
 )
-retry = [r.connected_account_id for r in batch.results if r.outcome == TriggerSubscribeOutcome.FAILED]
+retry = [
+    r.connected_account_id for r in batch.results
+    if r.outcome in (TriggerSubscribeOutcome.FAILED, TriggerSubscribeOutcome.NOT_ATTEMPTED)
+]
 print(batch.created_count, retry)
 ```
 </dd>
@@ -8674,7 +8677,7 @@ print(hourly.current_hour, [(h.start, h.units) for h in hourly.hours])
 </dl>
 </details>
 
-<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">get_ingress_endpoint</a>(connection_id) -> TriggerIngressEndpoint</code></summary>
+<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">get_ingress_endpoint</a>(connection_id, *, connected_account_id?) -> TriggerIngressEndpoint</code></summary>
 <dl>
 <dd>
 
@@ -8686,7 +8689,7 @@ print(hourly.current_hour, [(h.start, h.units) for h in hourly.hours])
 <dl>
 <dd>
 
-Reads the webhook URL a provider sends a connection's events to, and the state of its signing secret (never the secret itself). No URL yet raises `ScalekitNotFoundException` with `error_code` `TRIGGER_INGRESS_ENDPOINT_NOT_CREATED`; an unknown connection uses `RESOURCE_NOT_FOUND`.
+Reads the webhook URL a provider sends events to, and the state of its signing secret (never the secret itself). Pass `connected_account_id` to read one connected account's own URL (triggers with `ingress_per_account`); leave it out for the connection's URL. A malformed `connected_account_id` raises `ScalekitBadRequestException`. No URL yet raises `ScalekitNotFoundException` with `error_code` `TRIGGER_INGRESS_ENDPOINT_NOT_CREATED`; an unknown connection uses `RESOURCE_NOT_FOUND`.
 </dd>
 </dl>
 </dd>
@@ -8703,6 +8706,12 @@ Reads the webhook URL a provider sends a connection's events to, and the state o
 ```python
 endpoint = scalekit_client.actions.triggers.get_ingress_endpoint("conn_123")
 print(endpoint.signing_secret_configured, endpoint.masked_signing_secret, endpoint.rotation_in_progress)
+
+# One connected account's own URL (a trigger with ingress_per_account)
+account_endpoint = scalekit_client.actions.triggers.get_ingress_endpoint(
+    "conn_123", connected_account_id="ca_456"
+)
+print(account_endpoint.scope, account_endpoint.connected_account_id)
 ```
 </dd>
 </dl>
@@ -8721,6 +8730,14 @@ print(endpoint.signing_secret_configured, endpoint.masked_signing_secret, endpoi
 
 </dd>
 </dl>
+
+<dl>
+<dd>
+
+**connected_account_id:** `Optional[str]` - Act on this connected account's own webhook URL (`ca_...`), for a trigger whose `ingress_per_account` is `True`; leave it out to act on the connection's URL. An empty string raises `ValueError` (keyword only)
+
+</dd>
+</dl>
 </dd>
 </dl>
 
@@ -8729,7 +8746,7 @@ print(endpoint.signing_secret_configured, endpoint.masked_signing_secret, endpoi
 </dl>
 </details>
 
-<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">create_ingress_endpoint</a>(connection_id) -> TriggerIngressEndpoint</code></summary>
+<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">create_ingress_endpoint</a>(connection_id, *, connected_account_id?) -> TriggerIngressEndpoint</code></summary>
 <dl>
 <dd>
 
@@ -8741,7 +8758,7 @@ print(endpoint.signing_secret_configured, endpoint.masked_signing_secret, endpoi
 <dl>
 <dd>
 
-Creates the connection's webhook URL, or returns the existing one (safe to call again). Paste `url` into the provider's app configuration and treat it as confidential. A connection without a webhook trigger raises `ScalekitBadRequestException` (`TRIGGER_INGRESS_NOT_APPLICABLE`).
+Creates the connection's webhook URL, or returns the existing one (safe to call again). Pass `connected_account_id` to create one connected account's own URL (triggers with `ingress_per_account`); a malformed ID, or an inactive or consent-pending account, raises `ScalekitBadRequestException`. Paste `url` into the provider's app configuration and treat it as confidential. A connection without a webhook trigger raises `ScalekitBadRequestException` (`TRIGGER_INGRESS_NOT_APPLICABLE`).
 </dd>
 </dl>
 </dd>
@@ -8758,6 +8775,11 @@ Creates the connection's webhook URL, or returns the existing one (safe to call 
 ```python
 endpoint = scalekit_client.actions.triggers.create_ingress_endpoint("conn_123")
 print("paste into the provider:", endpoint.url)
+
+# One connected account's own URL (a trigger with ingress_per_account)
+account_endpoint = scalekit_client.actions.triggers.create_ingress_endpoint(
+    "conn_123", connected_account_id="ca_456"
+)
 ```
 </dd>
 </dl>
@@ -8776,6 +8798,14 @@ print("paste into the provider:", endpoint.url)
 
 </dd>
 </dl>
+
+<dl>
+<dd>
+
+**connected_account_id:** `Optional[str]` - Act on this connected account's own webhook URL (`ca_...`), for a trigger whose `ingress_per_account` is `True`; leave it out to act on the connection's URL. An empty string raises `ValueError` (keyword only)
+
+</dd>
+</dl>
 </dd>
 </dl>
 
@@ -8784,7 +8814,7 @@ print("paste into the provider:", endpoint.url)
 </dl>
 </details>
 
-<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">set_signing_secret</a>(connection_id, *, signing_secret) -> TriggerIngressEndpoint</code></summary>
+<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">set_signing_secret</a>(connection_id, *, signing_secret, connected_account_id?) -> TriggerIngressEndpoint</code></summary>
 <dl>
 <dd>
 
@@ -8796,7 +8826,7 @@ print("paste into the provider:", endpoint.url)
 <dl>
 <dd>
 
-Stores the secret the provider signs its events with. Setting a different secret later starts a rotation: both are accepted until `confirm_signing_secret_rotation` or for 24 hours; a third secret while a rotation is open raises `ScalekitConflictException`. Not retried on `UNAVAILABLE`. Providers whose secret Scalekit generates raise `ScalekitBadRequestException` (`TRIGGER_SIGNING_SECRET_GENERATED_ONLY`).
+Stores the secret the provider signs its events with, for the connection's URL or, with `connected_account_id`, one connected account's own URL (a malformed ID raises `ScalekitBadRequestException`). Setting a different secret later starts a rotation: both are accepted until `confirm_signing_secret_rotation` or for 24 hours; a third secret while a rotation is open raises `ScalekitConflictException`. Not retried on `UNAVAILABLE`. Providers whose secret Scalekit generates raise `ScalekitBadRequestException` (`TRIGGER_SIGNING_SECRET_GENERATED_ONLY`).
 </dd>
 </dl>
 </dd>
@@ -8817,6 +8847,13 @@ endpoint = scalekit_client.actions.triggers.set_signing_secret(
     "conn_123", signing_secret=os.environ["PROVIDER_SIGNING_SECRET"]
 )
 print(endpoint.masked_signing_secret, endpoint.rotation_in_progress)
+
+# One connected account's own URL (a trigger with ingress_per_account)
+scalekit_client.actions.triggers.set_signing_secret(
+    "conn_123",
+    signing_secret=os.environ["PROVIDER_SIGNING_SECRET"],
+    connected_account_id="ca_456",
+)
 ```
 </dd>
 </dl>
@@ -8843,6 +8880,14 @@ print(endpoint.masked_signing_secret, endpoint.rotation_in_progress)
 
 </dd>
 </dl>
+
+<dl>
+<dd>
+
+**connected_account_id:** `Optional[str]` - Act on this connected account's own webhook URL (`ca_...`), for a trigger whose `ingress_per_account` is `True`; leave it out to act on the connection's URL. An empty string raises `ValueError` (keyword only)
+
+</dd>
+</dl>
 </dd>
 </dl>
 
@@ -8851,7 +8896,7 @@ print(endpoint.masked_signing_secret, endpoint.rotation_in_progress)
 </dl>
 </details>
 
-<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">confirm_signing_secret_rotation</a>(connection_id, *, signing_secret_rotation_id?) -> TriggerIngressEndpoint</code></summary>
+<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">confirm_signing_secret_rotation</a>(connection_id, *, signing_secret_rotation_id?, connected_account_id?) -> TriggerIngressEndpoint</code></summary>
 <dl>
 <dd>
 
@@ -8863,7 +8908,7 @@ print(endpoint.masked_signing_secret, endpoint.rotation_in_progress)
 <dl>
 <dd>
 
-Finishes a signing-secret rotation so only the new secret is accepted. Pass the rotation's ID while one is in progress; a missing or outdated ID raises `ScalekitBadRequestException`.
+Finishes a signing-secret rotation so only the new secret is accepted, on the connection's URL or, with `connected_account_id`, one connected account's own URL (a malformed ID raises `ScalekitBadRequestException`). Pass the rotation's ID while one is in progress; a missing or outdated ID raises `ScalekitBadRequestException`.
 </dd>
 </dl>
 </dd>
@@ -8882,6 +8927,17 @@ endpoint = scalekit_client.actions.triggers.get_ingress_endpoint("conn_123")
 if endpoint.rotation_in_progress:
     scalekit_client.actions.triggers.confirm_signing_secret_rotation(
         "conn_123", signing_secret_rotation_id=endpoint.signing_secret_rotation_id
+    )
+
+# One connected account's own URL (a trigger with ingress_per_account)
+account_endpoint = scalekit_client.actions.triggers.get_ingress_endpoint(
+    "conn_123", connected_account_id="ca_456"
+)
+if account_endpoint.rotation_in_progress:
+    scalekit_client.actions.triggers.confirm_signing_secret_rotation(
+        "conn_123",
+        signing_secret_rotation_id=account_endpoint.signing_secret_rotation_id,
+        connected_account_id="ca_456",
     )
 ```
 </dd>
@@ -8909,6 +8965,14 @@ if endpoint.rotation_in_progress:
 
 </dd>
 </dl>
+
+<dl>
+<dd>
+
+**connected_account_id:** `Optional[str]` - Act on this connected account's own webhook URL (`ca_...`), for a trigger whose `ingress_per_account` is `True`; leave it out to act on the connection's URL. An empty string raises `ValueError` (keyword only)
+
+</dd>
+</dl>
 </dd>
 </dl>
 
@@ -8917,7 +8981,7 @@ if endpoint.rotation_in_progress:
 </dl>
 </details>
 
-<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">generate_signing_secret</a>(connection_id) -> GenerateTriggerSigningSecretResponse</code></summary>
+<details><summary><code>client.actions.triggers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/triggers.py">generate_signing_secret</a>(connection_id, *, connected_account_id?) -> GenerateTriggerSigningSecretResponse</code></summary>
 <dl>
 <dd>
 
@@ -8929,7 +8993,7 @@ if endpoint.rotation_in_progress:
 <dl>
 <dd>
 
-Generates a signing secret for providers that use one Scalekit creates. The plaintext `signing_secret` and `url_with_secret` are returned only in this response and are left out of `repr()`. Not retried on `UNAVAILABLE`, because a retry would replace the secret. Providers that sign their own events raise `ScalekitBadRequestException` (`TRIGGER_SIGNING_SECRET_NOT_GENERATABLE`).
+Generates a signing secret for providers that use one Scalekit creates, for the connection's URL or, with `connected_account_id`, one connected account's own URL (a malformed ID raises `ScalekitBadRequestException`). The plaintext `signing_secret` and `url_with_secret` are returned only in this response and are left out of `repr()`. Not retried on `UNAVAILABLE`, because a retry would replace the secret. Providers that sign their own events raise `ScalekitBadRequestException` (`TRIGGER_SIGNING_SECRET_NOT_GENERATABLE`).
 </dd>
 </dl>
 </dd>
@@ -8946,6 +9010,11 @@ Generates a signing secret for providers that use one Scalekit creates. The plai
 ```python
 generated = scalekit_client.actions.triggers.generate_signing_secret("conn_123")
 save_to_provider(generated.url_with_secret)  # your code; store it securely
+
+# One connected account's own URL (a trigger with ingress_per_account)
+generated = scalekit_client.actions.triggers.generate_signing_secret(
+    "conn_123", connected_account_id="ca_456"
+)
 ```
 </dd>
 </dl>
@@ -8961,6 +9030,14 @@ save_to_provider(generated.url_with_secret)  # your code; store it securely
 <dd>
 
 **connection_id:** `str` - The connection (`conn_...`)
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**connected_account_id:** `Optional[str]` - Act on this connected account's own webhook URL (`ca_...`), for a trigger whose `ingress_per_account` is `True`; leave it out to act on the connection's URL. An empty string raises `ValueError` (keyword only)
 
 </dd>
 </dl>
