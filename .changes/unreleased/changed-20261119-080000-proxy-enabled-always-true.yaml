@@ -1,0 +1,8 @@
+kind: changed
+body: |
+  `client.actions.providers.create_custom_provider` now always creates a custom connector with `proxy_enabled=True`, whatever is passed. The `proxy_enabled` argument of `ProvidersClient.create_custom_provider` and the `proxy_enabled` field of `CreateCustomProviderRequest` are kept so that existing calls keep working, but their value is ignored. `update_custom_provider` always sends `proxy_enabled=True` as well and has no argument for it, because the server applies the flag on every update.
+time: '2026-11-19T08:00:00+00:00'
+custom:
+  Breaking: 'Yes'
+  Ticket: SK-3097
+  Migration: 'No code change is needed and passing proxy_enabled does not raise. A call that passes proxy_enabled=False now creates the connector with proxying on: the SDK cannot create one with proxying off any more (use the dashboard or the REST API). update_custom_provider now sends proxy_enabled=True where releases up to 2.25.0 sent False: the first update of a connector that has proxying off switches it on, and an OpenAPI-sourced connector in that state is refused with 400 INVALID_ARGUMENT.'

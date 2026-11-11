@@ -42,6 +42,9 @@ from .models.requests.create_custom_provider_request import CreateCustomProvider
 from .models.requests.update_custom_provider_request import UpdateCustomProviderRequest
 from .models.requests.list_providers_request import ListProvidersRequest
 from .models.requests.delete_custom_provider_request import DeleteCustomProviderRequest
+from .models.requests.trigger_tool_collection_request import TriggerToolCollectionRequest
+from .models.requests.get_tool_collection_run_request import GetToolCollectionRunRequest
+from .models.tool_collection_run import SkippedTool, ToolCollectionRun, ToolCollectionRunStatus
 from .models.responses.create_custom_provider_response import CreateCustomProviderResponse
 from .models.responses.update_custom_provider_response import UpdateCustomProviderResponse
 from .models.responses.list_providers_response import ListProvidersResponse
@@ -151,6 +154,11 @@ __all__ = [
     'UpdateCustomProviderRequest',
     'ListProvidersRequest',
     'DeleteCustomProviderRequest',
+    'TriggerToolCollectionRequest',
+    'GetToolCollectionRunRequest',
+    'SkippedTool',
+    'ToolCollectionRun',
+    'ToolCollectionRunStatus',
     'CreateCustomProviderResponse',
     'UpdateCustomProviderResponse',
     'ListProvidersResponse',

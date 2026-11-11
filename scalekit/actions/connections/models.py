@@ -26,12 +26,23 @@ class AuthMode(str, Enum):
 
 
 class TokenEndpointAuthMethod(str, Enum):
-    """How Scalekit authenticates to the provider's token endpoint."""
+    """How Scalekit sends client credentials to the provider's token endpoint.
 
+    Choose the value the provider's token endpoint documentation requires, and use ``DEFAULT``
+    only when you cannot find a concrete one: a wrong value makes new authorizations fail and,
+    on an MCP or OAUTH_M2M connection, token refresh too, so those connected accounts have to
+    authenticate again. It applies to the authorization_code exchange, MCP token refresh and
+    OAUTH_M2M client_credentials; refreshing a token on a non-MCP OAuth connection always
+    detects the method itself. A connection that never set a method reads as ``DEFAULT``.
+    """
+
+    # public (PKCE) clients: sends no client secret on an MCP token refresh, and on the
+    # authorization_code exchange only when the connection has no client secret stored (a stored
+    # secret is still sent); OAUTH_M2M client_credentials treats it like BASIC_AUTH
     NONE = "NONE"
-    BASIC_AUTH = "BASIC_AUTH"  # client_secret_basic
-    REQUEST_BODY = "REQUEST_BODY"  # client_secret_post
-    DEFAULT = "DEFAULT"  # clears the stored value and lets the platform pick
+    BASIC_AUTH = "BASIC_AUTH"  # client_id and client_secret in a Basic Authorization header (client_secret_basic)
+    REQUEST_BODY = "REQUEST_BODY"  # client_id and client_secret as POST body parameters (client_secret_post)
+    DEFAULT = "DEFAULT"  # clears the stored value; the Default sends POST body parameters on the authorization_code exchange and a Basic header on an MCP token refresh and OAUTH_M2M client_credentials
 
 
 class _Input(BaseModel):

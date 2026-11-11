@@ -37,7 +37,7 @@ class ListProvidersRequest(BaseModel):
         min_length=1,
         description=(
             "Optional. Filter to a specific provider by its identifier. "
-            "Pass None (default) to return all providers matching the other filters."
+            "Pass None (default) to skip this filter."
         ),
     )
 

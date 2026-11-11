@@ -44,13 +44,25 @@ class TestResource(BaseTest):
     def test_list_resources(self):
         """ Method to test list resources of a given type in the environment """
         response = self.scalekit_client.resources.list_resources(
-            resource_type=ResourceType.MCP_SERVER
+            resource_type=ResourceType.MCP_SERVER, page_size=30
         )
 
         self.assertEqual(response[1].code().name, "OK")
         self.assertIsInstance(response[0].total_size, int)
-        response_resource_ids = [r.id for r in response[0].resources]
-        self.assertIn(TEST_RESOURCE_ID, response_resource_ids)
+
+        # The test environment is shared and keeps gaining resources, so the known
+        # resource is not always on the first page: follow the page tokens (bounded).
+        found = TEST_RESOURCE_ID in [r.id for r in response[0].resources]
+        pages = 1
+        while not found and response[0].next_page_token and pages < 50:
+            response = self.scalekit_client.resources.list_resources(
+                resource_type=ResourceType.MCP_SERVER,
+                page_size=30,
+                page_token=response[0].next_page_token,
+            )
+            found = TEST_RESOURCE_ID in [r.id for r in response[0].resources]
+            pages += 1
+        self.assertTrue(found, "%s is on none of the %d pages listed" % (TEST_RESOURCE_ID, pages))
 
     def test_list_resources_with_page_size(self):
         """ Method to test list resources with a page size """

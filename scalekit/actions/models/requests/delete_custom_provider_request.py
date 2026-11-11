@@ -5,8 +5,11 @@ class DeleteCustomProviderRequest(BaseModel):
     """Request model for deleting a custom provider.
 
     Deletion is permanent. The provider and all associated configuration are
-    removed. Existing connected accounts for this provider are not automatically
-    deleted — handle those separately before deleting the provider if needed.
+    removed, including its discovered custom MCP tools. The server refuses to
+    delete a provider that still has connections ("cannot delete custom provider
+    with existing connections"): remove its connected accounts first, then all of
+    its connections (a connection that still has connected accounts cannot be
+    deleted either).
     """
 
     identifier: str = Field(
