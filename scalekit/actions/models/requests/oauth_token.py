@@ -1,6 +1,7 @@
 """Build an ``OauthToken`` proto from the ``authorization_details["oauth_token"]`` dict."""
 
 import math
+import re
 from datetime import datetime, timezone
 from typing import Any, Dict, Union
 
@@ -9,6 +10,17 @@ from google.protobuf.timestamp_pb2 import Timestamp
 from scalekit.v1.connected_accounts.connected_accounts_pb2 import OauthToken
 
 ExpiresAt = Union[datetime, str, int, float]
+
+# Range a google.protobuf.Timestamp can hold: 0001-01-01T00:00:00Z to 9999-12-31T23:59:59Z.
+_MIN_SECONDS = -62135596800
+_MAX_SECONDS = 253402300799
+
+# RFC 3339 date-time with a mandatory timezone. protobuf's FromJsonString checks the date and
+# time but applies an offset without bounds-checking it (it would turn "+00:60" into -1 hour),
+# so the offset is validated here first.
+_RFC3339 = re.compile(
+    r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?(?:Z|[+-](?P<oh>\d{2}):(?P<om>\d{2}))$"
+)
 
 
 def expires_at_to_timestamp(value: ExpiresAt) -> Timestamp:
@@ -27,9 +39,13 @@ def expires_at_to_timestamp(value: ExpiresAt) -> Timestamp:
     elif isinstance(value, str):
         # protobuf's RFC 3339 parser: requires "Z" or an offset, keeps up to 9 fractional
         # digits, and behaves the same on every Python version (fromisoformat does not).
+        text = value.strip().upper()
+        match = _RFC3339.match(text)
         ts = Timestamp()
         try:
-            ts.FromJsonString(value.strip().upper())
+            if not match or int(match.group("oh") or 0) > 23 or int(match.group("om") or 0) > 59:
+                raise ValueError("not RFC 3339")
+            ts.FromJsonString(text)
         except ValueError as exc:
             raise ValueError(
                 f"oauth_token.expires_at must be an RFC 3339 timestamp with a timezone "
@@ -43,6 +59,10 @@ def expires_at_to_timestamp(value: ExpiresAt) -> Timestamp:
         nanos = int(round((value - seconds) * 1e9))
         if nanos >= 1_000_000_000:
             seconds, nanos = seconds + 1, 0
+        if not _MIN_SECONDS <= seconds <= _MAX_SECONDS:
+            raise ValueError(
+                f"oauth_token.expires_at epoch seconds must be between {_MIN_SECONDS} and {_MAX_SECONDS}: {value!r}"
+            )
         return Timestamp(seconds=int(seconds), nanos=nanos)
     else:
         raise ValueError(

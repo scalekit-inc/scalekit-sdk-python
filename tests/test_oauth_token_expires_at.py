@@ -48,6 +48,9 @@ class TestExpiresAtConversion(unittest.TestCase):
             ("epoch int", EPOCH, ts(EPOCH)),
             ("epoch float", EPOCH + 0.25, ts(EPOCH, 250_000_000)),
             ("epoch float, whole", float(EPOCH), ts(EPOCH)),
+            ("epoch at the Timestamp minimum", -62135596800, ts(-62135596800)),
+            ("epoch at the Timestamp maximum", 253402300799, ts(253402300799)),
+            ("RFC 3339 string with largest valid offset", "2026-12-02T09:59:00+23:59", ts(EPOCH)),
         ]
         for name, value, want in cases:
             with self.subTest(name):
@@ -60,6 +63,12 @@ class TestExpiresAtConversion(unittest.TestCase):
             ("garbage string", "next tuesday"),
             ("date only", "2026-12-01"),
             ("impossible date", "2026-13-45T10:00:00Z"),
+            ("offset minutes 60", "2026-12-01T10:00:00+00:60"),
+            ("offset hours 24", "2026-12-01T10:00:00+24:00"),
+            ("offset without colon", "2026-12-01T10:00:00+0530"),
+            ("space instead of T", "2026-12-01 10:00:00Z"),
+            ("epoch just below the Timestamp minimum", -62135596801),
+            ("epoch just above the Timestamp maximum", 253402300800),
             ("empty string", ""),
             ("bool", True),
             ("NaN", float("nan")),
