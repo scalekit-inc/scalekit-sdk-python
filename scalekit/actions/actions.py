@@ -1018,7 +1018,30 @@ class ActionClient:
         :type: str
         :param identifier: Connected account identifier (required)
         :type: str
-        :param authorization_details: Authorization details (OAuth token or static auth) (optional)
+        :param authorization_details: Authorization details (optional). One of:
+
+            - ``{"oauth_token": {...}}`` — import an OAuth token obtained outside Scalekit::
+
+                {
+                    "oauth_token": {
+                        "access_token": "ya29.a0...",
+                        "refresh_token": "1//0g...",          # optional
+                        "scopes": ["openid", "email"],       # optional
+                        "expires_at": "2026-12-01T10:00:00Z",  # optional
+                    }
+                }
+
+              ``expires_at`` is optional and only used when importing a token obtained outside
+              Scalekit. It accepts a timezone-aware ``datetime``, an RFC 3339 string (``Z`` or an
+              offset), or epoch seconds (int or float); a naive ``datetime`` or an unparseable
+              string raises ``ValueError``. The token is imported (and the account becomes
+              ACTIVE) only for connections that use your own OAuth app; Scalekit then stores
+              ``expires_at`` as the token's expiry. Without it,
+              a token imported with a ``refresh_token`` is refreshed on first use, and one without
+              is used until the provider rejects it.
+            - ``{"static_auth": {...}}`` — API key / basic auth fields for the connector.
+            - ``{"google_dwd": {"subject": "user@example.com"}}`` — Google domain-wide delegation.
+            - ``{"trusted_idp": {...}}`` — trusted identity-provider credentials.
         :type: Optional[Dict[str, Any]]
         :param organization_id: Organization ID (optional)
         :type: str
@@ -1081,7 +1104,30 @@ class ActionClient:
         :type: str
         :param identifier: Connected account identifier (required)
         :type: str
-        :param authorization_details: Authorization details (OAuth token or static auth) (optional)
+        :param authorization_details: Authorization details (optional). One of:
+
+            - ``{"oauth_token": {...}}`` — import an OAuth token obtained outside Scalekit::
+
+                {
+                    "oauth_token": {
+                        "access_token": "ya29.a0...",
+                        "refresh_token": "1//0g...",          # optional
+                        "scopes": ["openid", "email"],       # optional
+                        "expires_at": "2026-12-01T10:00:00Z",  # optional
+                    }
+                }
+
+              ``expires_at`` is optional and only used when importing a token obtained outside
+              Scalekit. It accepts a timezone-aware ``datetime``, an RFC 3339 string (``Z`` or an
+              offset), or epoch seconds (int or float); a naive ``datetime`` or an unparseable
+              string raises ``ValueError``. The token is imported (and the account becomes
+              ACTIVE) only for connections that use your own OAuth app; Scalekit then stores
+              ``expires_at`` as the token's expiry. Without it,
+              a token imported with a ``refresh_token`` is refreshed on first use, and one without
+              is used until the provider rejects it.
+            - ``{"static_auth": {...}}`` — API key / basic auth fields for the connector.
+            - ``{"google_dwd": {"subject": "user@example.com"}}`` — Google domain-wide delegation.
+            - ``{"trusted_idp": {...}}`` — trusted identity-provider credentials.
         :type: Optional[Dict[str, Any]]
         :param organization_id: Organization ID (optional)
         :type: str
@@ -1154,7 +1200,30 @@ class ActionClient:
         :type: str
         :param identifier: Connected account identifier (required)
         :type: str
-        :param authorization_details: Authorization details (OAuth token or static auth) (optional)
+        :param authorization_details: Authorization details (optional). One of:
+
+            - ``{"oauth_token": {...}}`` — import an OAuth token obtained outside Scalekit::
+
+                {
+                    "oauth_token": {
+                        "access_token": "ya29.a0...",
+                        "refresh_token": "1//0g...",          # optional
+                        "scopes": ["openid", "email"],       # optional
+                        "expires_at": "2026-12-01T10:00:00Z",  # optional
+                    }
+                }
+
+              ``expires_at`` is optional and only used when importing a token obtained outside
+              Scalekit. It accepts a timezone-aware ``datetime``, an RFC 3339 string (``Z`` or an
+              offset), or epoch seconds (int or float); a naive ``datetime`` or an unparseable
+              string raises ``ValueError``. The token is imported (and the account becomes
+              ACTIVE) only for connections that use your own OAuth app; Scalekit then stores
+              ``expires_at`` as the token's expiry. Without it,
+              a token imported with a ``refresh_token`` is refreshed on first use, and one without
+              is used until the provider rejects it.
+            - ``{"static_auth": {...}}`` — API key / basic auth fields for the connector.
+            - ``{"google_dwd": {"subject": "user@example.com"}}`` — Google domain-wide delegation.
+            - ``{"trusted_idp": {...}}`` — trusted identity-provider credentials.
         :type: Optional[Dict[str, Any]]
         :param organization_id: Organization ID (optional)
         :type: str

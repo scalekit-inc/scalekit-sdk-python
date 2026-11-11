@@ -828,6 +828,27 @@ High-level wrappers around `connected_accounts` with friendlier parameter names 
 
 Create, upsert, or update accounts using dict-based auth payloads converted to protobuf.
 
+`authorization_details` takes one of `oauth_token`, `static_auth`, `google_dwd` or `trusted_idp`. To import an OAuth token obtained outside Scalekit:
+
+```python
+from datetime import datetime, timedelta, timezone
+
+scalekit_client.actions.create_connected_account(
+    connection_name="gmail",
+    identifier="user_123",
+    authorization_details={
+        "oauth_token": {
+            "access_token": "ya29.a0...",
+            "refresh_token": "1//0g...",                 # optional
+            "scopes": ["https://www.googleapis.com/auth/gmail.readonly"],  # optional
+            "expires_at": datetime.now(timezone.utc) + timedelta(hours=1),  # optional
+        }
+    },
+)
+```
+
+**oauth_token.expires_at** (optional): when the imported access token expires. Accepts a timezone-aware `datetime`, an RFC 3339 string (`"2026-12-01T10:00:00Z"` or with an offset), or epoch seconds (`int` or `float`). A naive `datetime` or an unparseable string raises `ValueError`; leave it out or pass `None` to send nothing. It is only used when importing a token obtained outside Scalekit, for a connection that uses your own OAuth app: the account becomes `ACTIVE` and Scalekit stores `expires_at` as the token's expiry. Without it, a token imported with a `refresh_token` is refreshed on first use, and one without is used until the provider rejects it. `expires_at` is not returned when reading the account.
+
 </dd></dl>
 </details>
 
