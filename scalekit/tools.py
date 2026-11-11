@@ -72,9 +72,26 @@ class ToolsClient:
         """
         Method to list tools
 
+        Tools of a custom connector are listed too, under the names the server gives them:
+        ``a-<connector>_<operation>`` for a connector created from an OpenAPI spec, and
+        ``c-<connector>_<tool>`` for a custom MCP connector. A custom MCP connector's tools
+        belong to a connected account, so name that account with ``Filter.connector`` (the
+        connection name) together with ``Filter.identifier``, or with
+        ``Filter.connected_account_id``. A connector created from an OpenAPI spec has one set
+        of tools for every connected account: list them with ``Filter.provider`` set to the
+        connector's identifier (at most 50 characters), or with ``Filter.connector`` set to
+        the name of a connection on it. They are not listed where OpenAPI-sourced
+        connectors are not enabled for the environment.
+
+        ``Filter.query`` (3 to 100 characters) searches the names of global tools only, so
+        it never returns a custom connector's tools, and a page of search results holds at
+        most 100 tools.
+
         :param filter           : Filter parameters for listing tools
         :type                   : ``` Filter ```
-        :param page_size        : Maximum number of tools to return per page
+        :param page_size        : Maximum number of tools to return per page. The server
+                                  uses 300 when this is omitted or 0, and reduces a value
+                                  above 1000 to 1000 instead of rejecting it
         :type                   : ``` int ```
         :param page_token       : Token from a previous response for pagination
         :type                   : ``` str ```
@@ -108,6 +125,12 @@ class ToolsClient:
     ) -> ListScopedToolsResponse:
         """
         Method to list scoped tools for a specific identifier
+
+        A connector created from an OpenAPI spec has one set of tools for every connected
+        account, so they are listed with the connected account of this identifier on that
+        connector (add the connector's identifier to ``ScopedToolFilter.providers``, its
+        connection name to ``connection_names``, or the tool names to ``tool_names``). A
+        custom MCP connector's tools are those of that identifier's connected account.
 
         :param identifier       : Identifier to scope the tools list
         :type                   : ``` str ```
@@ -218,6 +241,13 @@ class ToolsClient:
     ) -> ExecuteToolResponse:
         """
         Method to execute a tool using a connected account
+
+        A custom connector's tools run like any other: ``a-<connector>_<operation>`` for a
+        connector created from an OpenAPI spec, ``c-<connector>_<tool>`` for a custom MCP
+        connector. Use a connected account of a connection on the tool's own connector. A name
+        that does not exist for the account's connector, which includes an OpenAPI-sourced
+        tool where that capability is not enabled for the environment, fails with 400
+        ``custom tool not found: <name>``.
 
         :param tool_name        : Name of the tool to execute
         :type                   : ``` str ```

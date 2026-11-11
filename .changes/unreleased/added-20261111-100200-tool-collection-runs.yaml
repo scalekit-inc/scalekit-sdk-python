@@ -1,0 +1,41 @@
+kind: added
+body: |
+  `client.actions.providers.trigger_tool_collection` and `get_tool_collection_run` follow the tool generation of an OpenAPI-sourced connector. A connector created with `openapi_spec_url` gets its tools from a background run; `get_tool_collection_run` with `run_id="latest"` (the default) reads the newest run, and `trigger_tool_collection` queues a new one, for example to pick up changes to the spec or to retry a failed run. Both return a typed, frozen `ToolCollectionRun` with `status` (`ToolCollectionRunStatus.QUEUED`, `PROCESSING`, `COMPLETED` or `FAILED`), `is_terminal`, the counters `total_endpoints`, `tools_created`, `tools_updated` and `tools_deleted`, `error_message`, timezone-aware `created_at`, `started_at` and `finished_at`, and `skipped_tools`, the operations that could not become tools as `SkippedTool` entries with `operation_id`, `method`, `path` and `reason`. A connector has one active run at a time, so a trigger while one is queued or running raises `ScalekitConflictException`. The server queues the first run in the background after `create_custom_provider` has answered, so `get_tool_collection_run` can raise `ScalekitNotFoundException` (404) until that run exists. `trigger_tool_collection` is not retried automatically when the service is unavailable, because the first attempt may already have queued a run. Calls that make the server fetch a spec (create or update with `openapi_spec_url`, and `trigger_tool_collection`) use the client's tool-call timeout (60 seconds by default, `tool_call_timeout_s` on `ScalekitClient`) instead of the 20-second default, and a `DEADLINE_EXCEEDED` is not retried; the server allows up to 2 minutes to validate a spec, so raise the timeout for a spec that takes longer. The server gives up queueing the first run after 30 seconds without reporting it, so the example below calls `trigger_tool_collection` once when `get_tool_collection_run` still answers 404 after 45 seconds, and bounds its wait. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/REFERENCE.md#custom-providers)
+
+  ```python
+  import time
+
+  from scalekit.actions.types import GetToolCollectionRunRequest, TriggerToolCollectionRequest
+  from scalekit.common.exceptions import ScalekitConflictException, ScalekitNotFoundException
+
+  providers = client.actions.providers
+  identifier = provider.identifier
+
+  started = time.monotonic()
+  deadline = started + 600
+  triggered = False
+  while True:
+      try:
+          run = providers.get_tool_collection_run(GetToolCollectionRunRequest(provider_identifier=identifier))
+      except ScalekitNotFoundException:
+          run = None  # the first run is queued in the background and may not exist yet
+          if not triggered and time.monotonic() - started > 45:
+              # The server gave up queueing it and does not say so: queue a run yourself, once.
+              triggered = True
+              try:
+                  providers.trigger_tool_collection(TriggerToolCollectionRequest(provider_identifier=identifier))
+              except ScalekitConflictException:
+                  pass  # a run was queued in the meantime
+      if run is not None and run.is_terminal:
+          break
+      if time.monotonic() > deadline:
+          raise TimeoutError("the tool collection run did not finish")
+      time.sleep(2)
+
+  print(run.status, run.tools_created, "tools,", len(run.skipped_tools), "operations skipped")
+  ```
+time: '2026-11-11T10:02:00+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: SK-3097
+  Migration: ''

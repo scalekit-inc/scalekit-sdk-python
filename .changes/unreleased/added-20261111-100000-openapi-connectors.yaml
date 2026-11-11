@@ -1,0 +1,27 @@
+kind: added
+body: |
+  `client.actions.providers.create_custom_provider` now creates a connector from an OpenAPI spec. Pass `openapi_spec_url` instead of `proxy_url` on `CreateCustomProviderRequest`; exactly one of the two is required, and the request is rejected before it is sent when both or neither are set. The server fetches and validates the spec (HTTPS, a valid OpenAPI or Swagger document, 5 MB by default) before it stores anything, then generates the tools in a background run. `Provider.openapi_spec_url` reports the spec URL, and `AuthPattern.is_open_api` marks the auth pattern of such a connector. `update_custom_provider` takes `openapi_spec_url` and `proxy_enabled`, and `proxy_url` is now optional on `UpdateCustomProviderRequest` and on `ProvidersClient.create_custom_provider` and `update_custom_provider`; the server still requires it to update an MCP-sourced connector. An OpenAPI-sourced connector can only change its name, description, icon, metadata and base URL (`proxy_url`), and changing the base URL regenerates every tool. A connector you read with `list_providers` can be sent back as read: an `AuthPattern` the SDK decoded, and each of its fields, is sent exactly as the server returned it (`"hint": ""`, `null` and `[]` values and unknown keys included) as long as you do not change it, because the server compares the patterns of an OpenAPI-sourced connector by content and rejects a changed one (`to_dict()` is unchanged and still returns the normalised view); and `UpdateCustomProviderRequest` accepts an empty `proxy_url` or `openapi_spec_url` (what `Provider.proxy_url` holds before the first run has filled in the base URL) and treats it like `None`. With `openapi_spec_url`, `create_custom_provider` is not retried when the service is unavailable, because the create is not idempotent and a retry after a lost response would raise `ScalekitConflictException` for the connector the first attempt created; MCP-sourced creates keep the retry. Where OpenAPI-sourced connectors are not enabled for your environment the server answers `FEATURE_NOT_ENABLED`. Existing code keeps working: `proxy_url` is still the second positional argument. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/REFERENCE.md#custom-providers)
+
+  ```python
+  from scalekit.actions.types import AuthField, AuthPattern, CreateCustomProviderRequest
+
+  response = client.actions.providers.create_custom_provider(
+      CreateCustomProviderRequest(
+          display_name="Petstore",
+          openapi_spec_url="https://petstore.example.com/openapi.json",
+          auth_patterns=[
+              AuthPattern(
+                  type="API_KEY",
+                  display_name="API Key",
+                  fields=[AuthField(field_name="api_key", input_type="password", required=True)],
+              )
+          ],
+      )
+  )
+  print(response.provider.identifier, response.provider.openapi_spec_url)
+  ```
+time: '2026-11-11T10:00:00+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: SK-3097
+  Migration: ''
