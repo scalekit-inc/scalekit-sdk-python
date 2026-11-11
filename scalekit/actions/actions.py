@@ -1027,14 +1027,13 @@ class ActionClient:
                         "access_token": "ya29.a0...",
                         "refresh_token": "1//0g...",          # optional
                         "scopes": ["openid", "email"],       # optional
-                        "expires_at": "2026-12-01T10:00:00Z",  # optional
+                        "expires_at": datetime(2026, 12, 1, 10, tzinfo=timezone.utc),  # optional
                     }
                 }
 
               ``expires_at`` is optional and only used when importing a token obtained outside
-              Scalekit. It accepts a timezone-aware ``datetime``, an RFC 3339 string (``Z`` or an
-              offset), or epoch seconds (int or float); a naive ``datetime`` or an unparseable
-              string raises ``ValueError``. The token is imported (and the account becomes
+              Scalekit: a timezone-aware ``datetime``, sent as UTC. A naive ``datetime`` raises
+              ``ValueError`` and any other type raises ``TypeError``. The token is imported (and the account becomes
               ACTIVE) only for connections that use your own OAuth app; Scalekit then stores
               ``expires_at`` as the token's expiry. Without it,
               a token imported with a ``refresh_token`` is refreshed on first use, and one without
@@ -1113,14 +1112,13 @@ class ActionClient:
                         "access_token": "ya29.a0...",
                         "refresh_token": "1//0g...",          # optional
                         "scopes": ["openid", "email"],       # optional
-                        "expires_at": "2026-12-01T10:00:00Z",  # optional
+                        "expires_at": datetime(2026, 12, 1, 10, tzinfo=timezone.utc),  # optional
                     }
                 }
 
               ``expires_at`` is optional and only used when importing a token obtained outside
-              Scalekit. It accepts a timezone-aware ``datetime``, an RFC 3339 string (``Z`` or an
-              offset), or epoch seconds (int or float); a naive ``datetime`` or an unparseable
-              string raises ``ValueError``. The token is imported (and the account becomes
+              Scalekit: a timezone-aware ``datetime``, sent as UTC. A naive ``datetime`` raises
+              ``ValueError`` and any other type raises ``TypeError``. The token is imported (and the account becomes
               ACTIVE) only for connections that use your own OAuth app; Scalekit then stores
               ``expires_at`` as the token's expiry. Without it,
               a token imported with a ``refresh_token`` is refreshed on first use, and one without
@@ -1209,14 +1207,13 @@ class ActionClient:
                         "access_token": "ya29.a0...",
                         "refresh_token": "1//0g...",          # optional
                         "scopes": ["openid", "email"],       # optional
-                        "expires_at": "2026-12-01T10:00:00Z",  # optional
+                        "expires_at": datetime(2026, 12, 1, 10, tzinfo=timezone.utc),  # optional
                     }
                 }
 
               ``expires_at`` is optional and only used when importing a token obtained outside
-              Scalekit. It accepts a timezone-aware ``datetime``, an RFC 3339 string (``Z`` or an
-              offset), or epoch seconds (int or float); a naive ``datetime`` or an unparseable
-              string raises ``ValueError``. The token is imported (and the account becomes
+              Scalekit: a timezone-aware ``datetime``, sent as UTC. A naive ``datetime`` raises
+              ``ValueError`` and any other type raises ``TypeError``. The token is imported (and the account becomes
               ACTIVE) only for connections that use your own OAuth app; Scalekit then stores
               ``expires_at`` as the token's expiry. Without it,
               a token imported with a ``refresh_token`` is refreshed on first use, and one without
