@@ -1,10 +1,92 @@
-from typing import Dict, List, Optional
+import copy
+import json
+from typing import Any, Callable, ClassVar, Dict, List, Optional
 
 from google.protobuf.json_format import MessageToDict
-from pydantic import BaseModel, Field, PrivateAttr, ValidationInfo, model_validator
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, ValidationInfo, model_validator
 
 
-class AuthFieldOption(BaseModel):
+class _ServedForm(BaseModel):
+    """Base for the auth-pattern models: remembers the dict an instance was decoded from.
+
+    The server compares the auth_patterns of an OpenAPI-sourced connector with the stored
+    ones by content after parsing both into its own Go structs, where a JSON ``null``, an
+    absent key, ``""`` and ``[]`` are not all the same value (``"hint": ""`` is not
+    ``"hint": null``, ``"fields": []`` is not ``"fields": null``). The typed fields here
+    normalise those, so encoding them from the fields alone would turn an unchanged
+    pattern into a changed one. from_dict therefore keeps the decoded dict, and the SDK
+    sends that dict, as it was received, while no field of the instance (nested ones
+    included) has changed since decoding. Once one has, the instance is built from its
+    fields as for one you construct yourself, and each nested model that is still
+    unchanged is sent as it was decoded.
+
+    That is the wire form, ``_to_wire_dict``, and only the SDK's own requests use it.
+    The public ``to_dict`` does not: it always returns the normalised view built from the
+    fields, whether the instance was decoded, constructed or edited.
+
+    The remembered dict is not part of equality: two instances with the same field values
+    compare equal even if they were decoded from differently shaped dicts.
+
+    A change is recognised by value and by type (``1``, ``1.0`` and ``True`` differ). Assigning
+    the value the SDK already decoded (``hint = ""`` where the server sent ``null``, say) is not
+    a change, so the value the server sent is the one that goes back.
+    """
+
+    _served: Optional[dict] = PrivateAttr(default=None)
+    _served_fingerprint: Optional[str] = PrivateAttr(default=None)
+
+    def _fingerprint(self) -> str:
+        """The instance's values, nested models included, as text.
+
+        Text rather than the dumped dict, because Python compares 1, 1.0 and True as equal
+        and an edit from one of them to another is still an edit: in a free-form key the
+        server tells a JSON number from a JSON boolean. Key order is not part of it.
+        """
+        values = self.model_dump(warnings=False)
+        try:
+            return json.dumps(values, sort_keys=True, default=repr)
+        except (TypeError, ValueError):  # keys that cannot be ordered, a cycle
+            return repr(values)
+
+    def _remember_served(self, d: dict) -> None:
+        self._served = copy.deepcopy(d)
+        self._served_fingerprint = self._fingerprint()
+
+    def _served_if_unchanged(self) -> Optional[dict]:
+        """The decoded dict (a copy), or None if there is none or a field changed since."""
+        if self._served is None or self._fingerprint() != self._served_fingerprint:
+            return None
+        return copy.deepcopy(self._served)
+
+    def _build_dict(self, encode: Callable[["_ServedForm"], dict]) -> dict:
+        """The normalised dict, built from the fields, with ``encode`` applied to each nested model."""
+        raise NotImplementedError
+
+    def _to_wire_dict(self) -> dict:
+        """The dict the SDK sends to the server for this instance.
+
+        The decoded dict as received while nothing has changed since from_dict. Otherwise
+        the normalised dict, in which each nested model is again sent as decoded while it
+        is unchanged.
+        """
+        served = self._served_if_unchanged()
+        if served is not None:
+            return served
+        return self._build_dict(lambda child: child._to_wire_dict())
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, BaseModel):
+            return NotImplemented
+        return (
+            type(self) is type(other)
+            and self.__dict__ == other.__dict__
+            and self.__pydantic_extra__ == other.__pydantic_extra__
+        )
+
+    __hash__ = None  # type: ignore[assignment]  # mutable, like every non-frozen model
+
+
+class AuthFieldOption(_ServedForm):
     """One selectable choice on an AuthField whose input_type is 'select'.
 
     Served alongside every select field. Without these the caller has a
@@ -47,6 +129,9 @@ class AuthFieldOption(BaseModel):
                   Keys the SDK does not declare are re-emitted unchanged.
         :rtype: dict
         """
+        return self._build_dict(lambda child: child.to_dict())
+
+    def _build_dict(self, encode: Callable[[_ServedForm], dict]) -> dict:
         d: dict = {
             "value": self.value,
             "display_name": self.display_name,
@@ -75,19 +160,102 @@ class AuthFieldOption(BaseModel):
             "default": d.get("default") or False,
         }
         extras = {k: v for k, v in d.items() if k not in known}
-        return cls(**known, **extras)
+        option = cls(**known, **extras)
+        option._remember_served(d)
+        return option
 
     class Config:
         extra = "allow"
 
 
-class AuthField(BaseModel):
+class CredentialPlacement(_ServedForm):
+    """Where a static credential is sent when it does not go in an HTTP header.
+
+    Set it on the ``placement`` of an AuthField. Without a placement a credential is
+    sent in a header, as before.
+
+    * ``"query"``: the value is set as the query parameter ``name`` of every request,
+      replacing a value the caller sent for it.
+    * ``"body"``: the value is set as the top-level JSON body field ``name``. A request
+      that has no body gets ``{name: value}``. A tool that sends a form-encoded body
+      cannot use it.
+    * ``"path"``: the value fills the ``{{name}}`` placeholder in the path of the
+      connector's ``proxy_url``, path-escaped, for example
+      ``https://api.telegram.org/bot{{bot_token}}``. The placeholder must sit in the
+      path, not in the host or the query string.
+
+    A placed credential is never also sent in a header, and the server does not follow
+    redirects on a request that carries one. It applies to the ``api_key`` field of an
+    API_KEY pattern, the ``token`` field of a BEARER pattern, and the ``username`` and
+    ``password`` fields of a BASIC pattern (a BASIC pattern places both or neither). The
+    field must have ``input_type="password"`` (a BASIC ``username`` may be ``"text"``). It
+    cannot be combined with ``header_name``, ``is_path_param`` or
+    ``auth_field_mutations``, and is not supported on ``account_fields``, OAUTH or
+    NO_AUTH patterns, or on MCP connectors. The server checks all of this when it
+    creates or updates a connector and rejects a violation with 400 INVALID_ARGUMENT
+    ('invalid credential placement: ...'). An update that removes the placeholder
+    from ``proxy_url`` is rejected too.
+    """
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    PATH: ClassVar[str] = "path"
+    QUERY: ClassVar[str] = "query"
+    BODY: ClassVar[str] = "body"
+
+    in_: str = Field(
+        ...,
+        alias="in",
+        description=(
+            "Where the value is sent: 'path', 'query' or 'body' (the constants "
+            "CredentialPlacement.PATH, QUERY and BODY). The server ignores case and "
+            "surrounding spaces, and rejects any other value. Sent on the wire as 'in'."
+        ),
+    )
+    name: str = Field(
+        ...,
+        description=(
+            "The query parameter or JSON body field that carries the value, or the name of "
+            "the {{name}} placeholder for 'path'. Required, at most 64 characters. For "
+            "'query' and 'body' it may contain only letters, digits, '_', '.' and '-'. For "
+            "'path' it may contain only letters, digits and '_', and it cannot be 'domain', "
+            "'version' or the name of one of the pattern's is_path_param fields. Two fields "
+            "cannot place into the same location under the same name."
+        ),
+    )
+
+    def to_dict(self) -> dict:
+        """Serialize to a wire-format dict.
+
+        :returns: Dict with 'in' and 'name', plus any other keys the placement was
+                  decoded with, re-emitted unchanged.
+        :rtype: dict
+        """
+        return self._build_dict(lambda child: child.to_dict())
+
+    def _build_dict(self, encode: Callable[[_ServedForm], dict]) -> dict:
+        d: dict = {"in": self.in_, "name": self.name}
+        d.update(self.model_extra or {})
+        return d
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "CredentialPlacement":
+        """Deserialize a placement from a response dict. Keys this SDK does not declare are kept."""
+        extras = {k: v for k, v in d.items() if k not in ("in", "name")}
+        placement = cls(in_=d.get("in") or "", name=d.get("name") or "", **extras)
+        placement._remember_served(d)
+        return placement
+
+
+class AuthField(_ServedForm):
     """A single input field displayed to the user during connection setup.
 
     Use one AuthField per value the user must supply. For a BEARER connector, add
     one AuthField(field_name='token', ...). For an API_KEY connector, add one
-    AuthField(field_name='api_key', ...). Always set input_type='password' for
-    tokens and keys so the UI masks the value.
+    AuthField(field_name='api_key', ...). For a BASIC connector, add
+    AuthField(field_name='username', ...) and AuthField(field_name='password', ...).
+    Always set input_type='password' for tokens, keys and passwords so the UI masks
+    the value.
 
     Fields are not limited to BEARER and API_KEY patterns. OAUTH patterns carry
     them too, for options collected before the browser flow starts rather than
@@ -95,7 +263,9 @@ class AuthField(BaseModel):
 
     The server models this as a free-form JSON object, so it may carry keys this
     SDK does not declare. Those are preserved on the instance and re-emitted by
-    to_dict() rather than dropped.
+    to_dict() rather than dropped. A field decoded from a response is sent back to
+    the server exactly as it was received while you leave it unchanged (to_dict()
+    itself always returns the normalised view).
     """
 
     field_name: str = Field(
@@ -104,7 +274,8 @@ class AuthField(BaseModel):
             "Required. Machine-readable identifier for this field. Used as the key "
             "when the credential value is stored and retrieved. "
             "For BEARER patterns use 'token' or 'bearer_token'. "
-            "For API_KEY patterns use 'api_key'."
+            "For API_KEY patterns use 'api_key'. "
+            "For BASIC patterns use 'username' and 'password'."
         ),
     )
     label: str = Field(
@@ -165,7 +336,29 @@ class AuthField(BaseModel):
             "injection as this exact HTTP header (case preserved). Setting it on "
             "any field puts the pattern in multiple-headers mode. Empty means "
             "single-key mode, which uses the pattern's auth_header_key_override. "
-            "Defaults to empty string."
+            "In multiple-headers mode every field that is not an is_path_param field "
+            "needs a header_name, a pattern has at most 10 headers, and a header name "
+            "may contain only letters, '.', '-' and '_' (no digits or spaces), must be "
+            "unique ignoring case, and cannot be connection, keep-alive, "
+            "proxy-authenticate, proxy-authorization, te, trailer, transfer-encoding, "
+            "upgrade, host or content-length. The server replaces each field_name with "
+            "a slug of its header name (lowercased, with runs of '-', '.' and spaces "
+            "turned into '_', so 'X-Api-Key' becomes 'x_api_key'). A violation is "
+            "rejected with 400 and error_code INVALID_HEADER_CONFIG, and so is switching "
+            "a connector between single-key and multiple-headers mode after it is "
+            "created. Where multiple-headers connectors are not enabled for the "
+            "environment, create and update fail with 400 FEATURE_NOT_ENABLED. "
+            "Renaming or removing a header later breaks the connected accounts created "
+            "before the change until they authorize again. Cannot be combined with "
+            "placement. Defaults to empty string."
+        ),
+    )
+    placement: Optional[CredentialPlacement] = Field(
+        None,
+        description=(
+            "Optional. Sends this field's value in the URL path, the query string or the "
+            "JSON body of the request instead of an HTTP header. See CredentialPlacement "
+            "for the rules. Defaults to None, which keeps sending it in a header."
         ),
     )
 
@@ -173,11 +366,14 @@ class AuthField(BaseModel):
         """Serialize this field to a wire-format dict for inclusion in auth_patterns.
 
         :returns: Dict representation of the field. 'hint', 'required', 'options',
-                  'is_path_param', and 'header_name' are omitted when they hold
-                  their default values to keep the wire payload minimal. Keys the
+                  'is_path_param', 'header_name' and 'placement' are omitted when they
+                  hold their default values to keep the wire payload minimal. Keys the
                   SDK does not declare are re-emitted unchanged.
         :rtype: dict
         """
+        return self._build_dict(lambda child: child.to_dict())
+
+    def _build_dict(self, encode: Callable[[_ServedForm], dict]) -> dict:
         d: dict = {
             "field_name": self.field_name,
             "label": self.label,
@@ -188,11 +384,13 @@ class AuthField(BaseModel):
         if self.required:
             d["required"] = True
         if self.options:
-            d["options"] = [o.to_dict() for o in self.options]
+            d["options"] = [encode(o) for o in self.options]
         if self.is_path_param:
             d["is_path_param"] = True
         if self.header_name:
             d["header_name"] = self.header_name
+        if self.placement is not None:
+            d["placement"] = encode(self.placement)
         d.update(self.model_extra or {})
         return d
 
@@ -218,15 +416,22 @@ class AuthField(BaseModel):
             "options": [AuthFieldOption.from_dict(o) for o in d.get("options") or []],
             "is_path_param": d.get("is_path_param") or False,
             "header_name": d.get("header_name") or "",
+            "placement": (
+                CredentialPlacement.from_dict(d["placement"])
+                if isinstance(d.get("placement"), dict)
+                else None
+            ),
         }
         extras = {k: v for k, v in d.items() if k not in known}
-        return cls(**known, **extras)
+        field = cls(**known, **extras)
+        field._remember_served(d)
+        return field
 
     class Config:
         extra = "allow"
 
 
-class OAuthConfig(BaseModel):
+class OAuthConfig(_ServedForm):
     """OAuth configuration attached to an OAUTH auth pattern.
 
     Pass OAuthConfig() (all defaults) for MCP connectors that use Dynamic Client
@@ -265,6 +470,9 @@ class OAuthConfig(BaseModel):
                   config was decoded with, re-emitted unchanged.
         :rtype: dict
         """
+        return self._build_dict(lambda child: child.to_dict())
+
+    def _build_dict(self, encode: Callable[[_ServedForm], dict]) -> dict:
         d: dict = {"pkce_enabled": self.pkce_enabled}
         d.update(self.model_extra or {})
         return d
@@ -279,40 +487,61 @@ class OAuthConfig(BaseModel):
 
         :param d: Dict containing oauth_config data as returned by the server.
         :type d: dict
-        :returns: OAuthConfig instance. pkce_enabled defaults to True if the key
-                  is absent from the dict.
+        :returns: OAuthConfig instance. pkce_enabled is False if the key is absent
+                  from the dict, because the server leaves it out when it is false.
         :rtype: OAuthConfig
         """
         extras = {k: v for k, v in d.items() if k != "pkce_enabled"}
-        return cls(pkce_enabled=d.get("pkce_enabled", True), **extras)
+        config = cls(pkce_enabled=d.get("pkce_enabled", False), **extras)
+        config._remember_served(d)
+        return config
 
     class Config:
         extra = "allow"
 
 
-class AuthPattern(BaseModel):
+class AuthPattern(_ServedForm):
     """One authentication option available on a custom connector.
 
     A custom provider can have multiple auth patterns (e.g. both OAUTH and API_KEY),
     giving users a choice of how to authenticate. For MCP connectors set is_mcp=True
     on every pattern.
 
-    Type guide for the four types you create custom connectors with:
+    Type guide for the types you create custom connectors with:
       - "OAUTH"   — Browser-based OAuth 2.0 / 2.1 flow. Attach an OAuthConfig.
       - "BEARER"  — Static bearer token supplied by the user. Add AuthFields for
                     the token input.
       - "API_KEY" — Static API key supplied by the user. Add AuthFields for the
-                    key input.
+                    key input. Give several fields a header_name to send them as
+                    several headers.
+      - "BASIC"   — Username and password supplied by the user. Add AuthFields
+                    named 'username' and 'password'. The server accepts it on every
+                    custom connector.
       - "NO_AUTH" — Connector requires no credentials (e.g. public docs MCP
                     servers). Attach no fields and no OAuthConfig.
 
+    A static credential (BEARER, API_KEY, BASIC) is sent in an HTTP header unless its
+    AuthField sets a placement, which sends it in the URL path, the query string or
+    the JSON body instead.
+
     Reading providers back can surface further types the managed catalogue uses
-    (e.g. 'BASIC', 'OAUTH_M2M', 'GOOGLE_DWD', 'TRELLO_OAUTH1', 'TRUSTED_IDP'), so
-    type is not restricted to the four above — see the field description.
+    (e.g. 'OAUTH_M2M', 'GOOGLE_DWD', 'TRELLO_OAUTH1', 'TRUSTED_IDP'), so type is not
+    restricted to the ones above — see the field description.
 
     The server models this as a free-form JSON object, so it may carry keys this
     SDK does not declare. Those are preserved on the instance and re-emitted by
     to_dict() rather than dropped.
+
+    A pattern decoded from a response (Provider.auth_patterns) is sent to the server
+    exactly as the server returned it while you leave it and its fields unchanged, so
+    it can be sent back to update_custom_provider as returned. That matters for an
+    OpenAPI-sourced connector, whose patterns the server compares with the stored ones
+    by content and must not change. to_dict() is not that: it always returns the
+    normalised view built from the values. The form the server returned survives copy,
+    deepcopy and pickle, but not model_dump() or JSON, nor to_dict() followed by
+    from_dict() or a constructor, which rebuild the pattern in the normalised form, so
+    for an OpenAPI-sourced connector always pass the patterns that list_providers (or the
+    create and update responses) returned through untouched.
     """
 
     type: str = Field(
@@ -320,12 +549,13 @@ class AuthPattern(BaseModel):
         description=(
             "Required. Authentication mechanism for this pattern. "
             "Use one of 'OAUTH' (browser OAuth flow), 'BEARER' (static bearer "
-            "token), 'API_KEY' (static API key), or 'NO_AUTH' (connector requires "
-            "no credentials) when creating a custom connector. Not restricted to "
-            "those four: the managed catalogue also serves 'BASIC', 'OAUTH_M2M', "
-            "'GOOGLE_DWD', 'TRELLO_OAUTH1', 'TRUSTED_IDP' and others, and the set "
-            "is owned by the server, so the SDK accepts any string and passes an "
-            "unknown type through unchanged rather than failing to parse."
+            "token), 'API_KEY' (static API key), 'BASIC' (username and password) "
+            "or 'NO_AUTH' (connector requires no credentials) when creating a "
+            "custom connector. Not restricted to those five: the managed catalogue "
+            "also serves 'OAUTH_M2M', 'GOOGLE_DWD', 'TRELLO_OAUTH1', 'TRUSTED_IDP' "
+            "and others, and the set is owned by the server, so the SDK accepts any "
+            "string and passes an unknown type through unchanged rather than "
+            "failing to parse. The type of an existing connector cannot be changed."
         ),
     )
     display_name: str = Field(
@@ -368,7 +598,19 @@ class AuthPattern(BaseModel):
         description=(
             "Optional. Set to True for MCP (Model Context Protocol) server connectors. "
             "When True the server sets is_custom_mcp=True on the provider. "
+            "The server forces it to False on an OpenAPI-sourced connector. "
             "Defaults to False."
+        ),
+    )
+    is_open_api: bool = Field(
+        False,
+        description=(
+            "Read-only. True on the pattern of an OpenAPI-sourced connector (one created "
+            "with openapi_spec_url). The server derives it from the connector and ignores "
+            "a value you send on create, so leave it False when you author a pattern. Keep "
+            "it as returned when you send a pattern back to update_custom_provider: the "
+            "server compares patterns by content, so a pattern rebuilt without it counts "
+            "as a change. Defaults to False."
         ),
     )
     oauth_config: Optional["OAuthConfig"] = Field(
@@ -433,28 +675,38 @@ class AuthPattern(BaseModel):
     def to_dict(self) -> dict:
         """Serialize to a wire-format dict for inclusion in the auth_patterns ListValue.
 
+        The normalised view, built from the values of the pattern, whether it was decoded,
+        constructed or edited. It is not what update_custom_provider sends for a pattern
+        decoded from a response: the SDK sends that exactly as the server returned it while
+        it is unchanged (see the class docstring).
+
         :returns: Dict representation of this auth pattern. 'description' is omitted
-                  when empty, 'is_mcp' when False, 'oauth_config' when None, and
+                  when empty, 'is_mcp' and 'is_open_api' when False, 'oauth_config' when None, and
                   'auth_header_key_override', 'account_fields' and
                   'allowed_proxy_domains' when empty, to keep the wire payload
                   minimal. Keys the SDK does not declare are re-emitted unchanged.
         :rtype: dict
         """
+        return self._build_dict(lambda child: child.to_dict())
+
+    def _build_dict(self, encode: Callable[[_ServedForm], dict]) -> dict:
         d: dict = {
             "type": self.type,
             "display_name": self.display_name,
-            "fields": [f.to_dict() for f in self.fields],
+            "fields": [encode(f) for f in self.fields],
         }
         if self.description:
             d["description"] = self.description
         if self.is_mcp:
             d["is_mcp"] = True
+        if self.is_open_api:
+            d["is_open_api"] = True
         if self.oauth_config is not None:
-            d["oauth_config"] = self.oauth_config.to_dict()
+            d["oauth_config"] = encode(self.oauth_config)
         if self.auth_header_key_override:
             d["auth_header_key_override"] = self.auth_header_key_override
         if self.account_fields:
-            d["account_fields"] = [f.to_dict() for f in self.account_fields]
+            d["account_fields"] = [encode(f) for f in self.account_fields]
         if self.allowed_proxy_domains:
             d["allowed_proxy_domains"] = list(self.allowed_proxy_domains)
         d.update(self.model_extra or {})
@@ -492,12 +744,15 @@ class AuthPattern(BaseModel):
                 AuthField.from_dict(f) for f in d.get("account_fields") or []
             ],
             "is_mcp": d.get("is_mcp", False),
+            "is_open_api": d.get("is_open_api", False),
             "oauth_config": oauth_cfg,
             "auth_header_key_override": d.get("auth_header_key_override", ""),
             "allowed_proxy_domains": list(d.get("allowed_proxy_domains") or []),
         }
         extras = {k: v for k, v in d.items() if k not in known}
-        return cls.model_validate({**known, **extras}, context={"decoding": True})
+        pattern = cls.model_validate({**known, **extras}, context={"decoding": True})
+        pattern._remember_served(d)
+        return pattern
 
     class Config:
         validate_assignment = True
@@ -534,11 +789,27 @@ class Provider(BaseModel):
     )
     proxy_url: str = Field(
         "",
-        description="The proxy URL through which requests to this provider are routed.",
+        description=(
+            "For an MCP-sourced connector, the MCP server URL that requests to this "
+            "provider are routed through. For an OpenAPI-sourced connector "
+            "(openapi_spec_url is set), its base URL, which replaces the spec's own "
+            "server URL for every tool call: it is filled in from the spec's server URL "
+            "once the first tool collection run completes (only when that URL starts "
+            "with https://) and can be changed with update_custom_provider."
+        ),
     )
     proxy_enabled: bool = Field(
         False,
         description="Whether request proxying is enabled for this provider.",
+    )
+    openapi_spec_url: str = Field(
+        "",
+        description=(
+            "URL of the OpenAPI spec (JSON or YAML) this connector was sourced from. "
+            "Set only for an OpenAPI-sourced custom connector; empty otherwise. You choose "
+            "it when you create the connector; changing it later with "
+            "update_custom_provider is not enabled for every workspace."
+        ),
     )
     icon_src: str = Field(
         "",
@@ -602,6 +873,7 @@ class Provider(BaseModel):
             description=proto.description,
             proxy_url=proto.proxy_url,
             proxy_enabled=proto.proxy_enabled,
+            openapi_spec_url=proto.openapi_spec_url,
             icon_src=proto.icon_src,
             metadata=dict(proto.metadata),
             categories=list(proto.categories),

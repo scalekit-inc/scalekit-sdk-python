@@ -1,0 +1,25 @@
+kind: changed
+body: |
+  The docs of `client.connection.update_environment_connection` now explain how to set the token endpoint auth type of an OAuth connection with `UpdateConnection.oauth_config.token_endpoint_auth_type`: `TokenAuthType.BASIC_AUTH` sends the client credentials in an HTTP Basic header, `URL_PARAMS` sends them as POST body parameters, and `NONE` sends only the client ID, for public (PKCE) clients. Leave the field unset to keep the stored value, and send `TOKEN_AUTH_TYPE_UNSPECIFIED` to reset it to the Default. Set it only when the provider's token endpoint documentation requires a specific method, because a wrong value makes token exchange and refresh fail and every connected account on the connection has to authenticate again. The string field `token_endpoint_auth_method` is deprecated, and the docs say how the two fields interact. The docs of `create_environment_connection` and `get_environment_connection` now cover `CreateConnection.context`, which resolves a templated MCP connector `proxy_url` (`{{domain}}`, `{{version}}`) once, when the connection is created, and `connection.resolved_proxy_url`, which reports the result. `TokenEndpointAuthMethod`, the setting of `client.actions.update_connection`, now documents what each value sends. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/REFERENCE.md#connection)
+
+  ```python
+  from google.protobuf import struct_pb2
+  from scalekit.v1.connections.connections_pb2 import (
+      CreateConnection, OAuthConnectionConfig, TokenAuthType, UpdateConnection,
+  )
+
+  client.connection.update_environment_connection(
+      "conn_123",
+      UpdateConnection(oauth_config=OAuthConnectionConfig(token_endpoint_auth_type=TokenAuthType.NONE)),
+  )
+
+  context = struct_pb2.Struct()
+  context.update({"domain": "mcp-eu.example.com"})
+  response = client.connection.create_environment_connection(CreateConnection(..., context=context))
+  print(response[0].connection.resolved_proxy_url)
+  ```
+time: '2026-11-11T10:06:00+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: SK-3097
+  Migration: ''

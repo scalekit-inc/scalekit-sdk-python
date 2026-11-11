@@ -152,6 +152,12 @@ class ConnectionClient:
         """
         Method to get an environment-level connection by its id
 
+        ``connection.resolved_proxy_url`` is the URL the connector's templated ``proxy_url``
+        was resolved to when the connection was created; it is not set when the connector's
+        ``proxy_url`` has no template, or the connection is older than the field. For an OAuth
+        connection, ``connection.oauth_config.token_endpoint_auth_type`` is not set while the
+        connection uses the Default, where Scalekit picks the method per request.
+
         :param connection_id    : Connection id to retrieve
         :type                   : ``` str ```
 
@@ -166,6 +172,17 @@ class ConnectionClient:
     def create_environment_connection(self, connection: CreateConnection, flags: Optional[Flags] = None) -> CreateConnectionResponse:
         """
         Method to create a new environment-level connection
+
+        A connector whose ``proxy_url`` is a template with ``{{domain}}`` or ``{{version}}``
+        placeholders, for example an MCP connector with a host per data region, is resolved
+        once, when the connection is created. Supply the values in ``CreateConnection.context``,
+        a ``google.protobuf.Struct`` such as ``{"domain": "mcp-eu.example.com"}``: ``domain``
+        is the host name that replaces ``{{domain}}``, not a region code. Only ``domain`` and
+        ``version`` are recognized, and a key the server does not know is rejected with 400. The
+        context itself is not stored; the resolved URL is, and ``connection.resolved_proxy_url``
+        in the response shows it. If the template needs a value the context does not supply,
+        the call fails with 400 ('connection context is missing a value required by provider
+        ... proxy_url template').
 
         :param connection   : CreateConnection object with expected values for conn creation
         :type               : ``` obj ```
@@ -183,6 +200,26 @@ class ConnectionClient:
     def update_environment_connection(self, connection_id: str, connection: UpdateConnection) -> UpdateConnectionResponse:
         """
         Method to update an environment-level connection
+
+        To choose how Scalekit authenticates to an OAuth connection's token endpoint, set
+        ``UpdateConnection.oauth_config.token_endpoint_auth_type`` to a ``TokenAuthType``:
+        ``BASIC_AUTH`` sends client_id and client_secret in an HTTP Basic Authorization
+        header (``client_secret_basic``), ``URL_PARAMS`` sends them as POST body parameters
+        (``client_secret_post``), and ``NONE`` sends only the client_id, for public (PKCE)
+        clients; ``NONE`` is rejected on an OIDC connection. Leave the field unset to keep the
+        current value, and send ``TOKEN_AUTH_TYPE_UNSPECIFIED`` to reset it to the Default,
+        where Scalekit picks the method per request. It applies to the authorization_code
+        exchange, MCP token refresh and OAUTH_M2M client_credentials; refreshing a token on a
+        non-MCP OAuth connection always detects the method itself. Set it only when the
+        provider's token endpoint documentation requires a specific method: a wrong value
+        makes token exchange or refresh fail, and every connected account on the connection
+        then has to authenticate again.
+
+        ``oauth_config.token_endpoint_auth_method``, a string (``"client_secret_basic"``,
+        ``"client_secret_post"`` or ``"none"``), is deprecated: it maps onto the same stored
+        value, and the server rejects any other non-empty string. Send one of the two fields; when both
+        are sent with different values, the request is rejected unless one of them equals the
+        stored value.
 
         :param connection_id    : Connection id to update
         :type                   : ``` str ```

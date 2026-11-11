@@ -16,6 +16,7 @@ from scalekit.actions.types import ToolRequest,ExecuteToolResponse,MagicLinkResp
     McpConfig,McpConfigConnectionToolMapping,VerifyConnectedAccountUserResponse, \
     CreateCustomProviderRequest,UpdateCustomProviderRequest,ListProvidersRequest,DeleteCustomProviderRequest, \
     CreateCustomProviderResponse,UpdateCustomProviderResponse,ListProvidersResponse,DeleteCustomProviderResponse, \
+    TriggerToolCollectionRequest,GetToolCollectionRunRequest,ToolCollectionRun, \
     ListMcpConnectedAccountsResponse,CreateMcpSessionTokenResponse,McpConnectionAuthState
 from scalekit.actions.models.responses.create_connected_account_response import CreateConnectedAccountResponse
 from scalekit.actions.models.requests.create_connected_account_request import CreateConnectedAccountRequest
@@ -173,6 +174,10 @@ class ActionClient:
             tool_name: Name of the tool to execute (required)
             **kwargs: Additional optional parameters
 
+        A custom connector's tools run like any other: ``a-<connector>_<operation>`` for a
+        connector created from an OpenAPI spec, ``c-<connector>_<tool>`` for a custom MCP
+        connector. Use a connected account of a connection on the tool's own connector.
+
         Account resolution (one of the following combinations is required):
             connected_account_id: ID of the connected account to use. Provide this
                 OR the (identifier + connection_name) pair — not both.
@@ -237,15 +242,33 @@ class ActionClient:
 
         Thin wrapper around ToolsClient.list_tools.
 
-        :param connection_name: Filter by connector identifier, e.g. 'github-connect' (optional)
+        Tools of a custom connector are listed under the names the server gives them:
+        ``a-<connector>_<operation>`` for a connector created from an OpenAPI spec, and
+        ``c-<connector>_<tool>`` for a custom MCP connector. List an OpenAPI-sourced
+        connector's tools with ``provider`` set to the connector's identifier (at most 50
+        characters), or with ``connection_name`` set to a connection on it; they are
+        shared by every connected account. A custom MCP connector's tools belong to a
+        connected account, so pass ``connection_name`` together with ``identifier``, or
+        ``connected_account_id``. OpenAPI-sourced tools are not listed where that
+        capability is not enabled for the environment.
+
+        :param connection_name: Filter by connection name, e.g. 'github-connect'. Alone it
+            does not identify a connected account; add ``identifier`` (or pass
+            ``connected_account_id``) to include that account's custom MCP tools (optional)
         :type: str
         :param identifier: Filter/resolve by connected-account identifier (optional)
         :type: str
-        :param provider: Filter by provider key, e.g. 'github' (optional)
+        :param provider: Filter by provider key, e.g. 'github', or by the identifier of a
+            custom connector, e.g. the ``Provider.identifier`` of an OpenAPI-sourced one.
+            At most 50 characters (optional)
         :type: str
         :param tool_name: Filter to specific tool names (optional)
         :type: List[str]
-        :param query: Free-form search query across tool metadata (optional)
+        :param query: Search tools by name, 3 to 100 characters (optional). The query is split
+            on spaces and underscores and every token must appear in the name, so
+            ``"gmail get attachment"`` matches ``gmail_get_attachment``. It searches global
+            tools only, so it never returns a custom connector's tools, and a page of results
+            holds at most 100 tools.
         :type: str
         :param organization_id: Organization ID to scope the connected-account lookup (optional)
         :type: str
@@ -256,7 +279,9 @@ class ActionClient:
         :type: str
         :param summary: Whether to return a summarized tool definition (optional)
         :type: bool
-        :param page_size: Maximum number of tools to return per page (optional)
+        :param page_size: Maximum number of tools to return per page (optional). The server uses
+            300 when this is omitted or 0, and reduces a value above 1000 to 1000 instead of
+            rejecting it
         :type: int
         :param page_token: Token from a previous response for pagination (optional)
         :type: str
@@ -1866,17 +1891,33 @@ class ActionProviders:
     ) -> CreateCustomProviderResponse:
         """Create a new custom provider.
 
+        The connector is sourced from an MCP server (``proxy_url``) or from an OpenAPI
+        spec (``openapi_spec_url``): set exactly one. For an OpenAPI-sourced connector the
+        server validates the spec before it stores anything, returns at once, and
+        generates the tools in an asynchronous tool collection run that it queues for
+        you. Follow it with ``get_tool_collection_run``.
+
         :param request: Request object containing display_name (required),
-                        proxy_url (required), and optional description,
-                        proxy_enabled, auth_patterns, icon_src, and metadata.
+                        exactly one of proxy_url and openapi_spec_url, and the
+                        auth_patterns the server requires, plus optional description,
+                        proxy_enabled, icon_src, and metadata.
         :type request: CreateCustomProviderRequest
 
         :returns: Response containing the created provider with its server-assigned
                   identifier and all decoded auth_patterns.
         :rtype: CreateCustomProviderResponse
 
-        :raises ScalekitBadRequestException: If required fields are missing or invalid.
-        :raises ScalekitConflictException: If a provider with the same name already exists.
+        :raises ScalekitBadRequestException: If required fields are missing or invalid
+            (``INVALID_ARGUMENT``), including a spec URL that cannot be fetched or is not
+            a valid OpenAPI or Swagger document, or if OpenAPI-sourced connectors are not
+            enabled for the environment (``FEATURE_NOT_ENABLED``).
+        :raises ScalekitConflictException: If an OpenAPI connector with the same name
+            already exists in the environment (``RESOURCE_ALREADY_EXISTS``).
+        :raises ScalekitServiceUnavailableException: If the service is unavailable. With
+            ``openapi_spec_url`` the call is not retried, because the first attempt may
+            already have created the connector and a retry would raise
+            ``ScalekitConflictException``; check with ``list_providers`` before creating
+            it again. An MCP-sourced create is retried as before.
         """
         result_tuple = self._providers_client.create_custom_provider(
             display_name=request.display_name,
@@ -1886,6 +1927,7 @@ class ActionProviders:
             auth_patterns=request.auth_patterns,
             icon_src=request.icon_src,
             metadata=request.metadata,
+            openapi_spec_url=request.openapi_spec_url,
         )
         return CreateCustomProviderResponse.from_proto(result_tuple[0])
 
@@ -1895,19 +1937,40 @@ class ActionProviders:
     ) -> UpdateCustomProviderResponse:
         """Update an existing custom provider.
 
-        Only fields set to a non-None value in the request are applied.
-        Fields left as None are ignored and their existing server values are kept.
+        The server requires display_name and auth_patterns on every update, and
+        proxy_url as well for an MCP-sourced connector. Fields left as None are not
+        sent: description and icon_src keep their stored values, but metadata is
+        cleared and proxy_enabled becomes False.
 
-        :param request: Request object containing identifier (required) and any
-                        combination of display_name, description, proxy_url,
-                        auth_patterns, icon_src, and metadata to update.
+        An OpenAPI-sourced connector can only change display_name, description,
+        icon_src, metadata and proxy_url (its base URL). Changing the base URL saves it
+        and queues a tool collection run that regenerates every tool. Changing
+        auth_patterns or proxy_enabled is rejected, and a value counts as changed only
+        when it differs from the stored one, so send them back exactly as
+        ``list_providers`` returned them: a decoded ``AuthPattern`` that you leave
+        unchanged is sent as the server returned it. See ``UpdateCustomProviderRequest``.
+
+        :param request: Request object containing identifier, display_name and
+                        auth_patterns (required), and any combination of proxy_url,
+                        openapi_spec_url, proxy_enabled, description, icon_src and
+                        metadata.
         :type request: UpdateCustomProviderRequest
 
         :returns: Response containing the provider's full state after the update.
         :rtype: UpdateCustomProviderResponse
 
         :raises ScalekitNotFoundException: If no provider with the given identifier exists.
-        :raises ScalekitBadRequestException: If any updated field value is invalid.
+        :raises ScalekitBadRequestException: If any updated field value is invalid
+            (``INVALID_ARGUMENT``), if a locked field of an OpenAPI-sourced connector
+            changed, or if changing ``openapi_spec_url`` is not enabled for the
+            workspace (``FEATURE_NOT_ENABLED``).
+        :raises ScalekitConflictException: If a changed base URL or spec URL was saved but
+            its tool collection run could not be queued because another run is in
+            progress (``RESOURCE_ALREADY_EXISTS``); call ``trigger_tool_collection``
+            once that run completes.
+        :raises ScalekitInternalServerException: If a changed base URL or spec URL was saved
+            but its tool collection run could not be queued for another reason; call
+            ``trigger_tool_collection`` to retry.
         """
         result_tuple = self._providers_client.update_custom_provider(
             identifier=request.identifier,
@@ -1917,8 +1980,72 @@ class ActionProviders:
             auth_patterns=request.auth_patterns,
             icon_src=request.icon_src,
             metadata=request.metadata,
+            openapi_spec_url=request.openapi_spec_url,
+            proxy_enabled=request.proxy_enabled,
         )
         return UpdateCustomProviderResponse.from_proto(result_tuple[0])
+
+    def trigger_tool_collection(
+        self,
+        request: TriggerToolCollectionRequest,
+    ) -> ToolCollectionRun:
+        """Queue a new tool collection run on an OpenAPI-sourced connector.
+
+        The server re-fetches and validates the connector's current spec URL, queues a
+        background run that regenerates the connector's tools, and returns that run at once
+        with status ``QUEUED``. A connector is also re-synced automatically when it is created
+        and when its base URL or spec URL changes, so call this to pick up changes to the
+        spec itself or to retry after a failed run. A run that finds the spec, base URL and
+        auth patterns unchanged since the last completed run creates, updates and deletes
+        nothing. Follow the run with ``get_tool_collection_run``.
+
+        Not retried automatically when the service is unavailable, because the first
+        attempt may already have queued a run.
+
+        :param request: Request object containing the connector's provider_identifier.
+        :type request: TriggerToolCollectionRequest
+
+        :returns: The queued run.
+        :rtype: ToolCollectionRun
+
+        :raises ScalekitNotFoundException: If no connector with that identifier exists.
+        :raises ScalekitBadRequestException: If the connector is not sourced from an OpenAPI
+            spec, its stored spec URL fails validation, or OpenAPI-sourced connectors are
+            not enabled for the environment (``FEATURE_NOT_ENABLED``).
+        :raises ScalekitConflictException: If a run is already queued or running for the
+            connector (``RESOURCE_ALREADY_EXISTS``). A connector has at most one active run;
+            wait for it to finish and call again.
+        """
+        result_tuple = self._providers_client.trigger_tool_collection(request.provider_identifier)
+        return ToolCollectionRun.from_proto(result_tuple[0])
+
+    def get_tool_collection_run(
+        self,
+        request: GetToolCollectionRunRequest,
+    ) -> ToolCollectionRun:
+        """Read one tool collection run of an OpenAPI-sourced connector.
+
+        Pass ``run_id="latest"`` (the default) for the connector's most recent run, for
+        example to follow the run that ``create_custom_provider`` queued. Poll until
+        ``run.is_terminal`` is true; then ``run.status`` is ``COMPLETED`` or ``FAILED``,
+        ``run.skipped_tools`` lists the operations that could not become tools, and
+        ``run.error_message`` says why a failed run failed.
+
+        :param request: Request object containing the connector's provider_identifier and,
+                        optionally, a run_id.
+        :type request: GetToolCollectionRunRequest
+
+        :returns: The run.
+        :rtype: ToolCollectionRun
+
+        :raises ScalekitNotFoundException: If the connector does not exist, it has no run
+            yet, or the run_id names no run of this connector.
+        :raises ScalekitBadRequestException: If the run_id is not a valid run ID.
+        """
+        result_tuple = self._providers_client.get_tool_collection_run(
+            request.provider_identifier, request.run_id
+        )
+        return ToolCollectionRun.from_proto(result_tuple[0])
 
     def list_providers(
         self,

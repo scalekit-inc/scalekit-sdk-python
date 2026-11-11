@@ -1,0 +1,8 @@
+kind: changed
+body: |
+  AGENTKIT.md has a new Custom connectors guide for `client.actions.providers`: creating a connector from an OpenAPI spec, following the tool collection run (polling, what a run does, the `a-<connector>_<operation>` tool names, skipped operations and the limits), credentials in a header, the path, the query string or the body, changing a connector, using its tools, and the errors. REFERENCE.md documents `create_custom_provider`, `update_custom_provider`, `trigger_tool_collection` and `get_tool_collection_run` with the new arguments and errors, and the update example now reads the connector first, because an update that leaves out `metadata` clears it and one that leaves out `proxy_enabled` turns it off. The `ActionMcp` section says how a virtual MCP server serves a custom connector's tools in `DIRECT` and `META` mode, and which connections a configuration accepts. `client.tools.list_available_tools` and `client.tools.refresh_tools` are documented in both files, and `OAuthSettings.token_endpoint_auth_method` is documented under AgentKit connections. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/AGENTKIT.md#custom-connectors)
+time: '2026-11-11T10:07:00+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: SK-3097
+  Migration: ''

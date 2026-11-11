@@ -1,0 +1,8 @@
+kind: fixed
+body: |
+  Providers read with `list_providers`, `create_custom_provider` and `update_custom_provider` now report `OAuthConfig.pkce_enabled` as `False` when the server did not send it. The server leaves `pkce_enabled` out of an OAuth pattern when it is off, and the SDK used to read the missing key as `True`, so a connector created with `pkce_enabled=False` read back as `True`. Writing such a pattern back to the server changed it, which also made an OpenAPI-sourced connector's update fail, because the server rejects a changed auth pattern. A key that is present is read as before, and a pattern you author still defaults to `pkce_enabled=True`.
+time: '2026-11-11T10:04:00+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: SK-3097
+  Migration: ''
