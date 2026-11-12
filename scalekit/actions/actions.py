@@ -30,7 +30,7 @@ from scalekit.common.exceptions import ScalekitNotFoundException
 from scalekit.actions.triggers import ActionTriggers
 from scalekit.triggers import TriggersClient
 from scalekit.mcp import _check_connection_token_args
-from scalekit.v1.tools.tools_pb2 import Filter, ScopedToolFilter
+from scalekit.v1.tools.tools_pb2 import DeleteCustomToolRequest, Filter, ScopedToolFilter
 from scalekit.actions.models.responses.tool_discovery_responses import (
     ListScopedToolsResponse, ListAvailableToolsResponse, SearchToolsResponse,
 )
@@ -399,6 +399,45 @@ class ActionClient:
             identifier, page_size=page_size, page_token=page_token
         )
         return ListAvailableToolsResponse.from_proto(result_tuple[0])
+
+    def delete_custom_tool(self, tool_identifier: str, **kwargs) -> None:
+        """
+        Delete one tool of a connector created from an OpenAPI spec, by its name or its id.
+
+        ``tool_identifier`` is the tool's name (``a-<connector>_<operation>``, as list_tools
+        lists it) or its id (``tol_<number>``, the ``id`` of each tool that
+        ``list_tools(provider=<connector identifier>)`` returns); the server ignores ASCII
+        case. A value that starts with ``tol_`` (in any case) is always read as an id. The
+        value is sent exactly as given. A later full sync creates the tool again while its
+        operation is still in the connector's spec. The call is sent again on UNAVAILABLE,
+        so after a retry or a timeout a 404 can mean the first attempt already deleted it.
+        See AGENTKIT.md, Tool discovery.
+
+        :param tool_identifier: Name or id of the tool to delete (required)
+        :type: str
+
+        :returns:
+            None on success
+
+        :raises ValueError: If tool_identifier is not a string or is blank; nothing is sent
+        :raises ScalekitBadRequestException: 400, longer than 2048 characters or a control
+            character
+        :raises ScalekitNotFoundException: 404, not a deletable tool (the error does not say why)
+        :raises ScalekitConflictException: 409, nothing deleted: RESOURCE_ALREADY_EXISTS while a
+            sync of the connector is queued or running (the message names the run), or
+            TOOL_NAME_AMBIGUOUS when tools of more than one connector have that name (delete
+            by id)
+        :raises ScalekitInternalServerException: 500, the server failed; the tool may be gone
+        """
+        if not isinstance(tool_identifier, str) or not tool_identifier.strip():
+            raise ValueError("tool_identifier must be a non-empty string to delete a custom tool")
+        core = self.tools.core_client
+        core.grpc_exec(
+            self.tools.tool_service.DeleteCustomTool.with_call,
+            DeleteCustomToolRequest(tool_identifier=tool_identifier),
+            timeout=core.tool_call_timeout_s,
+            # Default retry on UNAVAILABLE: a delete can be repeated without harm.
+        )
 
     def search_tools(
         self,
@@ -2289,6 +2328,14 @@ class ActionProviders:
         (provider not found, insufficient permissions) raises a
         ScalekitServerException subclass before this method returns.
 
+        For a connector created from an OpenAPI spec: while a tool collection run of
+        the connector is queued or processing (the server's message calls it an
+        ingestion run), nothing is deleted: the call raises ScalekitConflictException
+        (409, RESOURCE_ALREADY_EXISTS) and the message names the run. Poll that run
+        with get_tool_collection_run (pass its ID as run_id) and retry once it has
+        finished; the server fails a run that makes no progress after about 30
+        minutes. An MCP or plain REST connector has no run to wait for.
+
         :param request: Request object containing the identifier of the provider
                         to delete.
         :type request: DeleteCustomProviderRequest
@@ -2298,6 +2345,9 @@ class ActionProviders:
 
         :raises ScalekitNotFoundException: If no provider with the given identifier exists.
         :raises ScalekitForbiddenException: If the caller lacks permission to delete.
+        :raises ScalekitConflictException: If a tool collection run of a connector created
+                                          from an OpenAPI spec is queued or processing;
+                                          nothing is deleted.
         """
         result_tuple = self._providers_client.delete_custom_provider(request.identifier)
         return DeleteCustomProviderResponse.from_proto(result_tuple[0])

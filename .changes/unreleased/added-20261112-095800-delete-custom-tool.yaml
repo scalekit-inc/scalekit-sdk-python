@@ -1,0 +1,8 @@
+kind: added
+body: |
+  `client.actions.delete_custom_tool(tool_identifier)` deletes one API tool of a connector created from an OpenAPI spec and returns `None`. `tool_identifier` is the tool's name (`a-<connector>_<operation>`) or its id (`tol_<number>`); a value that starts with `tol_` (in any case) is always read as an id. A later full sync creates the tool again unless you remove its endpoint from the spec. It raises `ScalekitConflictException` and deletes nothing while a sync of the connector is queued or running, or when tools of more than one connector have that name (`TOOL_NAME_AMBIGUOUS`): then delete by id. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/AGENTKIT.md#tool-discovery)
+time: '2026-11-12T09:58:00+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: SK-3097
+  Migration: ''

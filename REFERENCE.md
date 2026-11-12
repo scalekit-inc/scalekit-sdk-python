@@ -7495,7 +7495,7 @@ print(f'Magic Link: {response[0].link}')
 `client.actions.providers` creates and manages custom connectors. A connector gets its tools from one source, and you set exactly one of the two when you create it:
 
 - `proxy_url`: an MCP server. The tools are the ones the server offers, kept per connected account.
-- `openapi_spec_url`: an OpenAPI spec. The server converts the spec's operations into tools in an asynchronous tool collection run that it queues for you. Follow it with `get_tool_collection_run`; queue another with `trigger_tool_collection`.
+- `openapi_spec_url`: an OpenAPI spec. The server converts the spec's operations into tools in an asynchronous tool collection run that it queues for you. Follow it with `get_tool_collection_run`; queue another with `trigger_tool_collection`; delete one of its tools with `client.actions.delete_custom_tool`.
 
 Walkthrough: [AGENTKIT.md → Custom connectors](AGENTKIT.md#custom-connectors).
 
@@ -7977,7 +7977,7 @@ else:
 <dl>
 <dd>
 
-Permanently deletes a custom provider. The provider is removed from the Scalekit catalog and can no longer be used for new connections.
+Permanently deletes a custom provider. The provider is removed from the Scalekit catalog and can no longer be used for new connections. For a connector created from an OpenAPI spec: while a tool collection run of the connector is queued or processing, nothing is deleted and the call raises `ScalekitConflictException` (409, `RESOURCE_ALREADY_EXISTS`; the message names the run): poll that run with `get_tool_collection_run` (pass its ID as `run_id`) and retry once it has finished. The server fails a run that makes no progress after about 30 minutes. An MCP or plain REST connector has no run to wait for.
 </dd>
 </dl>
 </dd>
@@ -8206,7 +8206,7 @@ An operation is skipped, for example, when its request body is multipart, binary
 
 ## Tools
 
-`list_tools`, `list_scoped_tools`, `list_available_tools` and `execute_tool` are documented in [AGENTKIT.md → Tools](AGENTKIT.md#tools), together with how the tools of a custom connector are listed and named.
+`list_tools`, `list_scoped_tools`, `list_available_tools` and `execute_tool` are documented in [AGENTKIT.md → Tools](AGENTKIT.md#tools), together with how the tools of a custom connector are listed and named, and `client.actions.delete_custom_tool` in [AGENTKIT.md → Tool discovery](AGENTKIT.md#tool-discovery).
 
 <details><summary><code>client.tools.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/tools.py">search_tools</a>(query, identifier?, top_k?) -> SearchToolsResponse</code></summary>
 <dl>

@@ -254,6 +254,14 @@ class ProvidersClient:
         Deletion is permanent. The provider is removed from the Scalekit catalog
         and can no longer be used for new connections.
 
+        For a connector created from an OpenAPI spec: while a tool collection run
+        of the connector is queued or processing, nothing is deleted: the call
+        raises ScalekitConflictException (409, RESOURCE_ALREADY_EXISTS) and the
+        message names the run. Poll that run with get_tool_collection_run (pass its
+        ID as run_id) and retry once it has finished; the server fails a run that
+        makes no progress after about 30 minutes. An MCP or plain REST connector has
+        no run to wait for.
+
         :param identifier: Identifier of the custom provider to delete. Required.
         :type identifier: str
 
