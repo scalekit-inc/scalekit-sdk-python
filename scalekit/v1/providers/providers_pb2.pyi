@@ -25,7 +25,7 @@ CUSTOM: ProviderType
 ALL: ProviderType
 
 class Provider(_message.Message):
-    __slots__ = ("id", "identifier", "display_name", "description", "categories", "auth_patterns", "icon_src", "display_priority", "coming_soon", "proxy_url", "proxy_enabled", "is_custom", "is_custom_mcp", "metadata", "openapi_spec_url")
+    __slots__ = ("id", "identifier", "display_name", "description", "categories", "auth_patterns", "icon_src", "display_priority", "coming_soon", "proxy_url", "proxy_enabled", "is_custom", "is_custom_mcp", "metadata", "openapi_spec_url", "allowed_hosts")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -48,6 +48,7 @@ class Provider(_message.Message):
     IS_CUSTOM_MCP_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     OPENAPI_SPEC_URL_FIELD_NUMBER: _ClassVar[int]
+    ALLOWED_HOSTS_FIELD_NUMBER: _ClassVar[int]
     id: str
     identifier: str
     display_name: str
@@ -63,10 +64,11 @@ class Provider(_message.Message):
     is_custom_mcp: bool
     metadata: _containers.ScalarMap[str, str]
     openapi_spec_url: str
-    def __init__(self, id: _Optional[str] = ..., identifier: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., categories: _Optional[_Iterable[str]] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., icon_src: _Optional[str] = ..., display_priority: _Optional[int] = ..., coming_soon: bool = ..., proxy_url: _Optional[str] = ..., proxy_enabled: bool = ..., is_custom: bool = ..., is_custom_mcp: bool = ..., metadata: _Optional[_Mapping[str, str]] = ..., openapi_spec_url: _Optional[str] = ...) -> None: ...
+    allowed_hosts: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, id: _Optional[str] = ..., identifier: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., categories: _Optional[_Iterable[str]] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., icon_src: _Optional[str] = ..., display_priority: _Optional[int] = ..., coming_soon: bool = ..., proxy_url: _Optional[str] = ..., proxy_enabled: bool = ..., is_custom: bool = ..., is_custom_mcp: bool = ..., metadata: _Optional[_Mapping[str, str]] = ..., openapi_spec_url: _Optional[str] = ..., allowed_hosts: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class CreateProvider(_message.Message):
-    __slots__ = ("identifier", "display_name", "description", "categories", "auth_patterns", "icon_src", "display_priority", "coming_soon", "proxy_url", "proxy_enabled")
+    __slots__ = ("identifier", "display_name", "description", "categories", "auth_patterns", "icon_src", "display_priority", "coming_soon", "proxy_url", "proxy_enabled", "allowed_hosts")
     IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
@@ -77,6 +79,7 @@ class CreateProvider(_message.Message):
     COMING_SOON_FIELD_NUMBER: _ClassVar[int]
     PROXY_URL_FIELD_NUMBER: _ClassVar[int]
     PROXY_ENABLED_FIELD_NUMBER: _ClassVar[int]
+    ALLOWED_HOSTS_FIELD_NUMBER: _ClassVar[int]
     identifier: str
     display_name: str
     description: str
@@ -87,7 +90,8 @@ class CreateProvider(_message.Message):
     coming_soon: bool
     proxy_url: str
     proxy_enabled: bool
-    def __init__(self, identifier: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., categories: _Optional[_Iterable[str]] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., icon_src: _Optional[str] = ..., display_priority: _Optional[int] = ..., coming_soon: bool = ..., proxy_url: _Optional[str] = ..., proxy_enabled: bool = ...) -> None: ...
+    allowed_hosts: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, identifier: _Optional[str] = ..., display_name: _Optional[str] = ..., description: _Optional[str] = ..., categories: _Optional[_Iterable[str]] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., icon_src: _Optional[str] = ..., display_priority: _Optional[int] = ..., coming_soon: bool = ..., proxy_url: _Optional[str] = ..., proxy_enabled: bool = ..., allowed_hosts: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class CreateProviderRequest(_message.Message):
     __slots__ = ("provider",)
@@ -135,7 +139,7 @@ class CreateProviderResponse(_message.Message):
     def __init__(self, provider: _Optional[_Union[Provider, _Mapping]] = ...) -> None: ...
 
 class UpdateProvider(_message.Message):
-    __slots__ = ("display_name", "description", "categories", "auth_patterns", "icon_src", "display_priority", "coming_soon", "proxy_url", "proxy_enabled")
+    __slots__ = ("display_name", "description", "categories", "auth_patterns", "icon_src", "display_priority", "coming_soon", "proxy_url", "proxy_enabled", "allowed_hosts")
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     CATEGORIES_FIELD_NUMBER: _ClassVar[int]
@@ -145,6 +149,7 @@ class UpdateProvider(_message.Message):
     COMING_SOON_FIELD_NUMBER: _ClassVar[int]
     PROXY_URL_FIELD_NUMBER: _ClassVar[int]
     PROXY_ENABLED_FIELD_NUMBER: _ClassVar[int]
+    ALLOWED_HOSTS_FIELD_NUMBER: _ClassVar[int]
     display_name: str
     description: str
     categories: _containers.RepeatedScalarFieldContainer[str]
@@ -154,7 +159,8 @@ class UpdateProvider(_message.Message):
     coming_soon: _wrappers_pb2.BoolValue
     proxy_url: str
     proxy_enabled: _wrappers_pb2.BoolValue
-    def __init__(self, display_name: _Optional[str] = ..., description: _Optional[str] = ..., categories: _Optional[_Iterable[str]] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., icon_src: _Optional[str] = ..., display_priority: _Optional[int] = ..., coming_soon: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., proxy_url: _Optional[str] = ..., proxy_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ...) -> None: ...
+    allowed_hosts: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, display_name: _Optional[str] = ..., description: _Optional[str] = ..., categories: _Optional[_Iterable[str]] = ..., auth_patterns: _Optional[_Union[_struct_pb2.ListValue, _Mapping]] = ..., icon_src: _Optional[str] = ..., display_priority: _Optional[int] = ..., coming_soon: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., proxy_url: _Optional[str] = ..., proxy_enabled: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., allowed_hosts: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class UpdateProviderRequest(_message.Message):
     __slots__ = ("identifier", "provider")

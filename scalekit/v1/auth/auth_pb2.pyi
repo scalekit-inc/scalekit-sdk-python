@@ -45,6 +45,7 @@ class AuthState(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     VERIFICATION_MAGIC_LINK_OTP_SENT: _ClassVar[AuthState]
     VERIFICATION_OTP_SENT: _ClassVar[AuthState]
     VERIFICATION_COMPLETED: _ClassVar[AuthState]
+    AUTHENTICATION_NOT_RESUMABLE: _ClassVar[AuthState]
 INTENT_UNSPECIFIED: Intent
 sign_in: Intent
 sign_up: Intent
@@ -68,6 +69,7 @@ VERIFICATION_MAGIC_LINK_SENT: AuthState
 VERIFICATION_MAGIC_LINK_OTP_SENT: AuthState
 VERIFICATION_OTP_SENT: AuthState
 VERIFICATION_COMPLETED: AuthState
+AUTHENTICATION_NOT_RESUMABLE: AuthState
 
 class ListAuthMethodsRequest(_message.Message):
     __slots__ = ("intent",)

@@ -105,6 +105,26 @@ response = scalekit_client.tools.list_scoped_tools(
 </dl>
 </details>
 
+<details><summary><code>client.tools.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/tools.py">list_available_tools</a>(identifier, page_size?, page_token?) -> ListAvailableToolsResponse</code></summary>
+<dl>
+<dd>
+
+### 📝 Description
+
+Lists every tool available to an identifier across all of its connected accounts. Returns the `(response, call)` tuple like the other `client.tools` list methods. Prefer `client.actions.list_available_tools`, which returns a typed model.
+
+### ⚙️ Parameters
+
+**identifier:** `str` — Connected-account identifier.
+
+**page_size:** `Optional[int]` — Max tools per page.
+
+**page_token:** `Optional[str]` — Pagination cursor.
+
+</dd>
+</dl>
+</details>
+
 <details><summary><code>client.tools.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/tools.py">search_tools</a>(query, identifier?, top_k?) -> SearchToolsResponse</code></summary>
 <dl>
 <dd>
@@ -813,6 +833,58 @@ Runs pre/post modifiers then delegates to `client.tools.execute_tool`. `tool_nam
 </dd></dl>
 </details>
 
+### Tool discovery
+
+Typed wrappers over `client.tools`, so finding a tool and running it uses one client. Like `list_tools`, they take plain keyword arguments and return models from `scalekit.actions.types`.
+
+<details><summary><code>client.actions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">list_scoped_tools</a>(identifier, providers?, tool_names?, connection_names?, page_size?, page_token?) -> ListScopedToolsResponse</code></summary>
+<dl><dd>
+
+Tools the identifier can run, narrowed by provider, tool name or connection. Each item in `tools` is a `ScopedTool` with `tool` (a `Tool`), `identifier` and `connected_account_id`. Paginated: follow `next_page_token`.
+
+```python
+resp = scalekit_client.actions.list_scoped_tools("user_123", providers=["GMAIL"])
+for scoped in resp.tools:
+    print(scoped.tool.definition["name"], scoped.connected_account_id)
+```
+
+</dd></dl>
+</details>
+
+<details><summary><code>client.actions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">list_available_tools</a>(identifier, page_size?, page_token?) -> ListAvailableToolsResponse</code></summary>
+<dl><dd>
+
+Every tool available to the identifier across all of its connected accounts. `tools` is a list of `Tool`, the same model `list_tools` returns. Paginated: follow `next_page_token`.
+
+```python
+token = None
+while True:
+    page = scalekit_client.actions.list_available_tools("user_123", page_size=100, page_token=token)
+    for tool in page.tools:
+        print(tool.provider, tool.definition["name"])
+    token = page.next_page_token
+    if not token:
+        break
+```
+
+</dd></dl>
+</details>
+
+<details><summary><code>client.actions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">search_tools</a>(query, identifier?, top_k?) -> SearchToolsResponse</code></summary>
+<dl><dd>
+
+Tools that fit a goal, ranked by relevance. Each `SearchedTool` has `name`, `provider`, `description`, `score` (comparable only within one response) and `connections`. With `identifier`, `connections` lists that identifier's connections for the tool's provider, each with `readiness_state` `READY`, `NEEDS_CONNECTION` or `NEEDS_REAUTH`; check it before executing. An empty list means the identifier has no connection for that provider. `top_k` defaults to 10 (max 50).
+
+```python
+results = scalekit_client.actions.search_tools("send an email", identifier="user_123", top_k=5)
+for tool in results.tools:
+    ready = [c for c in tool.connections if c.readiness_state == "READY"]
+    print(tool.name, round(tool.score, 2), ready[0].connected_account_id if ready else "not connected")
+```
+
+</dd></dl>
+</details>
+
 ### OAuth and connected accounts
 
 <details><summary><code>get_authorization_link</code> / <code>verify_connected_account_user</code> / <code>list_connected_accounts</code> / <code>delete_connected_account</code> / <code>get_connected_account</code></summary>
@@ -827,6 +899,32 @@ High-level wrappers around `connected_accounts` with friendlier parameter names 
 <dl><dd>
 
 Create, upsert, or update accounts using dict-based auth payloads converted to protobuf.
+
+`authorization_details` takes one of `oauth_token`, `static_auth`, `google_dwd` or `trusted_idp`. To import an OAuth token obtained outside Scalekit:
+
+```python
+from datetime import datetime
+
+scalekit_client.actions.create_connected_account(
+    connection_name="gmail",
+    identifier="user_123",
+    authorization_details={
+        "oauth_token": {
+            "access_token": "ya29.a0...",
+            "refresh_token": "1//0g...",                 # optional
+            "scopes": ["https://www.googleapis.com/auth/gmail.readonly"],  # optional
+            "expires_at": datetime.fromisoformat("2026-11-12T07:18:56+00:00"),  # optional
+        }
+    },
+)
+```
+
+**oauth_token.expires_at** (optional): when the supplied access token expires, as a timezone-aware `datetime`, sent as UTC. Parse an ISO 8601 string with `datetime.fromisoformat`, as above. A naive `datetime` raises `ValueError` and any other type (such as a raw string) raises `TypeError`; leave it out or pass `None` to send nothing. It is read only when importing a token obtained outside Scalekit, for a connection that uses your own OAuth app: the account becomes `ACTIVE` and its `token_expires_at` is set to `expires_at`.
+
+- **Without `expires_at`**, the account has no token expiry and the token is used until the provider rejects it. If a `refresh_token` was imported, tool calls then refresh and retry automatically, and proxy callers refresh with the refresh connected account tokens API (`POST /api/v1/connected_accounts:refresh_tokens`). Without a `refresh_token`, nothing can be refreshed, and the account must be updated with new tokens or authorized again.
+- **To correct the expiry** of the current token, update the account with the same `access_token` and the new `expires_at`. Only `token_expires_at` changes; the account status does not, so an `EXPIRED` account stays `EXPIRED` until you send new tokens. The same `access_token` without `expires_at` changes nothing.
+- **Resending the same `access_token`** keeps the stored `refresh_token` and `scopes` unless the request supplies new non-empty values. A different `access_token` is stored exactly as sent.
+- **`expires_at` is never returned.** Read the expiry back from the account's `token_expires_at`.
 
 </dd></dl>
 </details>

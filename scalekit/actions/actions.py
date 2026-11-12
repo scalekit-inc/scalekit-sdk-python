@@ -29,7 +29,10 @@ from scalekit.common.exceptions import ScalekitNotFoundException
 from scalekit.actions.triggers import ActionTriggers
 from scalekit.triggers import TriggersClient
 from scalekit.mcp import _check_connection_token_args
-from scalekit.v1.tools.tools_pb2 import Filter
+from scalekit.v1.tools.tools_pb2 import Filter, ScopedToolFilter
+from scalekit.actions.models.responses.tool_discovery_responses import (
+    ListScopedToolsResponse, ListAvailableToolsResponse, SearchToolsResponse,
+)
 from google.protobuf.wrappers_pb2 import BoolValue
 
 
@@ -293,6 +296,117 @@ class ActionClient:
         proto_response = result_tuple[0]
 
         return ListToolsResponse.from_proto(proto_response)
+
+    def list_scoped_tools(
+        self,
+        identifier: str,
+        providers: Optional[List[str]] = None,
+        tool_names: Optional[List[str]] = None,
+        connection_names: Optional[List[str]] = None,
+        page_size: Optional[int] = None,
+        page_token: Optional[str] = None,
+        **kwargs
+    ) -> ListScopedToolsResponse:
+        """
+        List the tools an identifier can run, narrowed by provider, tool name or connection.
+
+        Thin wrapper around ToolsClient.list_scoped_tools. Each result carries the connected
+        account the tool runs against. Paginated: follow ``next_page_token`` for the full set.
+
+        :param identifier: Connected-account identifier: your app's ID for the user, such as user_123 (required)
+        :type: str
+        :param providers: Only tools from these providers, e.g. ['GMAIL', 'SLACK'] (optional)
+        :type: List[str]
+        :param tool_names: Only these tools (optional)
+        :type: List[str]
+        :param connection_names: Only tools on these connections, e.g. ['gmail-ab12cd34'] (optional)
+        :type: List[str]
+        :param page_size: Maximum number of tools to return per page (optional)
+        :type: int
+        :param page_token: Token from a previous response for pagination (optional)
+        :type: str
+
+        :returns:
+            ListScopedToolsResponse with ``tools`` (each a ScopedTool with ``tool``,
+            ``identifier`` and ``connected_account_id``) and pagination fields
+        """
+        if not identifier:
+            raise ValueError("identifier is required")
+        result_tuple = self.tools.list_scoped_tools(
+            identifier,
+            filter=ScopedToolFilter(
+                providers=providers or [],
+                tool_names=tool_names or [],
+                connection_names=connection_names or [],
+            ),
+            page_size=page_size,
+            page_token=page_token,
+        )
+        return ListScopedToolsResponse.from_proto(result_tuple[0])
+
+    def list_available_tools(
+        self,
+        identifier: str,
+        page_size: Optional[int] = None,
+        page_token: Optional[str] = None,
+        **kwargs
+    ) -> ListAvailableToolsResponse:
+        """
+        List every tool available to an identifier across all of its connected accounts.
+
+        Thin wrapper around ToolsClient.list_available_tools. Paginated: follow
+        ``next_page_token`` for the full set.
+
+        :param identifier: Connected-account identifier: your app's ID for the user, such as user_123 (required)
+        :type: str
+        :param page_size: Maximum number of tools to return per page (optional)
+        :type: int
+        :param page_token: Token from a previous response for pagination (optional)
+        :type: str
+
+        :returns:
+            ListAvailableToolsResponse with ``tools`` (the same Tool model as list_tools)
+            and pagination fields
+        """
+        if not identifier:
+            raise ValueError("identifier is required")
+        result_tuple = self.tools.list_available_tools(
+            identifier, page_size=page_size, page_token=page_token
+        )
+        return ListAvailableToolsResponse.from_proto(result_tuple[0])
+
+    def search_tools(
+        self,
+        query: str,
+        identifier: Optional[str] = None,
+        top_k: Optional[int] = None,
+        **kwargs
+    ) -> SearchToolsResponse:
+        """
+        Find tools that fit a goal, ranked by relevance to a natural-language query.
+
+        Thin wrapper around ToolsClient.search_tools. Each result's ``score`` is comparable
+        only within one response. With ``identifier``, each result's ``connections`` lists
+        that identifier's connections for the tool's provider with a ``readiness_state`` of
+        READY, NEEDS_CONNECTION or NEEDS_REAUTH; check it before executing. An empty list
+        means the identifier has no connection for that provider.
+
+        :param query: What the agent needs to do, in plain words or keywords (required)
+        :type: str
+        :param identifier: Connected-account identifier to report readiness for (optional)
+        :type: str
+        :param top_k: Maximum number of results (optional; server default 10, max 50)
+        :type: int
+
+        :returns:
+            SearchToolsResponse with ``tools`` (each a SearchedTool with ``name``,
+            ``provider``, ``description``, ``score`` and ``connections``)
+        """
+        if not query:
+            raise ValueError("query is required")
+        result = self.tools.search_tools(query, identifier=identifier, top_k=top_k)
+        proto_response = result[0] if isinstance(result, tuple) else result
+        return SearchToolsResponse.from_proto(proto_response)
 
     def get_authorization_link(
             self,
@@ -1018,7 +1132,38 @@ class ActionClient:
         :type: str
         :param identifier: Connected account identifier (required)
         :type: str
-        :param authorization_details: Authorization details (OAuth token or static auth) (optional)
+        :param authorization_details: Authorization details (optional). One of:
+
+            - ``{"oauth_token": {...}}`` — import an OAuth token obtained outside Scalekit::
+
+                {
+                    "oauth_token": {
+                        "access_token": "ya29.a0...",
+                        "refresh_token": "1//0g...",          # optional
+                        "scopes": ["openid", "email"],       # optional
+                        "expires_at": datetime.fromisoformat("2026-11-12T07:18:56+00:00"),  # optional
+                    }
+                }
+
+              ``expires_at`` is optional: when the supplied access token expires, as a
+              timezone-aware ``datetime``, sent as UTC. A naive ``datetime`` raises ``ValueError``
+              and any other type raises ``TypeError``. It is read only when importing a token
+              obtained outside Scalekit, which happens only for a connection that uses your own
+              OAuth app; the account then becomes ACTIVE and its ``token_expires_at`` is set to
+              ``expires_at``. Without it, the account has no token expiry and the token is used
+              until the provider rejects it. If a ``refresh_token`` was imported, tool calls then
+              refresh and retry automatically, and proxy callers refresh with the refresh connected
+              account tokens API (``POST /api/v1/connected_accounts:refresh_tokens``). Without a
+              ``refresh_token``, nothing can be refreshed, and the account must be updated with new
+              tokens or authorized again. To correct the expiry of the current token, update the
+              account with the same ``access_token`` and the new ``expires_at``; the account status
+              does not change. Resending the same ``access_token`` keeps the stored
+              ``refresh_token`` and ``scopes`` unless the request supplies new non-empty values.
+              ``expires_at`` is never returned; read the expiry back from the account's
+              ``token_expires_at``.
+            - ``{"static_auth": {...}}`` — API key / basic auth fields for the connector.
+            - ``{"google_dwd": {"subject": "user@example.com"}}`` — Google domain-wide delegation.
+            - ``{"trusted_idp": {...}}`` — trusted identity-provider credentials.
         :type: Optional[Dict[str, Any]]
         :param organization_id: Organization ID (optional)
         :type: str
@@ -1081,7 +1226,38 @@ class ActionClient:
         :type: str
         :param identifier: Connected account identifier (required)
         :type: str
-        :param authorization_details: Authorization details (OAuth token or static auth) (optional)
+        :param authorization_details: Authorization details (optional). One of:
+
+            - ``{"oauth_token": {...}}`` — import an OAuth token obtained outside Scalekit::
+
+                {
+                    "oauth_token": {
+                        "access_token": "ya29.a0...",
+                        "refresh_token": "1//0g...",          # optional
+                        "scopes": ["openid", "email"],       # optional
+                        "expires_at": datetime.fromisoformat("2026-11-12T07:18:56+00:00"),  # optional
+                    }
+                }
+
+              ``expires_at`` is optional: when the supplied access token expires, as a
+              timezone-aware ``datetime``, sent as UTC. A naive ``datetime`` raises ``ValueError``
+              and any other type raises ``TypeError``. It is read only when importing a token
+              obtained outside Scalekit, which happens only for a connection that uses your own
+              OAuth app; the account then becomes ACTIVE and its ``token_expires_at`` is set to
+              ``expires_at``. Without it, the account has no token expiry and the token is used
+              until the provider rejects it. If a ``refresh_token`` was imported, tool calls then
+              refresh and retry automatically, and proxy callers refresh with the refresh connected
+              account tokens API (``POST /api/v1/connected_accounts:refresh_tokens``). Without a
+              ``refresh_token``, nothing can be refreshed, and the account must be updated with new
+              tokens or authorized again. To correct the expiry of the current token, update the
+              account with the same ``access_token`` and the new ``expires_at``; the account status
+              does not change. Resending the same ``access_token`` keeps the stored
+              ``refresh_token`` and ``scopes`` unless the request supplies new non-empty values.
+              ``expires_at`` is never returned; read the expiry back from the account's
+              ``token_expires_at``.
+            - ``{"static_auth": {...}}`` — API key / basic auth fields for the connector.
+            - ``{"google_dwd": {"subject": "user@example.com"}}`` — Google domain-wide delegation.
+            - ``{"trusted_idp": {...}}`` — trusted identity-provider credentials.
         :type: Optional[Dict[str, Any]]
         :param organization_id: Organization ID (optional)
         :type: str
@@ -1154,7 +1330,38 @@ class ActionClient:
         :type: str
         :param identifier: Connected account identifier (required)
         :type: str
-        :param authorization_details: Authorization details (OAuth token or static auth) (optional)
+        :param authorization_details: Authorization details (optional). One of:
+
+            - ``{"oauth_token": {...}}`` — import an OAuth token obtained outside Scalekit::
+
+                {
+                    "oauth_token": {
+                        "access_token": "ya29.a0...",
+                        "refresh_token": "1//0g...",          # optional
+                        "scopes": ["openid", "email"],       # optional
+                        "expires_at": datetime.fromisoformat("2026-11-12T07:18:56+00:00"),  # optional
+                    }
+                }
+
+              ``expires_at`` is optional: when the supplied access token expires, as a
+              timezone-aware ``datetime``, sent as UTC. A naive ``datetime`` raises ``ValueError``
+              and any other type raises ``TypeError``. It is read only when importing a token
+              obtained outside Scalekit, which happens only for a connection that uses your own
+              OAuth app; the account then becomes ACTIVE and its ``token_expires_at`` is set to
+              ``expires_at``. Without it, the account has no token expiry and the token is used
+              until the provider rejects it. If a ``refresh_token`` was imported, tool calls then
+              refresh and retry automatically, and proxy callers refresh with the refresh connected
+              account tokens API (``POST /api/v1/connected_accounts:refresh_tokens``). Without a
+              ``refresh_token``, nothing can be refreshed, and the account must be updated with new
+              tokens or authorized again. To correct the expiry of the current token, update the
+              account with the same ``access_token`` and the new ``expires_at``; the account status
+              does not change. Resending the same ``access_token`` keeps the stored
+              ``refresh_token`` and ``scopes`` unless the request supplies new non-empty values.
+              ``expires_at`` is never returned; read the expiry back from the account's
+              ``token_expires_at``.
+            - ``{"static_auth": {...}}`` — API key / basic auth fields for the connector.
+            - ``{"google_dwd": {"subject": "user@example.com"}}`` — Google domain-wide delegation.
+            - ``{"trusted_idp": {...}}`` — trusted identity-provider credentials.
         :type: Optional[Dict[str, Any]]
         :param organization_id: Organization ID (optional)
         :type: str

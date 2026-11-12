@@ -34,15 +34,15 @@ class ConnectedAccount(BaseModel):
         """
         # Convert protobuf timestamps to datetime
         token_expires_at = None
-        if proto_account.token_expires_at:
+        if proto_account.HasField("token_expires_at"):
             token_expires_at = proto_account.token_expires_at.ToDatetime()
             
         updated_at = None
-        if proto_account.updated_at:
+        if proto_account.HasField("updated_at"):
             updated_at = proto_account.updated_at.ToDatetime()
             
         last_used_at = None
-        if proto_account.last_used_at:
+        if proto_account.HasField("last_used_at"):
             last_used_at = proto_account.last_used_at.ToDatetime()
 
         # Convert authorization details

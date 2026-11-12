@@ -3,12 +3,12 @@ from pydantic import BaseModel, Field
 from scalekit.v1.connected_accounts.connected_accounts_pb2 import (
     UpdateConnectedAccount,
     AuthorizationDetails,
-    OauthToken,
     StaticAuth,
     GoogleDWDAuth,
     TrustedIDPAuth
 )
 from google.protobuf import struct_pb2
+from scalekit.actions.models.requests.oauth_token import build_oauth_token
 
 
 class UpdateConnectedAccountRequest(BaseModel):
@@ -32,12 +32,7 @@ class UpdateConnectedAccountRequest(BaseModel):
         auth_details = None
 
         if self.authorization_details and "oauth_token" in self.authorization_details:
-            oauth_data = self.authorization_details["oauth_token"]
-            oauth_token = OauthToken(
-                access_token=oauth_data.get("access_token", ""),
-                refresh_token=oauth_data.get("refresh_token", ""),
-                scopes=oauth_data.get("scopes", [])
-            )
+            oauth_token = build_oauth_token(self.authorization_details["oauth_token"])
             auth_details = AuthorizationDetails(oauth_token=oauth_token)
 
         elif self.authorization_details and "static_auth" in self.authorization_details:

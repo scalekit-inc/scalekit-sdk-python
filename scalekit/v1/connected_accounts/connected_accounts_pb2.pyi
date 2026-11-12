@@ -435,16 +435,18 @@ class TrustedIDPAuth(_message.Message):
     def __init__(self, db_user: _Optional[str] = ..., access_key_id: _Optional[str] = ..., secret_access_key: _Optional[str] = ..., session_token: _Optional[str] = ..., expiry: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
 class OauthToken(_message.Message):
-    __slots__ = ("access_token", "refresh_token", "scopes", "domain")
+    __slots__ = ("access_token", "refresh_token", "scopes", "domain", "expires_at")
     ACCESS_TOKEN_FIELD_NUMBER: _ClassVar[int]
     REFRESH_TOKEN_FIELD_NUMBER: _ClassVar[int]
     SCOPES_FIELD_NUMBER: _ClassVar[int]
     DOMAIN_FIELD_NUMBER: _ClassVar[int]
+    EXPIRES_AT_FIELD_NUMBER: _ClassVar[int]
     access_token: str
     refresh_token: str
     scopes: _containers.RepeatedScalarFieldContainer[str]
     domain: str
-    def __init__(self, access_token: _Optional[str] = ..., refresh_token: _Optional[str] = ..., scopes: _Optional[_Iterable[str]] = ..., domain: _Optional[str] = ...) -> None: ...
+    expires_at: _timestamp_pb2.Timestamp
+    def __init__(self, access_token: _Optional[str] = ..., refresh_token: _Optional[str] = ..., scopes: _Optional[_Iterable[str]] = ..., domain: _Optional[str] = ..., expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
 class StaticAuth(_message.Message):
     __slots__ = ("details",)
