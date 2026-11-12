@@ -903,7 +903,7 @@ Create, upsert, or update accounts using dict-based auth payloads converted to p
 `authorization_details` takes one of `oauth_token`, `static_auth`, `google_dwd` or `trusted_idp`. To import an OAuth token obtained outside Scalekit:
 
 ```python
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 
 scalekit_client.actions.create_connected_account(
     connection_name="gmail",
@@ -913,13 +913,13 @@ scalekit_client.actions.create_connected_account(
             "access_token": "ya29.a0...",
             "refresh_token": "1//0g...",                 # optional
             "scopes": ["https://www.googleapis.com/auth/gmail.readonly"],  # optional
-            "expires_at": datetime.now(timezone.utc) + timedelta(hours=1),  # optional
+            "expires_at": datetime.fromisoformat("2026-11-12T07:18:56+00:00"),  # optional
         }
     },
 )
 ```
 
-**oauth_token.expires_at** (optional): when the imported access token expires, as a timezone-aware `datetime`, sent as UTC. A naive `datetime` raises `ValueError` and any other type (such as a string) raises `TypeError`; leave it out or pass `None` to send nothing. It is only used when importing a token obtained outside Scalekit, for a connection that uses your own OAuth app: the account becomes `ACTIVE` and Scalekit stores `expires_at` as the token's expiry. Without it, a token imported with a `refresh_token` is refreshed on first use, and one without is used until the provider rejects it. `expires_at` is not returned when reading the account.
+**oauth_token.expires_at** (optional): when the imported access token expires, as a timezone-aware `datetime`, sent as UTC. Parse an ISO 8601 string with `datetime.fromisoformat`, as above. A naive `datetime` raises `ValueError` and any other type (such as a raw string) raises `TypeError`; leave it out or pass `None` to send nothing. It is only used when importing a token obtained outside Scalekit, for a connection that uses your own OAuth app: the account becomes `ACTIVE` and Scalekit stores `expires_at` as the token's expiry. Without it, a token imported with a `refresh_token` is refreshed on first use, and one without is used until the provider rejects it. `expires_at` is not returned when reading the account.
 
 </dd></dl>
 </details>

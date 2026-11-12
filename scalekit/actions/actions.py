@@ -1141,7 +1141,7 @@ class ActionClient:
                         "access_token": "ya29.a0...",
                         "refresh_token": "1//0g...",          # optional
                         "scopes": ["openid", "email"],       # optional
-                        "expires_at": datetime(2026, 12, 1, 10, tzinfo=timezone.utc),  # optional
+                        "expires_at": datetime.fromisoformat("2026-11-12T07:18:56+00:00"),  # optional
                     }
                 }
 
@@ -1226,7 +1226,7 @@ class ActionClient:
                         "access_token": "ya29.a0...",
                         "refresh_token": "1//0g...",          # optional
                         "scopes": ["openid", "email"],       # optional
-                        "expires_at": datetime(2026, 12, 1, 10, tzinfo=timezone.utc),  # optional
+                        "expires_at": datetime.fromisoformat("2026-11-12T07:18:56+00:00"),  # optional
                     }
                 }
 
@@ -1321,7 +1321,7 @@ class ActionClient:
                         "access_token": "ya29.a0...",
                         "refresh_token": "1//0g...",          # optional
                         "scopes": ["openid", "email"],       # optional
-                        "expires_at": datetime(2026, 12, 1, 10, tzinfo=timezone.utc),  # optional
+                        "expires_at": datetime.fromisoformat("2026-11-12T07:18:56+00:00"),  # optional
                     }
                 }
 
