@@ -7495,7 +7495,7 @@ print(f'Magic Link: {response[0].link}')
 `client.actions.providers` creates and manages custom connectors. A connector gets its tools from one source, and you set exactly one of the two when you create it:
 
 - `proxy_url`: an MCP server. The tools are the ones the server offers, kept per connected account (`client.tools.refresh_tools` re-reads them).
-- `openapi_spec_url`: an OpenAPI spec. The server converts the spec's operations into tools in an asynchronous tool collection run that it queues for you. Follow it with `get_tool_collection_run`; queue another with `trigger_tool_collection`.
+- `openapi_spec_url`: an OpenAPI spec. The server converts the spec's operations into tools in an asynchronous tool collection run that it queues for you. Follow it with `get_tool_collection_run`; queue another with `trigger_tool_collection`; delete one of its tools with `client.tools.delete_custom_tool`.
 
 Walkthrough: [AGENTKIT.md → Custom connectors](AGENTKIT.md#custom-connectors).
 
@@ -7997,7 +7997,7 @@ else:
 <dl>
 <dd>
 
-Permanently deletes a custom provider. The provider is removed from the Scalekit catalog and can no longer be used for new connections.
+Permanently deletes a custom provider. The provider is removed from the Scalekit catalog and can no longer be used for new connections. While a tool collection run of the connector is queued or processing, nothing is deleted and the call raises `ScalekitConflictException` (409, `RESOURCE_ALREADY_EXISTS`; the message names the run): poll that run with `get_tool_collection_run` (pass its ID as `run_id`) and retry once it has finished. The server fails a run that makes no progress after about 30 minutes.
 </dd>
 </dl>
 </dd>
@@ -8480,6 +8480,111 @@ response, _ = scalekit_client.tools.refresh_tools(
 <dd>
 
 **user_id:** `Optional[str]` - Narrows the account lookup when the same identifier exists for more than one user.
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.tools.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/tools.py">delete_custom_tool</a>(tool_name, provider_identifier?) -> (Empty, grpc.Call)</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Deletes one tool of a connector created from an OpenAPI spec, by its name, now. Use it to keep a single operation of an API away from your agents. Name the tool as `list_tools` lists it: `a-<connector>_<operation>`. The name alone picks the tool, because it carries the connector's name and an environment has one OpenAPI-sourced connector of that name. The server matches the name in lower case (ASCII letters only), as it stores tool names, so the SDK sends `tool_name` exactly as given: it changes neither the case nor the spaces.
+
+Only a tool of an OpenAPI-sourced connector of your environment can be deleted this way. Any other name (an MCP tool, a global tool, another environment's tool, a tool whose connector is missing or not OpenAPI-sourced, an unknown name) raises `ScalekitNotFoundException`, and the error does not say which of these it was.
+
+**The deletion is not permanent.** A full sync of the connector creates the tool again (same name, new id) while its operation is still in the spec, for example after the spec's content or the connector's base URL has changed; a sync that is skipped because nothing changed does not. To drop an operation for good, remove it from the spec. Connections and virtual MCP configurations that listed the tool keep its name: running it fails with 400 `custom tool not found: <name>`, a virtual MCP server does not serve it, and saving a configuration that still names it is refused with 400, until the name is removed or a sync brings the tool back.
+
+**A sync in progress blocks the delete.** While a sync of the connector is queued or running, nothing is deleted, because that sync would create the tool again: the call raises `ScalekitConflictException` and you call it again once the run has finished. `get_tool_collection_run` with `run_id="latest"` (the default) usually shows that run, but not always: the server refuses while any run of the connector has not finished, and an older unfinished run can sit behind a newer finished one. The 409 is what counts, so call again until it stops; the server fails a run that makes no progress after about 30 minutes. The server checks this when the call arrives, so a sync that starts right afterwards can still bring the tool back.
+
+**Retries.** The call uses the client's tool-call timeout, `tool_call_timeout_s`. It is sent again when the service is unavailable, like most calls of this client, because deleting by name is safe to repeat. The repeat of a delete that already happened is answered with 404 and changes nothing, so a `ScalekitNotFoundException` means "not there now", not "never there": after a call that was sent again, or after a timeout (a timeout is not sent again, but the server may have finished the delete all the same), the tool may be gone because of the first attempt. (`trigger_tool_collection` is not sent again, because a repeat of it queues a second run.)
+
+Errors:
+
+- `ValueError`: `tool_name` is not a non-empty string (a name of only whitespace counts as empty). Raised before anything is sent.
+- `ScalekitBadRequestException` (400): the name is longer than 2048 characters (an empty name never gets this far: it raises `ValueError` first), `provider_identifier` is longer than 512 characters, either has a control character, or OpenAPI-sourced connectors are not enabled for the environment (`error_code` `FEATURE_NOT_ENABLED`).
+- `ScalekitNotFoundException` (404): no deletable tool has this name (see above). A leftover tool of a connector that no longer exists, or is not OpenAPI-sourced, cannot be deleted this way and answers 404 too.
+- `ScalekitConflictException` (409), with nothing deleted: `error_code` `RESOURCE_ALREADY_EXISTS` while a sync of the connector is queued or running (call again after it has finished), or `TOOL_NAME_AMBIGUOUS` when tools of more than one connector of the environment have this name, which leftover rows of an earlier connector cause. The message of the second names two of the connectors: call again with `provider_identifier` set to the full identifier of the OpenAPI-sourced connector whose tool should be deleted.
+- `ScalekitInternalServerException` (500): the server failed. It does not say whether the tool is gone: list the connector's tools with `list_tools` before calling again.
+
+The response is `(google.protobuf.Empty, grpc.Call)`: it has no content, and `response[1].code().name == 'OK'` on success.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+# The name as list_tools shows it: a-<connector>_<operation>
+scalekit_client.tools.delete_custom_tool("a-acmeapi_deletepet")
+
+# Tools of two connectors share this name (leftovers of an earlier connector): say which one
+scalekit_client.tools.delete_custom_tool("a-acmeapi_deletepet", provider_identifier="ACMEAPI:1234")
+```
+
+A bounded wait for a sync that is queued or running:
+
+```python
+import time
+
+from scalekit.common.exceptions import ScalekitConflictException
+
+# This gives up after about 5 minutes (20 x 15 s). A run that is stuck is failed by the server only
+# after about 30 minutes, so the TimeoutError below does not mean that the server will not clear it.
+for _ in range(20):
+    try:
+        scalekit_client.tools.delete_custom_tool("a-acmeapi_deletepet")
+        break
+    except ScalekitConflictException as exc:
+        if exc.error_code != "RESOURCE_ALREADY_EXISTS":  # TOOL_NAME_AMBIGUOUS: pass provider_identifier
+            raise
+        time.sleep(15)  # a sync of the connector is queued or running: ask again once it has finished
+else:
+    raise TimeoutError("the connector's sync did not finish: the tool was not deleted")
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**tool_name:** `str` - Name of the tool to delete, as `list_tools` lists it for the connector (`a-<connector>_<operation>`). Required; at most 2048 characters. The server matches it in lower case (ASCII letters only); the SDK sends it as given.
+
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**provider_identifier:** `Optional[str]` - Full identifier of the connector that owns the tool, exactly as the connector's identifier is returned (for example `ACME:1234`); unlike the tool name it is matched exactly, case included. Optional: it is needed only for the `TOOL_NAME_AMBIGUOUS` case. It must name an OpenAPI-sourced connector that still exists. At most 512 characters.
 
 </dd>
 </dl>

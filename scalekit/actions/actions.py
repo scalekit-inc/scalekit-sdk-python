@@ -2082,6 +2082,13 @@ class ActionProviders:
         (provider not found, insufficient permissions) raises a
         ScalekitServerException subclass before this method returns.
 
+        While a tool collection run of the connector is queued or processing (the
+        server's message calls it an ingestion run), nothing is deleted: the call
+        raises ScalekitConflictException (409, RESOURCE_ALREADY_EXISTS) and the
+        message names the run. Poll that run with get_tool_collection_run (pass its
+        ID as run_id) and retry once it has finished; the server fails a run that
+        makes no progress after about 30 minutes.
+
         :param request: Request object containing the identifier of the provider
                         to delete.
         :type request: DeleteCustomProviderRequest
@@ -2091,6 +2098,8 @@ class ActionProviders:
 
         :raises ScalekitNotFoundException: If no provider with the given identifier exists.
         :raises ScalekitForbiddenException: If the caller lacks permission to delete.
+        :raises ScalekitConflictException: If a tool collection run of the connector is
+                                          queued or processing; nothing is deleted.
         """
         result_tuple = self._providers_client.delete_custom_provider(request.identifier)
         return DeleteCustomProviderResponse.from_proto(result_tuple[0])

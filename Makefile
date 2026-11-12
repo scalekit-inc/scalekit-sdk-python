@@ -12,7 +12,15 @@ VENV_PYTHON := $(VENV_DIR)/bin/python
 VENV_PIP := $(VENV_PYTHON) -m pip
 
 PROTO_REPO_URL := https://github.com/scalekit-inc/scalekit.git
-PROTO_REF ?= v0.1.162.0
+# DRAFT PIN: a backend branch, not a release tag. It carries DeleteCustomTool, which
+# scalekit-inc/scalekit#2882 has not released. This MUST become the release tag that contains
+# that change before this merges: set PROTO_REF to the tag, run `make generate`, and commit the
+# result. A branch can be force-pushed, and this one has been, so the pin is mutable. The
+# committed scalekit/v1/tools stubs are the v0.1.162.0 tree plus the PR's tools.proto delta, not
+# what `make generate` makes at the branch: that also brings in what main has changed since
+# v0.1.162.0 (auth, connected_accounts, providers, tools) and the PR's DeleteCustomProvider
+# annotation (providers).
+PROTO_REF ?= claude/v1-item-e-delete-custom-tool-v2
 PROTO_SUBDIR := proto
 LOCAL_PROTO_REPO ?= ../scalekit
 
