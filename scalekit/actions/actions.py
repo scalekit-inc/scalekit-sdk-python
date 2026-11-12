@@ -313,7 +313,7 @@ class ActionClient:
         Thin wrapper around ToolsClient.list_scoped_tools. Each result carries the connected
         account the tool runs against. Paginated: follow ``next_page_token`` for the full set.
 
-        :param identifier: Connected-account identifier, for example a user ID or email (required)
+        :param identifier: Connected-account identifier: your app's ID for the user, such as user_123 (required)
         :type: str
         :param providers: Only tools from these providers, e.g. ['GMAIL', 'SLACK'] (optional)
         :type: List[str]
@@ -357,7 +357,7 @@ class ActionClient:
         Thin wrapper around ToolsClient.list_available_tools. Paginated: follow
         ``next_page_token`` for the full set.
 
-        :param identifier: Connected-account identifier, for example a user ID or email (required)
+        :param identifier: Connected-account identifier: your app's ID for the user, such as user_123 (required)
         :type: str
         :param page_size: Maximum number of tools to return per page (optional)
         :type: int
