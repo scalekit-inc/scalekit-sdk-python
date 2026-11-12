@@ -1,6 +1,6 @@
 # AgentKit API reference (Python)
 
-This document lists **AgentKit** Scalekit SDK surfaces: tools, connected accounts, the `ActionClient` facade (`connect` / `actions`, including triggers), and the low-level `McpClient` (Python).
+This document lists **AgentKit** Scalekit SDK surfaces: tools, connected accounts, the `ActionClient` facade (`connect` / `actions`, including custom connectors and triggers), and the low-level `McpClient` (Python).
 
 For the full SDK surface (organizations, SSO **connections**, users, sessions, etc.), see [`REFERENCE.md`](REFERENCE.md).
 
@@ -34,6 +34,7 @@ These attributes on `scalekit_client` are the AgentKit-related entry points:
 | `connect` and `actions` | Same [`ActionClient`](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py) — ergonomic facade over tools + connected accounts + MCP helpers. |
 | `mcp` | Low-level MCP server configuration and instances (gRPC protos). |
 | `actions.triggers` | Manage AgentKit triggers (catalogue, subscriptions, webhook URL and signing secret, activity, usage, deliveries) and verify delivered trigger events. See [Managing triggers](#managing-triggers). |
+| `actions.providers` | Create and manage custom connectors, from an MCP server or from an OpenAPI spec, and follow the runs that generate an OpenAPI connector's tools. See [Custom connectors](#custom-connectors). |
 
 OAuth login (`get_authorization_url`, `authenticate_with_code`, …) and MCP **Bring-your-own-auth** (`client.auth.update_login_user_details`) are documented under **ScalekitClient** / **Auth** in [`REFERENCE.md`](REFERENCE.md), not in this AgentKit guide.
 
@@ -49,6 +50,12 @@ Low-level gRPC helpers on `client.tools` ([`scalekit/tools.py`](https://github.c
 
 Lists tools available in your workspace with optional filtering and pagination.
 
+The tools of a custom connector are listed under the names the server gives them: `a-<connector>_<operation>` for a connector created from an OpenAPI spec, `c-<connector>_<tool>` for a custom MCP connector.
+
+- An OpenAPI-sourced connector has one set of tools for every connected account. List them with `Filter.provider` set to the connector's identifier (at most 50 characters), or with `Filter.connector` set to the name of a connection on it. They are not listed where OpenAPI-sourced connectors are not enabled for the environment.
+- A custom MCP connector's tools belong to a connected account, so name that account: `Filter.connector` (the connection name) together with `Filter.identifier`, or `Filter.connected_account_id`.
+- `Filter.query` (3 to 100 characters) searches the names of global tools only, so it never returns a custom connector's tools, and a page of search results holds at most 100 tools.
+
 ### 🔌 Usage
 
 ```python
@@ -58,13 +65,17 @@ response = scalekit_client.tools.list_tools(
     filter=Filter(query="calendar"),
     page_size=50,
 )
+
+# The tools generated from an OpenAPI-sourced connector
+response, _ = scalekit_client.tools.list_tools(filter=Filter(provider=connector.identifier))
+print([tool.definition["name"] for tool in response.tools])
 ```
 
 ### ⚙️ Parameters
 
 **filter:** `Optional[Filter]` — Filter on provider, identifier, tool metadata, etc.
 
-**page_size:** `Optional[int]` — Page size.
+**page_size:** `Optional[int]` — Maximum number of tools per page. The server uses 300 when this is omitted or `0`, and lowers a value above 1000 to 1000 instead of rejecting it.
 
 **page_token:** `Optional[str]` — Pagination cursor.
 
@@ -79,6 +90,8 @@ response = scalekit_client.tools.list_tools(
 ### 📝 Description
 
 Lists tools scoped to a specific connected-account identifier (for example workspace or email).
+
+A connector created from an OpenAPI spec has one set of tools for every connected account, so they are listed with this identifier's connected account on that connector: add the connector's identifier to `ScopedToolFilter.providers`, its connection name to `connection_names`, or tool names to `tool_names`. A custom MCP connector's tools are those of this identifier's connected account.
 
 ### 🔌 Usage
 
@@ -148,6 +161,68 @@ When set, each result is annotated with readiness for this identifier's connecti
 </dl>
 </details>
 
+<details><summary><code>client.tools.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/tools.py">list_available_tools</a>(identifier, page_size?, page_token?) -> ListAvailableToolsResponse</code></summary>
+<dl>
+<dd>
+
+### 📝 Description
+
+Lists every tool available to a connected-account identifier: the tools of all the connectors the identifier has a connected account on, including a connector created from an OpenAPI spec (its tools are shared by every account) and a custom MCP connector's tools for that identifier's account. An identifier with no connected account gets an empty list, not an error. Each `Tool.definition` is a `google.protobuf.Struct`, and Python protobuf decodes at most about 100 levels of nested messages, so one tool definition nested about 30 objects deep makes the whole call fail to decode. The same limit already applies to `list_tools`; the server can return definitions as JSON text instead, but this SDK version does not request that yet.
+
+### 🔌 Usage
+
+```python
+response, _ = scalekit_client.tools.list_available_tools("user@example.com", page_size=50)
+
+for tool in response.tools:
+    print(tool.definition["name"])
+```
+
+### ⚙️ Parameters
+
+**identifier:** `str` — Connected account identifier. Required.
+
+**page_size:** `Optional[int]` — Maximum number of tools per page. The server uses 100 when this is omitted or `0`.
+
+**page_token:** `Optional[str]` — Pagination cursor (`next_page_token` of the previous response).
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.tools.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/tools.py">refresh_tools</a>(identifier?, connected_account_id?, connection_name?, organization_id?, user_id?) -> RefreshToolsResponse</code></summary>
+<dl>
+<dd>
+
+### 📝 Description
+
+Resyncs the tools of a custom MCP connected account: the server re-queries the upstream MCP server, adds new and changed tools, removes the ones it no longer offers, and returns the full refreshed list. Use it when the upstream server has added, renamed or removed tools. The server marks this endpoint as a preview API. It works only for a custom MCP connector; a connector created from an OpenAPI spec gets its tools from a tool collection run instead (see [Custom connectors](#custom-connectors)). Each `Tool.definition` is a `google.protobuf.Struct`, and Python protobuf decodes at most about 100 levels of nested messages, so one tool definition nested about 30 objects deep makes the whole call fail to decode. The same limit already applies to `list_tools`; the server can return definitions as JSON text instead, but this SDK version does not request that yet.
+
+Name the connected account with `connected_account_id`, or with `connection_name` together with `identifier` (or with `organization_id`, for an account created without an `identifier`). A call that gives only `connection_name` or only `identifier` names no account and raises `ValueError` before anything is sent. `ScalekitBadRequestException` means the account is not a custom MCP connector, or custom MCP tools are not enabled for the environment; `ScalekitNotFoundException`, that no connected account matches; `ScalekitTooManyRequestsException` (`DISCOVERY_IN_PROGRESS`), that a refresh of the same account is already running, so retry in a few seconds; `ScalekitInternalServerException`, that the upstream server could not be queried.
+
+### 🔌 Usage
+
+```python
+response, _ = scalekit_client.tools.refresh_tools(connected_account_id="ca_123")
+print(response.total_size, [tool.definition["name"] for tool in response.tools])
+```
+
+### ⚙️ Parameters
+
+**connected_account_id:** `Optional[str]` — ID of the connected account to refresh.
+
+**connection_name:** `Optional[str]` — Name of the connection the account belongs to. Pass it with `identifier`, or with `organization_id`.
+
+**identifier:** `Optional[str]` — Identifier of the connected account, used together with `connection_name`.
+
+**organization_id:** `Optional[str]` — Narrows the account lookup when the same identifier exists in more than one organization. With `connection_name` and no `identifier`, it names an account that was created without one.
+
+**user_id:** `Optional[str]` — Narrows the account lookup when the same identifier exists for more than one user.
+
+</dd>
+</dl>
+</details>
+
 <details><summary><code>client.tools.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/tools.py">execute_tool</a>(tool_name, identifier, params?, connected_account_id?, connection_name?) -> ExecuteToolResponse</code></summary>
 <dl>
 <dd>
@@ -155,6 +230,8 @@ When set, each result is annotated with readiness for this identifier's connecti
 ### 📝 Description
 
 Executes a named tool using credentials from a connected account.
+
+A custom connector's tools run like any other: use a connected account of a connection on the tool's own connector. A name that does not exist for that connector fails with 400 `custom tool not found: <name>`; that includes an OpenAPI-sourced tool where OpenAPI-sourced connectors are not enabled for the environment.
 
 ### 🔌 Usage
 
@@ -940,6 +1017,27 @@ The `ActionClient` also exposes `list_configs`, `create_config`, `update_config`
 
 `create_config` and `update_config` take an optional `tool_exposure` (`"DIRECT"` or `"META"`). `DIRECT` (the default when unset) lists every mapped tool and allows at most 25 connections. `META` gives agents five tools (`search_available_tools`, `list_available_tools`, `get_tool_details`, `execute_tool`, `connect_account`) with no connection limit; it must be enabled for your environment, otherwise the call fails with `FEATURE_NOT_ENABLED`. An update that omits `tool_exposure` never changes the stored mode, and switching to `DIRECT` fails above 25 connections or with overlapping tool names. `McpConfig.tool_exposure` reports the mode.
 
+**Custom connectors in a configuration.** A configuration's `connection_tool_mappings` can include a connection on a custom connector, in either mode, and the tools are served under the connector's own names (`a-...` for an OpenAPI-sourced connector, `c-...` for a custom MCP connector).
+
+```python
+from scalekit.actions.types import McpConfigConnectionToolMapping
+
+config = scalekit_client.actions.mcp.create_config(
+    name="my-config",
+    description="Acme API tools",
+    connection_tool_mappings=[
+        # tools=[] exposes every tool the connection has
+        McpConfigConnectionToolMapping(connection_name="acme-api", tools=["a-acmeapi_listpets"]),
+    ],
+    tool_exposure="META",
+)
+```
+
+- A connection on an OpenAPI-sourced connector is accepted where OpenAPI-sourced connectors are enabled for the environment. A connection on a custom MCP connector is accepted where Scalekit has enabled that for the environment. A connector that is neither (a plain REST connector) is always refused. A refusal raises `ScalekitBadRequestException`: `custom connectors are not supported yet. please contact support@scalekit.com`.
+- Leave `tools` empty to expose all of the connection's tools: the server resolves them to the full list of the connection's tools when it saves the configuration.
+- A tool name the connector does not have is refused (`invalid tool '<tool>' for connection '<connection>'`), and so is a custom MCP connection that has no connected account with discovered tools yet (`authorize a connected account to view the tools for connection '<connection>'`).
+- A configuration that already has such a connection stops serving its tools where the capability is turned off for the environment.
+
 Access via `client.connect.mcp` / `client.actions.mcp`. Requires `McpClient` to be initialized on the parent `ScalekitClient`. Methods include `list_configs`, `create_config` (builds `McpConfig` from `name` / `description` / mappings), `update_config`, `delete_config`, `ensure_instance`, `update_instance`, `get_instance`, `list_instances`, `delete_instance`, `get_instance_auth_state`, and `create_session_token`, returning parsed wrapper types instead of raw gRPC tuples.
 
 ### AgentKit connections
@@ -971,7 +1069,167 @@ client.actions.delete_connection("gmail-work")              # raises ConnectionI
 | `update_connection(connection_name=None, *, connection_id=None, new_connection_name=None, oauth=None, google_dwd=None, provider_configurations=None)` | Partial merge. `None` keeps a value; `[]` or `{}` clears a list or map. Pass at most one of `oauth` or `google_dwd`; a rename or a `provider_configurations` change needs neither. `provider_configurations` goes with `oauth` or on its own, never with `google_dwd`. Sending your own `client_id` or `client_secret` turns `use_scalekit_creds` off unless you set it. |
 | `delete_connection(connection_name=None, *, connection_id=None)` | Uses the existing connection RPC; never retried after a timeout. Raises `ConnectionInUseError` while connected accounts or MCP configs use the connection. |
 
+`OAuthSettings.token_endpoint_auth_method` chooses how Scalekit sends client credentials to the provider's token endpoint: `TokenEndpointAuthMethod.BASIC_AUTH` (`client_id` and `client_secret` in a Basic `Authorization` header, `client_secret_basic`), `REQUEST_BODY` (as POST body parameters, `client_secret_post`), `NONE` (only the `client_id`, for public PKCE clients) or `DEFAULT` (clears the stored value; the platform makes a best-effort match on the method per request). Set it only when the provider's token endpoint documentation requires a specific method: a wrong value makes token exchange or refresh fail, and every connected account on the connection then has to authenticate again. It applies to the authorization_code exchange, MCP token refresh and `OAUTH_M2M` client_credentials; refreshing a token on a non-MCP OAuth connection always detects the method itself. A connection that never set a method reads as `DEFAULT`.
+
+```python
+from scalekit.actions.connections import OAuthSettings, TokenEndpointAuthMethod
+
+client.actions.update_connection(
+    "my-connection",
+    oauth=OAuthSettings(token_endpoint_auth_method=TokenEndpointAuthMethod.REQUEST_BODY),
+)
+```
+
 Errors derive from `AgentKitConnectionError` and carry `code`, `step`, `retryable` and the original server error in `cause`. `OutcomeUnknownError` means a write timed out and may have been applied; read the connection (or `list_app_connections` after a create) before repeating it.
+
+### Custom connectors
+
+`client.actions.providers` creates and manages connectors of your own. A connector gets its tools from one source, and you set exactly one when you create it: an **MCP server** (`proxy_url`; its tools belong to each connected account) or an **OpenAPI spec** (`openapi_spec_url`; its tools are generated from the spec and shared by every connected account). Per-method details: [REFERENCE.md → Custom Providers](REFERENCE.md#custom-providers).
+
+**Create a connector from an OpenAPI spec**
+
+1. `actions.providers.create_custom_provider(...)` with `openapi_spec_url` (HTTPS) and `auth_patterns` (required). The server fetches and validates the spec before it stores anything, answers, and queues the first tool collection run in the background. The tools do not exist until that run completes.
+2. `actions.providers.get_tool_collection_run(...)` reads the latest run. Poll until `run.is_terminal`: the run is then `COMPLETED` or `FAILED`.
+3. List and run the tools (below). Create a connection on the connector and a connected account for each user as for any other connector.
+
+```python
+import time
+from scalekit.actions.types import (
+    AuthField, AuthPattern, CreateCustomProviderRequest, GetToolCollectionRunRequest, ToolCollectionRunStatus,
+    TriggerToolCollectionRequest,
+)
+from scalekit.common.exceptions import ScalekitConflictException, ScalekitNotFoundException
+
+providers = scalekit_client.actions.providers
+
+connector = providers.create_custom_provider(
+    CreateCustomProviderRequest(
+        display_name="Acme API",
+        openapi_spec_url="https://api.acme.com/openapi.json",
+        auth_patterns=[
+            AuthPattern(
+                type="API_KEY",
+                display_name="API key",
+                fields=[AuthField(field_name="api_key", label="API key", input_type="password", required=True)],
+            )
+        ],
+    )
+).provider
+
+identifier = connector.identifier
+started = time.monotonic()
+deadline = started + 600
+triggered = False
+while True:
+    try:
+        run = providers.get_tool_collection_run(GetToolCollectionRunRequest(provider_identifier=identifier))
+    except ScalekitNotFoundException:
+        run = None  # the first run is queued in the background and may not exist yet
+        if not triggered and time.monotonic() - started > 45:
+            # The server gave up queueing it and does not say so: queue a run yourself, once.
+            triggered = True
+            try:
+                providers.trigger_tool_collection(TriggerToolCollectionRequest(provider_identifier=identifier))
+            except ScalekitConflictException:
+                pass  # a run was queued in the meantime
+    if run is not None and run.is_terminal:
+        break
+    if time.monotonic() > deadline:
+        raise TimeoutError("the tool collection run did not finish")
+    time.sleep(2)
+
+if run.status == ToolCollectionRunStatus.FAILED:
+    raise RuntimeError(run.error_message)
+print(f"{run.tools_created} tools created, {len(run.skipped_tools)} operations skipped")
+for skipped in run.skipped_tools:
+    print(skipped.method, skipped.path, "-", skipped.reason)
+```
+
+The server does not report a failure to queue the first run, and gives up queueing it after 30 seconds, so the loop calls `trigger_tool_collection` once when `get_tool_collection_run` still answers 404 after 45 seconds. If the connector does not exist, that call raises `ScalekitNotFoundException` and ends the loop.
+
+**What a run does**
+
+A run fetches the spec, converts every operation it can into a tool, and records what it did in a `ToolCollectionRun`. One is queued when the connector is created, when its base URL or spec URL changes, and when you call `trigger_tool_collection`. A connector has at most one run queued or running; a call that would queue another raises `ScalekitConflictException`.
+
+- **Names.** `a-<connector>_<operation>`, for example `a-acmeapi_listpets`. `<connector>` is the connector's identifier before the colon, lowercased. `<operation>` is the operation's `operationId`, or `<method>_<path>` when the spec gives none, lowercased, with every run of characters other than letters, digits and `_` replaced by one `_`, leading and trailing `_` removed, and an `f_` prefix when it starts with a digit. A name that is already taken gets `_2`, `_3` and so on.
+- **Operations.** Only `GET`, `POST`, `PUT`, `PATCH` and `DELETE` operations become tools. One that cannot be converted is skipped and listed in `run.skipped_tools` with its reason, and the run still completes; a run that converts none fails and lists them. Reasons include a multipart, binary or XML request body, a path parameter the operation does not declare, no resolvable base URL, an operation that needs authentication the connector has no auth pattern for, and an HTTP method that is not converted. A `reason` is text for people, not a code to match on.
+- **Counts.** `total_endpoints` is `tools_created + tools_updated` plus the skipped operations, and is `0` until the run completes. A tool whose operation is no longer in the spec is deleted (`tools_deleted`). A run that finds the spec, base URL and auth patterns unchanged since the last completed run creates, updates and deletes nothing and repeats that run's `total_endpoints` and `skipped_tools`; the server does not take that shortcut for a spec that references external files.
+- **What the run fills in.** The connector's base URL (`proxy_url`) from the spec's server URL, only when that URL starts with `https://` and no base URL is set. For an `OAUTH` pattern, `authorize_uri`, `token_uri` and the scopes the spec's OAuth 2 security scheme declares, each only while it is still empty. This changes the stored `auth_patterns`, so read them again before an update.
+
+| Limit | Value |
+|-------|-------|
+| One fetched file (the spec, and each file it references) | 5 MB by default; the error names your environment's limit |
+| All fetched files together | 50 MB |
+| Distinct external files a spec may reference | 500 |
+| Fetching the spec URL | 20 seconds, up to 5 redirects |
+| Validating the spec when you create the connector, change its spec URL or call `trigger_tool_collection` | 2 minutes, including every file the spec references |
+| One run | 3 minutes. A run that makes no progress for 30 minutes is marked `FAILED`. |
+
+The client does not wait those 2 minutes: it sends `create_custom_provider` and `update_custom_provider` with `openapi_spec_url`, and `trigger_tool_collection`, with its tool-call timeout of 60 seconds by default and does not retry a `DEADLINE_EXCEEDED`, so a spec that takes longer to validate fails on the client first with `ScalekitGatewayTimeoutException` (the server may still finish the create). Raise the timeout with `ScalekitClient(env_url, client_id, client_secret, tool_call_timeout_s=150)`; it also applies to every `client.tools` call.
+
+A spec URL that fails validation raises `ScalekitBadRequestException` (`INVALID_ARGUMENT`, a message starting `openapi_spec_url failed validation:`) and nothing is stored. The reasons are: not a valid URL, the URL must use https, the URL points to a host that cannot be reached for security reasons, the URL could not be reached, the response could not be read, the response is not a valid OpenAPI/Swagger document, and the size limits above. `ScalekitInternalServerException` (`validating the spec url was interrupted — please retry`) means try again.
+
+**Credentials**
+
+A static credential (`API_KEY`, `BEARER`, `BASIC`) is sent in an HTTP header unless its `AuthField` sets a `placement`: `CredentialPlacement(in_="query", name="api_key")` sends it as a query parameter, `"body"` as a top-level JSON body field, and `"path"` fills a `{{name}}` placeholder in the path of the connector's `proxy_url`. An `API_KEY` connector that sends several headers gives each field a `header_name` (at most 10). Rules, limits and errors: [REFERENCE.md → create_custom_provider](REFERENCE.md#custom-providers).
+
+**Change a connector**
+
+An OpenAPI-sourced connector can only change its name, description, icon, metadata and base URL (`proxy_url`). `update_custom_provider` needs `display_name` and `auth_patterns` every time, clears `metadata` and turns `proxy_enabled` off when you leave them out, and treats `auth_patterns` and `proxy_enabled` as changed when they differ from the stored values. So read the connector first and send those back as read. The server compares the patterns key for key after parsing them, where `"hint": ""` and a missing hint, or `"fields": []` and `"fields": null`, differ; an `AuthPattern` the SDK decoded is sent back exactly as the server returned it as long as you do not change it or its fields, so pass `current.auth_patterns` through untouched rather than rebuilding them. That form survives `copy`, `deepcopy` and `pickle`, but not `model_dump()` or JSON, nor `to_dict()` (which always returns the normalised view) followed by `from_dict()` or a constructor, which rebuild the pattern in the normalised form, so for an OpenAPI-sourced connector always pass the patterns that `list_providers` returned through as they are:
+
+```python
+from scalekit.actions.types import ListProvidersRequest, UpdateCustomProviderRequest
+from scalekit.v1.providers.providers_pb2 import ProviderType
+
+stored = providers.list_providers(
+    ListProvidersRequest(provider_type=ProviderType.CUSTOM, identifier=connector.identifier)
+).providers
+if not stored:  # an identifier that matches nothing comes back as an empty list, not as an error
+    raise LookupError(f"No connector with identifier {connector.identifier!r}")
+current = stored[0]
+
+providers.update_custom_provider(
+    UpdateCustomProviderRequest(
+        identifier=current.identifier,
+        display_name=current.display_name,
+        auth_patterns=current.auth_patterns,  # as read: sent back exactly as the server returned them
+        proxy_enabled=current.proxy_enabled,
+        metadata=current.metadata,
+        proxy_url="https://eu.api.acme.com",  # a new base URL queues a run that regenerates every tool
+    )
+)
+```
+
+A change to the base URL is saved even when the call raises `ScalekitConflictException` because a run was already in progress: call `trigger_tool_collection` once that run completes. Changing `openapi_spec_url` is not enabled for every workspace (`FEATURE_NOT_ENABLED`). To pick up changes to the spec itself, call `trigger_tool_collection`.
+
+**Use the tools**
+
+```python
+from scalekit.v1.tools.tools_pb2 import Filter
+
+response, _ = scalekit_client.tools.list_tools(filter=Filter(provider=connector.identifier), page_size=100)
+print([tool.definition["name"] for tool in response.tools])  # ['a-acmeapi_listpets', ...]
+
+result, _ = scalekit_client.tools.execute_tool(
+    tool_name="a-acmeapi_listpets",
+    identifier="user@example.com",
+    connection_name="acme-api",  # a connection on the connector
+    params={"limit": 10},
+)
+```
+
+`list_tools`, `list_scoped_tools`, `list_available_tools` and `execute_tool` serve a custom connector's tools like any others (see [Tools](#tools)), and `refresh_tools` re-reads a custom MCP connector's tools. To expose them through a virtual MCP server, see [`ActionMcp` helper](#actionmcp-helper).
+
+**Errors**
+
+| Exception | `error_code` | When |
+|-----------|--------------|------|
+| `ScalekitBadRequestException` | `INVALID_ARGUMENT` | Invalid request: a spec URL that fails validation, a locked field of an OpenAPI-sourced connector changed, a broken credential placement, `trigger_tool_collection` on a connector that is not OpenAPI-sourced, an invalid `run_id` |
+| `ScalekitBadRequestException` | `FEATURE_NOT_ENABLED` | OpenAPI-sourced connectors, multiple-headers `API_KEY` connectors, or changing `openapi_spec_url` are not enabled |
+| `ScalekitBadRequestException` | `INVALID_HEADER_CONFIG` | A multiple-headers `API_KEY` rule is broken, or the connector was switched between single-key and multiple-headers mode |
+| `ScalekitNotFoundException` | `NOT_FOUND` | `get_tool_collection_run` or `trigger_tool_collection` found no such connector, or no such run |
+| `ScalekitConflictException` | `RESOURCE_ALREADY_EXISTS` | An OpenAPI connector with that name exists, or a run is already queued or running |
+| `ScalekitInternalServerException` | `INTERNAL_ERROR` | Validating the spec URL was interrupted, or the server failed |
 
 ### Trigger events
 

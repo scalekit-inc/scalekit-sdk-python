@@ -1,0 +1,15 @@
+kind: added
+body: |
+  `client.tools.refresh_tools(...)` resyncs the tools of a custom MCP connected account: the server re-queries the upstream MCP server, adds new and changed tools, removes the ones it no longer offers and returns the full refreshed list. Name the account with `connected_account_id`, or with `connection_name` together with `identifier` (and `organization_id` or `user_id` when the same identifier exists more than once; an account created with `organization_id` and no `identifier` is named by `connection_name` with that `organization_id`). It works only for a custom MCP connector, fails with `ScalekitTooManyRequestsException` (`DISCOVERY_IN_PROGRESS`) while a refresh of the same account is running, and raises `ValueError` before sending anything when no account is named, which includes a call with only `connection_name` or only `identifier`. `client.tools.list_available_tools(identifier, ...)` lists every tool available to a connected account identifier, including the tools of custom connectors. Both return each `Tool.definition` as a `google.protobuf.Struct`, and Python protobuf stops decoding at about 100 levels of nested messages, so one tool definition nested about 30 objects deep fails the whole call; the same limit already applies to `list_tools` until the SDK requests definitions as JSON text. The docs of `list_tools` now say how a custom connector's tools are listed and named (`a-<connector>_<operation>` for a connector created from an OpenAPI spec, `c-<connector>_<tool>` for a custom MCP connector), that `page_size` defaults to 300 and is lowered to 1000 when larger, and that `query` searches global tools only; the docs of `list_scoped_tools` and `execute_tool` cover custom connector tools too. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/AGENTKIT.md#tools)
+
+  ```python
+  response, _ = client.tools.refresh_tools(connected_account_id="ca_123")
+  print(response.total_size, [tool.definition["name"] for tool in response.tools])
+
+  response, _ = client.tools.list_available_tools("user@example.com", page_size=50)
+  ```
+time: '2026-11-11T10:05:00+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: SK-3097
+  Migration: ''

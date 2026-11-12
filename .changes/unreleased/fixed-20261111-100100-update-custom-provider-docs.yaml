@@ -1,0 +1,8 @@
+kind: fixed
+body: |
+  The `update_custom_provider` documentation now matches what the server does. It said that `auth_patterns` and `metadata` left as `None` stay unchanged, and that `display_name` and `proxy_url` are always required. The server requires `auth_patterns` on every update (a request without it is rejected with a 400), clears `metadata` that is not sent, and sets `proxy_enabled` to `False` when an update does not send it. `proxy_url` is required only to update an MCP-sourced connector. The new `proxy_enabled` argument lets you send the stored value back, and to update an OpenAPI-sourced connector you read it with `list_providers` and send its `auth_patterns` and `proxy_enabled` back as returned; a decoded `AuthPattern` you leave unchanged is sent exactly as the server returned it. `create_custom_provider` likewise requires at least one auth pattern, which its docs listed as optional. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/REFERENCE.md#custom-providers)
+time: '2026-11-11T10:01:00+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: SK-3097
+  Migration: ''
