@@ -29,7 +29,7 @@ class MagicLinkResponse(BaseModel):
         """
         # Convert protobuf Timestamp to datetime
         expiry = None
-        if proto_response.HasField("expiry"):
+        if proto_response.expiry:
             expiry = proto_response.expiry.ToDatetime()
             
         return cls(

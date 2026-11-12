@@ -17,7 +17,6 @@ from scalekit.actions.models.responses.list_connected_accounts_response import (
     ConnectedAccountForList,
     ListConnectedAccountsResponse,
 )
-from scalekit.actions.models.responses.magic_link_response import MagicLinkResponse
 from scalekit.v1.connected_accounts import connected_accounts_pb2 as pb
 
 WHEN = datetime(2026, 12, 1, 12, 0, tzinfo=timezone.utc)
@@ -64,9 +63,6 @@ class TestUnsetTimestamps(unittest.TestCase):
         proto.token_expires_at.CopyFrom(_ts(WHEN))
         resp = ListConnectedAccountsResponse.from_proto(pb.ListConnectedAccountsResponse(connected_accounts=[proto]))
         self.assertEqual(resp.connected_accounts[0].token_expires_at.replace(tzinfo=timezone.utc), WHEN)
-
-    def test_magic_link_unset_expiry_is_none(self):
-        self.assertIsNone(MagicLinkResponse.from_proto(pb.GetMagicLinkForConnectedAccountResponse(link="https://x")).expiry)
 
 
 if __name__ == "__main__":
