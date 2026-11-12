@@ -279,6 +279,102 @@ class ToolsClient:
             timeout=self.core_client.tool_call_timeout_s,
         )
 
+    def delete_custom_tool(
+        self,
+        tool_name: str,
+        provider_identifier: Optional[str] = None
+    ):
+        """
+        Method to delete one tool of a connector created from an OpenAPI spec, by its name
+
+        Deletes the tool now, for example to keep one operation of an API away from your
+        agents. Name it as ``list_tools`` lists it: ``a-<connector>_<operation>``. The name
+        alone picks the tool, because it carries its connector's name and an environment has
+        one OpenAPI-sourced connector of that name. The server matches the name in lower case
+        (ASCII letters only), as it stores tool names, so this method sends ``tool_name``
+        exactly as given: it does not change the case and does not trim spaces.
+
+        Only a tool of an OpenAPI-sourced connector of your environment can be deleted this
+        way. Any other name (an MCP tool, a global tool, another environment's tool, a tool
+        whose connector is missing or not OpenAPI-sourced, an unknown name) is answered with
+        404, and the answer does not say which of these it was.
+
+        The deletion is not permanent. A full sync of the connector creates the tool again
+        (same name, new id) while its operation is still in the spec, for example after the
+        spec's content or the connector's base URL has changed; a sync that is skipped because
+        nothing changed does not. To drop an operation for good, remove it from the spec.
+        Connections and virtual MCP configurations that listed the tool keep its name: running
+        it fails with 400 ``custom tool not found: <name>``, a virtual MCP server does not
+        serve it, and saving a configuration that still names it is refused with 400, until
+        the name is removed or a sync brings the tool back.
+
+        While a sync of the connector is queued or running, nothing is deleted, because that
+        sync would create the tool again: the call fails with 409 and you call it again after
+        the run has finished. ``get_tool_collection_run`` with ``run_id="latest"`` usually shows
+        that run, but not always: the server refuses while any run of the connector has not
+        finished, and an older unfinished run can sit behind a newer finished one. The 409 is
+        what counts, so call again until it stops; the server fails a run that makes no
+        progress after about 30 minutes. The server checks this when the call arrives, so a
+        sync that starts right afterwards can still bring the tool back.
+
+        The call uses the client's tool-call timeout (``tool_call_timeout_s``). It is sent
+        again when the service is unavailable, like most calls of this client, because
+        deleting by name is safe to repeat: the repeat of a delete that already happened is
+        answered with 404 and changes nothing. A 404 therefore means "not there now", not
+        "never there": after a call that was sent again, or after a timeout (a timeout is not
+        sent again, but the server may have finished the delete all the same), the tool may be
+        gone because of the first attempt. (``trigger_tool_collection`` is not sent again,
+        because a repeat of it queues a second run.)
+
+        Errors surface as ScalekitServerException subclasses: ScalekitBadRequestException
+        (400) when the name is longer than 2048 characters (an empty name never gets this far:
+        it raises ValueError first), when provider_identifier is longer than 512 characters,
+        when either has a control character, or when OpenAPI-sourced connectors are not
+        enabled for the environment (FEATURE_NOT_ENABLED); ScalekitNotFoundException (404) as
+        described above, which includes a leftover tool of a connector that no longer exists
+        or is not OpenAPI-sourced; ScalekitConflictException (409), with nothing deleted,
+        either with error code RESOURCE_ALREADY_EXISTS while a sync of the connector is queued
+        or running, or with TOOL_NAME_AMBIGUOUS when tools of more than one connector of the
+        environment have this name (leftover rows of an earlier connector), whose message
+        names two of the connectors: call again with provider_identifier set to the full
+        identifier of the OpenAPI-sourced connector whose tool should be deleted; and
+        ScalekitInternalServerException (500) when the server failed, which does not say
+        whether the tool is gone: list the connector's tools with ``list_tools`` before
+        calling again.
+
+        :param tool_name           : Name of the tool to delete, as listed for its connector.
+                                     Required; at most 2048 characters
+        :type                      : ``` str ```
+        :param provider_identifier : Full identifier of the connector that owns the tool,
+                                     exactly as the connector's identifier is returned (for
+                                     example "ACME:1234"); unlike the tool name it is matched
+                                     exactly, case included. Optional: needed only to answer
+                                     the 409 TOOL_NAME_AMBIGUOUS case. It must name an
+                                     OpenAPI-sourced connector that still exists. At most 512
+                                     characters
+        :type                      : ``` str ```
+
+        :returns:
+            Tuple of (google.protobuf.Empty, grpc.Call). The response has no content;
+            ``response[1].code().name == 'OK'`` on success.
+
+        :raises ValueError: If tool_name is not a non-empty string (one that is only whitespace
+                            counts as empty); nothing is sent
+        """
+        if not isinstance(tool_name, str) or not tool_name.strip():
+            raise ValueError("tool_name must be a non-empty string to delete a custom tool")
+        return self.core_client.grpc_exec(
+            self.tool_service.DeleteCustomTool.with_call,
+            DeleteCustomToolRequest(
+                tool_name=tool_name,
+                provider_identifier=provider_identifier
+            ),
+            timeout=self.core_client.tool_call_timeout_s,
+            # Default retry on UNAVAILABLE, unlike execute_tool and trigger_tool_collection:
+            # a delete by name can be repeated without harm. See the docstring for what the
+            # caller sees when the first attempt had already done the work.
+        )
+
     def execute_tool(
         self,
         tool_name: str,

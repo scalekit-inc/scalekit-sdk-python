@@ -1,0 +1,15 @@
+kind: added
+body: |
+  `client.tools.delete_custom_tool(tool_name, provider_identifier=None)` deletes one tool of a connector created from an OpenAPI spec, by its name (`a-<connector>_<operation>`, as `list_tools` lists it). The server matches the name in lower case (ASCII letters only) and the SDK sends it as given. Only a tool of an OpenAPI-sourced connector of your environment can be deleted: any other name raises `ScalekitNotFoundException`, without saying why. The deletion is not permanent: a full sync of the connector creates the tool again while its operation is still in the spec, and a sync that is queued or running makes the call raise `ScalekitConflictException` (`RESOURCE_ALREADY_EXISTS`), so call it again until it stops, which it does once the run has finished. When tools of more than one connector of the environment have the name (leftovers of an earlier connector), the call raises `ScalekitConflictException` with `error_code` `TOOL_NAME_AMBIGUOUS` and deletes nothing: pass `provider_identifier`, the full identifier of the OpenAPI-sourced connector. A `tool_name` that is empty or blank raises `ValueError` before anything is sent, and a server failure raises `ScalekitInternalServerException`, which does not say whether the tool is gone. The call uses the client's tool-call timeout and is sent again on `UNAVAILABLE`, because deleting by name is safe to repeat. A `ScalekitNotFoundException` therefore means "not there now": after a call that was sent again, or after a timeout, the first attempt may have deleted the tool. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/REFERENCE.md#tools)
+
+  ```python
+  client.tools.delete_custom_tool("a-acmeapi_deletepet")
+
+  # tools of two connectors share the name: say which one
+  client.tools.delete_custom_tool("a-acmeapi_deletepet", provider_identifier="ACMEAPI:1234")
+  ```
+time: '2026-11-12T09:58:00+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: SK-3097
+  Migration: ''

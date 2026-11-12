@@ -1218,7 +1218,7 @@ result, _ = scalekit_client.tools.execute_tool(
 )
 ```
 
-`list_tools`, `list_scoped_tools`, `list_available_tools` and `execute_tool` serve a custom connector's tools like any others (see [Tools](#tools)), and `refresh_tools` re-reads a custom MCP connector's tools. To expose them through a virtual MCP server, see [`ActionMcp` helper](#actionmcp-helper).
+`list_tools`, `list_scoped_tools`, `list_available_tools` and `execute_tool` serve a custom connector's tools like any others (see [Tools](#tools)), and `refresh_tools` re-reads a custom MCP connector's tools. `delete_custom_tool(tool_name)` deletes one tool of a connector created from an OpenAPI spec, by its name: a later full sync creates it again while its operation is still in the spec, and a sync that is queued or running makes the call raise `ScalekitConflictException` (details and errors: [REFERENCE.md](REFERENCE.md#tools)). To expose a custom connector's tools through a virtual MCP server, see [`ActionMcp` helper](#actionmcp-helper).
 
 **Errors**
 
@@ -1227,8 +1227,9 @@ result, _ = scalekit_client.tools.execute_tool(
 | `ScalekitBadRequestException` | `INVALID_ARGUMENT` | Invalid request: a spec URL that fails validation, a locked field of an OpenAPI-sourced connector changed, a broken credential placement, `trigger_tool_collection` on a connector that is not OpenAPI-sourced, an invalid `run_id` |
 | `ScalekitBadRequestException` | `FEATURE_NOT_ENABLED` | OpenAPI-sourced connectors, multiple-headers `API_KEY` connectors, or changing `openapi_spec_url` are not enabled |
 | `ScalekitBadRequestException` | `INVALID_HEADER_CONFIG` | A multiple-headers `API_KEY` rule is broken, or the connector was switched between single-key and multiple-headers mode |
-| `ScalekitNotFoundException` | `NOT_FOUND` | `get_tool_collection_run` or `trigger_tool_collection` found no such connector, or no such run |
-| `ScalekitConflictException` | `RESOURCE_ALREADY_EXISTS` | An OpenAPI connector with that name exists, or a run is already queued or running |
+| `ScalekitNotFoundException` | `NOT_FOUND` | `get_tool_collection_run` or `trigger_tool_collection` found no such connector, or no such run, or `delete_custom_tool` found no deletable tool of that name |
+| `ScalekitConflictException` | `RESOURCE_ALREADY_EXISTS` | An OpenAPI connector with that name exists, or a run is already queued or running (`delete_custom_tool` and `delete_custom_provider` raise it then too, and delete nothing) |
+| `ScalekitConflictException` | `TOOL_NAME_AMBIGUOUS` | `delete_custom_tool` found tools of more than one connector with that name and deleted nothing: call it again with `provider_identifier` |
 | `ScalekitInternalServerException` | `INTERNAL_ERROR` | Validating the spec URL was interrupted, or the server failed |
 
 ### Trigger events

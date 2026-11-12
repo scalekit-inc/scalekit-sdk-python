@@ -1,0 +1,19 @@
+kind: changed
+body: |
+  `client.actions.providers.delete_custom_provider` now raises `ScalekitConflictException` (`error_code` `RESOURCE_ALREADY_EXISTS`) and deletes nothing while a tool collection run of the connector is queued or processing, because a run in flight writes tools without checking that the connector still exists. Before, the delete went through. The message names the run: poll it with `get_tool_collection_run`, passing the run's ID as `run_id` (`"latest"` does not always show the run that blocks the delete), and call again once it has finished. The server fails a run that makes no progress after about 30 minutes. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/REFERENCE.md#custom-providers)
+
+  ```python
+  from scalekit.actions.types import DeleteCustomProviderRequest
+  from scalekit.common.exceptions import ScalekitConflictException
+
+  try:
+      client.actions.providers.delete_custom_provider(DeleteCustomProviderRequest(identifier="ACMEAPI:1234"))
+  except ScalekitConflictException as exc:
+      # Nothing was deleted: a tool collection run is queued or processing. Call again once it has finished.
+      print(exc.error_code, exc.message)
+  ```
+time: '2026-11-12T09:59:00+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: SK-3097
+  Migration: ''

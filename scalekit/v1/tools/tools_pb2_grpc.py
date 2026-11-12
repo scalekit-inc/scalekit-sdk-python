@@ -55,6 +55,11 @@ class ToolServiceStub(object):
                 request_serializer=scalekit_dot_v1_dot_tools_dot_tools__pb2.DeleteToolRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
+        self.DeleteCustomTool = channel.unary_unary(
+                '/scalekit.v1.tools.ToolService/DeleteCustomTool',
+                request_serializer=scalekit_dot_v1_dot_tools_dot_tools__pb2.DeleteCustomToolRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
         self.ExecuteTool = channel.unary_unary(
                 '/scalekit.v1.tools.ToolService/ExecuteTool',
                 request_serializer=scalekit_dot_v1_dot_tools_dot_tools__pb2.ExecuteToolRequest.SerializeToString,
@@ -119,6 +124,12 @@ class ToolServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def DeleteCustomTool(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def ExecuteTool(self, request, context):
         """Execute Tool
         """
@@ -173,6 +184,11 @@ def add_ToolServiceServicer_to_server(servicer, server):
             'DeleteTool': grpc.unary_unary_rpc_method_handler(
                     servicer.DeleteTool,
                     request_deserializer=scalekit_dot_v1_dot_tools_dot_tools__pb2.DeleteToolRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'DeleteCustomTool': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteCustomTool,
+                    request_deserializer=scalekit_dot_v1_dot_tools_dot_tools__pb2.DeleteCustomToolRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'ExecuteTool': grpc.unary_unary_rpc_method_handler(
@@ -327,6 +343,23 @@ class ToolService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/scalekit.v1.tools.ToolService/DeleteTool',
             scalekit_dot_v1_dot_tools_dot_tools__pb2.DeleteToolRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DeleteCustomTool(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/scalekit.v1.tools.ToolService/DeleteCustomTool',
+            scalekit_dot_v1_dot_tools_dot_tools__pb2.DeleteCustomToolRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
