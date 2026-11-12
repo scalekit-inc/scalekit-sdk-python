@@ -1145,13 +1145,22 @@ class ActionClient:
                     }
                 }
 
-              ``expires_at`` is optional and only used when importing a token obtained outside
-              Scalekit: a timezone-aware ``datetime``, sent as UTC. A naive ``datetime`` raises
-              ``ValueError`` and any other type raises ``TypeError``. The token is imported (and the account becomes
-              ACTIVE) only for connections that use your own OAuth app; Scalekit then stores
-              ``expires_at`` as the token's expiry. Without it,
-              a token imported with a ``refresh_token`` is refreshed on first use, and one without
-              is used until the provider rejects it.
+              ``expires_at`` is optional: when the supplied access token expires, as a
+              timezone-aware ``datetime``, sent as UTC. A naive ``datetime`` raises ``ValueError``
+              and any other type raises ``TypeError``. It is read only when importing a token
+              obtained outside Scalekit, which happens only for a connection that uses your own
+              OAuth app; the account then becomes ACTIVE and its ``token_expires_at`` is set to
+              ``expires_at``. Without it, the account has no token expiry and the token is used
+              until the provider rejects it. If a ``refresh_token`` was imported, tool calls then
+              refresh and retry automatically, and proxy callers refresh with the refresh connected
+              account tokens API (``POST /api/v1/connected_accounts:refresh_tokens``). Without a
+              ``refresh_token``, nothing can be refreshed, and the account must be updated with new
+              tokens or authorized again. To correct the expiry of the current token, update the
+              account with the same ``access_token`` and the new ``expires_at``; the account status
+              does not change. Resending the same ``access_token`` keeps the stored
+              ``refresh_token`` and ``scopes`` unless the request supplies new non-empty values.
+              ``expires_at`` is never returned; read the expiry back from the account's
+              ``token_expires_at``.
             - ``{"static_auth": {...}}`` — API key / basic auth fields for the connector.
             - ``{"google_dwd": {"subject": "user@example.com"}}`` — Google domain-wide delegation.
             - ``{"trusted_idp": {...}}`` — trusted identity-provider credentials.
@@ -1230,13 +1239,22 @@ class ActionClient:
                     }
                 }
 
-              ``expires_at`` is optional and only used when importing a token obtained outside
-              Scalekit: a timezone-aware ``datetime``, sent as UTC. A naive ``datetime`` raises
-              ``ValueError`` and any other type raises ``TypeError``. The token is imported (and the account becomes
-              ACTIVE) only for connections that use your own OAuth app; Scalekit then stores
-              ``expires_at`` as the token's expiry. Without it,
-              a token imported with a ``refresh_token`` is refreshed on first use, and one without
-              is used until the provider rejects it.
+              ``expires_at`` is optional: when the supplied access token expires, as a
+              timezone-aware ``datetime``, sent as UTC. A naive ``datetime`` raises ``ValueError``
+              and any other type raises ``TypeError``. It is read only when importing a token
+              obtained outside Scalekit, which happens only for a connection that uses your own
+              OAuth app; the account then becomes ACTIVE and its ``token_expires_at`` is set to
+              ``expires_at``. Without it, the account has no token expiry and the token is used
+              until the provider rejects it. If a ``refresh_token`` was imported, tool calls then
+              refresh and retry automatically, and proxy callers refresh with the refresh connected
+              account tokens API (``POST /api/v1/connected_accounts:refresh_tokens``). Without a
+              ``refresh_token``, nothing can be refreshed, and the account must be updated with new
+              tokens or authorized again. To correct the expiry of the current token, update the
+              account with the same ``access_token`` and the new ``expires_at``; the account status
+              does not change. Resending the same ``access_token`` keeps the stored
+              ``refresh_token`` and ``scopes`` unless the request supplies new non-empty values.
+              ``expires_at`` is never returned; read the expiry back from the account's
+              ``token_expires_at``.
             - ``{"static_auth": {...}}`` — API key / basic auth fields for the connector.
             - ``{"google_dwd": {"subject": "user@example.com"}}`` — Google domain-wide delegation.
             - ``{"trusted_idp": {...}}`` — trusted identity-provider credentials.
@@ -1325,13 +1343,22 @@ class ActionClient:
                     }
                 }
 
-              ``expires_at`` is optional and only used when importing a token obtained outside
-              Scalekit: a timezone-aware ``datetime``, sent as UTC. A naive ``datetime`` raises
-              ``ValueError`` and any other type raises ``TypeError``. The token is imported (and the account becomes
-              ACTIVE) only for connections that use your own OAuth app; Scalekit then stores
-              ``expires_at`` as the token's expiry. Without it,
-              a token imported with a ``refresh_token`` is refreshed on first use, and one without
-              is used until the provider rejects it.
+              ``expires_at`` is optional: when the supplied access token expires, as a
+              timezone-aware ``datetime``, sent as UTC. A naive ``datetime`` raises ``ValueError``
+              and any other type raises ``TypeError``. It is read only when importing a token
+              obtained outside Scalekit, which happens only for a connection that uses your own
+              OAuth app; the account then becomes ACTIVE and its ``token_expires_at`` is set to
+              ``expires_at``. Without it, the account has no token expiry and the token is used
+              until the provider rejects it. If a ``refresh_token`` was imported, tool calls then
+              refresh and retry automatically, and proxy callers refresh with the refresh connected
+              account tokens API (``POST /api/v1/connected_accounts:refresh_tokens``). Without a
+              ``refresh_token``, nothing can be refreshed, and the account must be updated with new
+              tokens or authorized again. To correct the expiry of the current token, update the
+              account with the same ``access_token`` and the new ``expires_at``; the account status
+              does not change. Resending the same ``access_token`` keeps the stored
+              ``refresh_token`` and ``scopes`` unless the request supplies new non-empty values.
+              ``expires_at`` is never returned; read the expiry back from the account's
+              ``token_expires_at``.
             - ``{"static_auth": {...}}`` — API key / basic auth fields for the connector.
             - ``{"google_dwd": {"subject": "user@example.com"}}`` — Google domain-wide delegation.
             - ``{"trusted_idp": {...}}`` — trusted identity-provider credentials.

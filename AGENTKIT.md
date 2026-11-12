@@ -919,7 +919,12 @@ scalekit_client.actions.create_connected_account(
 )
 ```
 
-**oauth_token.expires_at** (optional): when the imported access token expires, as a timezone-aware `datetime`, sent as UTC. Parse an ISO 8601 string with `datetime.fromisoformat`, as above. A naive `datetime` raises `ValueError` and any other type (such as a raw string) raises `TypeError`; leave it out or pass `None` to send nothing. It is only used when importing a token obtained outside Scalekit, for a connection that uses your own OAuth app: the account becomes `ACTIVE` and Scalekit stores `expires_at` as the token's expiry. Without it, a token imported with a `refresh_token` is refreshed on first use, and one without is used until the provider rejects it. `expires_at` is not returned when reading the account.
+**oauth_token.expires_at** (optional): when the supplied access token expires, as a timezone-aware `datetime`, sent as UTC. Parse an ISO 8601 string with `datetime.fromisoformat`, as above. A naive `datetime` raises `ValueError` and any other type (such as a raw string) raises `TypeError`; leave it out or pass `None` to send nothing. It is read only when importing a token obtained outside Scalekit, for a connection that uses your own OAuth app: the account becomes `ACTIVE` and its `token_expires_at` is set to `expires_at`.
+
+- **Without `expires_at`**, the account has no token expiry and the token is used until the provider rejects it. If a `refresh_token` was imported, tool calls then refresh and retry automatically, and proxy callers refresh with the refresh connected account tokens API (`POST /api/v1/connected_accounts:refresh_tokens`). Without a `refresh_token`, nothing can be refreshed, and the account must be updated with new tokens or authorized again.
+- **To correct the expiry** of the current token, update the account with the same `access_token` and the new `expires_at`. Only `token_expires_at` changes; the account status does not, so an `EXPIRED` account stays `EXPIRED` until you send new tokens. The same `access_token` without `expires_at` changes nothing.
+- **Resending the same `access_token`** keeps the stored `refresh_token` and `scopes` unless the request supplies new non-empty values. A different `access_token` is stored exactly as sent.
+- **`expires_at` is never returned.** Read the expiry back from the account's `token_expires_at`.
 
 </dd></dl>
 </details>
