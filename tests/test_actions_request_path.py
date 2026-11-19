@@ -7,9 +7,12 @@ SDK meant to send. No credentials or network access beyond loopback are needed.
 
 import http.server
 import os
+import random
 import threading
 import unittest
 from unittest import mock
+
+import requests
 
 from scalekit.actions._proxy_path import clean_path, proxy_account_headers
 from scalekit.actions.actions import ActionClient
@@ -547,12 +550,36 @@ _ARG_CONNECTION = "googledrive"
 _ARG_IDENTIFIER = "user@example.com"
 
 
+def _sent_by_earlier_versions(headers):
+    """Return (connection name, identifier) as earlier SDK versions sent them.
+
+    Those versions built this dict, merged the caller's headers over it with
+    dict.update, and let requests turn it into the request's headers. A value of
+    None means the header was not sent.
+    """
+    legacy = {
+        "connection_name": _ARG_CONNECTION,
+        "Connection_name": _ARG_CONNECTION,
+        "identifier": _ARG_IDENTIFIER,
+    }
+    legacy.update(headers)
+    prepared = requests.Session().prepare_request(
+        requests.Request("GET", "http://h/proxy/x", headers=legacy)
+    )
+    return prepared.headers.get("connection_name"), prepared.headers.get("identifier")
+
+
+def _text(value):
+    return value.decode("ascii") if isinstance(value, bytes) else value
+
+
 class TestRequestConnectedAccountHeaders(_ProxyServerTestCase):
     """The account goes out under the original and the X-Scalekit names, with equal values.
 
     Proxies that drop headers containing '_' remove connection_name and
     identifier; the X-Scalekit names carry the account through them. The server
-    rejects a request whose two names differ, so they must always agree.
+    rejects a request whose two names differ, so they must always agree, and
+    the value must be the one earlier versions sent.
     """
 
     def _send(self, headers=None):
@@ -564,15 +591,25 @@ class TestRequestConnectedAccountHeaders(_ProxyServerTestCase):
         return core
 
     def assert_account(self, hop_headers, connection_name, identifier):
-        self.assertEqual(hop_headers["connection_name"], connection_name)
-        self.assertEqual(hop_headers["x-scalekit-connection-name"], connection_name)
-        self.assertEqual(hop_headers["identifier"], identifier)
-        self.assertEqual(hop_headers["x-scalekit-identifier"], identifier)
+        """Check both names of each pair; None means neither name was sent."""
+        for names, expected in (
+            (("connection_name", "x-scalekit-connection-name"), connection_name),
+            (("identifier", "x-scalekit-identifier"), identifier),
+        ):
+            for name in names:
+                self.assertEqual(hop_headers.get(name), _text(expected), name)
 
     def assert_one_line_per_header(self):
         for lines in self.server.header_lines:
             names = [name.lower() for name, _ in lines]
             self.assertEqual(len(names), len(set(names)), names)
+
+    def assert_sent_as_before(self, headers, connection_name, identifier):
+        self.assertEqual(_sent_by_earlier_versions(headers), (connection_name, identifier))
+        self.server.reset()
+        self._send(headers)
+        self.assert_account(self.server.hops[0][2], connection_name, identifier)
+        self.assert_one_line_per_header()
 
     def test_sends_both_names_with_equal_values(self):
         self._send()
@@ -589,59 +626,67 @@ class TestRequestConnectedAccountHeaders(_ProxyServerTestCase):
             self.assert_account(headers, _ARG_CONNECTION, _ARG_IDENTIFIER)
         self.assert_one_line_per_header()
 
-    def test_caller_override_of_the_original_name_sets_both(self):
+    def test_caller_override_sends_what_earlier_versions_sent(self):
         for headers, connection_name, identifier in [
             ({"identifier": "u2"}, _ARG_CONNECTION, "u2"),
             ({"Identifier": "u2"}, _ARG_CONNECTION, "u2"),
             ({"IDENTIFIER": "u2"}, _ARG_CONNECTION, "u2"),
-            ({"connection_name": "gmail"}, "gmail", _ARG_IDENTIFIER),
+            ({"Connection_name": "gmail"}, "gmail", _ARG_IDENTIFIER),
             ({"Connection_Name": "gmail"}, "gmail", _ARG_IDENTIFIER),
             ({"Connection_name": "gmail", "identifier": "u2"}, "gmail", "u2"),
+            # The exact key "connection_name" is updated in place, ahead of the
+            # "Connection_name" key that follows it, so the argument wins.
+            ({"connection_name": "gmail"}, _ARG_CONNECTION, _ARG_IDENTIFIER),
+            ({"Identifier": "a", "identifier": "b"}, _ARG_CONNECTION, "a"),
+            ({"Connection_name": "y", "connection_name": "x"}, "y", _ARG_IDENTIFIER),
+            ({"CONNECTION_NAME": "z", "connection_name": "x"}, "z", _ARG_IDENTIFIER),
+            ({"identifier": ""}, _ARG_CONNECTION, ""),
         ]:
             with self.subTest(headers=headers):
-                self.server.reset()
-                self._send(headers)
-                self.assert_account(self.server.hops[0][2], connection_name, identifier)
-                self.assert_one_line_per_header()
+                self.assert_sent_as_before(headers, connection_name, identifier)
 
-    def test_caller_x_scalekit_name_sets_both(self):
+    def test_bytes_header_names_match_like_str_names(self):
         for headers, connection_name, identifier in [
-            ({"X-Scalekit-Identifier": "u2"}, _ARG_CONNECTION, "u2"),
-            ({"x-scalekit-identifier": "u2"}, _ARG_CONNECTION, "u2"),
-            ({"X-Scalekit-Connection-Name": "gmail"}, "gmail", _ARG_IDENTIFIER),
-            # Both names of a pair with the same value.
-            ({"identifier": "u2", "X-Scalekit-Identifier": "u2"}, _ARG_CONNECTION, "u2"),
-            # The server compares values without surrounding whitespace.
-            ({"Identifier": "u2", "X-Scalekit-Identifier": "u2 "}, _ARG_CONNECTION, "u2"),
-            # A blank value counts as absent, as it does on the server.
-            ({"X-Scalekit-Identifier": " "}, _ARG_CONNECTION, _ARG_IDENTIFIER),
-            ({"identifier": "u2", "X-Scalekit-Identifier": ""}, _ARG_CONNECTION, "u2"),
+            ({b"identifier": b"u2"}, _ARG_CONNECTION, b"u2"),
+            ({b"Connection_name": b"gmail"}, b"gmail", _ARG_IDENTIFIER),
+            # requests keeps str and bytes names apart until it prepares the
+            # request, so the bytes key, merged later, wins here.
+            ({b"identifier": b"u2", "Identifier": "u3"}, _ARG_CONNECTION, b"u2"),
+            ({"Identifier": None, b"identifier": b"x"}, _ARG_CONNECTION, b"x"),
         ]:
             with self.subTest(headers=headers):
-                self.server.reset()
-                self._send(headers)
-                self.assert_account(self.server.hops[0][2], connection_name, identifier)
-                self.assert_one_line_per_header()
+                self.assert_sent_as_before(headers, connection_name, identifier)
 
-    def test_conflicting_values_raise_before_sending(self):
-        for headers in [
-            {"identifier": "u2", "X-Scalekit-Identifier": "u3"},
-            # Values compare case-sensitively, as on the server.
-            {"Identifier": "u2", "x-scalekit-identifier": "U2"},
-            {"connection_name": "gmail", "X-Scalekit-Connection-Name": "slack"},
-            {"CONNECTION_NAME": "gmail", "x-scalekit-connection-name": "slack"},
+    def test_none_value_sends_neither_name(self):
+        for headers, connection_name, identifier in [
+            ({"identifier": None}, _ARG_CONNECTION, None),
+            ({"Identifier": None}, _ARG_CONNECTION, None),
+            ({"Connection_name": None}, None, _ARG_IDENTIFIER),
+            ({"identifier": None, "X-Scalekit-Identifier": "u9"}, _ARG_CONNECTION, None),
+            # "connection_name" is followed by "Connection_name", which still
+            # carries the argument.
+            ({"connection_name": None}, _ARG_CONNECTION, _ARG_IDENTIFIER),
         ]:
             with self.subTest(headers=headers):
-                self.server.reset()
-                client, core = self._client(self.origin)
-                with self.assertRaises(ValueError) as ctx:
-                    client.request(
-                        _ARG_CONNECTION, _ARG_IDENTIFIER, "/drive/v3/about", headers=headers
-                    )
-                self.assertEqual(self.server.received, [], "nothing may reach the server")
-                core.get_headers.assert_not_called()
-                for value in headers.values():
-                    self.assertNotIn(value, str(ctx.exception))
+                self.assert_sent_as_before(headers, connection_name, identifier)
+
+    def test_caller_x_scalekit_headers_are_replaced(self):
+        for headers, connection_name, identifier in [
+            ({"X-Scalekit-Identifier": "u9"}, _ARG_CONNECTION, _ARG_IDENTIFIER),
+            ({"x-scalekit-identifier": "u9"}, _ARG_CONNECTION, _ARG_IDENTIFIER),
+            ({"X-SCALEKIT-IDENTIFIER": ""}, _ARG_CONNECTION, _ARG_IDENTIFIER),
+            ({"X-Scalekit-Identifier": None}, _ARG_CONNECTION, _ARG_IDENTIFIER),
+            ({b"X-Scalekit-Identifier": b"u9"}, _ARG_CONNECTION, _ARG_IDENTIFIER),
+            ({"X-Scalekit-Connection-Name": "slack"}, _ARG_CONNECTION, _ARG_IDENTIFIER),
+            ({"identifier": "u2", "X-Scalekit-Identifier": "u3"}, _ARG_CONNECTION, "u2"),
+            (
+                {"x-scalekit-connection-name": "slack", "Connection_name": "gmail"},
+                "gmail",
+                _ARG_IDENTIFIER,
+            ),
+        ]:
+            with self.subTest(headers=headers):
+                self.assert_sent_as_before(headers, connection_name, identifier)
 
     def test_x_identifier_passes_through_untouched(self):
         self._send({"X-Identifier": "provider-value"})
@@ -655,7 +700,12 @@ class TestRequestConnectedAccountHeaders(_ProxyServerTestCase):
             _ARG_CONNECTION,
             _ARG_IDENTIFIER,
             "/drive/v3/about",
-            headers={"Identifier": "u2", "CONNECTION_NAME": "gmail", "Accept": "text/csv"},
+            headers={
+                "Identifier": "u2",
+                "CONNECTION_NAME": "gmail",
+                "x-scalekit-identifier": "other",
+                "Accept": "text/csv",
+            },
         )
         (sent,), _ = core.get_headers.call_args
         values_by_name = {}
@@ -683,32 +733,59 @@ class TestProxyAccountHeaders(unittest.TestCase):
             },
         )
 
-    def test_last_casing_of_the_original_name_wins_as_before(self):
-        # requests sent the last of several case variants; that is kept.
-        headers = proxy_account_headers("gmail", "u1", {"identifier": "a", "IDENTIFIER": "b"})
-        self.assertEqual((headers["identifier"], headers["X-Scalekit-Identifier"]), ("b", "b"))
-        self.assertNotIn("IDENTIFIER", headers)
+    def test_matches_earlier_versions_for_many_combinations(self):
+        # Random combinations of case variants, bytes names, None and bytes
+        # values: the original names carry what earlier versions sent, and the
+        # X-Scalekit names carry the same value (or are absent with it).
+        names = [
+            "connection_name",
+            "Connection_name",
+            "CONNECTION_NAME",
+            b"connection_name",
+            b"Connection_Name",
+            "identifier",
+            "Identifier",
+            b"identifier",
+            b"IDENTIFIER",
+            "X-Scalekit-Identifier",
+            "x-scalekit-connection-name",
+        ]
+        values = ["a", "b", "", None, b"c"]
+        rng = random.Random(3343)
+        for _ in range(500):
+            chosen = rng.sample(names, rng.randint(1, 5))
+            headers = {name: rng.choice(values) for name in chosen}
+            with self.subTest(headers=headers):
+                built = proxy_account_headers(_ARG_CONNECTION, _ARG_IDENTIFIER, headers)
+                request = requests.Request("GET", "http://h/proxy/x", headers=built)
+                prepared = requests.Session().prepare_request(request).headers
+                connection_name, identifier = _sent_by_earlier_versions(headers)
+                self.assertEqual(prepared.get("connection_name"), connection_name)
+                self.assertEqual(prepared.get("X-Scalekit-Connection-Name"), connection_name)
+                self.assertEqual(prepared.get("identifier"), identifier)
+                self.assertEqual(prepared.get("X-Scalekit-Identifier"), identifier)
 
-    def test_blank_original_override_is_sent_as_before(self):
+    def test_blank_override_is_sent_as_before(self):
         headers = proxy_account_headers("gmail", "u1", {"identifier": ""})
         self.assertEqual((headers["identifier"], headers["X-Scalekit-Identifier"]), ("", ""))
-        # With a non-blank X-Scalekit value, that value is used for both.
-        headers = proxy_account_headers(
-            "gmail", "u1", {"identifier": "", "X-Scalekit-Identifier": "u2"}
-        )
-        self.assertEqual((headers["identifier"], headers["X-Scalekit-Identifier"]), ("u2", "u2"))
+
+    def test_none_value_drops_both_names_of_the_pair(self):
+        headers = proxy_account_headers("gmail", "u1", {"Identifier": None})
+        for name in ("identifier", "X-Scalekit-Identifier", "Identifier"):
+            self.assertNotIn(name, headers)
+        self.assertEqual(headers["X-Scalekit-Connection-Name"], "gmail")
 
     def test_accepts_what_dict_update_accepts(self):
         headers = proxy_account_headers("gmail", "u1", [("Identifier", "u2"), ("Accept", "x")])
         self.assertEqual(headers["X-Scalekit-Identifier"], "u2")
         self.assertEqual(headers["Accept"], "x")
 
-    def test_bytes_value_equal_on_the_wire_is_not_a_conflict(self):
-        headers = proxy_account_headers(
-            "gmail", "u1", {"identifier": b"u2", "X-Scalekit-Identifier": "u2"}
-        )
-        self.assertEqual(headers["identifier"], b"u2")
-        self.assertEqual(headers["X-Scalekit-Identifier"], b"u2")
+    def test_bytes_name_and_value(self):
+        value = b"u2"
+        headers = proxy_account_headers("gmail", "u1", {b"identifier": value})
+        self.assertIs(headers["identifier"], value)
+        self.assertIs(headers["X-Scalekit-Identifier"], value)
+        self.assertNotIn(b"identifier", headers)
 
     def test_similar_names_are_not_account_headers(self):
         extra = {
@@ -716,6 +793,7 @@ class TestProxyAccountHeaders(unittest.TestCase):
             "identifier-x": "b",
             "Connection": "keep-alive",
             "X-Scalekit-Other": "c",
+            b"X-Bytes-Name": b"d",
         }
         headers = proxy_account_headers("gmail", "u1", extra)
         for name, value in extra.items():
@@ -723,18 +801,9 @@ class TestProxyAccountHeaders(unittest.TestCase):
         self.assertEqual(headers["identifier"], "u1")
 
     def test_does_not_modify_the_callers_headers(self):
-        extra = {"Identifier": "u2"}
+        extra = {"Identifier": "u2", "X-Scalekit-Identifier": "u3"}
         proxy_account_headers("gmail", "u1", extra)
-        self.assertEqual(extra, {"Identifier": "u2"})
-
-    def test_conflict_message_names_headers_not_values(self):
-        with self.assertRaises(ValueError) as ctx:
-            proxy_account_headers(
-                "gmail", "u1", {"identifier": "secret-a", "X-Scalekit-Identifier": "secret-b"}
-            )
-        message = str(ctx.exception)
-        self.assertIn("X-Scalekit-Identifier", message)
-        self.assertNotIn("secret", message)
+        self.assertEqual(extra, {"Identifier": "u2", "X-Scalekit-Identifier": "u3"})
 
 
 class TestCleanPath(unittest.TestCase):

@@ -755,12 +755,11 @@ class ActionClient:
             ``headers`` (e.g. ``"Content-Type": "application/xml"``).
         :type raw_body: Optional[Union[bytes, str]]
         :param headers: Additional HTTP headers to merge into the request.
-            A ``connection_name`` or ``identifier`` header here (in any case)
-            overrides the argument, and the same value is sent under its
-            ``X-Scalekit-*`` name. Passing ``X-Scalekit-Connection-Name`` or
-            ``X-Scalekit-Identifier`` sets the value the same way; giving both
-            names of a pair with different values raises ``ValueError`` before
-            any request is sent.
+            A ``connection_name`` or ``identifier`` entry here can override
+            the argument, as in earlier versions; whatever value is sent under
+            the original name is also sent under its ``X-Scalekit-*`` name.
+            ``X-Scalekit-Connection-Name`` and ``X-Scalekit-Identifier``
+            entries here are replaced by those values.
         :type headers: Optional[Dict[str, str]]
         :param timeout: Passed as a keyword argument. Request timeout in seconds;
             defaults to 30 when not given. It applies to connecting and to

@@ -26,7 +26,7 @@ from urllib.parse import parse_qs, unquote, urlsplit
 
 import requests
 
-from scalekit.actions._proxy_path import proxy_account_headers
+from scalekit.actions._proxy_path import HeaderValue, proxy_account_headers
 from scalekit.actions.models.upload_progress import UploadProgress
 from scalekit.common.exceptions import (
     ScalekitUploadException,
@@ -88,7 +88,7 @@ class _Core(Protocol):
     env_url: str
     access_token: str | None
 
-    def get_headers(self, headers: dict[str, str] | None = None) -> dict[str, str]: ...
+    def get_headers(self, headers: Mapping[str, HeaderValue] | None = None) -> dict[str, str]: ...
 
 
 def _drop_prepared_request(exc: requests.RequestException) -> None:

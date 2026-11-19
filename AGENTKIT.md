@@ -936,7 +936,7 @@ scalekit_client.actions.create_connected_account(
 
 Proxied REST call via `{env_url}/proxy` with `connection_name` and `identifier` headers. Returns a `requests.Response`.
 
-The same values are also sent as `X-Scalekit-Connection-Name` and `X-Scalekit-Identifier`. These names have no underscore, so they reach Scalekit through proxies and load balancers that drop headers containing one (for example ingress-nginx with default settings). A `connection_name` or `identifier` entry in `headers` (any case) overrides the argument under both names; passing both names of a pair with different values raises `ValueError` before any request is sent.
+The same values are also sent as `X-Scalekit-Connection-Name` and `X-Scalekit-Identifier`. These names have no underscore, so they reach Scalekit through proxies and load balancers that drop headers containing one (for example ingress-nginx with default settings). A `connection_name` or `identifier` entry in `headers` can override the argument, as in earlier versions; whatever value is sent under the original name is also sent under its `X-Scalekit-*` name. `X-Scalekit-Connection-Name` and `X-Scalekit-Identifier` entries in `headers` are replaced by those values.
 
 The request times out after **30 seconds** by default, for connecting and for waiting for a response separately. For a provider call that can take longer, pass a larger value as a keyword argument, for example `request(..., timeout=90)`; a request that exceeds the timeout raises `requests.exceptions.Timeout`. Other keyword arguments are passed to the underlying `requests` call.
 

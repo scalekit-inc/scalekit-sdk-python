@@ -1,6 +1,6 @@
 kind: fixed
 body: |
-  `client.actions.request()` and `client.actions.upload_resumable()` failed with `400 missing Connection_name header` behind proxies and load balancers that drop request headers containing underscores, such as ingress-nginx with default settings. They now also send `X-Scalekit-Connection-Name` and `X-Scalekit-Identifier`, alongside the original `connection_name` and `identifier` headers. The new names need a Scalekit server that accepts them; if you run your own Scalekit server, upgrade it first.
+  `client.actions.request()` and `client.actions.upload_resumable()` failed with `400 missing Connection_name header` behind proxies and load balancers that drop headers containing underscores, such as ingress-nginx with default settings. They now also send `X-Scalekit-Connection-Name` and `X-Scalekit-Identifier`; the original headers are still sent. If you run Scalekit yourself, upgrade the server before the SDK: a server version that predates this change passes the new headers on to the connector's API.
 time: '2026-11-19T07:02:54.778600+00:00'
 custom:
   Breaking: 'No'

@@ -19,7 +19,7 @@ from __future__ import annotations
 import contextlib
 import re
 from collections.abc import Callable, Mapping
-from typing import cast
+from typing import TypeAlias, cast
 from urllib.parse import unquote
 
 import requests
@@ -62,6 +62,9 @@ _URL_ADAPTER = HTTPAdapter()
 # A proxy for every URL: request_url uses only whether one applies and its scheme.
 _ANY_FORWARD_PROXY = {"all": "http://forward-proxy.invalid"}
 
+# A header value as requests accepts it; None means "leave the header out".
+HeaderValue: TypeAlias = "str | bytes | None"
+
 _OUTSIDE_PROXY_MESSAGE = (
     "path must resolve under the proxy prefix: start it with '/' and do not let '..' "
     "segments (including percent-encoded or backslash forms) climb above it"
@@ -71,114 +74,107 @@ _OUTSIDE_PROXY_MESSAGE = (
 def proxy_account_headers(
     connection_name: str,
     identifier: str,
-    headers: Mapping[str, str] | None = None,
-) -> dict[str, str]:
+    headers: Mapping[str, HeaderValue] | None = None,
+) -> dict[str, HeaderValue]:
     """Return the headers of a proxy request: the connected account plus ``headers``.
 
     The connection name is sent as ``connection_name`` (also written
     ``Connection_name``) and ``X-Scalekit-Connection-Name``; the identifier as
     ``identifier`` and ``X-Scalekit-Identifier``. The two names of a pair always
-    carry the same value: the server rejects a request where they differ.
+    carry the same value, because the server rejects a request where they differ.
 
-    ``headers`` are the caller's extra headers. Names are matched without
-    regard to case, as HTTP and ``requests`` match them. For each pair:
+    That value is the one earlier versions sent under the original name: the
+    argument, unless ``headers`` has a key that matches the original name
+    ignoring case (``Identifier``, or ``b"identifier"`` as ``bytes``). Which key
+    wins when there are several is worked out by replaying how ``requests``
+    merged the earlier headers (``_values_requests_sends``), so the value does
+    not change. When that value is ``None``, ``requests`` dropped the header, so
+    neither name of that pair is sent.
 
-    * A caller header with the original name (``identifier``, ``Identifier``,
-      ...) overrides the argument, as it always has, even when blank. If it
-      appears in several casings, the last one wins, as ``requests`` sends it.
-    * A caller header with the ``X-Scalekit-*`` name sets the value when the
-      original name is not given. A blank one (empty or whitespace) is
-      ignored, as the server ignores it.
-    * Both given with different non-blank values (compared with surrounding
-      whitespace removed, as the server compares them) raise ``ValueError``.
-      When they agree, the original-name value is sent under both names.
-
-    The caller's keys for these names are replaced by the names above, so no
-    two keys that differ only in case carry different values. Every other
-    caller header, ``X-Identifier`` included, is passed through unchanged.
+    Caller headers named ``X-Scalekit-Connection-Name`` or
+    ``X-Scalekit-Identifier`` (any case) are dropped; the SDK sends those names
+    itself, with the value above. Every other caller header, ``X-Identifier``
+    included, is passed through unchanged.
 
     Args:
         connection_name: The connection name passed to the SDK method.
         identifier: The connected account identifier passed to the SDK method.
         headers: The caller's extra headers, or ``None``. Anything
-            ``dict.update`` accepts, as before.
+            ``dict.update`` accepts, as before. Names may also be ``bytes`` and
+            values ``bytes`` or ``None``, as ``requests`` allows.
 
     Returns:
         A new dict: the account headers followed by the caller's other headers.
-
-    Raises:
-        ValueError: The caller passed different values for the two names of a
-            pair. The message names the headers, never their values.
+        Values are passed on as given (``str``, ``bytes``, or ``None`` for a
+        caller header that ``requests`` then leaves out).
 
     Example:
         >>> h = proxy_account_headers("gmail", "user_1", {"Identifier": "user_2"})
         >>> h["identifier"], h["X-Scalekit-Identifier"]
         ('user_2', 'user_2')
     """
-    extra: dict[str, str] = {}
-    if headers:
-        extra.update(headers)
-    connection_value = _account_value(connection_name, extra, _CONNECTION_NAME_HEADERS)
-    identifier_value = _account_value(identifier, extra, _IDENTIFIER_HEADERS)
-    result = {
-        "connection_name": connection_value,
-        "Connection_name": connection_value,
-        "X-Scalekit-Connection-Name": connection_value,
-        "identifier": identifier_value,
-        "X-Scalekit-Identifier": identifier_value,
+    combined: dict[str | bytes, HeaderValue] = {
+        "connection_name": connection_name,
+        "Connection_name": connection_name,
+        "identifier": identifier,
     }
-    result.update(
-        (name, value) for name, value in extra.items() if _key(name) not in _ACCOUNT_HEADER_KEYS
-    )
+    extra: dict[str | bytes, HeaderValue] = {}
+    if headers:
+        combined.update(headers)
+        extra.update(headers)
+    sent = _values_requests_sends(combined)
+
+    result: dict[str, HeaderValue] = {}
+    connection_value = sent.get("connection_name")
+    if connection_value is not None:
+        result["connection_name"] = connection_value
+        result["Connection_name"] = connection_value
+        result["X-Scalekit-Connection-Name"] = connection_value
+    identifier_value = sent.get("identifier")
+    if identifier_value is not None:
+        result["identifier"] = identifier_value
+        result["X-Scalekit-Identifier"] = identifier_value
+    for name, value in extra.items():
+        if _native_lower(name) not in _ACCOUNT_HEADER_KEYS:
+            # A bytes name is passed on as given, as before.
+            result[cast(str, name)] = value
     return result
 
 
-def _account_value(argument: str, headers: Mapping[str, str], names: tuple[str, str]) -> str:
-    """Return the value to send under both ``names`` (rules: ``proxy_account_headers``)."""
-    original_name, scalekit_name = names
-    original = _last_value(headers, original_name)
-    scalekit = _last_value(headers, scalekit_name)
-    if scalekit is not None and not _trimmed(scalekit):
-        scalekit = None
-    if original is not None and _trimmed(original):
-        if scalekit is not None and _trimmed(scalekit) != _trimmed(original):
-            raise ValueError(
-                f"headers {original_name!r} and {scalekit_name!r} have different values; "
-                "pass only one of them, or the same value for both"
-            )
-        return original
-    if scalekit is not None:
-        return scalekit
-    if original is not None:
-        return original
-    return argument
+def _values_requests_sends(headers: Mapping[str | bytes, HeaderValue]) -> dict[str, str | bytes]:
+    """Return the value ``requests`` sends for each header name, keyed by lower-case name.
 
-
-def _last_value(headers: Mapping[str, str], name: str) -> str | None:
-    """Return the value of the last key in ``headers`` equal to ``name`` in any case."""
-    wanted = name.lower()
-    found: str | None = None
-    for key, value in headers.items():
-        if _key(key) == wanted:
-            found = value
-    return found
-
-
-def _key(name: object) -> object:
-    """Return a header name for case-insensitive comparison."""
-    return name.lower() if isinstance(name, str) else name
-
-
-def _trimmed(value: object) -> str:
-    """Return a header value without surrounding whitespace, for comparison only.
-
-    ``requests`` sends ``str`` values as Latin-1 and also accepts ``bytes``, so
-    both compare equal here when they would go on the wire the same way. Any
-    other type is compared as text; ``requests`` rejects it when sending.
+    This replays ``requests``: merging a request's headers into a
+    ``CaseInsensitiveDict`` keys them by ``name.lower()`` (``str`` and ``bytes``
+    names apart); a later key overwrites the value of an earlier one in place,
+    and keys whose value is ``None`` are then removed. Preparing the request
+    converts each name to ``str`` (``bytes`` as ASCII) in that order, so of the
+    names that convert to the same text, the last one wins.
     """
-    if isinstance(value, bytes):
-        return value.decode("latin-1").strip()
-    return str(value).strip()
+    merged: dict[object, HeaderValue] = {}
+    for name, value in headers.items():
+        merged[_lower(name)] = value
+    sent: dict[str, str | bytes] = {}
+    for key, value in merged.items():
+        native = _native_lower(key)
+        if value is not None and native is not None:
+            sent[native] = value
+    return sent
+
+
+def _lower(name: object) -> object:
+    """Return the key ``requests.structures.CaseInsensitiveDict`` uses for ``name``."""
+    return name.lower() if isinstance(name, (str, bytes)) else name
+
+
+def _native_lower(name: object) -> str | None:
+    """Return ``name`` as lower-case ``str``, as ``requests`` converts it; else ``None``."""
+    if isinstance(name, bytes):
+        try:
+            name = name.decode("ascii")
+        except UnicodeDecodeError:
+            return None
+    return name.lower() if isinstance(name, str) else None
 
 
 def ensure_under_proxy_prefix(env_url: str, url: str) -> None:

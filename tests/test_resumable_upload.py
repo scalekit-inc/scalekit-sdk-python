@@ -495,9 +495,7 @@ class TestAccountHeaders(UploadTestCase):
         )
         self.upload(fake, data=os.urandom(CHUNK + 10))
         self.assertEqual(len(refreshes), 2)
-        self.assertEqual(
-            [c["method"] for c in fake.calls], ["POST", "POST", "PUT", "PUT", "PUT"]
-        )
+        self.assertEqual([c["method"] for c in fake.calls], ["POST", "POST", "PUT", "PUT", "PUT"])
         for i, call in enumerate(fake.calls):
             with self.subTest(call=i):
                 h = CaseInsensitiveDict(call["headers"])
