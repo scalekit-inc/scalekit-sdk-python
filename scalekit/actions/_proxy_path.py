@@ -3,6 +3,8 @@
 ``ActionClient.request`` sends every call to ``{env_url}/proxy{path}`` with the
 client's bearer token and the connection headers. This module
 
+* builds the headers that name the connected account
+  (``proxy_account_headers``),
 * verifies, before anything is sent, that the server will route the path under
   ``<env base path>/proxy/`` (``ensure_under_proxy_prefix``), and
 * removes those credentials from any redirect hop whose target is outside that
@@ -16,8 +18,8 @@ from __future__ import annotations
 
 import contextlib
 import re
-from collections.abc import Callable
-from typing import cast
+from collections.abc import Callable, Mapping
+from typing import TypeAlias, cast
 from urllib.parse import unquote
 
 import requests
@@ -29,9 +31,19 @@ _PROXY_PREFIX = "/proxy/"
 
 _VALID_ESCAPE_RE = re.compile(r"%[0-9A-Fa-f]{2}")
 
+# The headers that name the connected account, as (original name, X-Scalekit
+# name) pairs. Both names of a pair carry the same value. The X-Scalekit names
+# have no underscore, so they survive proxies and load balancers that drop
+# headers containing one (ingress-nginx does by default).
+_CONNECTION_NAME_HEADERS = ("connection_name", "X-Scalekit-Connection-Name")
+_IDENTIFIER_HEADERS = ("identifier", "X-Scalekit-Identifier")
+_ACCOUNT_HEADER_KEYS = frozenset(
+    name.lower() for name in (*_CONNECTION_NAME_HEADERS, *_IDENTIFIER_HEADERS)
+)
+
 # Headers request() adds that identify the caller to Scalekit. Header names are
 # case-insensitive in requests, so "Connection_name" is covered too.
-_CREDENTIAL_HEADERS = ("Authorization", "connection_name", "identifier")
+_CREDENTIAL_HEADERS = ("Authorization", *_CONNECTION_NAME_HEADERS, *_IDENTIFIER_HEADERS)
 
 # Typed handles on two requests.Session methods. Some stub distributions
 # (types-requests) declare them without annotations; calling them through these
@@ -50,10 +62,119 @@ _URL_ADAPTER = HTTPAdapter()
 # A proxy for every URL: request_url uses only whether one applies and its scheme.
 _ANY_FORWARD_PROXY = {"all": "http://forward-proxy.invalid"}
 
+# A header value as requests accepts it; None means "leave the header out".
+HeaderValue: TypeAlias = "str | bytes | None"
+
 _OUTSIDE_PROXY_MESSAGE = (
     "path must resolve under the proxy prefix: start it with '/' and do not let '..' "
     "segments (including percent-encoded or backslash forms) climb above it"
 )
+
+
+def proxy_account_headers(
+    connection_name: str,
+    identifier: str,
+    headers: Mapping[str, HeaderValue] | None = None,
+) -> dict[str, HeaderValue]:
+    """Return the headers of a proxy request: the connected account plus ``headers``.
+
+    The connection name is sent as ``connection_name`` (also written
+    ``Connection_name``) and ``X-Scalekit-Connection-Name``; the identifier as
+    ``identifier`` and ``X-Scalekit-Identifier``. The two names of a pair always
+    carry the same value, because the server rejects a request where they differ.
+
+    That value is the one earlier versions sent under the original name: the
+    argument, unless ``headers`` has a key that matches the original name
+    ignoring case (``Identifier``, or ``b"identifier"`` as ``bytes``). Which key
+    wins when there are several is worked out by replaying how ``requests``
+    merged the earlier headers (``_values_requests_sends``), so the value does
+    not change. When that value is ``None``, ``requests`` dropped the header, so
+    neither name of that pair is sent.
+
+    Caller headers named ``X-Scalekit-Connection-Name`` or
+    ``X-Scalekit-Identifier`` (any case) are dropped; the SDK sends those names
+    itself, with the value above. Every other caller header, ``X-Identifier``
+    included, is passed through unchanged.
+
+    Args:
+        connection_name: The connection name passed to the SDK method.
+        identifier: The connected account identifier passed to the SDK method.
+        headers: The caller's extra headers, or ``None``. Anything
+            ``dict.update`` accepts, as before. Names may also be ``bytes`` and
+            values ``bytes`` or ``None``, as ``requests`` allows.
+
+    Returns:
+        A new dict: the account headers followed by the caller's other headers.
+        Values are passed on as given (``str``, ``bytes``, or ``None`` for a
+        caller header that ``requests`` then leaves out).
+
+    Example:
+        >>> h = proxy_account_headers("gmail", "user_1", {"Identifier": "user_2"})
+        >>> h["identifier"], h["X-Scalekit-Identifier"]
+        ('user_2', 'user_2')
+    """
+    combined: dict[str | bytes, HeaderValue] = {
+        "connection_name": connection_name,
+        "Connection_name": connection_name,
+        "identifier": identifier,
+    }
+    extra: dict[str | bytes, HeaderValue] = {}
+    if headers:
+        combined.update(headers)
+        extra.update(headers)
+    sent = _values_requests_sends(combined)
+
+    result: dict[str, HeaderValue] = {}
+    connection_value = sent.get("connection_name")
+    if connection_value is not None:
+        result["connection_name"] = connection_value
+        result["Connection_name"] = connection_value
+        result["X-Scalekit-Connection-Name"] = connection_value
+    identifier_value = sent.get("identifier")
+    if identifier_value is not None:
+        result["identifier"] = identifier_value
+        result["X-Scalekit-Identifier"] = identifier_value
+    for name, value in extra.items():
+        if _native_lower(name) not in _ACCOUNT_HEADER_KEYS:
+            # A bytes name is passed on as given, as before.
+            result[cast(str, name)] = value
+    return result
+
+
+def _values_requests_sends(headers: Mapping[str | bytes, HeaderValue]) -> dict[str, str | bytes]:
+    """Return the value ``requests`` sends for each header name, keyed by lower-case name.
+
+    This replays ``requests``: merging a request's headers into a
+    ``CaseInsensitiveDict`` keys them by ``name.lower()`` (``str`` and ``bytes``
+    names apart); a later key overwrites the value of an earlier one in place,
+    and keys whose value is ``None`` are then removed. Preparing the request
+    converts each name to ``str`` (``bytes`` as ASCII) in that order, so of the
+    names that convert to the same text, the last one wins.
+    """
+    merged: dict[object, HeaderValue] = {}
+    for name, value in headers.items():
+        merged[_lower(name)] = value
+    sent: dict[str, str | bytes] = {}
+    for key, value in merged.items():
+        native = _native_lower(key)
+        if value is not None and native is not None:
+            sent[native] = value
+    return sent
+
+
+def _lower(name: object) -> object:
+    """Return the key ``requests.structures.CaseInsensitiveDict`` uses for ``name``."""
+    return name.lower() if isinstance(name, (str, bytes)) else name
+
+
+def _native_lower(name: object) -> str | None:
+    """Return ``name`` as lower-case ``str``, as ``requests`` converts it; else ``None``."""
+    if isinstance(name, bytes):
+        try:
+            name = name.decode("ascii")
+        except UnicodeDecodeError:
+            return None
+    return name.lower() if isinstance(name, str) else None
 
 
 def ensure_under_proxy_prefix(env_url: str, url: str) -> None:
@@ -99,12 +220,13 @@ class ProxySession(requests.Session):
 
     Redirects are followed exactly as ``requests`` follows them. On each hop,
     ``requests`` calls ``rebuild_auth``; before deferring to it, this removes
-    ``Authorization``, ``connection_name`` and ``identifier`` when the hop's
-    target is outside ``<env base path>/proxy/``: a different origin (as
-    ``requests.Session.should_strip_auth`` decides) or the same origin with a
-    path the server would route outside the prefix (the rule
-    ``ensure_under_proxy_prefix`` applies). Once removed, they stay
-    removed for later hops. Hops that stay under the prefix are untouched.
+    ``Authorization``, ``connection_name``, ``identifier``,
+    ``X-Scalekit-Connection-Name`` and ``X-Scalekit-Identifier`` (in any case)
+    when the hop's target is outside ``<env base path>/proxy/``: a different
+    origin (as ``requests.Session.should_strip_auth`` decides) or the same
+    origin with a path the server would route outside the prefix (the rule
+    ``ensure_under_proxy_prefix`` applies). Once removed, they stay removed for
+    later hops. Hops that stay under the prefix are untouched.
 
     Example:
         >>> with ProxySession("https://acme.scalekit.cloud") as session:

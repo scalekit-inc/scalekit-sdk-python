@@ -936,9 +936,11 @@ scalekit_client.actions.create_connected_account(
 
 Proxied REST call via `{env_url}/proxy` with `connection_name` and `identifier` headers. Returns a `requests.Response`.
 
+The same values are also sent as `X-Scalekit-Connection-Name` and `X-Scalekit-Identifier`. These names have no underscore, so they reach Scalekit through proxies and load balancers that drop headers containing one (for example ingress-nginx with default settings). A `connection_name` or `identifier` entry in `headers` can override the argument, as in earlier versions; whatever value is sent under the original name is also sent under its `X-Scalekit-*` name. `X-Scalekit-Connection-Name` and `X-Scalekit-Identifier` entries in `headers` are replaced by those values.
+
 The request times out after **30 seconds** by default, for connecting and for waiting for a response separately. For a provider call that can take longer, pass a larger value as a keyword argument, for example `request(..., timeout=90)`; a request that exceeds the timeout raises `requests.exceptions.Timeout`. Other keyword arguments are passed to the underlying `requests` call.
 
-A `path` that resolves outside the proxy prefix (for example through `..` segments, including percent-encoded or backslash forms) raises `ValueError` before any request is sent. With an `http://` environment URL, this also covers the URL a forward proxy would receive, even when none is configured. Redirects are followed as before, but a redirect to a location outside the proxy prefix is sent without the client's bearer token and without the `connection_name` and `identifier` headers.
+A `path` that resolves outside the proxy prefix (for example through `..` segments, including percent-encoded or backslash forms) raises `ValueError` before any request is sent. With an `http://` environment URL, this also covers the URL a forward proxy would receive, even when none is configured. Redirects are followed as before, but a redirect to a location outside the proxy prefix is sent without the client's bearer token and without the connected-account headers.
 
 </dd></dl>
 </details>
@@ -949,7 +951,7 @@ A `path` that resolves outside the proxy prefix (for example through `..` segmen
 
 ### 📝 Description
 
-Uploads content of any size to Google Drive, Cloud Storage or YouTube through the Scalekit proxy, using Google's resumable upload protocol. The content is sent in chunks (4 MiB by default) and read about one chunk at a time; resending the rest of a chunk briefly copies it. A chunk that fails with a timeout, a connection error or HTTP 408, 429, 500, 502, 503 or 504 is resumed from what the server stored instead of restarting (exponential backoff with jitter, or `Retry-After` on 429 and 503, capped at 30 seconds). The request that starts the session is never retried, because a retry would open a second session; the only exception is a single resend after the SDK refreshes an expired Scalekit access token (a 401 from Scalekit itself, not from Google). Returns the created or updated resource as a dict, for example the Drive file (`{}` when the final response is empty).
+Uploads content of any size to Google Drive, Cloud Storage or YouTube through the Scalekit proxy, using Google's resumable upload protocol. The content is sent in chunks (4 MiB by default) and read about one chunk at a time; resending the rest of a chunk briefly copies it. A chunk that fails with a timeout, a connection error or HTTP 408, 429, 500, 502, 503 or 504 is resumed from what the server stored instead of restarting (exponential backoff with jitter, or `Retry-After` on 429 and 503, capped at 30 seconds). The request that starts the session is never retried, because a retry would open a second session; the only exception is a single resend after the SDK refreshes an expired Scalekit access token (a 401 from Scalekit itself, not from Google). Returns the created or updated resource as a dict, for example the Drive file (`{}` when the final response is empty). Every request of the upload names the connected account the same way as `request()`: `connection_name` and `identifier`, also sent as `X-Scalekit-Connection-Name` and `X-Scalekit-Identifier`.
 
 Errors (all in `scalekit.common.exceptions`):
 
