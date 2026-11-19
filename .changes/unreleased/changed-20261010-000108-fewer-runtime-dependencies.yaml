@@ -1,0 +1,8 @@
+kind: changed
+body: |
+  Installing the SDK no longer installs `setuptools`, `google`, `deprecation` or `Faker`, or their dependencies `beautifulsoup4`, `soupsieve` and `packaging`. The SDK imports none of them. The SDK also no longer pins your environment to `setuptools` 82.x. If your code imports one of these packages without declaring it, add it to your own dependencies.
+time: '2026-10-10T00:01:08.292217+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: ''
+  Migration: ''
