@@ -24,7 +24,11 @@ from scalekit.actions.modifier import (
     Modifier, ModifierType, ToolNames,
     apply_pre_modifiers, apply_post_modifiers
 )
-from scalekit.actions._proxy_path import ProxySession, ensure_under_proxy_prefix
+from scalekit.actions._proxy_path import (
+    ProxySession,
+    ensure_under_proxy_prefix,
+    proxy_account_headers,
+)
 from scalekit.common.exceptions import ScalekitNotFoundException
 from scalekit.actions.triggers import ActionTriggers
 from scalekit.triggers import TriggersClient
@@ -713,6 +717,12 @@ class ActionClient:
         """
         Make a proxied REST API call through Scalekit on behalf of a connected account.
 
+        The connected account is named by the ``connection_name`` and
+        ``identifier`` headers, and by ``X-Scalekit-Connection-Name`` and
+        ``X-Scalekit-Identifier`` with the same values. The ``X-Scalekit-*``
+        names have no underscore, so they reach Scalekit through proxies and
+        load balancers that drop headers containing one.
+
         :param connection_name: Connector identifier (required)
         :type connection_name: str
         :param identifier: Connected account identifier (required)
@@ -726,7 +736,7 @@ class ActionClient:
             receive, even when none is configured. Redirects are followed as
             before, but a redirect to a location outside the proxy
             prefix is sent without the client's bearer token and without the
-            ``connection_name`` and ``identifier`` headers.
+            connected-account headers.
         :type path: str
         :param method: HTTP method — GET, POST, PUT, PATCH, DELETE, etc. (default: GET)
         :type method: str
@@ -744,7 +754,13 @@ class ActionClient:
             ``form_data``. You must also pass a matching ``Content-Type`` header via
             ``headers`` (e.g. ``"Content-Type": "application/xml"``).
         :type raw_body: Optional[Union[bytes, str]]
-        :param headers: Additional HTTP headers to merge into the request
+        :param headers: Additional HTTP headers to merge into the request.
+            A ``connection_name`` or ``identifier`` header here (in any case)
+            overrides the argument, and the same value is sent under its
+            ``X-Scalekit-*`` name. Passing ``X-Scalekit-Connection-Name`` or
+            ``X-Scalekit-Identifier`` sets the value the same way; giving both
+            names of a pair with different values raises ``ValueError`` before
+            any request is sent.
         :type headers: Optional[Dict[str, str]]
         :param timeout: Passed as a keyword argument. Request timeout in seconds;
             defaults to 30 when not given. It applies to connecting and to
@@ -775,13 +791,7 @@ class ActionClient:
 
         params = query_params or {}
 
-        proxy_headers = {
-            "connection_name": connection_name,
-            "Connection_name": connection_name,
-            "identifier": identifier,
-        }
-        if headers:
-            proxy_headers.update(headers)
+        proxy_headers = proxy_account_headers(connection_name, identifier, headers)
         req_headers = core.get_headers(proxy_headers)
 
         # add default timeout and allow override via kwargs

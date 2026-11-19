@@ -936,9 +936,11 @@ scalekit_client.actions.create_connected_account(
 
 Proxied REST call via `{env_url}/proxy` with `connection_name` and `identifier` headers. Returns a `requests.Response`.
 
+The same values are also sent as `X-Scalekit-Connection-Name` and `X-Scalekit-Identifier`. These names have no underscore, so they reach Scalekit through proxies and load balancers that drop headers containing one (for example ingress-nginx with default settings). A `connection_name` or `identifier` entry in `headers` (any case) overrides the argument under both names; passing both names of a pair with different values raises `ValueError` before any request is sent.
+
 The request times out after **30 seconds** by default, for connecting and for waiting for a response separately. For a provider call that can take longer, pass a larger value as a keyword argument, for example `request(..., timeout=90)`; a request that exceeds the timeout raises `requests.exceptions.Timeout`. Other keyword arguments are passed to the underlying `requests` call.
 
-A `path` that resolves outside the proxy prefix (for example through `..` segments, including percent-encoded or backslash forms) raises `ValueError` before any request is sent. With an `http://` environment URL, this also covers the URL a forward proxy would receive, even when none is configured. Redirects are followed as before, but a redirect to a location outside the proxy prefix is sent without the client's bearer token and without the `connection_name` and `identifier` headers.
+A `path` that resolves outside the proxy prefix (for example through `..` segments, including percent-encoded or backslash forms) raises `ValueError` before any request is sent. With an `http://` environment URL, this also covers the URL a forward proxy would receive, even when none is configured. Redirects are followed as before, but a redirect to a location outside the proxy prefix is sent without the client's bearer token and without the connected-account headers.
 
 </dd></dl>
 </details>

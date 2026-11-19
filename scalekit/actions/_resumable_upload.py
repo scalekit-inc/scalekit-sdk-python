@@ -26,6 +26,7 @@ from urllib.parse import parse_qs, unquote, urlsplit
 
 import requests
 
+from scalekit.actions._proxy_path import proxy_account_headers
 from scalekit.actions.models.upload_progress import UploadProgress
 from scalekit.common.exceptions import (
     ScalekitUploadException,
@@ -465,11 +466,7 @@ class _ResumableUpload:
         self._core = core
         self._url = url
         # The same proxy headers as ActionClient.request.
-        self._proxy_headers = {
-            "connection_name": connection_name,
-            "Connection_name": connection_name,
-            "identifier": identifier,
-        }
+        self._proxy_headers = proxy_account_headers(connection_name, identifier)
         self._method = method
         self._source = _Source(reader)
         self._total = total

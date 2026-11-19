@@ -475,6 +475,38 @@ class TestTokenRefresh(UploadTestCase):
                 self.assertEqual(fake.calls[1]["method"], "POST")
 
 
+class TestAccountHeaders(UploadTestCase):
+    """Every request names the account under both header names, with equal values."""
+
+    def test_every_request_sends_both_names(self):
+        refreshes = []
+
+        def refresh():
+            refreshes.append(1)
+            self.core.access_token = f"fresh-token-{len(refreshes)}"
+
+        self.core._CoreClient__authenticate_client = refresh
+        fake = FakeTransport(
+            resp(401, body=SCALEKIT_401),  # session start, resent after the refresh
+            started(),
+            incomplete(CHUNK - 1),
+            resp(401, body=SCALEKIT_401),  # second chunk, resent after the refresh
+            done(),
+        )
+        self.upload(fake, data=os.urandom(CHUNK + 10))
+        self.assertEqual(len(refreshes), 2)
+        self.assertEqual(
+            [c["method"] for c in fake.calls], ["POST", "POST", "PUT", "PUT", "PUT"]
+        )
+        for i, call in enumerate(fake.calls):
+            with self.subTest(call=i):
+                h = CaseInsensitiveDict(call["headers"])
+                self.assertEqual(h["connection_name"], "googledrive")
+                self.assertEqual(h["X-Scalekit-Connection-Name"], "googledrive")
+                self.assertEqual(h["identifier"], "user_1")
+                self.assertEqual(h["X-Scalekit-Identifier"], "user_1")
+
+
 class TestChunks(UploadTestCase):
     def test_three_chunks_known_size(self):
         payload = os.urandom(2 * CHUNK + 1000)
