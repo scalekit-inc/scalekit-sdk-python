@@ -7553,6 +7553,7 @@ response = scalekit_client.actions.providers.create_custom_provider(
                 type="OAUTH",
                 display_name="OAuth 2.1",
                 description="Authenticate via browser OAuth.",
+                is_mcp=True,
                 oauth_config=OAuthConfig(),  # pkce_enabled=True by default
             )
         ],
@@ -7572,6 +7573,7 @@ response = scalekit_client.actions.providers.create_custom_provider(
                 type="BEARER",
                 display_name="Apify Token",
                 description="Authenticate with your Apify API Token.",
+                is_mcp=True,
                 fields=[
                     AuthField(
                         field_name="token",
