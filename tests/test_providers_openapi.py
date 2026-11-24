@@ -73,9 +73,9 @@ class ProvidersTestCase(unittest.TestCase):
 
         self.core.grpc_exec.side_effect = grpc_exec
 
-    def assertNoDeadlineOverride(self, kwargs):
-        """The call passes no per-call deadline (timeout=None), so grpc_exec applies the client's default."""
-        self.assertIsNone(kwargs.get("timeout"))
+    def assertPlainCall(self, kwargs):
+        """Like every other call: grpc_exec gets the stub method and the request, nothing else."""
+        self.assertEqual(kwargs, {})
 
 
 class CreateOpenApiConnectorTest(ProvidersTestCase):
@@ -136,7 +136,7 @@ class CreateOpenApiConnectorTest(ProvidersTestCase):
         self.assertEqual(dict(sent.metadata), {"team": "x"})
         self.assertIs(sent.proxy_enabled, True)
 
-    def test_a_create_passes_no_deadline_override_with_or_without_a_spec_url(self):
+    def test_a_create_is_made_like_every_other_call_with_or_without_a_spec_url(self):
         self._reply(
             pb.CreateProviderResponse(provider=_proto_provider()),
             pb.CreateProviderResponse(provider=_proto_provider()),
@@ -144,7 +144,7 @@ class CreateOpenApiConnectorTest(ProvidersTestCase):
         self.low.create_custom_provider("Petstore", openapi_spec_url=SPEC_URL, auth_patterns=[_api_key_pattern()])
         self.low.create_custom_provider("Acme MCP", MCP_URL, auth_patterns=[_api_key_pattern()])
         for _, _, kwargs in self.calls:
-            self.assertNoDeadlineOverride(kwargs)
+            self.assertPlainCall(kwargs)
 
     def test_typed_create_maps_every_field_and_decodes_the_response(self):
         self._reply(
@@ -394,11 +394,11 @@ class UpdateOpenApiConnectorTest(ProvidersTestCase):
         self.client.providers.update_custom_provider(request)
         sent = self.calls[0][1].provider
         self.assertEqual((sent.proxy_url, sent.openapi_spec_url), ("", ""))
-        self.assertNoDeadlineOverride(self.calls[0][2])
+        self.assertPlainCall(self.calls[0][2])
         with self.assertRaises(ValidationError):
             request.proxy_url = "http://api.example.com"
 
-    def test_an_update_passes_no_deadline_override_with_or_without_a_spec_url(self):
+    def test_an_update_is_made_like_every_other_call_with_or_without_a_spec_url(self):
         self._reply(
             pb.UpdateProviderResponse(provider=_proto_provider()),
             pb.UpdateProviderResponse(provider=_proto_provider()),
@@ -406,7 +406,7 @@ class UpdateOpenApiConnectorTest(ProvidersTestCase):
         self.low.update_custom_provider("PETSTORE:12", "Petstore", openapi_spec_url=SPEC_URL)
         self.low.update_custom_provider("PETSTORE:12", "Petstore", proxy_url="https://api.example.com/v2")
         for _, _, kwargs in self.calls:
-            self.assertNoDeadlineOverride(kwargs)
+            self.assertPlainCall(kwargs)
 
     def test_the_old_positional_call_still_maps(self):
         self._reply(pb.UpdateProviderResponse(provider=_proto_provider()))

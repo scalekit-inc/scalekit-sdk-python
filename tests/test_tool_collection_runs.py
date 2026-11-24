@@ -1,4 +1,8 @@
-"""Offline tests for tool collection runs of OpenAPI-sourced connectors: the gRPC layer is stubbed."""
+"""Offline tests for what the tool collection run methods of ``client.actions`` return, and for the run model.
+
+The gRPC layer is stubbed. What the methods send, and how the server's errors reach the caller, is tested in
+test_actions_tool_collection_runs.py.
+"""
 import json
 import unittest
 from datetime import datetime, timezone
@@ -8,22 +12,12 @@ from google.protobuf.timestamp_pb2 import Timestamp
 from pydantic import ValidationError
 
 from scalekit.actions.actions import ActionClient
-from scalekit.actions.types import (
-    GetToolCollectionRunRequest,
-    SkippedTool,
-    ToolCollectionRun,
-    ToolCollectionRunStatus,
-    InvokeToolCollectionRequest,
-)
-from scalekit.common.exceptions import (
-    ScalekitBadRequestException,
-    ScalekitConflictException,
-    ScalekitNotFoundException,
-)
-from scalekit.providers import ProvidersClient
+from scalekit.actions.types import SkippedTool, ToolCollectionRun, ToolCollectionRunStatus
+from scalekit.tools import ToolsClient
 from scalekit.v1.providers import providers_pb2 as pb
 
-CONNECTOR = "PETSTORE:12"
+CONNECTOR = "ACMEAPI:70219645518265104"
+RUN_ID = "tcr_153432495495315592"
 QUEUED_AT = datetime(2026, 11, 11, 9, 0, 0, tzinfo=timezone.utc)
 STARTED_AT = datetime(2026, 11, 11, 9, 0, 5, tzinfo=timezone.utc)
 FINISHED_AT = datetime(2026, 11, 11, 9, 0, 20, tzinfo=timezone.utc)
@@ -35,16 +29,8 @@ def _timestamp(value: datetime) -> Timestamp:
     return ts
 
 
-def _server_error(cls, message, code):
-    exc = cls.__new__(cls)
-    Exception.__init__(exc, message)
-    exc._message = message
-    exc._error_code = code
-    return exc
-
-
 def _run(**kw) -> pb.ToolCollectionRun:
-    kw.setdefault("run_id", "tcr_123")
+    kw.setdefault("run_id", RUN_ID)
     kw.setdefault("provider_identifier", CONNECTOR)
     kw.setdefault("status", "QUEUED")
     kw.setdefault("created_at", _timestamp(QUEUED_AT))
@@ -54,116 +40,37 @@ def _run(**kw) -> pb.ToolCollectionRun:
 class RunsTestCase(unittest.TestCase):
     def setUp(self):
         self.core = MagicMock()
-        self.calls = []
-        self.low = ProvidersClient(self.core)
-        self.client = ActionClient(MagicMock(), MagicMock(), providers_client=self.low)
+        # No ProvidersClient: the two methods call through the tools client's core client, like delete_custom_tool.
+        self.actions = ActionClient(ToolsClient(self.core), MagicMock())
 
-    def _reply(self, *responses):
-        queue = list(responses)
-
-        def grpc_exec(rpc, request, **kwargs):
-            self.calls.append((rpc, request, kwargs))
-            item = queue.pop(0)
-            if isinstance(item, Exception):
-                raise item
-            return (item, None)
-
-        self.core.grpc_exec.side_effect = grpc_exec
+    def _reply(self, response: pb.ToolCollectionRun):
+        self.core.grpc_exec.return_value = (response, None)
 
 
 class InvokeToolCollectionTest(RunsTestCase):
     def test_returns_the_queued_run(self):
         self._reply(_run())
-        run = self.client.providers.invoke_tool_collection(
-            InvokeToolCollectionRequest(provider_identifier=CONNECTOR)
-        )
-        self.assertEqual(self.calls[0][1].provider_identifier, CONNECTOR)
-        self.assertEqual(run.run_id, "tcr_123")
+        run = self.actions.invoke_tool_collection(provider_identifier=CONNECTOR)
+        self.assertIsInstance(run, ToolCollectionRun)
+        self.assertEqual(run.run_id, RUN_ID)
         self.assertEqual(run.provider_identifier, CONNECTOR)
         self.assertEqual(run.status, ToolCollectionRunStatus.QUEUED)
         self.assertFalse(run.is_terminal)
         self.assertEqual(run.created_at, QUEUED_AT)
         self.assertIsNone(run.started_at)
         self.assertIsNone(run.finished_at)
-
-    def test_passes_no_deadline_override(self):
-        self._reply(_run())
-        self.low.invoke_tool_collection(CONNECTOR)
-        kwargs = self.calls[0][2]
-        self.assertIsNone(kwargs.get("timeout"))  # timeout=None: grpc_exec applies the client's default deadline
-
-    def test_server_rejections_reach_the_caller_unchanged(self):
-        self._reply(
-            _server_error(ScalekitNotFoundException, "provider not found", "NOT_FOUND"),
-            _server_error(
-                ScalekitBadRequestException, "this connector is not sourced from an OpenAPI spec", "INVALID_ARGUMENT"
-            ),
-            _server_error(
-                ScalekitConflictException,
-                "an ingestion run is already in progress for this connector",
-                "RESOURCE_ALREADY_EXISTS",
-            ),
-        )
-        request = InvokeToolCollectionRequest(provider_identifier=CONNECTOR)
-        with self.assertRaises(ScalekitNotFoundException):
-            self.client.providers.invoke_tool_collection(request)
-        with self.assertRaises(ScalekitBadRequestException) as not_openapi:
-            self.client.providers.invoke_tool_collection(request)
-        self.assertIn("not sourced from an OpenAPI spec", not_openapi.exception.message)
-        with self.assertRaises(ScalekitConflictException) as running:
-            self.client.providers.invoke_tool_collection(request)
-        self.assertEqual(running.exception.error_code, "RESOURCE_ALREADY_EXISTS")
-
-    def test_identifier_is_required_and_bounded(self):
-        with self.assertRaises(ValidationError):
-            InvokeToolCollectionRequest(provider_identifier="")
-        with self.assertRaises(ValidationError):
-            InvokeToolCollectionRequest(provider_identifier="x" * 256)
-        InvokeToolCollectionRequest(provider_identifier="x" * 255)
-
-    def test_a_padded_identifier_is_trimmed_and_a_blank_one_is_refused(self):
-        self._reply(_run(status="QUEUED"), _run(status="QUEUED"))
-        self.client.providers.invoke_tool_collection(InvokeToolCollectionRequest(provider_identifier=f"  {CONNECTOR}\n"))
-        self.low.invoke_tool_collection(f" {CONNECTOR} ")  # the low-level client trims too
-        self.assertEqual([c[1].provider_identifier for c in self.calls], [CONNECTOR, CONNECTOR])
-        for blank in ("", "   ", "\t\n"):
-            with self.subTest(blank=blank):
-                with self.assertRaises(ValidationError):
-                    InvokeToolCollectionRequest(provider_identifier=blank)
+        self.assertEqual((run.total_endpoints, run.tools_created, run.tools_updated, run.tools_deleted), (0, 0, 0, 0))
+        self.assertEqual(run.skipped_tools, ())
 
 
 class GetToolCollectionRunTest(RunsTestCase):
-    def test_latest_is_the_default(self):
+    def test_a_run_in_progress_is_not_terminal(self):
         self._reply(_run(status="PROCESSING", started_at=_timestamp(STARTED_AT)))
-        run = self.client.providers.get_tool_collection_run(GetToolCollectionRunRequest(provider_identifier=CONNECTOR))
-        request = self.calls[0][1]
-        self.assertEqual((request.provider_identifier, request.run_id), (CONNECTOR, "latest"))
+        run = self.actions.get_tool_collection_run(provider_identifier=CONNECTOR)
         self.assertEqual(run.status, ToolCollectionRunStatus.PROCESSING)
         self.assertFalse(run.is_terminal)
         self.assertEqual(run.started_at, STARTED_AT)
-
-    def test_a_run_can_be_read_by_id(self):
-        self._reply(_run())
-        self.client.providers.get_tool_collection_run(
-            GetToolCollectionRunRequest(provider_identifier=CONNECTOR, run_id="tcr_999")
-        )
-        self.assertEqual(self.calls[0][1].run_id, "tcr_999")
-
-    def test_an_empty_or_blank_run_id_is_sent_as_latest(self):
-        self._reply(_run(), _run(), _run(), _run())
-        self.low.get_tool_collection_run(CONNECTOR, "")
-        self.low.get_tool_collection_run(CONNECTOR, "  \n")
-        self.client.providers.get_tool_collection_run(GetToolCollectionRunRequest(provider_identifier=CONNECTOR, run_id=" "))
-        self.client.providers.get_tool_collection_run(GetToolCollectionRunRequest(provider_identifier=CONNECTOR, run_id=""))
-        self.assertEqual([c[1].run_id for c in self.calls], ["latest"] * 4)
-
-    def test_a_padded_identifier_and_run_id_are_trimmed(self):
-        self._reply(_run(), _run())
-        self.low.get_tool_collection_run(f" {CONNECTOR} ", " tcr_999\n")
-        self.client.providers.get_tool_collection_run(
-            GetToolCollectionRunRequest(provider_identifier=f"\t{CONNECTOR}", run_id="tcr_999 ")
-        )
-        self.assertEqual([(c[1].provider_identifier, c[1].run_id) for c in self.calls], [(CONNECTOR, "tcr_999")] * 2)
+        self.assertIsNone(run.finished_at)
 
     def test_a_completed_run_reports_counters_and_skipped_operations(self):
         skipped = [
@@ -188,7 +95,7 @@ class GetToolCollectionRunTest(RunsTestCase):
                 finished_at=_timestamp(FINISHED_AT),
             )
         )
-        run = self.client.providers.get_tool_collection_run(GetToolCollectionRunRequest(provider_identifier=CONNECTOR))
+        run = self.actions.get_tool_collection_run(provider_identifier=CONNECTOR)
         self.assertEqual(run.status, "COMPLETED")
         self.assertTrue(run.is_terminal)
         self.assertEqual((run.total_endpoints, run.tools_created, run.tools_updated, run.tools_deleted), (12, 9, 1, 2))
@@ -209,33 +116,28 @@ class GetToolCollectionRunTest(RunsTestCase):
                 finished_at=_timestamp(FINISHED_AT),
             )
         )
-        run = self.client.providers.get_tool_collection_run(GetToolCollectionRunRequest(provider_identifier=CONNECTOR))
+        run = self.actions.get_tool_collection_run(provider_identifier=CONNECTOR)
         self.assertEqual(run.status, ToolCollectionRunStatus.FAILED)
         self.assertTrue(run.is_terminal)
         self.assertIn("zero convertible endpoints", run.error_message)
         self.assertEqual(len(run.skipped_tools), 1)
 
-    def test_server_rejections_reach_the_caller_unchanged(self):
-        self._reply(
-            _server_error(ScalekitNotFoundException, "tool collection run not found", "NOT_FOUND"),
-            _server_error(ScalekitBadRequestException, "invalid run_id", "INVALID_ARGUMENT"),
-        )
-        request = GetToolCollectionRunRequest(provider_identifier=CONNECTOR)
-        with self.assertRaises(ScalekitNotFoundException) as none_yet:
-            self.client.providers.get_tool_collection_run(request)
-        self.assertIn("not found", none_yet.exception.message)
-        with self.assertRaises(ScalekitBadRequestException) as malformed:
-            self.client.providers.get_tool_collection_run(request)
-        self.assertEqual(malformed.exception.message, "invalid run_id")
 
-    def test_request_bounds(self):
-        with self.assertRaises(ValidationError):
-            GetToolCollectionRunRequest(provider_identifier="")
-        with self.assertRaises(ValidationError):
-            GetToolCollectionRunRequest(provider_identifier="   ")
-        with self.assertRaises(ValidationError):
-            GetToolCollectionRunRequest(provider_identifier=CONNECTOR, run_id="x" * 256)
-        self.assertEqual(GetToolCollectionRunRequest(provider_identifier=CONNECTOR).run_id, "latest")
+class BothMethodsTest(RunsTestCase):
+    def test_both_return_what_the_model_makes_of_the_response(self):
+        response = _run(
+            status="COMPLETED",
+            total_endpoints=3,
+            tools_created=2,
+            tools_updated=1,
+            skipped_tools_json=json.dumps([{"method": "POST", "path": "/files", "reason": "r"}]),
+            started_at=_timestamp(STARTED_AT),
+            finished_at=_timestamp(FINISHED_AT),
+        )
+        self._reply(response)
+        expected = ToolCollectionRun.from_proto(response)
+        self.assertEqual(self.actions.invoke_tool_collection(provider_identifier=CONNECTOR), expected)
+        self.assertEqual(self.actions.get_tool_collection_run(provider_identifier=CONNECTOR), expected)
 
 
 class ToolCollectionRunModelTest(unittest.TestCase):

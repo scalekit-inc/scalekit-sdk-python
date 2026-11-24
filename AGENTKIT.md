@@ -899,7 +899,7 @@ Errors:
 - `ScalekitForbiddenException` (403): the caller lacks permission to delete.
 - `ScalekitNotFoundException` (404, `custom tool not found`): the value is not a deletable tool (an MCP tool, a global tool, another environment's tool, an unknown name or id, a tool whose connector is gone or is not OpenAPI-sourced). The error does not say which.
 - `ScalekitConflictException` (409), with nothing deleted: `error_code` `RESOURCE_ALREADY_EXISTS` while a sync of the connector is queued or running, or `TOOL_NAME_AMBIGUOUS` when you delete by name and tools of more than one connector of the environment have that name. The message of the second names two of those tools, each with its connector and id: delete the tool you mean by its id (the id of a tool whose connector no longer exists answers 404).
-- `ScalekitInternalServerException` (500): the server failed. It does not say whether the tool is gone: list the connector's tools before calling again.
+- `ScalekitInternalServerException` (500): the server failed. It does not say whether the tool is gone.
 - `ScalekitNotImplementedException` (501): a backend older than release v0.1.165.0 does not have the call.
 
 ```python
@@ -1155,13 +1155,14 @@ Errors derive from `AgentKitConnectionError` and carry `code`, `step`, `retryabl
 **Create a connector from an OpenAPI spec**
 
 1. `actions.providers.create_custom_provider(...)` with `openapi_spec_url` (HTTPS) and `auth_patterns` (required). The server fetches and validates the spec before it stores anything, answers, and queues the first tool collection run in the background. The tools do not exist until that run completes.
-2. `actions.get_tool_collection_run(provider_identifier=...)` reads the latest run. Poll until `run.is_terminal`: the run is then `COMPLETED` or `FAILED`. `actions.invoke_tool_collection(provider_identifier=...)` queues a new run. Both are methods of `scalekit_client.actions` and take plain keyword arguments; the same operations are also available as `actions.providers.invoke_tool_collection(request)` and `actions.providers.get_tool_collection_run(request)`, which take an `InvokeToolCollectionRequest` and a `GetToolCollectionRunRequest`.
+2. `actions.get_tool_collection_run(provider_identifier=...)` reads the latest run. Poll until `run.is_terminal`: the run is then `COMPLETED` or `FAILED`. `actions.invoke_tool_collection(provider_identifier=...)` queues a new run. Both are methods of `scalekit_client.actions`.
 3. Create a connection on the connector with `actions.create_connection` (see **Create a connection** below), create a connected account for each user as for any other connector, then list and run the tools.
 
 ```python
+import itertools
 import time
 from scalekit.actions.types import AuthField, AuthPattern, CreateCustomProviderRequest, ToolCollectionRunStatus
-from scalekit.common.exceptions import ScalekitConflictException, ScalekitNotFoundException
+from scalekit.common.exceptions import ScalekitNotFoundException
 
 connector = scalekit_client.actions.providers.create_custom_provider(
     CreateCustomProviderRequest(
@@ -1178,25 +1179,13 @@ connector = scalekit_client.actions.providers.create_custom_provider(
 ).provider
 
 identifier = connector.identifier
-started = time.monotonic()
-give_up_at = started + 600
-invoked = False
-while True:
+for attempt in itertools.count():  # poll every 2 seconds until the run ends
     try:
-        run = scalekit_client.actions.get_tool_collection_run(provider_identifier=identifier, run_id="latest")
-    except ScalekitNotFoundException:
-        run = None  # the first run is queued in the background and may not exist yet
-        if not invoked and time.monotonic() - started > 45:
-            # The server gave up queueing it and does not say so: queue a run yourself, once.
-            invoked = True
-            try:
-                scalekit_client.actions.invoke_tool_collection(provider_identifier=identifier)
-            except ScalekitConflictException:
-                pass  # a run was queued in the meantime
-    if run is not None and run.is_terminal:
+        run = scalekit_client.actions.get_tool_collection_run(provider_identifier=identifier)
+    except ScalekitNotFoundException:  # no run yet: the first one is queued in the background
+        run = scalekit_client.actions.invoke_tool_collection(provider_identifier=identifier) if attempt == 23 else None
+    if run and run.is_terminal:
         break
-    if time.monotonic() > give_up_at:
-        raise RuntimeError("the tool collection run did not finish in 10 minutes")
     time.sleep(2)
 
 if run.status == ToolCollectionRunStatus.FAILED:
@@ -1206,7 +1195,7 @@ for skipped in run.skipped_tools:
     print(skipped.method, skipped.path, "-", skipped.reason)
 ```
 
-The server does not report a failure to queue the first run, and gives up queueing it after 30 seconds, so the loop calls `invoke_tool_collection` once when `get_tool_collection_run` still answers 404 after 45 seconds. If the connector does not exist, that call raises `ScalekitNotFoundException` and ends the loop.
+The server does not report a failure to queue the first run, and gives up queueing it after 30 seconds, so on the 24th poll, after 45 seconds, the loop calls `invoke_tool_collection` once if `get_tool_collection_run` still answers 404. If the connector does not exist, that call raises `ScalekitNotFoundException` and ends the loop.
 
 **What a run does**
 
@@ -1295,7 +1284,7 @@ result = scalekit_client.actions.update_connection(
 - `provider_domain` is for an MCP connector whose `proxy_url` is a template with a `{{domain}}` placeholder (for example `https://{{domain}}/mcp`, a host per data region): pass the host name that replaces it. Leave it out for a connector whose `proxy_url` is not a template, such as the OpenAPI-sourced one above: a setting that a connector does not use is rejected with a 400. It is set when the connection is created, can't be changed later and isn't returned.
 - `auth_mode` can't be changed after the connection is created either.
 - `token_endpoint_auth_method` is a setting of an OAuth connection. [AgentKit connections](#agentkit-connections) says what each value sends and when to set it.
-- A failure raises an `AgentKitConnectionError` subclass. On `OutcomeUnknownError` the create may have been applied: check `list_app_connections` before you create the connection again.
+- A failure raises an `AgentKitConnectionError` subclass. On `OutcomeUnknownError` the create may have been applied.
 
 **Use the tools**
 

@@ -5,20 +5,19 @@ checked is what would be put on the wire.
 """
 import unittest
 from collections import namedtuple
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from google.protobuf import empty_pb2
 from grpc import StatusCode
 
 from scalekit.actions.actions import ActionClient
-from scalekit.core import DEFAULT_CALL_TIMEOUT_S, CoreClient
+from scalekit.core import CoreClient
 from scalekit.tools import ToolsClient
 from scalekit.v1.tools import tools_pb2 as pb
 
 METHOD = "/scalekit.v1.tools.ToolService/DeleteCustomTool"
-TOOL_CALL_TIMEOUT_S = 123.0  # unlike every default, so a call that uses another deadline shows
 
-Sent = namedtuple("Sent", "path body timeout metadata")
+Sent = namedtuple("Sent", "path body metadata")
 
 
 class _Call:
@@ -37,8 +36,8 @@ class _FakeChannel:
         channel = self
 
         class _Method:
-            def with_call(self, request, timeout=None, metadata=None, **_):
-                channel.sent.append(Sent(path, request_serializer(request), timeout, dict(metadata or ())))
+            def with_call(self, request, metadata=None, **_):
+                channel.sent.append(Sent(path, request_serializer(request), dict(metadata or ())))
                 item = channel.script.pop(0)
                 if isinstance(item, Exception):
                     raise item
@@ -58,15 +57,15 @@ def _core_client(channel: _FakeChannel) -> CoreClient:
     core.client_secret = "csec"
     core.keys = {}
     core.grpc_secure_channel = channel
-    core.call_timeout_s = DEFAULT_CALL_TIMEOUT_S
-    core.tool_call_timeout_s = TOOL_CALL_TIMEOUT_S
+    core.call_timeout_s = 20  # grpc_exec reads it
     return core
 
 
 class DeleteCustomToolTestCase(unittest.TestCase):
     def setUp(self):
         self.channel = _FakeChannel()
-        self.actions = ActionClient(ToolsClient(_core_client(self.channel)), MagicMock())
+        self.core = _core_client(self.channel)
+        self.actions = ActionClient(ToolsClient(self.core), MagicMock())
 
     def _reply(self, *items):
         self.channel.script.extend(items)
@@ -121,13 +120,14 @@ class RequestTest(DeleteCustomToolTestCase):
                 self.assertIn("tool_identifier", str(refused.exception))
         self.assertEqual(self.channel.sent, [], "nothing is sent when the name is refused")
 
-    def test_the_call_sets_no_deadline_of_its_own(self):
-        """The client's default deadline applies, like for every other call: the tool-call deadline, which differs
-        from it here, is not used."""
+    def test_the_call_is_made_like_every_other_call(self):
+        """grpc_exec gets the stub method and the request, nothing else."""
         self._reply(empty_pb2.Empty())
-        self.actions.delete_custom_tool("a-acme_get_user")
-        self.assertEqual(self.channel.sent[0].timeout, DEFAULT_CALL_TIMEOUT_S)
-        self.assertNotEqual(TOOL_CALL_TIMEOUT_S, DEFAULT_CALL_TIMEOUT_S)
+        with patch.object(self.core, "grpc_exec", wraps=self.core.grpc_exec) as grpc_exec:
+            self.actions.delete_custom_tool("a-acme_get_user")
+        (call,) = grpc_exec.call_args_list
+        self.assertEqual(len(call.args), 2)
+        self.assertEqual(call.kwargs, {})
 
 
 if __name__ == "__main__":

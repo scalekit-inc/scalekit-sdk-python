@@ -16,7 +16,7 @@ from scalekit.actions.types import ToolRequest,ExecuteToolResponse,MagicLinkResp
     McpConfig,McpConfigConnectionToolMapping,VerifyConnectedAccountUserResponse, \
     CreateCustomProviderRequest,UpdateCustomProviderRequest,ListProvidersRequest,DeleteCustomProviderRequest, \
     CreateCustomProviderResponse,UpdateCustomProviderResponse,ListProvidersResponse,DeleteCustomProviderResponse, \
-    InvokeToolCollectionRequest,GetToolCollectionRunRequest,ToolCollectionRun, \
+    ToolCollectionRun, \
     ListMcpConnectedAccountsResponse,CreateMcpSessionTokenResponse,McpConnectionAuthState
 from scalekit.actions.models.responses.create_connected_account_response import CreateConnectedAccountResponse
 from scalekit.actions.models.requests.create_connected_account_request import CreateConnectedAccountRequest
@@ -30,6 +30,11 @@ from scalekit.common.exceptions import ScalekitNotFoundException
 from scalekit.actions.triggers import ActionTriggers
 from scalekit.triggers import TriggersClient
 from scalekit.mcp import _check_connection_token_args
+from scalekit.v1.providers.providers_pb2 import (
+    GetToolCollectionRunRequest as GetToolCollectionRunProtoRequest,
+    TriggerToolCollectionRequest as TriggerToolCollectionProtoRequest,
+)
+from scalekit.v1.providers.providers_pb2_grpc import ProviderServiceStub
 from scalekit.v1.tools.tools_pb2 import DeleteCustomToolRequest, Filter, ScopedToolFilter
 from scalekit.actions.models.responses.tool_discovery_responses import (
     ListScopedToolsResponse, ListAvailableToolsResponse, SearchToolsResponse,
@@ -76,6 +81,7 @@ class ActionClient:
         self._mcp_actions = None
         self._providers_client = providers_client
         self._providers_actions = None
+        self._provider_stub: ProviderServiceStub | None = None
         self._triggers_client = triggers_client
         self._triggers_actions: ActionTriggers | None = None
         self._modifiers: List[Modifier] = []
@@ -451,30 +457,30 @@ class ActionClient:
             DeleteCustomToolRequest(tool_identifier=tool_identifier.strip()),
         )
 
+    def _provider_service(self) -> ProviderServiceStub:
+        """The ProviderService stub, built on first use from the tools client's channel and kept."""
+        if self._provider_stub is None:
+            self._provider_stub = ProviderServiceStub(self.tools.core_client.grpc_secure_channel)
+        return self._provider_stub
+
     def invoke_tool_collection(self, provider_identifier: str, **kwargs) -> ToolCollectionRun:
         """
         Queue a new tool collection run on an OpenAPI-sourced connector.
 
-        Call it as ``scalekit_client.actions.invoke_tool_collection(provider_identifier=...)``. The same
-        operation is available as ``scalekit_client.actions.providers.invoke_tool_collection(request)``,
-        which takes an ``InvokeToolCollectionRequest``. This method builds that request from
-        ``provider_identifier`` and makes that call, so the validation and the errors are the same.
+        Call it as ``scalekit_client.actions.invoke_tool_collection(provider_identifier=...)``.
 
         The server re-fetches and validates the connector's current spec URL, queues a background run
         that regenerates the connector's tools, and returns that run at once with status ``QUEUED``. A
         connector is also re-synced automatically when it is created and when its base URL or spec URL
-        changes, so call this to pick up changes to the spec itself or to retry after a failed run. A run
-        that finds the spec, base URL and auth patterns unchanged since the last completed run creates,
-        updates and deletes nothing, so it does not bring back a tool removed with ``delete_custom_tool``
-        (a spec that references external files is always regenerated). If the first run fills in the base
-        URL (only when the spec's server URL starts with ``https://``) or the OAuth settings, the next run
-        still updates every tool and that shortcut applies from the run after that. Follow the run with
-        ``get_tool_collection_run``.
+        changes, so call this to pick up changes to the spec itself or to retry after a failed run. Follow
+        the run with ``get_tool_collection_run``. A run that finds the spec, base URL and auth patterns
+        unchanged since the last completed run changes nothing, so it does not bring back a tool removed
+        with ``delete_custom_tool`` (see that method for the exceptions).
 
-        :param provider_identifier: The connector's ``identifier``: the ``NAME:environment-id`` string that
-            ``create_custom_provider`` and ``list_providers`` return as ``provider.identifier``, such as
-            ``ACMEAPI:70219645518265104`` (required). It is not ``provider.id`` (``prvd_...``): the id
-            answers 404. 1 to 255 characters once the whitespace around it is removed
+        :param provider_identifier: The connector's ``identifier`` (``NAME:environment-id``, from
+            ``provider.identifier``), not ``provider.id`` (``prvd_...``, which answers 404), such as
+            ``ACMEAPI:70219645518265104`` (required). 1 to 255 characters once the whitespace around it is
+            removed
         :type provider_identifier: str
 
         :returns:
@@ -482,14 +488,13 @@ class ActionClient:
         :rtype: ToolCollectionRun
 
         :raises ValueError: If provider_identifier is not a string, is blank or is longer than 255
-            characters (raised as ``pydantic.ValidationError``, a subclass of ``ValueError``); nothing
-            is sent
+            characters; nothing is sent
         :raises ScalekitNotFoundException: 404, no connector with that identifier exists
         :raises ScalekitBadRequestException: 400, the connector is not sourced from an OpenAPI spec, its
             stored spec URL fails validation, or OpenAPI-sourced connectors are not enabled for the
             environment (``FEATURE_NOT_ENABLED``)
         :raises ScalekitConflictException: 409 ``RESOURCE_ALREADY_EXISTS``, a run is already queued or
-            running for the connector. A connector has at most one active run: wait for it to finish and
+            running for the connector (a connector has at most one active run): wait for it to finish and
             call again
 
         Example:
@@ -498,8 +503,16 @@ class ActionClient:
             ... )
             >>> run.status  # ToolCollectionRunStatus.QUEUED
         """
-        request = InvokeToolCollectionRequest(provider_identifier=provider_identifier)
-        return self.providers.invoke_tool_collection(request)
+        if not isinstance(provider_identifier, str) or not provider_identifier.strip():
+            raise ValueError("provider_identifier must be a non-empty string to invoke a tool collection run")
+        provider_identifier = provider_identifier.strip()
+        if len(provider_identifier) > 255:
+            raise ValueError("provider_identifier must be at most 255 characters")
+        result_tuple = self.tools.core_client.grpc_exec(
+            self._provider_service().TriggerToolCollection.with_call,
+            TriggerToolCollectionProtoRequest(provider_identifier=provider_identifier),
+        )
+        return ToolCollectionRun.from_proto(result_tuple[0])
 
     def get_tool_collection_run(
         self, provider_identifier: str, run_id: str = "latest", **kwargs
@@ -507,31 +520,25 @@ class ActionClient:
         """
         Read one tool collection run of an OpenAPI-sourced connector.
 
-        Call it as ``scalekit_client.actions.get_tool_collection_run(provider_identifier=..., run_id=...)``.
-        The same operation is available as
-        ``scalekit_client.actions.providers.get_tool_collection_run(request)``, which takes a
-        ``GetToolCollectionRunRequest``. This method builds that request from ``provider_identifier`` and
-        ``run_id`` and makes that call, so the validation and the errors are the same.
+        Call it as ``scalekit_client.actions.get_tool_collection_run(provider_identifier=...)``.
 
         Returns the run's status, its counters (operations found, tools created, updated and deleted) and,
         once the run has finished, the operations it skipped and why. A run moves ``QUEUED``,
         ``PROCESSING``, then ``COMPLETED`` or ``FAILED``; the server marks a run that makes no progress for
-        30 minutes ``FAILED``. Pass ``run_id="latest"`` (the default) for the connector's most recent run,
-        for example to follow the run that ``create_custom_provider`` queued. Poll until
-        ``run.is_terminal`` is true; then ``run.status`` is ``COMPLETED`` or ``FAILED``,
-        ``run.skipped_tools`` lists the operations that could not become tools, and ``run.error_message``
-        says why a failed run failed. ``"latest"`` is looked up again on every call, so it moves on to a
-        newer run if one is queued while you poll (by another caller, or by a base URL or spec URL change);
-        to follow one run to its end, pass the ``run_id`` of the run you started or first read.
+        30 minutes ``FAILED``. Poll until ``run.is_terminal`` is true: ``run.skipped_tools`` then lists the
+        operations that could not become tools, and ``run.error_message`` says why a failed run failed.
+        ``"latest"`` is looked up again on every call, so it moves on to a newer run if one is queued while
+        you poll; to follow one run to its end, pass the ``run_id`` of the run you started or first read.
 
-        :param provider_identifier: The connector's ``identifier``: the ``NAME:environment-id`` string that
-            ``create_custom_provider`` and ``list_providers`` return as ``provider.identifier``, such as
-            ``ACMEAPI:70219645518265104`` (required). It is not ``provider.id`` (``prvd_...``): the id
-            answers 404. 1 to 255 characters once the whitespace around it is removed
+        :param provider_identifier: The connector's ``identifier`` (``NAME:environment-id``, from
+            ``provider.identifier``), not ``provider.id`` (``prvd_...``, which answers 404), such as
+            ``ACMEAPI:70219645518265104`` (required). 1 to 255 characters once the whitespace around it is
+            removed
         :type provider_identifier: str
         :param run_id: The ``run_id`` of a ``ToolCollectionRun``, or ``"latest"`` (the default; an empty or
-            blank string means the same) for the connector's most recent run (optional). At most 255
-            characters once the whitespace around it is removed
+            blank string means the same) for the connector's most recent run, for example the one
+            ``create_custom_provider`` queued (optional). At most 255 characters once the whitespace around
+            it is removed
         :type run_id: str
 
         :returns:
@@ -539,8 +546,7 @@ class ActionClient:
         :rtype: ToolCollectionRun
 
         :raises ValueError: If provider_identifier is not a string, is blank or is longer than 255
-            characters, or run_id is not a string or is longer than 255 characters (raised as
-            ``pydantic.ValidationError``, a subclass of ``ValueError``); nothing is sent
+            characters, or run_id is not a string or is longer than 255 characters; nothing is sent
         :raises ScalekitNotFoundException: 404, the connector does not exist, it has no run yet, or the
             run_id names no run of this connector
         :raises ScalekitBadRequestException: 400, the run_id is not a valid run ID
@@ -551,8 +557,21 @@ class ActionClient:
             ... )
             >>> run.status, run.is_terminal  # ask again until run.is_terminal is True
         """
-        request = GetToolCollectionRunRequest(provider_identifier=provider_identifier, run_id=run_id)
-        return self.providers.get_tool_collection_run(request)
+        if not isinstance(provider_identifier, str) or not provider_identifier.strip():
+            raise ValueError("provider_identifier must be a non-empty string to read a tool collection run")
+        if not isinstance(run_id, str):
+            raise ValueError("run_id must be a string")
+        provider_identifier = provider_identifier.strip()
+        run_id = run_id.strip() or "latest"
+        if len(provider_identifier) > 255:
+            raise ValueError("provider_identifier must be at most 255 characters")
+        if len(run_id) > 255:
+            raise ValueError("run_id must be at most 255 characters")
+        result_tuple = self.tools.core_client.grpc_exec(
+            self._provider_service().GetToolCollectionRun.with_call,
+            GetToolCollectionRunProtoRequest(provider_identifier=provider_identifier, run_id=run_id),
+        )
+        return ToolCollectionRun.from_proto(result_tuple[0])
 
     def search_tools(
         self,
@@ -2261,7 +2280,7 @@ class ActionProviders:
         spec (``openapi_spec_url``): set exactly one. For an OpenAPI-sourced connector the
         server validates the spec before it stores anything, returns at once, and
         generates the tools in an asynchronous tool collection run that it queues for
-        you. Follow it with ``get_tool_collection_run``.
+        you. Follow it with ``scalekit_client.actions.get_tool_collection_run``.
 
         :param request: Request object containing display_name (required),
                         exactly one of proxy_url and openapi_spec_url, and
@@ -2348,11 +2367,11 @@ class ActionProviders:
             enabled for the environment (``FEATURE_NOT_ENABLED``, nothing is saved).
         :raises ScalekitConflictException: 409, if a changed base URL or spec URL was saved but
             its tool collection run could not be queued because another run is in
-            progress (``RESOURCE_ALREADY_EXISTS``); call ``invoke_tool_collection``
-            once that run completes.
+            progress (``RESOURCE_ALREADY_EXISTS``); call
+            ``scalekit_client.actions.invoke_tool_collection`` once that run completes.
         :raises ScalekitInternalServerException: 500, if a changed base URL or spec URL was saved
             but its tool collection run could not be queued for another reason; call
-            ``invoke_tool_collection`` to retry.
+            ``scalekit_client.actions.invoke_tool_collection`` to retry.
         """
         result_tuple = self._providers_client.update_custom_provider(
             identifier=request.identifier,
@@ -2365,79 +2384,6 @@ class ActionProviders:
             openapi_spec_url=request.openapi_spec_url,
         )
         return UpdateCustomProviderResponse.from_proto(result_tuple[0])
-
-    def invoke_tool_collection(
-        self,
-        request: InvokeToolCollectionRequest,
-    ) -> ToolCollectionRun:
-        """Queue a new tool collection run on an OpenAPI-sourced connector.
-
-        ``scalekit_client.actions.invoke_tool_collection(provider_identifier=...)`` does the same
-        without a request object.
-
-        The server re-fetches and validates the connector's current spec URL, queues a
-        background run that regenerates the connector's tools, and returns that run at once
-        with status ``QUEUED``. A connector is also re-synced automatically when it is created
-        and when its base URL or spec URL changes, so call this to pick up changes to the
-        spec itself or to retry after a failed run. A run that finds the spec, base URL and
-        auth patterns unchanged since the last completed run creates, updates and deletes
-        nothing, so it does not bring back a tool removed with ``delete_custom_tool`` (a spec
-        that references external files is always regenerated). If the first run fills in the
-        base URL (only when the spec's server URL starts with ``https://``) or the OAuth
-        settings, the next run still updates every tool and that shortcut applies from the run
-        after that. Follow the run with ``get_tool_collection_run``. The server's messages call
-        this operation ``TriggerToolCollection``: it is the call this method makes.
-
-        :param request: Request object containing the connector's provider_identifier.
-        :type request: InvokeToolCollectionRequest
-
-        :returns: The queued run.
-        :rtype: ToolCollectionRun
-
-        :raises ScalekitNotFoundException: 404, no connector with that identifier exists.
-        :raises ScalekitBadRequestException: 400, the connector is not sourced from an OpenAPI
-            spec, its stored spec URL fails validation, or OpenAPI-sourced connectors are
-            not enabled for the environment (``FEATURE_NOT_ENABLED``).
-        :raises ScalekitConflictException: 409 ``RESOURCE_ALREADY_EXISTS``, a run is already
-            queued or running for the connector. A connector has at most one active run;
-            wait for it to finish and call again.
-        """
-        result_tuple = self._providers_client.invoke_tool_collection(request.provider_identifier)
-        return ToolCollectionRun.from_proto(result_tuple[0])
-
-    def get_tool_collection_run(
-        self,
-        request: GetToolCollectionRunRequest,
-    ) -> ToolCollectionRun:
-        """Read one tool collection run of an OpenAPI-sourced connector.
-
-        ``scalekit_client.actions.get_tool_collection_run(provider_identifier=..., run_id=...)``
-        does the same without a request object.
-
-        Pass ``run_id="latest"`` (the default) for the connector's most recent run, for
-        example to follow the run that ``create_custom_provider`` queued. Poll until
-        ``run.is_terminal`` is true; then ``run.status`` is ``COMPLETED`` or ``FAILED``,
-        ``run.skipped_tools`` lists the operations that could not become tools, and
-        ``run.error_message`` says why a failed run failed. ``"latest"`` is looked up again on
-        every call, so it moves on to a newer run if one is queued while you poll (by another
-        caller, or by a base URL or spec URL change); to follow one run to its end, pass the
-        ``run_id`` of the run you started or first read.
-
-        :param request: Request object containing the connector's provider_identifier and,
-                        optionally, a run_id.
-        :type request: GetToolCollectionRunRequest
-
-        :returns: The run.
-        :rtype: ToolCollectionRun
-
-        :raises ScalekitNotFoundException: 404, the connector does not exist, it has no run
-            yet, or the run_id names no run of this connector.
-        :raises ScalekitBadRequestException: 400, the run_id is not a valid run ID.
-        """
-        result_tuple = self._providers_client.get_tool_collection_run(
-            request.provider_identifier, request.run_id
-        )
-        return ToolCollectionRun.from_proto(result_tuple[0])
 
     def list_providers(
         self,
@@ -2483,9 +2429,10 @@ class ActionProviders:
         the connector is queued or processing (the server's message calls it an
         ingestion run), nothing is deleted: the call raises ScalekitConflictException
         (409, RESOURCE_ALREADY_EXISTS) and the message names the run. Poll that run
-        with get_tool_collection_run (pass its ID as run_id) and retry once it has
-        finished; the server fails a run that makes no progress after about 30
-        minutes. An MCP or plain REST connector has no run to wait for.
+        with ``scalekit_client.actions.get_tool_collection_run`` (pass its ID as
+        run_id) and retry once it has finished; the server fails a run that makes no
+        progress after about 30 minutes. An MCP or plain REST connector has no run to
+        wait for.
 
         :param request: Request object containing the identifier of the provider
                         to delete.

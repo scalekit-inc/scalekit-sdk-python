@@ -7448,13 +7448,11 @@ A custom connector tells Scalekit how to authenticate to, and call, an app that 
 - `proxy_url`: an MCP server. The tools are the ones the server offers, kept per connected account.
 - `openapi_spec_url`: an OpenAPI spec. The server converts the spec's operations into tools in an asynchronous tool collection run that it queues for you.
 
-Three methods of `client.actions` belong to a connector created from an OpenAPI spec. They take plain keyword arguments, for example `scalekit_client.actions.invoke_tool_collection(provider_identifier="ACMEAPI:70219645518265104")`:
+Three methods of `client.actions` belong to a connector created from an OpenAPI spec, for example `scalekit_client.actions.invoke_tool_collection(provider_identifier="ACMEAPI:70219645518265104")`:
 
 - `invoke_tool_collection` queues a tool collection run.
 - `get_tool_collection_run` reads one run.
 - `delete_custom_tool` deletes one tool of the connector.
-
-The same two run operations are also available as `scalekit_client.actions.providers.invoke_tool_collection(request)` and `scalekit_client.actions.providers.get_tool_collection_run(request)`, which take an `InvokeToolCollectionRequest` and a `GetToolCollectionRunRequest`.
 
 A connection on a custom connector is an AgentKit connection: create it with `scalekit_client.actions.create_connection(provider=<Provider.identifier>, ...)` and set its OAuth settings, such as the token endpoint auth method, with `scalekit_client.actions.update_connection(...)`. Walkthrough and complete connection examples: [AGENTKIT.md → Custom connectors](AGENTKIT.md#custom-connectors).
 
@@ -7790,7 +7788,7 @@ response = scalekit_client.actions.providers.update_custom_provider(
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `identifier` | `str` | Yes | The connector's identifier (`NAME:environment-id`, from `provider.identifier`), not `provider.id`. |
+| `identifier` | `str` | Yes | The connector's `identifier` (`NAME:environment-id`, from `provider.identifier`), not `provider.id`. |
 | `display_name` | `str` | Yes | ASCII letters (a-z, A-Z), digits and spaces only, 1-200 characters, with at least one letter or digit; anything else, such as accented letters or symbols like `_` or `-`, is rejected. Changing the name does not change the identifier. |
 | `auth_patterns` | `List[AuthPattern]` | Yes | A request that leaves it out is rejected with `ScalekitBadRequestException` (400, `INVALID_ARGUMENT`, a validation error on `provider.auth_patterns`). The server accepts an empty list and then keeps the stored patterns, but `UpdateCustomProviderRequest` refuses one: pass exactly one `AuthPattern`. When they differ from the stored ones they replace the list, they are not merged. To keep the current patterns, send the ones `list_providers` returned. The auth type and the connector kind (MCP or API) cannot be changed. The fields of an `AuthPattern` are listed under `create_custom_provider`. |
 | `proxy_url` | `Optional[str]` | For an MCP-sourced connector | The URL of the external service the provider connects to, which proxied requests are routed through. For an MCP-sourced connector, its MCP server URL. For an API connector, the API's base URL. For an OpenAPI-sourced connector, its base URL: omit it, or send `""`, to keep the stored one (`Provider.proxy_url` is `""` until the first tool collection run fills it in, so sending it back as read works); a changed value regenerates every tool. Must be a valid HTTPS URL or `""`. |
@@ -7962,7 +7960,7 @@ else:
 | `provider_type` | `Optional[int]` | No | `ProviderType.CUSTOM` (custom only), `ProviderType.DEFAULT` (built-in only) or `ProviderType.ALL` (built-in and custom). Omit it and only built-in providers are returned, the same as `ProviderType.DEFAULT`; pass `ProviderType.ALL` or `ProviderType.CUSTOM` to include custom providers. |
 | `page_size` | `Optional[int]` | No | Maximum number of providers to return, at least 1. The server's default page size when omitted. |
 | `page_token` | `Optional[str]` | No | Pagination cursor from a previous response's `next_page_token`. Omit it for the first page. |
-| `identifier` | `Optional[str]` | No | Filter to one connector. The connector's identifier (`NAME:environment-id`, from `provider.identifier`), not `provider.id`. |
+| `identifier` | `Optional[str]` | No | Filter to one connector. The connector's `identifier` (`NAME:environment-id`, from `provider.identifier`), not `provider.id`. |
 
 </dd>
 </dl>
@@ -8045,7 +8043,7 @@ scalekit_client.actions.providers.delete_custom_provider(
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `identifier` | `str` | Yes | The connector's identifier (`NAME:environment-id`, from `provider.identifier`), not `provider.id`. |
+| `identifier` | `str` | Yes | The connector's `identifier` (`NAME:environment-id`, from `provider.identifier`), not `provider.id`. |
 
 </dd>
 </dl>
@@ -8130,7 +8128,7 @@ run = scalekit_client.actions.get_tool_collection_run(provider_identifier="ACMEA
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `provider_identifier` | `str` | Yes | The connector's identifier (`NAME:environment-id`, from `provider.identifier`), not `provider.id`. The connector must be OpenAPI-sourced. 1-255 characters once surrounding whitespace is removed. |
+| `provider_identifier` | `str` | Yes | The connector's `identifier` (`NAME:environment-id`, from `provider.identifier`), not `provider.id`. The connector must be OpenAPI-sourced. 1-255 characters once surrounding whitespace is removed. |
 
 </dd>
 </dl>
@@ -8149,7 +8147,7 @@ A `ToolCollectionRun` (see `get_tool_collection_run`) with status `QUEUED`.
 <dl>
 <dd>
 
-- `ValueError` (`pydantic.ValidationError`): `provider_identifier` is not a string, is blank or is longer than 255 characters; nothing is sent.
+- `ValueError`: `provider_identifier` is not a string, is blank or is longer than 255 characters. Raised before anything is sent.
 - `ScalekitNotFoundException` (404, `NOT_FOUND`): no connector with that identifier in the environment.
 - `ScalekitBadRequestException` (400): the connector is not sourced from an OpenAPI spec (`INVALID_ARGUMENT`: `this connector is not sourced from an OpenAPI spec`), its stored spec URL fails validation (`openapi_spec_url failed validation: ...`), or OpenAPI-sourced connectors are not enabled for the environment (`FEATURE_NOT_ENABLED`).
 - `ScalekitConflictException` (409, `RESOURCE_ALREADY_EXISTS`: `an ingestion run is already in progress for this connector`): wait for the active run to finish and call again.
@@ -8211,7 +8209,7 @@ print(run.status, run.is_terminal, run.tools_created, len(run.skipped_tools))
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `provider_identifier` | `str` | Yes | The connector's identifier (`NAME:environment-id`, from `provider.identifier`), not `provider.id`. The connector must be OpenAPI-sourced. 1-255 characters once surrounding whitespace is removed. |
+| `provider_identifier` | `str` | Yes | The connector's `identifier` (`NAME:environment-id`, from `provider.identifier`), not `provider.id`. The connector must be OpenAPI-sourced. 1-255 characters once surrounding whitespace is removed. |
 | `run_id` | `str` | No | A `ToolCollectionRun.run_id`, or `"latest"` (the default; an empty or blank value means the same) for the connector's most recent run. At most 255 characters; surrounding whitespace is removed. |
 
 </dd>
@@ -8249,7 +8247,7 @@ print(run.status, run.is_terminal, run.tools_created, len(run.skipped_tools))
 <dl>
 <dd>
 
-- `ValueError` (`pydantic.ValidationError`): `provider_identifier` is not a string, is blank or is longer than 255 characters, or `run_id` is not a string or is longer than 255 characters; nothing is sent.
+- `ValueError`: `provider_identifier` is not a string, is blank or is longer than 255 characters, or `run_id` is not a string or is longer than 255 characters. Raised before anything is sent.
 - `ScalekitNotFoundException` (404, `NOT_FOUND`): the connector does not exist (`provider not found`), it has no run yet, or `run_id` names no run of this connector (`tool collection run not found`).
 - `ScalekitBadRequestException` (400, `INVALID_ARGUMENT`: `invalid run_id`): `run_id` is not a run ID.
 </dd>
@@ -8337,7 +8335,7 @@ scalekit_client.actions.delete_custom_tool(tool_identifier="tol_1534324954785383
 - `ScalekitForbiddenException` (403): the caller lacks permission to delete.
 - `ScalekitNotFoundException` (404, `custom tool not found`): the value is not a deletable tool (an MCP tool, a global tool, another environment's tool, an unknown name or id, a tool whose connector is gone or is not OpenAPI-sourced). The error does not say which.
 - `ScalekitConflictException` (409), with nothing deleted: `error_code` `RESOURCE_ALREADY_EXISTS` while a sync of the connector is queued or running, or `TOOL_NAME_AMBIGUOUS` when you delete by name and tools of more than one connector of the environment have that name. The message of the second names two of those tools, each with its connector and id: delete the tool you mean by its id (the id of a tool whose connector no longer exists answers 404).
-- `ScalekitInternalServerException` (500): the server failed. It does not say whether the tool is gone: list the connector's tools before calling again.
+- `ScalekitInternalServerException` (500): the server failed. It does not say whether the tool is gone.
 - `ScalekitNotImplementedException` (501): a backend older than release v0.1.165.0 does not have the call.
 </dd>
 </dl>
