@@ -1,9 +1,9 @@
 from typing import Dict, List, Optional
+from urllib.parse import urlparse
 
 from pydantic import BaseModel, Field, validator
 
 from scalekit.actions.models.custom_provider import AuthPattern
-from scalekit.actions.models.requests._https_url import check_https_url
 
 
 class UpdateCustomProviderRequest(BaseModel):
@@ -68,8 +68,7 @@ class UpdateCustomProviderRequest(BaseModel):
             "queues a tool collection run that regenerates every tool; if a run is "
             "already in progress the value is still saved but the call fails with 409 "
             "RESOURCE_ALREADY_EXISTS, so call invoke_tool_collection once that run "
-            "completes. Must be a valid HTTPS URL starting with a lower-case "
-            "'https://' (at most 2048 characters). An empty "
+            "completes. Must be a valid HTTPS URL starting with 'https://'. An empty "
             "string is accepted and treated like None: it is what Provider.proxy_url "
             "holds for an OpenAPI-sourced connector until its first tool collection run "
             "fills in the base URL (or when the spec's server URL is not https), and the "
@@ -88,8 +87,8 @@ class UpdateCustomProviderRequest(BaseModel):
             "for your workspace. Where it is on, the new URL is validated and every tool "
             "is regenerated. Sending the stored value again does nothing. A connector "
             "that was not created from a spec cannot gain one (400 INVALID_ARGUMENT). "
-            "Must be a valid HTTPS URL starting with a lower-case 'https://' (at most "
-            "2048 characters); an empty string is treated like None."
+            "Must be a valid HTTPS URL starting with 'https://'; an empty string is "
+            "treated like None."
         ),
     )
     auth_patterns: Optional[List[AuthPattern]] = Field(
@@ -134,13 +133,21 @@ class UpdateCustomProviderRequest(BaseModel):
         # run has not filled in a base URL yet; on the wire it is the same as not sending one.
         if v is None or v == "":
             return v
-        return check_https_url("proxy_url", v, "https://server.example.com/mcp")
+        parsed = urlparse(v)
+        if parsed.scheme != "https" or not parsed.netloc:
+            raise ValueError("proxy_url must be a valid HTTPS URL (e.g. 'https://server.example.com/mcp')")
+        return v
 
     @validator("openapi_spec_url")
     def validate_openapi_spec_url_https(cls, v):
         if v is None or v == "":  # same as None on the wire: the stored spec URL is kept
             return v
-        return check_https_url("openapi_spec_url", v, "https://api.example.com/openapi.json")
+        parsed = urlparse(v)
+        if parsed.scheme != "https" or not parsed.netloc:
+            raise ValueError(
+                "openapi_spec_url must be a valid HTTPS URL (e.g. 'https://api.example.com/openapi.json')"
+            )
+        return v
 
     @validator("auth_patterns")
     def validate_single_auth_pattern(cls, v):
