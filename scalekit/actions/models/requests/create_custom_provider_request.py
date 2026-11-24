@@ -13,15 +13,18 @@ class CreateCustomProviderRequest(BaseModel):
     REST API) that end users can connect to. Its tools come from an MCP server
     (set proxy_url) or from an OpenAPI spec (set openapi_spec_url): set exactly
     one of the two. Exactly one AuthPattern is required: the server rejects a
-    create with no auth pattern ("auth patterns cannot be empty"), and this SDK
-    accepts at most one, so users know how to authenticate with the provider.
+    create without one (400 INVALID_ARGUMENT, a validation error on
+    provider.auth_patterns), and this SDK accepts at most one, so users know how
+    to authenticate with the provider.
     """
 
     display_name: str = Field(
         ...,
         description=(
-            "Required. Name shown in the UI. Letters, digits and spaces only (max 200 "
-            "characters); symbols such as '_' or '-' are rejected. The provider "
+            "Required. Name shown in the UI. ASCII letters (a-z, A-Z), digits and "
+            "spaces only, 1-200 characters, with at least one letter or digit; "
+            "anything else, such as accented letters or symbols like '_' or '-', is "
+            "rejected. The provider "
             "identifier is derived from it ('Acme MCP' becomes 'ACMEMCP:<environment "
             "id>'). The names of the built-in login providers (Github, Google, Gitlab, "
             "Microsoft, LinkedIn, Salesforce, Facebook) are rejected; other built-in "
@@ -79,9 +82,10 @@ class CreateCustomProviderRequest(BaseModel):
         description=(
             "Required in practice. List of AuthPattern objects defining how users can "
             "authenticate with this provider. Each pattern represents one authentication "
-            "method (OAUTH, BEARER, API_KEY, BASIC, or NO_AUTH). Leaving it out fails "
-            "with a validation error on provider.auth_patterns, and an empty list fails "
-            "with 'auth patterns cannot be empty'. The SDK checks neither before "
+            "method (OAUTH, BEARER, API_KEY, BASIC, or NO_AUTH). Leaving it out and "
+            "passing an empty list fail the same way: 400 INVALID_ARGUMENT, a "
+            "validation error on provider.auth_patterns (the SDK sends no "
+            "auth_patterns for an empty list). The SDK checks neither before "
             "sending, so the error comes back from the server. "
             "Note: currently only a single AuthPattern is supported — pass a list "
             "with exactly one element. The list type is intentional for future "

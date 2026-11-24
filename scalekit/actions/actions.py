@@ -2192,8 +2192,12 @@ class ActionProviders:
             ``ScalekitConflictException``; before creating it again, look for it with
             ``list_providers`` (``ListProvidersRequest(provider_type=ProviderType.CUSTOM)``,
             following ``next_page_token``: the default request lists built-in providers
-            only). An MCP-sourced create is retried as before. An HTTP 429 from the edge is not retried
-            either: it never reached Scalekit, so repeating the call is safe.
+            only). An MCP-sourced create is retried as before. A plain HTTP 429 from the edge
+            (an answer without a gRPC status) reaches the client as ``UNAVAILABLE`` too: it
+            raises this exception, is retried like any other ``UNAVAILABLE`` by an MCP-sourced
+            create, and is not retried with ``openapi_spec_url``, so look for the connector
+            first. A gRPC ``RESOURCE_EXHAUSTED`` raises ``ScalekitTooManyRequestsException``
+            instead and is never retried.
         :raises ScalekitGatewayTimeoutException: If the client's tool-call timeout passes (the
             call is not retried). With ``openapi_spec_url`` the server may still finish the
             create: look for the connector as described above before creating it again.
@@ -2266,8 +2270,12 @@ class ActionProviders:
             update again. An update without ``openapi_spec_url`` is retried as before, also one
             that changes the base URL (``proxy_url``) of an OpenAPI-sourced connector: after such
             an update check ``get_tool_collection_run`` (``latest``) and call
-            ``trigger_tool_collection`` if no new run appeared. An HTTP 429 from the edge is not
-            retried either: it never reached Scalekit, so repeating the call is safe.
+            ``trigger_tool_collection`` if no new run appeared. A plain HTTP 429 from the edge
+            (an answer without a gRPC status) reaches the client as ``UNAVAILABLE`` too: it
+            raises this exception, is retried like any other ``UNAVAILABLE`` by an update
+            without ``openapi_spec_url``, and is not retried with ``openapi_spec_url``, so check
+            as described above. A gRPC ``RESOURCE_EXHAUSTED`` raises
+            ``ScalekitTooManyRequestsException`` instead and is never retried.
         :raises ScalekitGatewayTimeoutException: If the client's tool-call timeout passes (the
             call is not retried). The server may still have finished: check as described above
             before you repeat the call.
@@ -2304,8 +2312,11 @@ class ActionProviders:
         Not retried automatically when the service is unavailable, because the first
         attempt may already have queued a run. After a ScalekitServiceUnavailableException
         or a ScalekitGatewayTimeoutException, check ``get_tool_collection_run`` (``latest``)
-        before you trigger again. An HTTP 429 from the edge is not retried either: it never
-        reached Scalekit, so repeating the call is safe.
+        before you trigger again. A plain HTTP 429 from the edge (an answer without a gRPC
+        status) reaches the client as ``UNAVAILABLE`` too, so it raises the same
+        ScalekitServiceUnavailableException, is not retried either, and calls for the same
+        check. A gRPC ``RESOURCE_EXHAUSTED`` raises ``ScalekitTooManyRequestsException``
+        instead and is never retried.
 
         :param request: Request object containing the connector's provider_identifier.
         :type request: TriggerToolCollectionRequest

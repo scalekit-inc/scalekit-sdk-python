@@ -100,21 +100,34 @@ class ScalekitClient:
                                         10000.
         :type                        : ``` int ```
         :param call_timeout_s        : Deadline, in seconds, applied to every gRPC
-                                        call except ToolsClient calls (list_tools,
-                                        list_scoped_tools, execute_tool — see
-                                        tool_call_timeout_s). Without this, a call
-                                        can block forever on a connection that
-                                        looks fine to the client but is silently
-                                        dead. Bounds each attempt individually,
-                                        not the total call across retries — a
-                                        call that retries can take a multiple of
-                                        this value in the worst case. Defaults
-                                        to 20.
+                                        call except the ones that use
+                                        tool_call_timeout_s (listed there).
+                                        Without this, a call can block forever
+                                        on a connection that looks fine to the
+                                        client but is silently dead. Bounds each
+                                        attempt individually, not the total call
+                                        across retries — a call that retries can
+                                        take a multiple of this value in the
+                                        worst case. Defaults to 20.
         :type                        : ``` float ```
-        :param tool_call_timeout_s   : Deadline, in seconds, for tool-execution
-                                        calls, which proxy to third-party APIs and
-                                        can legitimately run longer than ordinary
-                                        control-plane calls. Defaults to 60.
+        :param tool_call_timeout_s   : Deadline, in seconds, for the gRPC calls
+                                        that proxy to third-party APIs or make
+                                        the server fetch an OpenAPI spec, and can
+                                        legitimately run longer than ordinary
+                                        control-plane calls: every ToolsClient
+                                        call (list_tools, list_scoped_tools,
+                                        list_available_tools, search_tools,
+                                        execute_tool; also through
+                                        client.actions),
+                                        ActionClient.delete_custom_tool, and, on
+                                        client.actions.providers,
+                                        create_custom_provider and
+                                        update_custom_provider when
+                                        openapi_spec_url is passed, and
+                                        trigger_tool_collection. It is also the
+                                        default timeout of the HTTP requests of
+                                        ActionClient.upload_resumable. Defaults
+                                        to 60.
         :type                        : ``` float ```
 
         :returns:

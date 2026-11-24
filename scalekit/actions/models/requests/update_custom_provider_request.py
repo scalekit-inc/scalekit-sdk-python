@@ -41,10 +41,11 @@ class UpdateCustomProviderRequest(BaseModel):
     display_name: str = Field(
         ...,
         description=(
-            "Required. Name shown in the UI. Letters, digits and spaces only (max 200 "
-            "characters); symbols such as '_' or '-' are rejected. Changing the name "
-            "does not change the identifier. Good practice: suffix with 'MCP' for MCP "
-            "server providers."
+            "Required. Name shown in the UI. ASCII letters (a-z, A-Z), digits and "
+            "spaces only, 1-200 characters, with at least one letter or digit; "
+            "anything else, such as accented letters or symbols like '_' or '-', is "
+            "rejected. Changing the name does not change the identifier. Good "
+            "practice: suffix with 'MCP' for MCP server providers."
         ),
     )
     description: Optional[str] = Field(
@@ -94,15 +95,18 @@ class UpdateCustomProviderRequest(BaseModel):
         None,
         description=(
             "The AuthPattern objects of the provider. The server requires them on "
-            "every update (a request without any is rejected with 400) and, when they "
-            "differ from the stored ones, replaces the existing list rather than "
-            "merging. To keep the current patterns, send the ones list_providers "
-            "returned. Note: currently only a single AuthPattern is supported "
-            "— pass a list with exactly one element. The list type is intentional for "
-            "future multi-pattern support. The auth type and the connector kind (MCP or "
-            "API) cannot be changed, and an API_KEY provider cannot switch between "
-            "single-key and multiple-headers mode. Editing the header fields of a "
-            "multiple-headers provider requires its connected accounts to re-authorize."
+            "every update: a request that leaves them out is rejected with 400 "
+            "INVALID_ARGUMENT (a validation error on provider.auth_patterns). When "
+            "they differ from the stored ones, they replace the existing list rather "
+            "than merging. The server accepts an empty list and then keeps the stored "
+            "patterns, but this model refuses one. To keep the current patterns, send "
+            "the ones list_providers returned. Note: currently only a single "
+            "AuthPattern is supported — pass a list with exactly one element. The "
+            "list type is intentional for future multi-pattern support. The auth type "
+            "and the connector kind (MCP or API) cannot be changed, and an API_KEY "
+            "provider cannot switch between single-key and multiple-headers mode. "
+            "Editing the header fields of a multiple-headers provider requires its "
+            "connected accounts to re-authorize."
         ),
     )
     icon_src: Optional[str] = Field(

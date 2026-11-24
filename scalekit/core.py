@@ -232,16 +232,28 @@ class CoreClient:
                                         10000.
         :type                        : ``` int ```
         :param call_timeout_s        : Deadline, in seconds, applied to every gRPC
-                                        call unless a call site overrides it (e.g.
-                                        tool execution — see tool_call_timeout_s).
-                                        Without this, a call can block forever on
-                                        a connection that looks fine to the client
-                                        but is silently dead. Defaults to 20.
+                                        call unless the call site uses
+                                        tool_call_timeout_s instead (listed
+                                        there). Without this, a call can block
+                                        forever on a connection that looks fine
+                                        to the client but is silently dead.
+                                        Defaults to 20.
         :type                        : ``` float ```
-        :param tool_call_timeout_s   : Deadline, in seconds, for tool-execution
-                                        calls (ToolsClient), which proxy to
-                                        third-party APIs and can legitimately run
-                                        longer than ordinary control-plane calls.
+        :param tool_call_timeout_s   : Deadline, in seconds, for the gRPC calls
+                                        that proxy to third-party APIs or make
+                                        the server fetch an OpenAPI spec, and can
+                                        legitimately run longer than ordinary
+                                        control-plane calls: every ToolsClient
+                                        call (list_tools, list_scoped_tools,
+                                        list_available_tools, search_tools,
+                                        execute_tool),
+                                        ActionClient.delete_custom_tool, and, on
+                                        ProvidersClient, create_custom_provider
+                                        and update_custom_provider when
+                                        openapi_spec_url is passed, and
+                                        trigger_tool_collection. It is also the
+                                        default timeout of the HTTP requests of
+                                        ActionClient.upload_resumable.
                                         Defaults to 60, deliberately below the
                                         infra load balancer's 62s backend timeout
                                         for this path so this deadline is always

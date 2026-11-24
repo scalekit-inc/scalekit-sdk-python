@@ -73,24 +73,30 @@ class ProvidersClient:
         OpenAPI connector with the same name already exists in the environment.
 
         With ``openapi_spec_url`` the call is not retried automatically when the service
-        is unavailable (an HTTP 429 from the edge is not retried either: it never reached Scalekit, so repeating the call is safe): the create is not idempotent, and if the first attempt created the
+        is unavailable: the create is not idempotent, and if the first attempt created the
         connector but its response was lost, a retry would fail with
-        ScalekitConflictException although the connector exists. After such a
-        ScalekitServiceUnavailableException, look the connector up with list_providers
-        (provider_type=ProviderType.CUSTOM, following next_page_token: the default lists
-        built-in providers only) before you create it again. The same goes for a
-        ScalekitGatewayTimeoutException (the client's tool-call timeout passed, and the call
-        does not retry it): the server may have finished the create. An MCP-sourced create
-        keeps the default retry.
+        ScalekitConflictException although the connector exists. gRPC reports a plain HTTP
+        429 from the edge (an answer without a gRPC status) as UNAVAILABLE too, so it raises
+        the same ScalekitServiceUnavailableException and is not retried either; a gRPC
+        RESOURCE_EXHAUSTED raises ScalekitTooManyRequestsException and is never retried.
+        After a ScalekitServiceUnavailableException, look the connector up with
+        list_providers (provider_type=ProviderType.CUSTOM, following next_page_token: the
+        default lists built-in providers only) before you create it again. The same goes for
+        a ScalekitGatewayTimeoutException (the client's tool-call timeout passed, and the
+        call does not retry it): the server may have finished the create. An MCP-sourced
+        create keeps the default retry, which retries UNAVAILABLE, such a 429 included, with
+        backoff.
 
-        :param display_name: Name shown in the UI. Required. Letters, digits and
-                             spaces only (max 200 characters); symbols such as '_'
-                             or '-' are rejected. The identifier is derived from it
-                             ('Acme MCP' becomes 'ACMEMCP:<environment id>'). The
-                             names of the built-in login providers (Github, Google,
-                             Gitlab, Microsoft, LinkedIn, Salesforce, Facebook) are
-                             rejected; other built-in names such as Gmail are accepted.
-                             Good practice: suffix with 'MCP' for MCP server providers.
+        :param display_name: Name shown in the UI. Required. ASCII letters (a-z, A-Z),
+                             digits and spaces only, 1-200 characters, with at least one
+                             letter or digit; anything else, such as accented letters or
+                             symbols like '_' or '-', is rejected. The identifier is
+                             derived from it ('Acme MCP' becomes 'ACMEMCP:<environment
+                             id>'). The names of the built-in login providers (Github,
+                             Google, Gitlab, Microsoft, LinkedIn, Salesforce, Facebook)
+                             are rejected; other built-in names such as Gmail are
+                             accepted. Good practice: suffix with 'MCP' for MCP server
+                             providers.
         :type display_name: str
         :param proxy_url: HTTPS URL of the external service this provider connects
                           to, and the address Scalekit sends proxied requests to.
@@ -110,10 +116,10 @@ class ProvidersClient:
                                AuthPattern is supported — pass a list with exactly one
                                element. The list type is intentional for future
                                multi-pattern support. Required in practice: leaving
-                               it out fails with a validation error on
-                               provider.auth_patterns, and an empty list fails with
-                               'auth patterns cannot be empty'. The SDK checks
-                               neither before sending.
+                               it out and passing an empty list fail the same way
+                               (400 INVALID_ARGUMENT, a validation error on
+                               provider.auth_patterns), because an empty list is
+                               not sent. The SDK checks neither before sending.
         :type auth_patterns: Optional[List[AuthPattern]]
         :param icon_src: URL of the provider's icon image. Optional.
         :type icon_src: Optional[str]
@@ -218,14 +224,18 @@ class ProvidersClient:
         gain one (400 INVALID_ARGUMENT).
 
         With ``openapi_spec_url`` the call is not retried automatically when the service is
-        unavailable (an HTTP 429 from the edge is not retried either: it never reached Scalekit, so repeating the call is safe): the first attempt may already have saved the new URL, and a repeat finds
-        nothing to change, so it queues no run and still succeeds. After such a
-        ScalekitServiceUnavailableException, read the connector back with list_providers. If
+        unavailable: the first attempt may already have saved the new URL, and a repeat finds
+        nothing to change, so it queues no run and still succeeds. gRPC reports a plain HTTP
+        429 from the edge (an answer without a gRPC status) as UNAVAILABLE too, so it raises
+        the same ScalekitServiceUnavailableException and is not retried either; a gRPC
+        RESOURCE_EXHAUSTED raises ScalekitTooManyRequestsException and is never retried. After
+        a ScalekitServiceUnavailableException, read the connector back with list_providers. If
         its openapi_spec_url is the new value, wait for any active run to finish and call
         trigger_tool_collection; otherwise send the update again. A
         ScalekitGatewayTimeoutException is not retried either, and the server may have
         finished: check the same way before you repeat the call. An update without
-        ``openapi_spec_url`` keeps the default retry, including one that changes the base URL
+        ``openapi_spec_url`` keeps the default retry (which retries UNAVAILABLE, such a 429
+        included, with backoff), including one that changes the base URL
         (``proxy_url``) of an OpenAPI-sourced connector: that change queues a run too, and a
         repeat after a lost answer finds nothing to change and queues none. After such an
         update, check get_tool_collection_run(identifier, "latest") and call
@@ -234,11 +244,12 @@ class ProvidersClient:
 
         :param identifier: Identifier of the custom provider to update. Required.
         :type identifier: str
-        :param display_name: Name shown in the UI. Letters, digits and spaces only
-                             (max 200 characters); symbols such as '_' or '-' are
-                             rejected. Changing the name does not change the
-                             identifier. Good practice: suffix with 'MCP' for MCP
-                             server providers. Required.
+        :param display_name: Name shown in the UI. ASCII letters (a-z, A-Z), digits and
+                             spaces only, 1-200 characters, with at least one letter or
+                             digit; anything else, such as accented letters or symbols
+                             like '_' or '-', is rejected. Changing the name does not
+                             change the identifier. Good practice: suffix with 'MCP' for
+                             MCP server providers. Required.
         :type display_name: str
         :param proxy_url: HTTPS URL of the external service this provider connects to, and
                           the address Scalekit sends proxied requests to. For an
@@ -250,9 +261,13 @@ class ProvidersClient:
         :param description: New description. Pass None to leave unchanged. An empty
                             string does not clear it: the server ignores empty values.
         :type description: Optional[str]
-        :param auth_patterns: The auth patterns. The server requires this on every update
-                               and, when it is a different list, replaces the existing one
-                               rather than merging. To keep the current patterns, send the
+        :param auth_patterns: The auth patterns. The server requires this on every update:
+                               leaving it out (None) is rejected with 400 INVALID_ARGUMENT, a
+                               validation error on provider.auth_patterns. When it is a
+                               different list, the server replaces the existing one rather
+                               than merging. It accepts an empty list and then keeps the
+                               stored patterns (the typed UpdateCustomProviderRequest refuses
+                               one). To keep the current patterns, send the
                                ones list_providers returned. Currently only a single
                                AuthPattern is supported — pass a list with exactly one
                                element. The list type is intentional for future
@@ -359,8 +374,12 @@ class ProvidersClient:
         shortcut already applies to the second run.
 
         The call is not retried automatically when the service is unavailable, because the
-        first attempt may already have queued a run (an HTTP 429 from the edge is not retried either: it never reached Scalekit, so repeating the call is safe). As for create_custom_provider, the server
-        fetches the spec while it answers, so the call uses the client's tool-call timeout.
+        first attempt may already have queued a run. gRPC reports a plain HTTP 429 from the
+        edge (an answer without a gRPC status) as UNAVAILABLE too, so it raises the same
+        ScalekitServiceUnavailableException and is not retried either; a gRPC
+        RESOURCE_EXHAUSTED raises ScalekitTooManyRequestsException and is never retried. As
+        for create_custom_provider, the server fetches the spec while it answers, so the call
+        uses the client's tool-call timeout.
         After a ScalekitServiceUnavailableException or a ScalekitGatewayTimeoutException,
         check get_tool_collection_run(identifier, "latest") before you trigger again: the
         first attempt may already have queued the run, and a second trigger while it is

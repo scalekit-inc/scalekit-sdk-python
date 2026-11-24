@@ -468,7 +468,8 @@ class AuthPattern(_ServedForm):
         ...,
         description=(
             "Required. Human-readable label for this auth option shown in the UI. "
-            "Accepted characters: a-z, A-Z, 0-9, and spaces. "
+            "Free text: the character rule of the connector's display_name (ASCII "
+            "letters, digits and spaces only) does not apply to this label. "
             "Example: 'GitHub OAuth', 'API Token', 'Service Account Key'."
         ),
     )
@@ -691,8 +692,10 @@ class Provider(BaseModel):
         "",
         description=(
             "Human-readable name of the provider. "
-            "Letters, digits and spaces only. The identifier is derived from it at "
-            "creation and does not change if the name is updated."
+            "For a custom connector the server allows ASCII letters (a-z, A-Z), digits "
+            "and spaces only, 1-200 characters, with at least one letter or digit; "
+            "built-in providers can contain other characters. The identifier is "
+            "derived from it at creation and does not change if the name is updated."
         ),
     )
     description: str = Field(
@@ -766,9 +769,10 @@ class Provider(BaseModel):
     auth_patterns: List[AuthPattern] = Field(
         default_factory=list,
         description=(
-            "Decoded list of authentication options for this provider. "
-            "Currently contains at most one element — only a single auth pattern "
-            "is supported today. The list type is intentional for future multi-pattern support."
+            "Decoded list of authentication options for this provider, in the order "
+            "the server stores them. A connector created with this SDK has exactly "
+            "one; built-in providers can have several (for example HARVEST has OAUTH "
+            "and API_KEY), so loop over the list instead of reading element 0."
         ),
     )
 
