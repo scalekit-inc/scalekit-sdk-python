@@ -126,11 +126,10 @@ class ProviderDomainTest(ConnectionTestCase):
     def test_the_domain_is_sent_with_the_create_of_a_connection_on_a_custom_connector(self):
         self._reply(pb.CreateAppConnectionResponse(connection=_app_connection()))
         self.client.create_connection("ACME_MCP:1", connection_name="acme-mcp", provider_domain="mcp-eu.example.com")
-        _, request, kwargs = self.calls[0]
+        request = self.calls[0][1]
         self.assertEqual(request.connection.provider, "ACME_MCP:1")
         self.assertEqual(request.connection.connection_name, "acme-mcp")
         self.assertEqual(request.connection.provider_configurations.provider_domain, "mcp-eu.example.com")
-        self.assertFalse(kwargs["retry_on_unavailable"], "the first attempt may have created the connection")
 
     def test_without_it_no_provider_configurations_are_sent(self):
         self._reply(pb.CreateAppConnectionResponse(connection=_app_connection()))

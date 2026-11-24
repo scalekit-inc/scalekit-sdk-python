@@ -892,8 +892,6 @@ Deletes one API tool of an OpenAPI-sourced custom connector of your environment,
 
 A tool collection run creates the tool again while its operation is still in the spec, unless the spec, base URL and auth patterns are unchanged since the last completed run: then it creates nothing (a spec that references external files is always regenerated, and so is the run right after a first run that filled in the base URL or the OAuth settings). So, apart from those two cases, `invoke_tool_collection` alone does not restore a deleted tool: change one of those inputs, for example the spec, call it and let the run finish. To keep the tool gone, remove its endpoint from the spec. While a sync is queued or running, nothing is deleted and the call raises `ScalekitConflictException`; the message names the run: poll it with `client.actions.get_tool_collection_run` (pass its ID as `run_id`) and call again once it has finished.
 
-**Retries.** The call is sent again on `UNAVAILABLE`, so after a retry a `ScalekitNotFoundException` can mean that the first attempt already deleted the tool. A repeat by name looks the name up again: if a sync finished in between and created a tool with that name again, the repeat deletes that one. A tool a sync creates again has a new id, so a repeat by id cannot delete it.
-
 Errors:
 
 - `ValueError`: `tool_identifier` is not a string or is blank. Raised before anything is sent.
@@ -1228,8 +1226,6 @@ A run fetches the spec, converts every operation it can into a tool, and records
 | Validating the spec when you create the connector, change its spec URL or call `invoke_tool_collection` | 2 minutes, including every file the spec references |
 | One run | 3 minutes. A run that makes no progress for 30 minutes is marked `FAILED`. |
 
-`create_custom_provider` and `update_custom_provider` with `openapi_spec_url`, and `invoke_tool_collection`, are not retried when the service is unavailable, because the first attempt may already have done the work. After a `ScalekitServiceUnavailableException`, look for the connector with `list_providers`, read it back, or check the latest run with `get_tool_collection_run` before you repeat the call (a blind repeat of a create answers 409).
-
 A spec URL that fails validation raises `ScalekitBadRequestException` (`INVALID_ARGUMENT`, a message starting `openapi_spec_url failed validation:`) and nothing is stored. The reasons are: not a valid URL, the URL must use https, the URL points to a host that cannot be reached for security reasons, the URL could not be reached, the response could not be read, the response is not a valid OpenAPI/Swagger document, and the size limits above. `ScalekitInternalServerException` (`validating the spec url was interrupted — please retry`) means try again.
 
 **Credentials**
@@ -1331,7 +1327,6 @@ result, _ = scalekit_client.tools.execute_tool(
 | `ScalekitConflictException` | `RESOURCE_ALREADY_EXISTS` | An OpenAPI connector with that name exists, or a run is already queued or running (`delete_custom_tool`, and `delete_custom_provider` for an OpenAPI-sourced connector, raise it then too, and delete nothing) |
 | `ScalekitConflictException` | `TOOL_NAME_AMBIGUOUS` | `delete_custom_tool` was given a name that tools of more than one connector have, and deleted nothing: delete the tool by its id (the message names two of them) |
 | `ScalekitInternalServerException` | `INTERNAL_ERROR` | Validating the spec URL was interrupted, or the server failed |
-| `ScalekitServiceUnavailableException` | none | The service is unavailable (`UNAVAILABLE`, which includes a plain HTTP 429 from the edge). `create_custom_provider` and `update_custom_provider` with `openapi_spec_url`, and `invoke_tool_collection`, are not retried: check what the first attempt did before you repeat the call |
 | `ScalekitNotImplementedException` | none | `delete_custom_tool` on a backend older than release v0.1.165.0, which does not have the call (501) |
 
 ### Trigger events

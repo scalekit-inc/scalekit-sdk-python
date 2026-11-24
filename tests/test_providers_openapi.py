@@ -146,21 +146,6 @@ class CreateOpenApiConnectorTest(ProvidersTestCase):
         for _, _, kwargs in self.calls:
             self.assertNoDeadlineOverride(kwargs)
 
-    def test_a_spec_url_create_is_not_retried_when_unavailable(self):
-        """The create is not idempotent: a retry after a lost response would hit the duplicate-name 409."""
-        self._reply(
-            pb.CreateProviderResponse(provider=_proto_provider()),
-            pb.CreateProviderResponse(provider=_proto_provider()),
-        )
-        self.client.providers.create_custom_provider(
-            CreateCustomProviderRequest(
-                display_name="Petstore", openapi_spec_url=SPEC_URL, auth_patterns=[_api_key_pattern()]
-            )
-        )
-        self.low.create_custom_provider("Acme MCP", MCP_URL, auth_patterns=[_api_key_pattern()])
-        self.assertIs(self.calls[0][2]["retry_on_unavailable"], False)
-        self.assertIs(self.calls[1][2]["retry_on_unavailable"], True)  # an MCP create keeps the retry
-
     def test_typed_create_maps_every_field_and_decodes_the_response(self):
         self._reply(
             pb.CreateProviderResponse(
@@ -422,35 +407,6 @@ class UpdateOpenApiConnectorTest(ProvidersTestCase):
         self.low.update_custom_provider("PETSTORE:12", "Petstore", proxy_url="https://api.example.com/v2")
         for _, _, kwargs in self.calls:
             self.assertNoDeadlineOverride(kwargs)
-
-    def test_an_update_that_sends_a_spec_url_is_not_retried_when_unavailable(self):
-        """The first attempt may already have saved the new URL without queueing its run (another run was
-        active, or queueing failed), and a repeat finds nothing to change: it would succeed and queue none."""
-        self._reply(
-            pb.UpdateProviderResponse(provider=_proto_provider()),
-            pb.UpdateProviderResponse(provider=_proto_provider()),
-        )
-        self.low.update_custom_provider("PETSTORE:12", "Petstore", openapi_spec_url=SPEC_URL)
-        self.client.providers.update_custom_provider(
-            UpdateCustomProviderRequest(
-                identifier="PETSTORE:12",
-                display_name="Petstore",
-                auth_patterns=[_api_key_pattern(is_open_api=True)],
-                openapi_spec_url=SPEC_URL,
-            )
-        )
-        for _, _, kwargs in self.calls:
-            self.assertIs(kwargs.get("retry_on_unavailable", True), False)  # grpc_exec retries by default
-
-    def test_an_update_without_a_spec_url_keeps_the_default_retry(self):
-        self._reply(
-            pb.UpdateProviderResponse(provider=_proto_provider()),
-            pb.UpdateProviderResponse(provider=_proto_provider()),
-        )
-        self.low.update_custom_provider("PETSTORE:12", "Petstore", proxy_url="https://api.example.com/v2")
-        self.low.update_custom_provider("PETSTORE:12", "Petstore", openapi_spec_url="")  # "" is not sent
-        for _, _, kwargs in self.calls:
-            self.assertIs(kwargs.get("retry_on_unavailable", True), True)
 
     def test_the_old_positional_call_still_maps(self):
         self._reply(pb.UpdateProviderResponse(provider=_proto_provider()))

@@ -72,21 +72,6 @@ class ProvidersClient:
         not enabled for the environment, and 409 RESOURCE_ALREADY_EXISTS when an
         OpenAPI connector with the same name already exists in the environment.
 
-        With ``openapi_spec_url`` the call is not retried automatically when the service
-        is unavailable: the create is not idempotent, and if the first attempt created the
-        connector but its response was lost, a retry would fail with
-        ScalekitConflictException although the connector exists. gRPC reports a plain HTTP
-        429 from the edge (an answer without a gRPC status) as UNAVAILABLE too, so it raises
-        the same ScalekitServiceUnavailableException and is not retried either; a gRPC
-        RESOURCE_EXHAUSTED raises ScalekitTooManyRequestsException and is never retried.
-        After a ScalekitServiceUnavailableException, look the connector up with
-        list_providers (provider_type=ProviderType.CUSTOM, following next_page_token: the
-        default lists built-in providers only) before you create it again. The same goes for
-        a ScalekitGatewayTimeoutException (the call exceeded the client's deadline, and the
-        call does not retry it): the server may have finished the create. An MCP-sourced
-        create keeps the default retry, which retries UNAVAILABLE, such a 429 included, with
-        backoff.
-
         :param display_name: Name shown in the UI. Required. ASCII letters (a-z, A-Z),
                              digits and spaces only, 1-200 characters, with at least one
                              letter or digit; anything else, such as accented letters or
@@ -165,9 +150,6 @@ class ProvidersClient:
         return self.core_client.grpc_exec(
             self._stub.CreateCustomProvider.with_call,
             CreateCustomProviderRequest(provider=provider),
-            # The first attempt may already have created the connector, and a retry would then
-            # hit the duplicate-name check of OpenAPI connectors (409) instead of succeeding.
-            retry_on_unavailable=not openapi_spec_url,
         )
 
     def update_custom_provider(
@@ -223,25 +205,6 @@ class ProvidersClient:
         is on, the new URL is validated and every tool is regenerated. Sending the stored
         spec URL again does nothing, and a connector that was not created from a spec cannot
         gain one (400 INVALID_ARGUMENT).
-
-        With ``openapi_spec_url`` the call is not retried automatically when the service is
-        unavailable: the first attempt may already have saved the new URL, and a repeat finds
-        nothing to change, so it queues no run and still succeeds. gRPC reports a plain HTTP
-        429 from the edge (an answer without a gRPC status) as UNAVAILABLE too, so it raises
-        the same ScalekitServiceUnavailableException and is not retried either; a gRPC
-        RESOURCE_EXHAUSTED raises ScalekitTooManyRequestsException and is never retried. After
-        a ScalekitServiceUnavailableException, read the connector back with list_providers. If
-        its openapi_spec_url is the new value, wait for any active run to finish and call
-        invoke_tool_collection; otherwise send the update again. A
-        ScalekitGatewayTimeoutException is not retried either, and the server may have
-        finished: check the same way before you repeat the call. An update without
-        ``openapi_spec_url`` keeps the default retry (which retries UNAVAILABLE, such a 429
-        included, with backoff), including one that changes the base URL
-        (``proxy_url``) of an OpenAPI-sourced connector: that change queues a run too, and a
-        repeat after a lost answer finds nothing to change and queues none. After such an
-        update, check get_tool_collection_run(identifier, "latest") and call
-        invoke_tool_collection if no new run appeared (the SDK cannot tell an OpenAPI-sourced
-        connector from an MCP one here, so the retry stays for both).
 
         :param identifier: Identifier of the custom provider to update. Required.
         :type identifier: str
@@ -315,9 +278,6 @@ class ProvidersClient:
         return self.core_client.grpc_exec(
             self._stub.UpdateCustomProvider.with_call,
             UpdateCustomProviderRequest(identifier=identifier, provider=provider),
-            # The first attempt may already have saved the new URL without queueing its run, and a
-            # repeat finds nothing to change: it would succeed and queue none.
-            retry_on_unavailable=not openapi_spec_url,
         )
 
     def delete_custom_provider(self, identifier: str):
@@ -373,17 +333,6 @@ class ProvidersClient:
         updates every tool and the shortcut applies from the run after that; otherwise the
         shortcut already applies to the second run.
 
-        The call is not retried automatically when the service is unavailable, because the
-        first attempt may already have queued a run. gRPC reports a plain HTTP 429 from the
-        edge (an answer without a gRPC status) as UNAVAILABLE too, so it raises the same
-        ScalekitServiceUnavailableException and is not retried either; a gRPC
-        RESOURCE_EXHAUSTED raises ScalekitTooManyRequestsException and is never retried.
-        After a ScalekitServiceUnavailableException or a ScalekitGatewayTimeoutException (the
-        call exceeded the client's deadline, and the call does not retry it), check
-        get_tool_collection_run(identifier, "latest") before you invoke again: the first
-        attempt may already have queued the run, and a second invocation while it is active
-        answers 409.
-
         Errors surface as ScalekitServerException subclasses: ScalekitNotFoundException
         (404) when no such connector exists in the environment; ScalekitBadRequestException
         (400) when the connector is not sourced from an OpenAPI spec ('this connector is not
@@ -407,7 +356,6 @@ class ProvidersClient:
         return self.core_client.grpc_exec(
             self._stub.TriggerToolCollection.with_call,
             TriggerToolCollectionRequest(provider_identifier=_stripped(provider_identifier)),
-            retry_on_unavailable=False,
         )
 
     def get_tool_collection_run(self, provider_identifier: str, run_id: str = "latest"):

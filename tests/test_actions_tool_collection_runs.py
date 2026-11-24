@@ -3,8 +3,8 @@
 ``ActionClient.invoke_tool_collection`` and ``ActionClient.get_tool_collection_run`` are the same operations as
 ``actions.providers.invoke_tool_collection`` and ``actions.providers.get_tool_collection_run``, which keep working.
 
-Only the gRPC channel is faked. The generated stub, the clients, and the client's real retry and error mapping all
-run, so what is checked is what would be put on the wire.
+Only the gRPC channel is faked. The generated stub, the clients, and the client's real error mapping all run, so what
+is checked is what would be put on the wire.
 """
 import inspect
 import typing
@@ -30,9 +30,7 @@ from scalekit.actions.types import (
 from scalekit.common.exceptions import (
     ScalekitBadRequestException,
     ScalekitConflictException,
-    ScalekitGatewayTimeoutException,
     ScalekitNotFoundException,
-    ScalekitServiceUnavailableException,
 )
 from scalekit.core import DEFAULT_CALL_TIMEOUT_S, CoreClient
 from scalekit.providers import ProvidersClient
@@ -115,7 +113,7 @@ class _FakeChannel:
 
 
 def _core_client(channel: _FakeChannel) -> CoreClient:
-    """A CoreClient with the real retry and error mapping and no network."""
+    """A CoreClient with the real error mapping and no network."""
     core = CoreClient.__new__(CoreClient)
     core.access_token = "test-token"
     core.host = "example.com"
@@ -134,9 +132,6 @@ class ToolCollectionRunsTestCase(unittest.TestCase):
         self.channel = _FakeChannel()
         self.low = ProvidersClient(_core_client(self.channel))
         self.actions = ActionClient(MagicMock(), MagicMock(), providers_client=self.low)
-        sleep = patch("scalekit.core.time.sleep")  # the backoff between two attempts
-        self.sleep = sleep.start()
-        self.addCleanup(sleep.stop)
 
     def _reply(self, *items):
         self.channel.script.extend(items)
@@ -201,20 +196,6 @@ class InvokeToolCollectionTest(ToolCollectionRunsTestCase):
         self.actions.invoke_tool_collection(provider_identifier=CONNECTOR)
         self.assertEqual(self.channel.sent[0].timeout, DEFAULT_CALL_TIMEOUT_S)
         self.assertNotEqual(TOOL_CALL_TIMEOUT_S, DEFAULT_CALL_TIMEOUT_S)
-
-    def test_a_call_that_is_unavailable_is_not_sent_again(self):
-        """The first attempt may already have queued a run: the caller checks the latest run before invoking again."""
-        self._reply(_rpc_error(StatusCode.UNAVAILABLE, "connection reset"), _run())
-        with self.assertRaises(ScalekitServiceUnavailableException):
-            self.actions.invoke_tool_collection(provider_identifier=CONNECTOR)
-        self.assertEqual([s.path for s in self.channel.sent], [INVOKE], "one attempt, no replay")
-        self.sleep.assert_not_called()
-
-    def test_a_deadline_that_passes_is_not_retried(self):
-        self._reply(_rpc_error(StatusCode.DEADLINE_EXCEEDED, "deadline exceeded"), _run())
-        with self.assertRaises(ScalekitGatewayTimeoutException):
-            self.actions.invoke_tool_collection(provider_identifier=CONNECTOR)
-        self.assertEqual(len(self.channel.sent), 1)
 
     def test_server_errors_reach_the_caller_unchanged(self):
         request = InvokeToolCollectionRequest(provider_identifier=CONNECTOR)
@@ -309,14 +290,6 @@ class GetToolCollectionRunTest(ToolCollectionRunsTestCase):
         self.actions.get_tool_collection_run(provider_identifier=CONNECTOR)
         self.assertEqual(self.channel.sent[0].timeout, DEFAULT_CALL_TIMEOUT_S)
         self.assertNotEqual(TOOL_CALL_TIMEOUT_S, DEFAULT_CALL_TIMEOUT_S)
-
-    def test_a_read_is_retried_like_any_other_read(self):
-        self._reply(_rpc_error(StatusCode.UNAVAILABLE, "connection reset"), _run(status="PROCESSING"))
-        run = self.actions.get_tool_collection_run(provider_identifier=CONNECTOR)
-        self.assertIs(run.status, ToolCollectionRunStatus.PROCESSING)
-        self.assertEqual([s.path for s in self.channel.sent], [GET_RUN, GET_RUN])
-        self.assertEqual(self.channel.sent[0].body, self.channel.sent[1].body, "the repeat is the same request")
-        self.sleep.assert_called_once()
 
     def test_a_finished_run_is_decoded_with_its_counters_and_skipped_operations(self):
         self._reply(
@@ -467,7 +440,6 @@ class ScalekitClientTest(unittest.TestCase):
                     pb.GetToolCollectionRunRequest(provider_identifier="ACMEAPI:70219645518265104", run_id="latest"),
                 ],
             )
-            self.assertIs(sent[0][1]["retry_on_unavailable"], False)
             for _, kwargs in sent:
                 self.assertIsNone(kwargs.get("timeout"))  # no deadline of its own
 

@@ -1,15 +1,13 @@
 """Offline tests for ActionClient.delete_custom_tool.
 
-Only the gRPC channel is faked. The generated stub, the client's real retry and error mapping, and the
-clients all run, so what is checked is what would be put on the wire.
+Only the gRPC channel is faked. The generated stub, the core client and the clients all run, so what is
+checked is what would be put on the wire.
 """
 import unittest
 from collections import namedtuple
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
-import grpc
 from google.protobuf import empty_pb2
-from google.rpc import status_pb2
 from grpc import StatusCode
 
 from scalekit.actions.actions import ActionClient
@@ -21,24 +19,6 @@ METHOD = "/scalekit.v1.tools.ToolService/DeleteCustomTool"
 TOOL_CALL_TIMEOUT_S = 123.0  # unlike every default, so a call that uses another deadline shows
 
 Sent = namedtuple("Sent", "path body timeout metadata")
-
-
-def _rpc_error(code: StatusCode, message: str) -> grpc.RpcError:
-    """An RpcError carrying a google.rpc.Status, the way the server answers."""
-    status = status_pb2.Status(code=code.value[0], message=message)
-    trailing = (("grpc-status-details-bin", status.SerializeToString()),)
-
-    class _Error(grpc.RpcError):
-        def code(self):
-            return code
-
-        def details(self):
-            return message
-
-        def trailing_metadata(self):
-            return trailing
-
-    return _Error()
 
 
 class _Call:
@@ -69,7 +49,7 @@ class _FakeChannel:
 
 
 def _core_client(channel: _FakeChannel) -> CoreClient:
-    """A CoreClient with the real retry and error mapping and no network."""
+    """A CoreClient that sends through the fake channel and needs no network."""
     core = CoreClient.__new__(CoreClient)
     core.access_token = "test-token"
     core.host = "example.com"
@@ -87,9 +67,6 @@ class DeleteCustomToolTestCase(unittest.TestCase):
     def setUp(self):
         self.channel = _FakeChannel()
         self.actions = ActionClient(ToolsClient(_core_client(self.channel)), MagicMock())
-        sleep = patch("scalekit.core.time.sleep")  # the backoff between two attempts
-        self.sleep = sleep.start()
-        self.addCleanup(sleep.stop)
 
     def _reply(self, *items):
         self.channel.script.extend(items)
@@ -151,17 +128,6 @@ class RequestTest(DeleteCustomToolTestCase):
         self.actions.delete_custom_tool("a-acme_get_user")
         self.assertEqual(self.channel.sent[0].timeout, DEFAULT_CALL_TIMEOUT_S)
         self.assertNotEqual(TOOL_CALL_TIMEOUT_S, DEFAULT_CALL_TIMEOUT_S)
-
-
-class RetryTest(DeleteCustomToolTestCase):
-    """A repeated delete answers 404 once the first attempt has deleted the tool, so it keeps the default retry on UNAVAILABLE."""
-
-    def test_a_dropped_connection_is_retried_and_the_delete_goes_through(self):
-        self._reply(_rpc_error(StatusCode.UNAVAILABLE, "connection reset"), empty_pb2.Empty())
-        self.assertIsNone(self.actions.delete_custom_tool("a-acme_get_user"))
-        self.assertEqual([s.path for s in self.channel.sent], [METHOD, METHOD])
-        self.assertEqual(self.channel.sent[0].body, self.channel.sent[1].body, "the repeat is the same request")
-        self.sleep.assert_called_once()
 
 
 if __name__ == "__main__":

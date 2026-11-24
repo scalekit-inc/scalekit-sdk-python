@@ -86,11 +86,10 @@ class InvokeToolCollectionTest(RunsTestCase):
         self.assertIsNone(run.started_at)
         self.assertIsNone(run.finished_at)
 
-    def test_is_not_retried_and_passes_no_deadline_override(self):
+    def test_passes_no_deadline_override(self):
         self._reply(_run())
         self.low.invoke_tool_collection(CONNECTOR)
         kwargs = self.calls[0][2]
-        self.assertFalse(kwargs["retry_on_unavailable"])
         self.assertIsNone(kwargs.get("timeout"))  # timeout=None: grpc_exec applies the client's default deadline
 
     def test_server_rejections_reach_the_caller_unchanged(self):
@@ -165,11 +164,6 @@ class GetToolCollectionRunTest(RunsTestCase):
             GetToolCollectionRunRequest(provider_identifier=f"\t{CONNECTOR}", run_id="tcr_999 ")
         )
         self.assertEqual([(c[1].provider_identifier, c[1].run_id) for c in self.calls], [(CONNECTOR, "tcr_999")] * 2)
-
-    def test_a_read_is_retried_like_any_other_read(self):
-        self._reply(_run())
-        self.low.get_tool_collection_run(CONNECTOR)
-        self.assertNotIn("retry_on_unavailable", self.calls[0][2])
 
     def test_a_completed_run_reports_counters_and_skipped_operations(self):
         skipped = [
