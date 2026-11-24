@@ -65,9 +65,7 @@ class CreateCustomProviderRequest(BaseModel):
     proxy_enabled: bool = Field(
         True,
         description=(
-            "Ignored. A custom connector is always created with proxy_enabled=True, "
-            "whatever is set here. The field is kept so that existing code that sets "
-            "it keeps working."
+            "Ignored: the SDK always creates the connector with proxying on."
         ),
     )
     description: str = Field(

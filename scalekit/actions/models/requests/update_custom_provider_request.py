@@ -13,11 +13,7 @@ class UpdateCustomProviderRequest(BaseModel):
     replaces the provider's settings and is not a partial update. It requires
     display_name and auth_patterns on every update, and proxy_url as well for an
     MCP-sourced connector. Fields left as None are not sent: description and icon_src then keep their stored values, but metadata is
-    cleared (see that field). The update always sends proxy_enabled=True, which
-    create_custom_provider always sets, and has no field for it: a proxy_enabled passed
-    to this model is ignored. The server applies the flag on every update, so an update
-    switches proxying on for a connector that has it off, and refuses an OpenAPI-sourced
-    connector in that state (see ProvidersClient.update_custom_provider).
+    cleared (see that field).
 
     An OpenAPI-sourced connector (one created with openapi_spec_url) can only
     change display_name, description, icon_src, metadata and proxy_url, which is

@@ -434,8 +434,7 @@ class ActionClient:
 
         :raises ValueError: If tool_identifier is not a string or is blank; nothing is sent
         :raises ScalekitBadRequestException: 400, longer than 2048 characters or a control
-            character, or FEATURE_NOT_ENABLED where OpenAPI-sourced connectors are not enabled
-            for the environment
+            character
         :raises ScalekitForbiddenException: 403, the caller lacks permission to delete
         :raises ScalekitNotFoundException: 404, not a deletable tool (the error does not say why)
         :raises ScalekitConflictException: 409, nothing deleted: RESOURCE_ALREADY_EXISTS while a
@@ -2287,8 +2286,6 @@ class ActionProviders:
                         auth_patterns (one AuthPattern, required in practice: the
                         server rejects a missing or empty list), plus optional
                         description, icon_src, and metadata.
-                        ``proxy_enabled`` is ignored: a custom connector is always
-                        created with ``proxy_enabled=True``.
         :type request: CreateCustomProviderRequest
 
         :returns: Response containing the created provider with its server-assigned
@@ -2330,14 +2327,7 @@ class ActionProviders:
         The server applies this as a PUT, not a partial update. It requires
         display_name and auth_patterns on every update, and proxy_url as well for an
         MCP-sourced connector. Fields left as None are not sent: description and icon_src
-        keep their stored values, but metadata is cleared. The call always sends
-        ``proxy_enabled=True``, which ``create_custom_provider`` always sets, and has no
-        field for it: a ``proxy_enabled`` passed in the request is ignored. The server
-        applies the flag on every update, so an update switches proxying on for a connector
-        that has it off (created that way by another client, or switched off by an update
-        with an SDK release up to 2.25.0), and an OpenAPI-sourced connector in that state is
-        refused with 400 ``INVALID_ARGUMENT``. ``Provider.proxy_enabled`` from
-        ``list_providers`` shows which connectors are affected.
+        keep their stored values, but metadata is cleared.
 
         An OpenAPI-sourced connector can only change display_name, description,
         icon_src, metadata and proxy_url (its base URL), and openapi_spec_url where the

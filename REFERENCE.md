@@ -7612,7 +7612,6 @@ print(result.connection_name)
 | `display_name` | `str` | Yes | Human-readable name. ASCII letters (a-z, A-Z), digits and spaces only, 1-200 characters, with at least one letter or digit; anything else, such as accented letters or symbols like `_` or `-`, is rejected. Suffix with `MCP` for MCP server providers (for example `Acme MCP`). |
 | `proxy_url` | `Optional[str]` | One of `proxy_url` and `openapi_spec_url` | The URL of the external service the provider connects to, which proxied requests are routed through: for an MCP connector its MCP server URL (for example `https://mcp.acme.com/mcp`), for an API connector the API's base URL (for example `https://api.example.com`). HTTPS, at most 2048 characters. Not accepted together with `openapi_spec_url`. The `proxy_url` of an MCP connector can be a template with a `{{domain}}` placeholder, for example `https://{{domain}}/mcp`: it is stored as sent, and the host name that replaces the placeholder is given when a connection is created, as `provider_domain` of `scalekit_client.actions.create_connection`. |
 | `openapi_spec_url` | `Optional[str]` | One of `proxy_url` and `openapi_spec_url` | URL of an OpenAPI spec (JSON or YAML; a Swagger 2.0 document is converted) that the connector's tools are generated from. HTTPS, at most 2048 characters. Not accepted together with `proxy_url`: an OpenAPI-sourced connector's base URL is filled in from the spec's server URL by the first tool collection run (only when that URL starts with `https://`), and `update_custom_provider` can override it later. Each fetched file (the spec, and every file it references) is limited to 5 MB by default, and all of them together to 50 MB. |
-| `proxy_enabled` | `bool` | No | Ignored: a custom connector is always created with `proxy_enabled=True`, whatever you pass. Kept so that existing calls keep working. |
 | `description` | `str` | No | Short description of the provider. Defaults to an empty string. |
 | `auth_patterns` | `List[AuthPattern]` | Yes | Authentication options for users. Currently only a single element is supported: the list type is intentional for future multi-pattern support. Leaving it out and passing an empty list fail the same way, with `ScalekitBadRequestException` (400, `INVALID_ARGUMENT`, a validation error on `provider.auth_patterns`), because the SDK sends no `auth_patterns` for an empty list and checks neither before sending. |
 | `icon_src` | `str` | No | URL of the provider's icon image. Defaults to an empty string. |
@@ -7668,7 +7667,7 @@ print(result.connection_name)
 
 **📦 Response**
 
-`CreateCustomProviderResponse` with a `provider` attribute (`Provider`) containing `identifier`, `display_name`, `description`, `proxy_url`, `proxy_enabled`, `openapi_spec_url`, `icon_src`, `metadata`, `is_custom`, `is_custom_mcp`, and `auth_patterns`.
+`CreateCustomProviderResponse` with a `provider` attribute (`Provider`) containing `identifier`, `display_name`, `description`, `proxy_url`, `openapi_spec_url`, `icon_src`, `metadata`, `is_custom`, `is_custom_mcp`, and `auth_patterns`.
 
 **⚠️ Errors**
 
@@ -7709,7 +7708,6 @@ Updates an existing custom provider. The server applies this as a PUT, not a par
 - `description` and `icon_src` left out keep their stored values (an empty value does not clear them), but `metadata` left out is cleared.
 - The auth type and the connector kind (MCP or API) cannot be changed, an `API_KEY` pattern cannot switch between single-key and multiple-headers mode, and editing the header fields of a multiple-headers pattern requires its connected accounts to re-authorize. An `AuthPattern` you build yourself for an MCP connector must keep `is_mcp=True`: the server rejects a change of it (400 `auth pattern is_mcp cannot be changed`).
 - To change one field and keep the others, read the provider with `list_providers` and send its `auth_patterns` and `metadata` back with your change.
-- The call always sends `proxy_enabled=True`, which `create_custom_provider` always sets, and has no parameter for it (a `proxy_enabled` passed in `UpdateCustomProviderRequest` is ignored). The server applies the flag on every update, so an update switches proxying on for a connector that has it off (created that way by another client such as the dashboard, the REST API or another SDK, or switched off by an `update_custom_provider` call of an SDK release up to 2.25.0, which sent `False`), and rejects one that differs from the stored value on an OpenAPI-sourced connector, so such a connector cannot be updated here: the error is the same `an OpenAPI-sourced connector can only update ...` 400 as for a locked field. `Provider.proxy_enabled` from `list_providers` shows which connectors are affected.
 
 **OpenAPI-sourced connector**
 
@@ -8331,7 +8329,7 @@ scalekit_client.actions.delete_custom_tool(tool_identifier="tol_1534324954785383
 <dd>
 
 - `ValueError`: `tool_identifier` is not a string or is blank. Raised before anything is sent.
-- `ScalekitBadRequestException` (400): `tool_identifier` is longer than 2048 characters or has a control character, or (`error_code` `FEATURE_NOT_ENABLED`) OpenAPI-sourced connectors are not enabled for the environment.
+- `ScalekitBadRequestException` (400): `tool_identifier` is longer than 2048 characters or has a control character.
 - `ScalekitForbiddenException` (403): the caller lacks permission to delete.
 - `ScalekitNotFoundException` (404, `custom tool not found`): the value is not a deletable tool (an MCP tool, a global tool, another environment's tool, an unknown name or id, a tool whose connector is gone or is not OpenAPI-sourced). The error does not say which.
 - `ScalekitConflictException` (409), with nothing deleted: `error_code` `RESOURCE_ALREADY_EXISTS` while a sync of the connector is queued or running, or `TOOL_NAME_AMBIGUOUS` when you delete by name and tools of more than one connector of the environment have that name. The message of the second names two of those tools, each with its connector and id: delete the tool you mean by its id (the id of a tool whose connector no longer exists answers 404).

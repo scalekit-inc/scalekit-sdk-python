@@ -83,9 +83,7 @@ class ProvidersClient:
                           'https://' (at most 2048 characters). Leave it out when
                           you pass ``openapi_spec_url``: the server rejects both together.
         :type proxy_url: Optional[str]
-        :param proxy_enabled: Ignored. A custom connector is always created with
-                              ``proxy_enabled=True``, whatever is passed. The parameter is
-                              kept so that existing calls keep working.
+        :param proxy_enabled: Ignored: the SDK always creates the connector with proxying on.
         :type proxy_enabled: bool
         :param description: Short description of the provider. Defaults to empty string.
         :type description: str
@@ -164,15 +162,6 @@ class ProvidersClient:
         MCP-sourced connector'). Optional fields left as None are not sent: description
         and icon_src then keep their stored values, but metadata is cleared (see that
         parameter).
-
-        The call always sends ``proxy_enabled=True``, which ``create_custom_provider`` always sets,
-        and has no parameter for it. The server applies the flag on every update, so an update
-        switches proxying on for a connector that has it off (created that way by another client
-        such as the dashboard, the REST API or another SDK, or switched off by an
-        ``update_custom_provider`` call of an SDK release up to 2.25.0, which sent False). An
-        OpenAPI-sourced connector in that state cannot be updated here: the server rejects a value
-        that differs from the stored one (see below) with the same 400 as for a locked field.
-        ``Provider.proxy_enabled`` from ``list_providers`` shows which connectors are affected.
 
         An OpenAPI-sourced connector (one created with ``openapi_spec_url``) can only
         change display_name, description, icon_src, metadata and proxy_url, which is its

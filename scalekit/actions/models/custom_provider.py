@@ -719,9 +719,7 @@ class Provider(BaseModel):
     proxy_enabled: bool = Field(
         False,
         description=(
-            "Whether request proxying is enabled for this provider. True for a connector "
-            "that this SDK created or updated; False means another client or an SDK release "
-            "up to 2.25.0 set it, and an update with this SDK switches it on."
+            "Whether request proxying is enabled for this provider."
         ),
     )
     openapi_spec_url: str = Field(
