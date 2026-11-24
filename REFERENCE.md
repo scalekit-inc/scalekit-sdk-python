@@ -7496,7 +7496,7 @@ print(f'Magic Link: {response[0].link}')
 `client.actions.providers` creates and manages custom connectors. A connector gets its tools from one source, and you set exactly one of the two when you create it:
 
 - `proxy_url`: an MCP server. The tools are the ones the server offers, kept per connected account.
-- `openapi_spec_url`: an OpenAPI spec. The server converts the spec's operations into tools in an asynchronous tool collection run that it queues for you. Follow it with `get_tool_collection_run`; queue another with `trigger_tool_collection`; delete one of its tools with `client.actions.delete_custom_tool`.
+- `openapi_spec_url`: an OpenAPI spec. The server converts the spec's operations into tools in an asynchronous tool collection run that it queues for you. Follow it with `get_tool_collection_run`; queue another with `trigger_tool_collection`.
 
 Walkthrough: [AGENTKIT.md → Custom connectors](AGENTKIT.md#custom-connectors).
 
@@ -8043,7 +8043,7 @@ scalekit_client.actions.providers.delete_custom_provider(
 <dl>
 <dd>
 
-Queues a new tool collection run on an OpenAPI-sourced connector and returns it at once with status `QUEUED`. The server first re-fetches and validates the connector's current spec URL, then regenerates the connector's tools in the background. A connector is also re-synced automatically when it is created and when its base URL or spec URL changes, so call this to pick up changes to the spec itself or to retry after a failed run. A run that finds the spec, base URL and auth patterns unchanged since the last completed run creates, updates and deletes nothing, so it does not bring back a tool removed with `client.actions.delete_custom_tool` (a spec that references external files is always regenerated). If the first run fills in the base URL (only when the spec's server URL starts with `https://`) or the OAuth settings, the next run still updates every tool and the shortcut applies from the run after that; otherwise the shortcut already applies to the second run. Follow the run with `get_tool_collection_run`. It is not retried on `UNAVAILABLE`, because the first attempt may already have queued a run: after a `ScalekitServiceUnavailableException`, check `get_tool_collection_run(..., "latest")` before you trigger again. gRPC reports a plain HTTP 429 from the edge, an answer without a gRPC status, as `UNAVAILABLE` too, so it raises the same exception and is not retried either; a gRPC `RESOURCE_EXHAUSTED` raises `ScalekitTooManyRequestsException` and is never retried. It uses the client's tool-call timeout (`tool_call_timeout_s`, 60 seconds by default) while the server allows up to 2 minutes to validate the spec; see `create_custom_provider`.
+Queues a new tool collection run on an OpenAPI-sourced connector and returns it at once with status `QUEUED`. The server first re-fetches and validates the connector's current spec URL, then regenerates the connector's tools in the background. A connector is also re-synced automatically when it is created and when its base URL or spec URL changes, so call this to pick up changes to the spec itself or to retry after a failed run. A run that finds the spec, base URL and auth patterns unchanged since the last completed run creates, updates and deletes nothing (a spec that references external files is always regenerated). If the first run fills in the base URL (only when the spec's server URL starts with `https://`) or the OAuth settings, the next run still updates every tool and the shortcut applies from the run after that; otherwise the shortcut already applies to the second run. Follow the run with `get_tool_collection_run`. It is not retried on `UNAVAILABLE`, because the first attempt may already have queued a run: after a `ScalekitServiceUnavailableException`, check `get_tool_collection_run(..., "latest")` before you trigger again. gRPC reports a plain HTTP 429 from the edge, an answer without a gRPC status, as `UNAVAILABLE` too, so it raises the same exception and is not retried either; a gRPC `RESOURCE_EXHAUSTED` raises `ScalekitTooManyRequestsException` and is never retried. It uses the client's tool-call timeout (`tool_call_timeout_s`, 60 seconds by default) while the server allows up to 2 minutes to validate the spec; see `create_custom_provider`.
 
 A connector has at most one active (`QUEUED` or `PROCESSING`) run. Errors:
 
@@ -8210,7 +8210,7 @@ An operation is skipped, for example, when its request body is multipart, binary
 
 ## Tools
 
-`list_tools`, `list_scoped_tools`, `list_available_tools` and `execute_tool` are documented in [AGENTKIT.md → Tools](AGENTKIT.md#tools), together with how the tools of a custom connector are listed and named, and `client.actions.delete_custom_tool` in [AGENTKIT.md → Tool discovery](AGENTKIT.md#tool-discovery).
+`list_tools`, `list_scoped_tools`, `list_available_tools` and `execute_tool` are documented in [AGENTKIT.md → Tools](AGENTKIT.md#tools), together with how the tools of a custom connector are listed and named.
 
 <details><summary><code>client.tools.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/tools.py">search_tools</a>(query, identifier?, top_k?) -> SearchToolsResponse</code></summary>
 <dl>

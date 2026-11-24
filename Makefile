@@ -12,11 +12,7 @@ VENV_PYTHON := $(VENV_DIR)/bin/python
 VENV_PIP := $(VENV_PYTHON) -m pip
 
 PROTO_REPO_URL := https://github.com/scalekit-inc/scalekit.git
-# DeleteCustomTool is in the backend release v0.1.165.0, which also adds three unrelated read-only
-# scalekit_creds_* fields to connections.proto. So the pin is the commit that merged DeleteCustomTool
-# (scalekit-inc/scalekit#2882, SK-3096): a tag, a branch or a full commit SHA all work. Move it to a
-# release tag at the next proto sync.
-PROTO_REF ?= 25718aba9c0fbc8833f6f80c7b27ccb655377642
+PROTO_REF ?= v0.1.162.1
 PROTO_SUBDIR := proto
 LOCAL_PROTO_REPO ?= ../scalekit
 
@@ -62,9 +58,7 @@ generate: tools-check
     	if [ -f buf.work.yaml.bak ]; then mv buf.work.yaml.bak buf.work.yaml; fi; \
     }; \
     trap 'rollback_if_needed; cleanup_tmp' EXIT; \
-	git init -q "$$tmp_dir/scalekit"; \
-	git -C "$$tmp_dir/scalekit" fetch -q --depth=1 "$(PROTO_REPO_URL)" "$(PROTO_REF)"; \
-	git -C "$$tmp_dir/scalekit" checkout -q FETCH_HEAD; \
+	git clone --depth=1 --branch "$(PROTO_REF)" "$(PROTO_REPO_URL)" "$$tmp_dir/scalekit"; \
 	echo "$$tmp_dir/scalekit/$(PROTO_SUBDIR)" > .dirpath; \
 	$(MAKE) copy_proto_dir; \
     $(MAKE) prepare; prepared=1; \

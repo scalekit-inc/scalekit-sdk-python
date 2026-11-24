@@ -212,12 +212,6 @@ class DeleteToolRequest(_message.Message):
     id: str
     def __init__(self, id: _Optional[str] = ...) -> None: ...
 
-class DeleteCustomToolRequest(_message.Message):
-    __slots__ = ("tool_identifier",)
-    TOOL_IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
-    tool_identifier: str
-    def __init__(self, tool_identifier: _Optional[str] = ...) -> None: ...
-
 class ListScopedToolsRequest(_message.Message):
     __slots__ = ("identifier", "filter", "page_size", "page_token", "definition_format")
     IDENTIFIER_FIELD_NUMBER: _ClassVar[int]

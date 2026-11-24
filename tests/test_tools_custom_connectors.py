@@ -54,7 +54,7 @@ class ListToolsForCustomConnectorsTest(ToolsTestCase):
         request = self.calls[0][1]
         self.assertEqual(request.filter.provider, "PETSTORE:12")
         self.assertEqual(response.tool_names, ["a-petstore_listpets", "a-petstore_getpet"])
-        # the tool records too: the tool id is what delete_custom_tool is documented to take from this listing
+        # the tool records too: the id of each tool and the connector it belongs to
         self.assertEqual(
             [(t.id, t.provider) for t in response.tools], [("tol_1", "PETSTORE:12"), ("tol_2", "PETSTORE:12")]
         )

@@ -30,7 +30,7 @@ from scalekit.common.exceptions import ScalekitNotFoundException
 from scalekit.actions.triggers import ActionTriggers
 from scalekit.triggers import TriggersClient
 from scalekit.mcp import _check_connection_token_args
-from scalekit.v1.tools.tools_pb2 import DeleteCustomToolRequest, Filter, ScopedToolFilter
+from scalekit.v1.tools.tools_pb2 import Filter, ScopedToolFilter
 from scalekit.actions.models.responses.tool_discovery_responses import (
     ListScopedToolsResponse, ListAvailableToolsResponse, SearchToolsResponse,
 )
@@ -399,62 +399,6 @@ class ActionClient:
             identifier, page_size=page_size, page_token=page_token
         )
         return ListAvailableToolsResponse.from_proto(result_tuple[0])
-
-    def delete_custom_tool(self, tool_identifier: str, **kwargs) -> None:
-        """
-        Delete one tool of a connector created from an OpenAPI spec, by its name or its id.
-
-        ``tool_identifier`` is the tool's name (``a-<connector>_<operation>``, as list_tools
-        lists it) or its id (``tol_<number>``, the ``id`` of each tool that
-        ``list_tools(provider=<connector identifier>)`` returns); the server ignores ASCII
-        case. A value that starts with ``tol_`` (in any case) is always read as an id.
-        Leading and trailing whitespace is removed; nothing else is changed, so the case is not
-        folded. A tool collection run creates the tool again while its
-        operation is still in the connector's spec, unless the spec, base URL and auth
-        patterns are unchanged since the last completed run: then it creates nothing (a spec
-        that references external files is always regenerated, and so is the run right after
-        a first run that filled in the base URL or the OAuth settings). So, apart from those
-        two cases,
-        ``trigger_tool_collection`` alone does not restore a deleted tool: change one of
-        those inputs, for example the spec, call it and let the run finish. To keep the tool
-        gone, remove its endpoint from the spec. The call is sent again on UNAVAILABLE, so
-        after a retry or a timeout a 404
-        can mean the first attempt already deleted it. A repeat by name looks the name up
-        again: if a sync finished in between and created a tool with that name again, the
-        repeat deletes that one. A tool a sync creates again has a new id, so a repeat by id
-        cannot delete it. See AGENTKIT.md, Tool discovery.
-
-        :param tool_identifier: Name or id of the tool to delete (required)
-        :type: str
-
-        :returns:
-            None on success
-
-        :raises ValueError: If tool_identifier is not a string or is blank; nothing is sent
-        :raises ScalekitBadRequestException: 400, longer than 2048 characters or a control
-            character, or FEATURE_NOT_ENABLED where OpenAPI-sourced connectors are not enabled
-            for the environment
-        :raises ScalekitForbiddenException: 403, the caller lacks permission to delete
-        :raises ScalekitNotFoundException: 404, not a deletable tool (the error does not say why)
-        :raises ScalekitConflictException: 409, nothing deleted: RESOURCE_ALREADY_EXISTS while a
-            sync of the connector is queued or running (the message names the run), or
-            TOOL_NAME_AMBIGUOUS when tools of more than one connector have that name (the
-            message names two of them: delete the tool by its id; the id of a tool whose
-            connector no longer exists answers 404)
-        :raises ScalekitInternalServerException: 500, the server failed; the tool may be gone
-        :raises ScalekitNotImplementedException: 501, a backend older than release v0.1.165.0
-            does not have the call
-        """
-        if not isinstance(tool_identifier, str) or not tool_identifier.strip():
-            raise ValueError("tool_identifier must be a non-empty string to delete a custom tool")
-        core = self.tools.core_client
-        core.grpc_exec(
-            self.tools.tool_service.DeleteCustomTool.with_call,
-            DeleteCustomToolRequest(tool_identifier=tool_identifier.strip()),
-            timeout=core.tool_call_timeout_s,
-            # Default retry on UNAVAILABLE. A repeat by id deletes the same tool or answers 404; by name it
-            # deletes whichever tool has the name when it arrives (see the docstring).
-        )
 
     def search_tools(
         self,
@@ -2304,10 +2248,9 @@ class ActionProviders:
         and when its base URL or spec URL changes, so call this to pick up changes to the
         spec itself or to retry after a failed run. A run that finds the spec, base URL and
         auth patterns unchanged since the last completed run creates, updates and deletes
-        nothing, so it does not bring back a tool removed with ``delete_custom_tool`` (a spec
-        that references external files is always regenerated). The first run fills in the
-        base URL, so the next run still updates every tool; the shortcut applies from the run
-        after that. Follow the run with ``get_tool_collection_run``.
+        nothing (a spec that references external files is always regenerated). The first run
+        fills in the base URL, so the next run still updates every tool; the shortcut applies
+        from the run after that. Follow the run with ``get_tool_collection_run``.
 
         Not retried automatically when the service is unavailable, because the first
         attempt may already have queued a run. After a ScalekitServiceUnavailableException

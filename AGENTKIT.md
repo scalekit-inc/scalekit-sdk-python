@@ -885,36 +885,6 @@ while True:
 </dd></dl>
 </details>
 
-<details><summary><code>client.actions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">delete_custom_tool</a>(tool_identifier) -> None</code></summary>
-<dl><dd>
-
-Deletes one API tool of an OpenAPI-sourced custom connector of your environment, to stop agents from calling one operation without changing the connector's spec, and returns `None`. `tool_identifier` is the tool's name or its id (`tol_<number>`); the server ignores ASCII case. The name is the one `list_tools` lists for the connector, `a-<connector>_<operation>`; the id is the `id` of each tool that `client.actions.list_tools(provider=<connector identifier>)` returns. A value that starts with `tol_` (in any case) is always read as an id. The SDK removes leading and trailing whitespace and sends the rest exactly as given (the case is not folded), at most 2048 characters.
-
-A tool collection run creates the tool again while its operation is still in the spec, unless the spec, base URL and auth patterns are unchanged since the last completed run: then it creates nothing (a spec that references external files is always regenerated, and so is the run right after a first run that filled in the base URL or the OAuth settings). So, apart from those two cases, `trigger_tool_collection` alone does not restore a deleted tool: change one of those inputs, for example the spec, call it and let the run finish. To keep the tool gone, remove its endpoint from the spec. While a sync is queued or running, nothing is deleted and the call raises `ScalekitConflictException`; the message names the run: poll it with `client.actions.providers.get_tool_collection_run` (pass its ID as `run_id`) and call again once it has finished.
-
-**Retries.** The call uses the tool-call timeout and is sent again on `UNAVAILABLE`, so after a retry or a timeout a `ScalekitNotFoundException` can mean that the first attempt already deleted the tool. A repeat by name looks the name up again: if a sync finished in between and created a tool with that name again, the repeat deletes that one. A tool a sync creates again has a new id, so a repeat by id cannot delete it.
-
-Errors:
-
-- `ValueError`: `tool_identifier` is not a string or is blank. Raised before anything is sent.
-- `ScalekitBadRequestException` (400): `tool_identifier` is longer than 2048 characters or has a control character, or (`error_code` `FEATURE_NOT_ENABLED`) OpenAPI-sourced connectors are not enabled for the environment.
-- `ScalekitForbiddenException` (403): the caller lacks permission to delete.
-- `ScalekitNotFoundException` (404, `custom tool not found`): the value is not a deletable tool (an MCP tool, a global tool, another environment's tool, an unknown name or id, a tool whose connector is gone or is not OpenAPI-sourced). The error does not say which.
-- `ScalekitConflictException` (409), with nothing deleted: `error_code` `RESOURCE_ALREADY_EXISTS` while a sync of the connector is queued or running, or `TOOL_NAME_AMBIGUOUS` when you delete by name and tools of more than one connector of the environment have that name. The message of the second names two of those tools, each with its connector and id: delete the tool you mean by its id (the id of a tool whose connector no longer exists answers 404).
-- `ScalekitInternalServerException` (500): the server failed. It does not say whether the tool is gone: list the connector's tools before calling again.
-- `ScalekitNotImplementedException` (501): a backend older than release v0.1.165.0 does not have the call.
-
-```python
-# By name, as list_tools shows it: a-<connector>_<operation>
-scalekit_client.actions.delete_custom_tool("a-acmeapi_deletepet")
-
-# By id: the way out when tools of two connectors share the name (TOOL_NAME_AMBIGUOUS)
-scalekit_client.actions.delete_custom_tool("tol_1234")
-```
-
-</dd></dl>
-</details>
-
 <details><summary><code>client.actions.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">search_tools</a>(query, identifier?, top_k?) -> SearchToolsResponse</code></summary>
 <dl><dd>
 
@@ -1285,21 +1255,19 @@ result, _ = scalekit_client.tools.execute_tool(
 )
 ```
 
-`list_tools`, `list_scoped_tools`, `list_available_tools` and `execute_tool` serve a custom connector's tools like any others (see [Tools](#tools)). `client.actions.delete_custom_tool(tool_identifier)` deletes one tool of a connector created from an OpenAPI spec, by its name or its id (`tol_...`): a tool collection run creates it again while its operation is still in the spec, unless the spec, base URL and auth patterns are unchanged since the last completed run (then `trigger_tool_collection` alone does not restore it, except for a spec that references external files and for the run right after a first run that filled in the base URL or the OAuth settings), and a sync that is queued or running makes the call raise `ScalekitConflictException` (details and errors: [Tool discovery](#tool-discovery)). To expose a custom connector's tools through a virtual MCP server, see [`ActionMcp` helper](#actionmcp-helper).
+`list_tools`, `list_scoped_tools`, `list_available_tools` and `execute_tool` serve a custom connector's tools like any others (see [Tools](#tools)). To expose a custom connector's tools through a virtual MCP server, see [`ActionMcp` helper](#actionmcp-helper).
 
 **Errors**
 
 | Exception | `error_code` | When |
 |-----------|--------------|------|
 | `ScalekitBadRequestException` | `INVALID_ARGUMENT` | Invalid request: a spec URL that fails validation, a locked field of an OpenAPI-sourced connector changed, `trigger_tool_collection` on a connector that is not OpenAPI-sourced, an invalid `run_id` |
-| `ScalekitBadRequestException` | `FEATURE_NOT_ENABLED` | OpenAPI-sourced connectors (`delete_custom_tool` raises it too), multiple-headers `API_KEY` connectors, or changing `openapi_spec_url` are not enabled |
+| `ScalekitBadRequestException` | `FEATURE_NOT_ENABLED` | OpenAPI-sourced connectors, multiple-headers `API_KEY` connectors, or changing `openapi_spec_url` are not enabled |
 | `ScalekitBadRequestException` | `PROVIDER_HAS_EXISTING_CONNECTIONS` | `delete_custom_provider` on a connector that still has connections; nothing is deleted, so delete the connections first |
 | `ScalekitBadRequestException` | `INVALID_HEADER_CONFIG` | A multiple-headers `API_KEY` rule is broken, or the connector was switched between single-key and multiple-headers mode |
-| `ScalekitNotFoundException` | `NOT_FOUND` | `get_tool_collection_run` or `trigger_tool_collection` found no such connector, or no such run, or `delete_custom_tool` found no deletable tool of that name or id |
-| `ScalekitConflictException` | `RESOURCE_ALREADY_EXISTS` | An OpenAPI connector with that name exists, or a run is already queued or running (`delete_custom_tool`, and `delete_custom_provider` for an OpenAPI-sourced connector, raise it then too, and delete nothing) |
-| `ScalekitConflictException` | `TOOL_NAME_AMBIGUOUS` | `delete_custom_tool` was given a name that tools of more than one connector have, and deleted nothing: delete the tool by its id (the message names two of them) |
+| `ScalekitNotFoundException` | `NOT_FOUND` | `get_tool_collection_run` or `trigger_tool_collection` found no such connector, or no such run |
+| `ScalekitConflictException` | `RESOURCE_ALREADY_EXISTS` | An OpenAPI connector with that name exists, or a run is already queued or running (`delete_custom_provider` for an OpenAPI-sourced connector raises it then too, and deletes nothing) |
 | `ScalekitInternalServerException` | `INTERNAL_ERROR` | Validating the spec URL was interrupted, or the server failed |
-| `ScalekitNotImplementedException` | none | `delete_custom_tool` on a backend older than release v0.1.165.0, which does not have the call (501) |
 
 ### Trigger events
 
