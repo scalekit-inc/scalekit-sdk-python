@@ -82,7 +82,7 @@ class ProvidersClient:
         After a ScalekitServiceUnavailableException, look the connector up with
         list_providers (provider_type=ProviderType.CUSTOM, following next_page_token: the
         default lists built-in providers only) before you create it again. The same goes for
-        a ScalekitGatewayTimeoutException (the client's tool-call timeout passed, and the
+        a ScalekitGatewayTimeoutException (the call exceeded the client's deadline, and the
         call does not retry it): the server may have finished the create. An MCP-sourced
         create keeps the default retry, which retries UNAVAILABLE, such a 429 included, with
         backoff.
@@ -137,7 +137,11 @@ class ProvidersClient:
         :type openapi_spec_url: Optional[str]
 
         :returns: Tuple of (CreateProviderResponse proto, grpc.Call).
-                  response[0].provider contains the created provider proto.
+                  response[0].provider contains the created provider proto. Its
+                  ``identifier`` is what update_custom_provider and delete_custom_provider
+                  take, and the ``provider`` to pass to
+                  ``scalekit_client.actions.create_connection`` to create a connection to
+                  the connector.
                   response[1].code().name == 'OK' on success.
         :rtype: tuple
         """
@@ -161,9 +165,6 @@ class ProvidersClient:
         return self.core_client.grpc_exec(
             self._stub.CreateCustomProvider.with_call,
             CreateCustomProviderRequest(provider=provider),
-            # With a spec URL the server fetches the spec while it answers, which can take
-            # longer than an ordinary control-plane call.
-            timeout=self.core_client.tool_call_timeout_s if openapi_spec_url else None,
             # The first attempt may already have created the connector, and a retry would then
             # hit the duplicate-name check of OpenAPI connectors (409) instead of succeeding.
             retry_on_unavailable=not openapi_spec_url,
@@ -314,8 +315,6 @@ class ProvidersClient:
         return self.core_client.grpc_exec(
             self._stub.UpdateCustomProvider.with_call,
             UpdateCustomProviderRequest(identifier=identifier, provider=provider),
-            # A different spec URL is fetched while the server answers (see create_custom_provider).
-            timeout=self.core_client.tool_call_timeout_s if openapi_spec_url else None,
             # The first attempt may already have saved the new URL without queueing its run, and a
             # repeat finds nothing to change: it would succeed and queue none.
             retry_on_unavailable=not openapi_spec_url,
@@ -330,8 +329,9 @@ class ProvidersClient:
 
         A connector that still has connections is not deleted: the call raises
         ScalekitBadRequestException (400, PROVIDER_HAS_EXISTING_CONNECTIONS). Remove
-        its connected accounts first, then its connections (a connection that still
-        has connected accounts cannot be deleted either), then delete the provider.
+        its connected accounts first, then its connections with
+        ``scalekit_client.actions.delete_connection`` (a connection that still has
+        connected accounts cannot be deleted either), then delete the provider.
         The server checks this before the run described next.
 
         For a connector created from an OpenAPI spec: while a tool collection run
@@ -377,13 +377,12 @@ class ProvidersClient:
         first attempt may already have queued a run. gRPC reports a plain HTTP 429 from the
         edge (an answer without a gRPC status) as UNAVAILABLE too, so it raises the same
         ScalekitServiceUnavailableException and is not retried either; a gRPC
-        RESOURCE_EXHAUSTED raises ScalekitTooManyRequestsException and is never retried. As
-        for create_custom_provider, the server fetches the spec while it answers, so the call
-        uses the client's tool-call timeout.
-        After a ScalekitServiceUnavailableException or a ScalekitGatewayTimeoutException,
-        check get_tool_collection_run(identifier, "latest") before you invoke again: the
-        first attempt may already have queued the run, and a second invocation while it is
-        active answers 409.
+        RESOURCE_EXHAUSTED raises ScalekitTooManyRequestsException and is never retried.
+        After a ScalekitServiceUnavailableException or a ScalekitGatewayTimeoutException (the
+        call exceeded the client's deadline, and the call does not retry it), check
+        get_tool_collection_run(identifier, "latest") before you invoke again: the first
+        attempt may already have queued the run, and a second invocation while it is active
+        answers 409.
 
         Errors surface as ScalekitServerException subclasses: ScalekitNotFoundException
         (404) when no such connector exists in the environment; ScalekitBadRequestException
@@ -395,7 +394,8 @@ class ProvidersClient:
         in progress for this connector') when a run is queued or running, because a connector
         has at most one active run.
 
-        :param provider_identifier: Identifier of the OpenAPI-sourced connector. Required.
+        :param provider_identifier: The connector's identifier (NAME:environment-id, from
+                                    Provider.identifier, not Provider.id). Required.
         :type provider_identifier: str
 
         :returns: Tuple of (ToolCollectionRun proto, grpc.Call).
@@ -407,7 +407,6 @@ class ProvidersClient:
         return self.core_client.grpc_exec(
             self._stub.TriggerToolCollection.with_call,
             TriggerToolCollectionRequest(provider_identifier=_stripped(provider_identifier)),
-            timeout=self.core_client.tool_call_timeout_s,
             retry_on_unavailable=False,
         )
 
@@ -431,7 +430,8 @@ class ProvidersClient:
         run of this connector ('tool collection run not found'); and
         ScalekitBadRequestException (400, 'invalid run_id') when run_id is not a valid run ID.
 
-        :param provider_identifier: Identifier of the connector the run belongs to. Required.
+        :param provider_identifier: The connector's identifier (NAME:environment-id, from
+                                    Provider.identifier, not Provider.id). Required.
         :type provider_identifier: str
         :param run_id: A run ID, or "latest" (the default; an empty or blank string means the
                        same) for the connector's most recent run.

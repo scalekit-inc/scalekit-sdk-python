@@ -8,16 +8,17 @@ class DeleteCustomProviderRequest(BaseModel):
     removed, including its discovered custom MCP tools. The server refuses to
     delete a provider that still has connections ("cannot delete custom provider
     with existing connections"): remove its connected accounts first, then all of
-    its connections (a connection that still has connected accounts cannot be
-    deleted either).
+    its connections with ``scalekit_client.actions.delete_connection`` (a connection
+    that still has connected accounts cannot be deleted either).
     """
 
     identifier: str = Field(
         ...,
         min_length=1,
         description=(
-            "Required. Identifier of the custom provider to delete. Obtained from "
-            "Provider.identifier in a create or list response."
+            "Required. Identifier of the connector to delete: the NAME:environment-id string, such as "
+            "ACMEAPI:70219645518265104, from Provider.identifier in a create or list response. "
+            "It is not Provider.id (prvd_...), which answers 404."
         ),
     )
 

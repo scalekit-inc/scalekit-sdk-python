@@ -73,6 +73,10 @@ class ProvidersTestCase(unittest.TestCase):
 
         self.core.grpc_exec.side_effect = grpc_exec
 
+    def assertNoDeadlineOverride(self, kwargs):
+        """The call passes no per-call deadline (timeout=None), so grpc_exec applies the client's default."""
+        self.assertIsNone(kwargs.get("timeout"))
+
 
 class CreateOpenApiConnectorTest(ProvidersTestCase):
     def test_low_level_create_sends_the_spec_url_and_no_proxy_url(self):
@@ -132,15 +136,15 @@ class CreateOpenApiConnectorTest(ProvidersTestCase):
         self.assertEqual(dict(sent.metadata), {"team": "x"})
         self.assertIs(sent.proxy_enabled, True)
 
-    def test_a_spec_url_gets_the_longer_deadline_because_the_server_fetches_it(self):
+    def test_a_create_passes_no_deadline_override_with_or_without_a_spec_url(self):
         self._reply(
             pb.CreateProviderResponse(provider=_proto_provider()),
             pb.CreateProviderResponse(provider=_proto_provider()),
         )
         self.low.create_custom_provider("Petstore", openapi_spec_url=SPEC_URL, auth_patterns=[_api_key_pattern()])
         self.low.create_custom_provider("Acme MCP", MCP_URL, auth_patterns=[_api_key_pattern()])
-        self.assertIs(self.calls[0][2]["timeout"], self.core.tool_call_timeout_s)
-        self.assertIsNone(self.calls[1][2]["timeout"])  # an MCP connector keeps the default deadline
+        for _, _, kwargs in self.calls:
+            self.assertNoDeadlineOverride(kwargs)
 
     def test_a_spec_url_create_is_not_retried_when_unavailable(self):
         """The create is not idempotent: a retry after a lost response would hit the duplicate-name 409."""
@@ -405,19 +409,19 @@ class UpdateOpenApiConnectorTest(ProvidersTestCase):
         self.client.providers.update_custom_provider(request)
         sent = self.calls[0][1].provider
         self.assertEqual((sent.proxy_url, sent.openapi_spec_url), ("", ""))
-        self.assertIsNone(self.calls[0][2]["timeout"])  # no spec URL change, so the default deadline
+        self.assertNoDeadlineOverride(self.calls[0][2])
         with self.assertRaises(ValidationError):
             request.proxy_url = "http://api.example.com"
 
-    def test_only_a_spec_url_change_gets_the_longer_deadline(self):
+    def test_an_update_passes_no_deadline_override_with_or_without_a_spec_url(self):
         self._reply(
             pb.UpdateProviderResponse(provider=_proto_provider()),
             pb.UpdateProviderResponse(provider=_proto_provider()),
         )
         self.low.update_custom_provider("PETSTORE:12", "Petstore", openapi_spec_url=SPEC_URL)
         self.low.update_custom_provider("PETSTORE:12", "Petstore", proxy_url="https://api.example.com/v2")
-        self.assertIs(self.calls[0][2]["timeout"], self.core.tool_call_timeout_s)
-        self.assertIsNone(self.calls[1][2]["timeout"])
+        for _, _, kwargs in self.calls:
+            self.assertNoDeadlineOverride(kwargs)
 
     def test_an_update_that_sends_a_spec_url_is_not_retried_when_unavailable(self):
         """The first attempt may already have saved the new URL without queueing its run (another run was

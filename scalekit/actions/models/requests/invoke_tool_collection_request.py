@@ -9,9 +9,10 @@ class InvokeToolCollectionRequest(BaseModel):
         min_length=1,
         max_length=255,
         description=(
-            "Required. Identifier of the OpenAPI-sourced connector to regenerate tools for. "
-            "Obtained from Provider.identifier in a create or list response. Surrounding "
-            "whitespace is removed."
+            "Required. Identifier of the OpenAPI-sourced connector to regenerate tools for: the "
+            "NAME:environment-id string, such as ACMEAPI:70219645518265104, from Provider.identifier "
+            "in a create or list response. It is not Provider.id (prvd_...), which answers 404. "
+            "Surrounding whitespace is removed."
         ),
     )
 

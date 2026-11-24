@@ -86,12 +86,12 @@ class InvokeToolCollectionTest(RunsTestCase):
         self.assertIsNone(run.started_at)
         self.assertIsNone(run.finished_at)
 
-    def test_is_not_retried_and_uses_the_longer_deadline(self):
+    def test_is_not_retried_and_passes_no_deadline_override(self):
         self._reply(_run())
         self.low.invoke_tool_collection(CONNECTOR)
         kwargs = self.calls[0][2]
         self.assertFalse(kwargs["retry_on_unavailable"])
-        self.assertIs(kwargs["timeout"], self.core.tool_call_timeout_s)
+        self.assertIsNone(kwargs.get("timeout"))  # timeout=None: grpc_exec applies the client's default deadline
 
     def test_server_rejections_reach_the_caller_unchanged(self):
         self._reply(

@@ -257,7 +257,7 @@ class ToolsClient:
         :type                   : ``` dict ```
         :param connected_account_id : ID of the connected account to use for tool execution
         :type                   : ``` str ```
-        :param connection_name  : Name of the connection (e.g., 'acme-api'), not the connector's name
+        :param connection_name  : Name of the connection, as shown in AgentKit > Connections (e.g., 'acme-api'), not the connector's name
         :type                   : ``` str ```
 
         :returns:

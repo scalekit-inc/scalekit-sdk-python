@@ -172,14 +172,14 @@ class ActionClient:
         """
         Execute a tool with the given parameters.
 
+        A custom connector's tools run like any other: ``a-<connector>_<operation>`` for a
+        connector created from an OpenAPI spec, ``c-<connector>_<tool>`` for a custom MCP
+        connector. Use a connected account of a connection on the tool's own connector.
+
         Args:
             tool_input: Input data for the tool execution (required)
             tool_name: Name of the tool to execute (required)
             **kwargs: Additional optional parameters
-
-        A custom connector's tools run like any other: ``a-<connector>_<operation>`` for a
-        connector created from an OpenAPI spec, ``c-<connector>_<tool>`` for a custom MCP
-        connector. Use a connected account of a connection on the tool's own connector.
 
         Account resolution (one of the following combinations is required):
             connected_account_id: ID of the connected account to use. Provide this
@@ -255,15 +255,15 @@ class ActionClient:
         ``connected_account_id``. OpenAPI-sourced tools are not listed where that
         capability is not enabled for the environment.
 
-        :param connection_name: Filter by connection name, e.g. 'github-connect'. Alone it
-            does not identify a connected account; add ``identifier`` (or pass
-            ``connected_account_id``) to include that account's custom MCP tools (optional)
+        :param connection_name: The connection name, as shown in AgentKit > Connections, e.g.
+            'github-connect'. Alone it does not identify a connected account; add ``identifier``
+            (or pass ``connected_account_id``) to include that account's custom MCP tools (optional)
         :type: str
         :param identifier: Filter/resolve by connected-account identifier (optional)
         :type: str
-        :param provider: Filter by provider key, e.g. 'github', or by the identifier of a
-            custom connector, e.g. the ``Provider.identifier`` of an OpenAPI-sourced one.
-            At most 50 characters (optional)
+        :param provider: The app, such as 'GMAIL', or the identifier of a custom connector,
+            e.g. the ``Provider.identifier`` of an OpenAPI-sourced one. At most 50 characters
+            (optional)
         :type: str
         :param tool_name: Filter to specific tool names (optional)
         :type: List[str]
@@ -404,25 +404,28 @@ class ActionClient:
         """
         Delete one tool of a connector created from an OpenAPI spec, by its name or its id.
 
-        ``tool_identifier`` is the tool's name (``a-<connector>_<operation>``, as list_tools
+        Call it as ``scalekit_client.actions.delete_custom_tool(tool_identifier=...)``.
+
+        ``tool_identifier`` is the tool's name (``a-<connector>_<operation>``, as ``list_tools``
         lists it) or its id (``tol_<number>``, the ``id`` of each tool that
-        ``list_tools(provider=<connector identifier>)`` returns); the server ignores ASCII
-        case. A value that starts with ``tol_`` (in any case) is always read as an id.
-        Leading and trailing whitespace is removed; nothing else is changed, so the case is not
-        folded. A tool collection run creates the tool again while its
-        operation is still in the connector's spec, unless the spec, base URL and auth
-        patterns are unchanged since the last completed run: then it creates nothing (a spec
-        that references external files is always regenerated, and so is the run right after
-        a first run that filled in the base URL or the OAuth settings). So, apart from those
-        two cases,
-        ``invoke_tool_collection`` alone does not restore a deleted tool: change one of
-        those inputs, for example the spec, call it and let the run finish. To keep the tool
-        gone, remove its endpoint from the spec. The call is sent again on UNAVAILABLE, so
-        after a retry or a timeout a 404
-        can mean the first attempt already deleted it. A repeat by name looks the name up
-        again: if a sync finished in between and created a tool with that name again, the
-        repeat deletes that one. A tool a sync creates again has a new id, so a repeat by id
-        cannot delete it. See AGENTKIT.md, Tool discovery.
+        ``list_tools(provider=<connector identifier>)`` returns). The server ignores ASCII case,
+        and a value that starts with ``tol_`` (in any case) is always read as an id. Leading and
+        trailing whitespace is removed; nothing else is changed, so the case is not folded.
+
+        A tool collection run creates the tool again while its operation is still in the
+        connector's spec, unless the spec, base URL and auth patterns are unchanged since the last
+        completed run: then it creates nothing (a spec that references external files is always
+        regenerated, and so is the run right after a first run that filled in the base URL or the
+        OAuth settings). So, apart from those two cases, ``invoke_tool_collection`` alone does not
+        restore a deleted tool: change one of those inputs, for example the spec, call it and let
+        the run finish. To keep the tool gone, remove its endpoint from the spec.
+
+        The call is sent again on ``UNAVAILABLE``, so after a retry a 404 can mean that the first
+        attempt already deleted the tool; the same holds for a repeat you make yourself after a
+        ``ScalekitGatewayTimeoutException``. A repeat by name looks the name up again: if a sync
+        finished in between and created a tool with that name again, the repeat deletes that one. A
+        tool a sync creates again has a new id, so a repeat by id cannot delete it. See AGENTKIT.md,
+        Tool discovery.
 
         :param tool_identifier: Name or id of the tool to delete (required)
         :type: str
@@ -444,17 +447,135 @@ class ActionClient:
         :raises ScalekitInternalServerException: 500, the server failed; the tool may be gone
         :raises ScalekitNotImplementedException: 501, a backend older than release v0.1.165.0
             does not have the call
+
+        Example:
+            >>> scalekit_client.actions.delete_custom_tool(tool_identifier="a-acmeapi_deletepet")
         """
         if not isinstance(tool_identifier, str) or not tool_identifier.strip():
             raise ValueError("tool_identifier must be a non-empty string to delete a custom tool")
-        core = self.tools.core_client
-        core.grpc_exec(
+        # Default retry on UNAVAILABLE. A repeat by id deletes the same tool or answers 404; by name it
+        # deletes whichever tool has the name when it arrives (see the docstring).
+        self.tools.core_client.grpc_exec(
             self.tools.tool_service.DeleteCustomTool.with_call,
             DeleteCustomToolRequest(tool_identifier=tool_identifier.strip()),
-            timeout=core.tool_call_timeout_s,
-            # Default retry on UNAVAILABLE. A repeat by id deletes the same tool or answers 404; by name it
-            # deletes whichever tool has the name when it arrives (see the docstring).
         )
+
+    def invoke_tool_collection(self, provider_identifier: str, **kwargs) -> ToolCollectionRun:
+        """
+        Queue a new tool collection run on an OpenAPI-sourced connector.
+
+        Call it as ``scalekit_client.actions.invoke_tool_collection(provider_identifier=...)``. The same
+        operation is available as ``scalekit_client.actions.providers.invoke_tool_collection(request)``,
+        which takes an ``InvokeToolCollectionRequest``. This method builds that request from
+        ``provider_identifier`` and makes that call, so the validation, the errors and the retry rules are
+        the same.
+
+        The server re-fetches and validates the connector's current spec URL, queues a background run
+        that regenerates the connector's tools, and returns that run at once with status ``QUEUED``. A
+        connector is also re-synced automatically when it is created and when its base URL or spec URL
+        changes, so call this to pick up changes to the spec itself or to retry after a failed run. A run
+        that finds the spec, base URL and auth patterns unchanged since the last completed run creates,
+        updates and deletes nothing, so it does not bring back a tool removed with ``delete_custom_tool``
+        (a spec that references external files is always regenerated). If the first run fills in the base
+        URL (only when the spec's server URL starts with ``https://``) or the OAuth settings, the next run
+        still updates every tool and that shortcut applies from the run after that. Follow the run with
+        ``get_tool_collection_run``.
+
+        The call is not retried automatically when the service is unavailable, because the first attempt
+        may already have queued a run. After a ``ScalekitServiceUnavailableException`` or a
+        ``ScalekitGatewayTimeoutException`` (the call exceeded the client's deadline), check
+        ``get_tool_collection_run`` (``run_id="latest"``) before you invoke again: a second invocation while
+        a run is active answers 409. A plain HTTP 429 from the edge (an answer without a gRPC status)
+        reaches the client as ``UNAVAILABLE`` too, so it raises the same
+        ``ScalekitServiceUnavailableException``, is not retried either, and calls for the same check. A gRPC
+        ``RESOURCE_EXHAUSTED`` raises ``ScalekitTooManyRequestsException`` instead and is never retried.
+
+        :param provider_identifier: The connector's ``identifier``: the ``NAME:environment-id`` string that
+            ``create_custom_provider`` and ``list_providers`` return as ``provider.identifier``, such as
+            ``ACMEAPI:70219645518265104`` (required). It is not ``provider.id`` (``prvd_...``): the id
+            answers 404. 1 to 255 characters once the whitespace around it is removed
+        :type provider_identifier: str
+
+        :returns:
+            The queued run, a ``ToolCollectionRun`` with status ``QUEUED``
+        :rtype: ToolCollectionRun
+
+        :raises ValueError: If provider_identifier is not a string, is blank or is longer than 255
+            characters (raised as ``pydantic.ValidationError``, a subclass of ``ValueError``); nothing
+            is sent
+        :raises ScalekitNotFoundException: 404, no connector with that identifier exists
+        :raises ScalekitBadRequestException: 400, the connector is not sourced from an OpenAPI spec, its
+            stored spec URL fails validation, or OpenAPI-sourced connectors are not enabled for the
+            environment (``FEATURE_NOT_ENABLED``)
+        :raises ScalekitConflictException: 409 ``RESOURCE_ALREADY_EXISTS``, a run is already queued or
+            running for the connector. A connector has at most one active run: wait for it to finish and
+            call again
+        :raises ScalekitServiceUnavailableException: 503, the service is unavailable (not retried; see above)
+        :raises ScalekitGatewayTimeoutException: 504, the call exceeded the client's deadline (not
+            retried; see above)
+
+        Example:
+            >>> run = scalekit_client.actions.invoke_tool_collection(
+            ...     provider_identifier="ACMEAPI:70219645518265104"
+            ... )
+            >>> run.status  # ToolCollectionRunStatus.QUEUED
+        """
+        request = InvokeToolCollectionRequest(provider_identifier=provider_identifier)
+        return self.providers.invoke_tool_collection(request)
+
+    def get_tool_collection_run(
+        self, provider_identifier: str, run_id: str = "latest", **kwargs
+    ) -> ToolCollectionRun:
+        """
+        Read one tool collection run of an OpenAPI-sourced connector.
+
+        Call it as ``scalekit_client.actions.get_tool_collection_run(provider_identifier=..., run_id=...)``.
+        The same operation is available as
+        ``scalekit_client.actions.providers.get_tool_collection_run(request)``, which takes a
+        ``GetToolCollectionRunRequest``. This method builds that request from ``provider_identifier`` and
+        ``run_id`` and makes that call, so the validation, the errors and the retry rules are the same. The
+        call only reads, so it is retried when the service is unavailable, like any other call.
+
+        Returns the run's status, its counters (operations found, tools created, updated and deleted) and,
+        once the run has finished, the operations it skipped and why. A run moves ``QUEUED``,
+        ``PROCESSING``, then ``COMPLETED`` or ``FAILED``; the server marks a run that makes no progress for
+        30 minutes ``FAILED``. Pass ``run_id="latest"`` (the default) for the connector's most recent run,
+        for example to follow the run that ``create_custom_provider`` queued. Poll until
+        ``run.is_terminal`` is true; then ``run.status`` is ``COMPLETED`` or ``FAILED``,
+        ``run.skipped_tools`` lists the operations that could not become tools, and ``run.error_message``
+        says why a failed run failed. ``"latest"`` is looked up again on every call, so it moves on to a
+        newer run if one is queued while you poll (by another caller, or by a base URL or spec URL change);
+        to follow one run to its end, pass the ``run_id`` of the run you started or first read.
+
+        :param provider_identifier: The connector's ``identifier``: the ``NAME:environment-id`` string that
+            ``create_custom_provider`` and ``list_providers`` return as ``provider.identifier``, such as
+            ``ACMEAPI:70219645518265104`` (required). It is not ``provider.id`` (``prvd_...``): the id
+            answers 404. 1 to 255 characters once the whitespace around it is removed
+        :type provider_identifier: str
+        :param run_id: The ``run_id`` of a ``ToolCollectionRun``, or ``"latest"`` (the default; an empty or
+            blank string means the same) for the connector's most recent run (optional). At most 255
+            characters once the whitespace around it is removed
+        :type run_id: str
+
+        :returns:
+            The run, a ``ToolCollectionRun``
+        :rtype: ToolCollectionRun
+
+        :raises ValueError: If provider_identifier is not a string, is blank or is longer than 255
+            characters, or run_id is not a string or is longer than 255 characters (raised as
+            ``pydantic.ValidationError``, a subclass of ``ValueError``); nothing is sent
+        :raises ScalekitNotFoundException: 404, the connector does not exist, it has no run yet, or the
+            run_id names no run of this connector
+        :raises ScalekitBadRequestException: 400, the run_id is not a valid run ID
+
+        Example:
+            >>> run = scalekit_client.actions.get_tool_collection_run(
+            ...     provider_identifier="ACMEAPI:70219645518265104", run_id="latest"
+            ... )
+            >>> run.status, run.is_terminal  # ask again until run.is_terminal is True
+        """
+        request = GetToolCollectionRunRequest(provider_identifier=provider_identifier, run_id=run_id)
+        return self.providers.get_tool_collection_run(request)
 
     def search_tools(
         self,
@@ -1531,7 +1652,8 @@ class ActionClient:
             Generated when omitted.
         :param auth_mode: ``AuthMode.USER`` (default) or ``AuthMode.ORG_WIDE``. Cannot be changed later.
         :param provider_domain: Only for regional connectors (for example ``"mcp-eu.mixpanel.com"`` for
-            MIXPANELMCP). Create-only and never returned.
+            MIXPANELMCP), and for a custom MCP connector whose ``proxy_url`` is a template with a
+            ``{{domain}}`` placeholder: the host name that replaces it. Create-only and never returned.
         :returns: The created connection.
         :raises AgentKitConnectionError: on failure; see ``scalekit.actions.connections.errors``.
 
@@ -1585,6 +1707,10 @@ class ActionClient:
         ``extra_authorize_params={}``) clears it. Sending your own ``client_id`` or ``client_secret``
         turns ``use_scalekit_creds`` off unless you set it. A secret echoed back in its masked form is
         ignored.
+
+        To choose how Scalekit sends client credentials to the provider's token URL, pass
+        ``oauth=OAuthSettings(token_endpoint_auth_method=TokenEndpointAuthMethod.BASIC_AUTH)``; see
+        ``TokenEndpointAuthMethod`` for the values.
 
         :raises AgentKitConnectionError: on failure; see ``scalekit.actions.connections.errors``.
         """
@@ -2171,22 +2297,23 @@ class ActionProviders:
 
         :returns: Response containing the created provider with its server-assigned
                   identifier and all decoded auth_patterns. Pass the identifier as
-                  ``provider`` when creating a connection for this provider.
+                  ``provider`` to ``scalekit_client.actions.create_connection`` to create a
+                  connection to this connector.
         :rtype: CreateCustomProviderResponse
 
-        :raises ScalekitBadRequestException: If a required field is missing or invalid
+        :raises ScalekitBadRequestException: 400, if a required field is missing or invalid
             (``INVALID_ARGUMENT``), auth_patterns is missing or empty, or the display_name
             is the name of a built-in login provider (Github, Google, Gitlab, Microsoft,
             LinkedIn, Salesforce, Facebook); the message shows the field and the reason.
             Also a spec URL that cannot be fetched or is not a valid OpenAPI or Swagger
             document, or OpenAPI-sourced connectors not enabled for the environment
             (``FEATURE_NOT_ENABLED``).
-        :raises ScalekitConflictException: If an OpenAPI connector with the same name
+        :raises ScalekitConflictException: 409, if an OpenAPI connector with the same name
             already exists in the environment (``RESOURCE_ALREADY_EXISTS``). For any other
             connector a name that is already in use does not raise: the new provider gets a
             numbered identifier. A create that races another create with the same name can
             also raise it; retry.
-        :raises ScalekitServiceUnavailableException: If the service is unavailable. With
+        :raises ScalekitServiceUnavailableException: 503, if the service is unavailable. With
             ``openapi_spec_url`` the call is not retried, because the first attempt may
             already have created the connector and a retry would raise
             ``ScalekitConflictException``; before creating it again, look for it with
@@ -2198,7 +2325,7 @@ class ActionProviders:
             create, and is not retried with ``openapi_spec_url``, so look for the connector
             first. A gRPC ``RESOURCE_EXHAUSTED`` raises ``ScalekitTooManyRequestsException``
             instead and is never retried.
-        :raises ScalekitGatewayTimeoutException: If the client's tool-call timeout passes (the
+        :raises ScalekitGatewayTimeoutException: 504, if the call exceeds the client's deadline (the
             call is not retried). With ``openapi_spec_url`` the server may still finish the
             create: look for the connector as described above before creating it again.
         """
@@ -2221,13 +2348,15 @@ class ActionProviders:
 
         The server applies this as a PUT, not a partial update. It requires
         display_name and auth_patterns on every update, and proxy_url as well for an
-        MCP-sourced connector. Fields left as None are not sent: description and icon_src keep their stored values, but metadata is
-        cleared. The call always sends ``proxy_enabled=True``, which ``create_custom_provider``
-        always sets, and has no field for it: a ``proxy_enabled`` passed in the request is
-        ignored. The server applies the flag on every update, so an update switches proxying on
-        for a connector that has it off (created that way by another client, or switched off by
-        an update with an SDK release up to 2.25.0), and an OpenAPI-sourced connector in that
-        state is refused with 400 ``INVALID_ARGUMENT`` (see ``ProvidersClient.update_custom_provider``).
+        MCP-sourced connector. Fields left as None are not sent: description and icon_src
+        keep their stored values, but metadata is cleared. The call always sends
+        ``proxy_enabled=True``, which ``create_custom_provider`` always sets, and has no
+        field for it: a ``proxy_enabled`` passed in the request is ignored. The server
+        applies the flag on every update, so an update switches proxying on for a connector
+        that has it off (created that way by another client, or switched off by an update
+        with an SDK release up to 2.25.0), and an OpenAPI-sourced connector in that state is
+        refused with 400 ``INVALID_ARGUMENT``. ``Provider.proxy_enabled`` from
+        ``list_providers`` shows which connectors are affected.
 
         An OpenAPI-sourced connector can only change display_name, description,
         icon_src, metadata and proxy_url (its base URL), and openapi_spec_url where the
@@ -2246,8 +2375,8 @@ class ActionProviders:
         :returns: Response containing the provider's full state after the update.
         :rtype: UpdateCustomProviderResponse
 
-        :raises ScalekitNotFoundException: If no provider with the given identifier exists.
-        :raises ScalekitBadRequestException: If any updated field value is invalid
+        :raises ScalekitNotFoundException: 404, if no provider with the given identifier exists.
+        :raises ScalekitBadRequestException: 400, if any updated field value is invalid
             (``INVALID_ARGUMENT``), if the auth type or the connector kind (MCP or API)
             differs from the existing provider, if an API_KEY provider switches between
             single-key and multiple-headers mode, if a locked field of an OpenAPI-sourced
@@ -2255,14 +2384,14 @@ class ActionProviders:
             (``FEATURE_NOT_ENABLED``), or if the base URL (``proxy_url``) of an
             OpenAPI-sourced connector changes where OpenAPI-sourced connectors are not
             enabled for the environment (``FEATURE_NOT_ENABLED``, nothing is saved).
-        :raises ScalekitConflictException: If a changed base URL or spec URL was saved but
+        :raises ScalekitConflictException: 409, if a changed base URL or spec URL was saved but
             its tool collection run could not be queued because another run is in
             progress (``RESOURCE_ALREADY_EXISTS``); call ``invoke_tool_collection``
             once that run completes.
-        :raises ScalekitInternalServerException: If a changed base URL or spec URL was saved
+        :raises ScalekitInternalServerException: 500, if a changed base URL or spec URL was saved
             but its tool collection run could not be queued for another reason; call
             ``invoke_tool_collection`` to retry.
-        :raises ScalekitServiceUnavailableException: If the service is unavailable. With
+        :raises ScalekitServiceUnavailableException: 503, if the service is unavailable. With
             ``openapi_spec_url`` the call is not retried, because the first attempt may
             already have saved the new URL and a repeat would queue no run: read the
             connector with ``list_providers``; if it holds the new URL, call
@@ -2276,7 +2405,7 @@ class ActionProviders:
             without ``openapi_spec_url``, and is not retried with ``openapi_spec_url``, so check
             as described above. A gRPC ``RESOURCE_EXHAUSTED`` raises
             ``ScalekitTooManyRequestsException`` instead and is never retried.
-        :raises ScalekitGatewayTimeoutException: If the client's tool-call timeout passes (the
+        :raises ScalekitGatewayTimeoutException: 504, if the call exceeds the client's deadline (the
             call is not retried). The server may still have finished: check as described above
             before you repeat the call.
         """
@@ -2298,6 +2427,9 @@ class ActionProviders:
     ) -> ToolCollectionRun:
         """Queue a new tool collection run on an OpenAPI-sourced connector.
 
+        ``scalekit_client.actions.invoke_tool_collection(provider_identifier=...)`` does the same
+        without a request object.
+
         The server re-fetches and validates the connector's current spec URL, queues a
         background run that regenerates the connector's tools, and returns that run at once
         with status ``QUEUED``. A connector is also re-synced automatically when it is created
@@ -2305,19 +2437,20 @@ class ActionProviders:
         spec itself or to retry after a failed run. A run that finds the spec, base URL and
         auth patterns unchanged since the last completed run creates, updates and deletes
         nothing, so it does not bring back a tool removed with ``delete_custom_tool`` (a spec
-        that references external files is always regenerated). The first run fills in the
-        base URL, so the next run still updates every tool; the shortcut applies from the run
+        that references external files is always regenerated). If the first run fills in the
+        base URL (only when the spec's server URL starts with ``https://``) or the OAuth
+        settings, the next run still updates every tool and that shortcut applies from the run
         after that. Follow the run with ``get_tool_collection_run``. The server's messages call
         this operation ``TriggerToolCollection``: it is the call this method makes.
 
         Not retried automatically when the service is unavailable, because the first
         attempt may already have queued a run. After a ScalekitServiceUnavailableException
-        or a ScalekitGatewayTimeoutException, check ``get_tool_collection_run`` (``latest``)
-        before you invoke again. A plain HTTP 429 from the edge (an answer without a gRPC
-        status) reaches the client as ``UNAVAILABLE`` too, so it raises the same
-        ScalekitServiceUnavailableException, is not retried either, and calls for the same
-        check. A gRPC ``RESOURCE_EXHAUSTED`` raises ``ScalekitTooManyRequestsException``
-        instead and is never retried.
+        or a ScalekitGatewayTimeoutException (the call exceeded the client's deadline), check
+        ``get_tool_collection_run`` (``latest``) before you invoke again. A plain HTTP 429
+        from the edge (an answer without a gRPC status) reaches the client as ``UNAVAILABLE``
+        too, so it raises the same ScalekitServiceUnavailableException, is not retried either,
+        and calls for the same check. A gRPC ``RESOURCE_EXHAUSTED`` raises
+        ``ScalekitTooManyRequestsException`` instead and is never retried.
 
         :param request: Request object containing the connector's provider_identifier.
         :type request: InvokeToolCollectionRequest
@@ -2325,13 +2458,17 @@ class ActionProviders:
         :returns: The queued run.
         :rtype: ToolCollectionRun
 
-        :raises ScalekitNotFoundException: If no connector with that identifier exists.
-        :raises ScalekitBadRequestException: If the connector is not sourced from an OpenAPI
+        :raises ScalekitNotFoundException: 404, no connector with that identifier exists.
+        :raises ScalekitBadRequestException: 400, the connector is not sourced from an OpenAPI
             spec, its stored spec URL fails validation, or OpenAPI-sourced connectors are
             not enabled for the environment (``FEATURE_NOT_ENABLED``).
-        :raises ScalekitConflictException: If a run is already queued or running for the
-            connector (``RESOURCE_ALREADY_EXISTS``). A connector has at most one active run;
+        :raises ScalekitConflictException: 409 ``RESOURCE_ALREADY_EXISTS``, a run is already
+            queued or running for the connector. A connector has at most one active run;
             wait for it to finish and call again.
+        :raises ScalekitServiceUnavailableException: 503, the service is unavailable (not
+            retried; see above).
+        :raises ScalekitGatewayTimeoutException: 504, the call exceeded the client's deadline
+            (not retried; see above).
         """
         result_tuple = self._providers_client.invoke_tool_collection(request.provider_identifier)
         return ToolCollectionRun.from_proto(result_tuple[0])
@@ -2341,6 +2478,9 @@ class ActionProviders:
         request: GetToolCollectionRunRequest,
     ) -> ToolCollectionRun:
         """Read one tool collection run of an OpenAPI-sourced connector.
+
+        ``scalekit_client.actions.get_tool_collection_run(provider_identifier=..., run_id=...)``
+        does the same without a request object.
 
         Pass ``run_id="latest"`` (the default) for the connector's most recent run, for
         example to follow the run that ``create_custom_provider`` queued. Poll until
@@ -2358,9 +2498,9 @@ class ActionProviders:
         :returns: The run.
         :rtype: ToolCollectionRun
 
-        :raises ScalekitNotFoundException: If the connector does not exist, it has no run
+        :raises ScalekitNotFoundException: 404, the connector does not exist, it has no run
             yet, or the run_id names no run of this connector.
-        :raises ScalekitBadRequestException: If the run_id is not a valid run ID.
+        :raises ScalekitBadRequestException: 400, the run_id is not a valid run ID.
         """
         result_tuple = self._providers_client.get_tool_collection_run(
             request.provider_identifier, request.run_id
@@ -2422,16 +2562,15 @@ class ActionProviders:
         :returns: Empty response confirming deletion.
         :rtype: DeleteCustomProviderResponse
 
-        :raises ScalekitNotFoundException: If no provider with the given identifier exists.
-        :raises ScalekitForbiddenException: If the caller lacks permission to delete.
-        :raises ScalekitBadRequestException: If the connector still has connections
-                                           (PROVIDER_HAS_EXISTING_CONNECTIONS); nothing is
-                                           deleted. Remove its connected accounts first, then
-                                           its connections (a connection that still has
-                                           connected accounts cannot be deleted either).
-        :raises ScalekitConflictException: If a tool collection run of a connector created
-                                          from an OpenAPI spec is queued or processing;
-                                          nothing is deleted.
+        :raises ScalekitNotFoundException: 404, if no provider with the given identifier exists.
+        :raises ScalekitForbiddenException: 403, if the caller lacks permission to delete.
+        :raises ScalekitBadRequestException: 400 (PROVIDER_HAS_EXISTING_CONNECTIONS), if the
+            connector still has connections; nothing is deleted. Remove its connected accounts
+            first, then its connections with ``scalekit_client.actions.delete_connection`` (a
+            connection that still has connected accounts cannot be deleted either).
+        :raises ScalekitConflictException: 409 (RESOURCE_ALREADY_EXISTS), if a tool collection
+            run of a connector created from an OpenAPI spec is queued or processing; nothing is
+            deleted.
         """
         result_tuple = self._providers_client.delete_custom_provider(request.identifier)
         return DeleteCustomProviderResponse.from_proto(result_tuple[0])

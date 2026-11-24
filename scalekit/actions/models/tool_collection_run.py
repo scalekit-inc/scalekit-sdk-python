@@ -89,7 +89,10 @@ class ToolCollectionRun(BaseModel):
     model_config = ConfigDict(frozen=True, extra="allow")
 
     run_id: str = Field("", description="This run's own ID.")
-    provider_identifier: str = Field("", description="Identifier of the connector the run belongs to.")
+    provider_identifier: str = Field(
+        "",
+        description="Identifier of the connector the run belongs to (NAME:environment-id, as in Provider.identifier).",
+    )
     status: Union[ToolCollectionRunStatus, str] = Field(
         "",
         description=(

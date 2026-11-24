@@ -58,7 +58,7 @@ class CreateCustomProviderRequest(BaseModel):
             "before it stores anything (default limit 5 MB, 50 MB together with the "
             "files it references), then generates the tools in an asynchronous tool "
             "collection run that it queues for you: follow it with "
-            "ActionProviders.get_tool_collection_run. Example: "
+            "scalekit_client.actions.get_tool_collection_run. Example: "
             "'https://api.example.com/openapi.json'."
         ),
     )

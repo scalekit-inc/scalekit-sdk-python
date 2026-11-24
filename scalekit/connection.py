@@ -152,12 +152,6 @@ class ConnectionClient:
         """
         Method to get an environment-level connection by its id
 
-        ``connection.resolved_proxy_url`` is the URL the connector's templated ``proxy_url``
-        was resolved to when the connection was created; it is not set when the connector's
-        ``proxy_url`` has no template, or the connection is older than the field. For an OAuth
-        connection, ``connection.oauth_config.token_endpoint_auth_type`` is not set while the
-        connection uses the Default (``update_environment_connection`` says what it sends).
-
         :param connection_id    : Connection id to retrieve
         :type                   : ``` str ```
 
@@ -172,22 +166,6 @@ class ConnectionClient:
     def create_environment_connection(self, connection: CreateConnection, flags: Optional[Flags] = None) -> CreateConnectionResponse:
         """
         Method to create a new environment-level connection
-
-        An MCP connector whose ``proxy_url`` is a template with ``{{domain}}`` or ``{{version}}``
-        placeholders, for example one with a host per data region, is resolved once, when the
-        connection is created (any other connector does not use the context). Supply the values
-        in ``CreateConnection.context``,
-        a ``google.protobuf.Struct`` such as ``{"domain": "mcp-eu.example.com"}``: ``domain``
-        is the host name that replaces ``{{domain}}``, not a region code. If the connector
-        declares the host names it offers (the ``options`` of the ``domain`` field in its
-        ``auth_patterns``), use one of them. Only ``domain`` and
-        ``version`` are used: ``path_variables`` and keys the server does not know are rejected
-        with 400, and other config keys (for example ``proxy_url`` or ``account_id``) are
-        accepted and ignored, so send only ``domain`` and ``version``. The context itself is not
-        stored; the resolved URL is, and ``connection.resolved_proxy_url`` in the response shows
-        it. If the template needs a value the context does not supply,
-        the call fails with 400 ('connection context is missing a value required by provider
-        ... proxy_url template').
 
         :param connection   : CreateConnection object with expected values for conn creation
         :type               : ``` obj ```
@@ -205,35 +183,6 @@ class ConnectionClient:
     def update_environment_connection(self, connection_id: str, connection: UpdateConnection) -> UpdateConnectionResponse:
         """
         Method to update an environment-level connection
-
-        To choose how Scalekit authenticates to an OAuth connection's token endpoint, set
-        ``UpdateConnection.oauth_config.token_endpoint_auth_type`` to a ``TokenAuthType``:
-        ``BASIC_AUTH`` sends client_id and client_secret in an HTTP Basic Authorization
-        header (``client_secret_basic``), ``URL_PARAMS`` sends them as POST body parameters
-        (``client_secret_post``), and ``NONE`` is for public (PKCE) clients: it sends no client
-        secret on an MCP token refresh, and on the authorization_code exchange only when the
-        connection has no client secret stored (a stored secret is still sent);
-        OAUTH_M2M client_credentials treats ``NONE`` like ``BASIC_AUTH``. Leave the field unset
-        to keep the current value, and send ``TOKEN_AUTH_TYPE_UNSPECIFIED`` to reset it to the
-        Default: the authorization_code exchange then sends the credentials as POST body
-        parameters, and an MCP token refresh and OAUTH_M2M client_credentials send them in a
-        Basic Authorization header. It applies to the
-        authorization_code exchange, MCP token refresh and OAUTH_M2M client_credentials;
-        refreshing a token on a non-MCP OAuth connection always detects the method itself. Set
-        it only on a connection of a custom MCP or OpenAPI-sourced connector whose token
-        endpoint documentation requires a specific method: a wrong value makes new
-        authorizations fail and, on an MCP or OAUTH_M2M connection, token refresh too, so those
-        connected accounts have to authenticate again. It can only be set by an update, because
-        ``CreateConnection`` carries no OAuth settings: a new connection starts with the
-        connector's own default.
-
-        ``oauth_config.token_endpoint_auth_method`` is deprecated. It is a
-        ``google.protobuf.StringValue`` (``StringValue(value="client_secret_basic")``; a plain
-        ``str`` raises ``TypeError``) holding ``"client_secret_basic"``, ``"client_secret_post"``
-        or ``"none"``. It maps onto the same stored
-        value, and the server rejects any other non-empty string. Send one of the two fields; when both
-        are sent with different values, the request is rejected unless one of them equals the
-        stored value.
 
         :param connection_id    : Connection id to update
         :type                   : ``` str ```

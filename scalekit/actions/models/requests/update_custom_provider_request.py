@@ -34,8 +34,9 @@ class UpdateCustomProviderRequest(BaseModel):
         ...,
         min_length=1,
         description=(
-            "Required. Identifier of the provider to update. Obtained from "
-            "Provider.identifier in a create or list response."
+            "Required. Identifier of the connector to update: the NAME:environment-id string, such as "
+            "ACMEAPI:70219645518265104, from Provider.identifier in a create or list response. "
+            "It is not Provider.id (prvd_...), which answers 404."
         ),
     )
     display_name: str = Field(
@@ -67,7 +68,8 @@ class UpdateCustomProviderRequest(BaseModel):
             "keep the stored one. Changing it (ignoring a trailing slash) saves it and "
             "queues a tool collection run that regenerates every tool; if a run is "
             "already in progress the value is still saved but the call fails with 409 "
-            "RESOURCE_ALREADY_EXISTS, so call invoke_tool_collection once that run "
+            "RESOURCE_ALREADY_EXISTS, so call "
+            "scalekit_client.actions.invoke_tool_collection once that run "
             "completes. Must be a valid HTTPS URL starting with 'https://'. An empty "
             "string is accepted and treated like None: it is what Provider.proxy_url "
             "holds for an OpenAPI-sourced connector until its first tool collection run "

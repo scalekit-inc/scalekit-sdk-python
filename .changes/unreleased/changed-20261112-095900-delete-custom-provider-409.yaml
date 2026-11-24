@@ -1,6 +1,6 @@
 kind: changed
 body: |
-  `client.actions.providers.delete_custom_provider` now raises `ScalekitConflictException` (`RESOURCE_ALREADY_EXISTS`) and deletes nothing while a tool collection run of a connector created from an OpenAPI spec is queued or processing; before, the delete went through. An MCP or plain REST connector is not affected. The message names the run: poll it with `get_tool_collection_run` (pass its ID as `run_id`) and call again once it has finished. The docs also now state the 400 (`ScalekitBadRequestException`, `PROVIDER_HAS_EXISTING_CONNECTIONS`) that a connector with connections has always got, which the server checks first. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/REFERENCE.md#custom-providers)
+  `client.actions.providers.delete_custom_provider` now raises `ScalekitConflictException` (`RESOURCE_ALREADY_EXISTS`) and deletes nothing while a tool collection run of a connector created from an OpenAPI spec is queued or processing; before, the delete went through. An MCP or plain REST connector is not affected. The message names the run: poll it with `client.actions.get_tool_collection_run` (pass its ID as `run_id`) and call again once it has finished. The docs also now state the 400 (`ScalekitBadRequestException`, `PROVIDER_HAS_EXISTING_CONNECTIONS`) that a connector with connections has always got, which the server checks first. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/REFERENCE.md#custom-providers)
 time: '2026-11-12T09:59:00+00:00'
 custom:
   Breaking: 'No'

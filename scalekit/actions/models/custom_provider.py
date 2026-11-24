@@ -685,7 +685,8 @@ class Provider(BaseModel):
         "",
         description=(
             "Unique identifier assigned by the server. Read-only. Pass it as "
-            "'provider' when creating a connection for this provider."
+            "'provider' to scalekit_client.actions.create_connection to create a "
+            "connection to this provider."
         ),
     )
     display_name: str = Field(

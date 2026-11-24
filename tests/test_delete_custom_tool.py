@@ -144,10 +144,12 @@ class RequestTest(DeleteCustomToolTestCase):
                 self.assertIn("tool_identifier", str(refused.exception))
         self.assertEqual(self.channel.sent, [], "nothing is sent when the name is refused")
 
-    def test_the_tool_call_deadline_is_used(self):
+    def test_the_call_sets_no_deadline_of_its_own(self):
+        """The client's default deadline applies, like for every other call: the tool-call deadline, which differs
+        from it here, is not used."""
         self._reply(empty_pb2.Empty())
         self.actions.delete_custom_tool("a-acme_get_user")
-        self.assertEqual(self.channel.sent[0].timeout, TOOL_CALL_TIMEOUT_S)
+        self.assertEqual(self.channel.sent[0].timeout, DEFAULT_CALL_TIMEOUT_S)
         self.assertNotEqual(TOOL_CALL_TIMEOUT_S, DEFAULT_CALL_TIMEOUT_S)
 
 
