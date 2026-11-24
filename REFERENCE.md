@@ -7735,18 +7735,16 @@ An OpenAPI-sourced connector (one created with `openapi_spec_url`) can only chan
 from scalekit.actions.types import ListProvidersRequest, UpdateCustomProviderRequest
 from scalekit.v1.providers.providers_pb2 import ProviderType
 
-providers = scalekit_client.actions.providers
-
 # Read the stored connector first: the update sends back what you do not change.
 # An identifier that matches nothing comes back as an empty list, not as an error.
-stored = providers.list_providers(
+stored = scalekit_client.actions.providers.list_providers(
     ListProvidersRequest(provider_type=ProviderType.CUSTOM, identifier="prv_abc123")
 ).providers
 if not stored:
     raise LookupError("No connector with identifier 'prv_abc123'")
 current = stored[0]
 
-response = providers.update_custom_provider(
+response = scalekit_client.actions.providers.update_custom_provider(
     UpdateCustomProviderRequest(
         identifier=current.identifier,
         display_name=current.display_name,    # required on every update
@@ -7766,16 +7764,14 @@ For an OpenAPI-sourced connector, only `proxy_url` (its base URL) changes the to
 from scalekit.actions.types import ListProvidersRequest, UpdateCustomProviderRequest
 from scalekit.v1.providers.providers_pb2 import ProviderType
 
-providers = scalekit_client.actions.providers
-
-stored = providers.list_providers(
+stored = scalekit_client.actions.providers.list_providers(
     ListProvidersRequest(provider_type=ProviderType.CUSTOM, identifier="prv_openapi_id")
 ).providers
 if not stored:
     raise LookupError("No connector with identifier 'prv_openapi_id'")
 current = stored[0]
 
-response = providers.update_custom_provider(
+response = scalekit_client.actions.providers.update_custom_provider(
     UpdateCustomProviderRequest(
         identifier=current.identifier,
         display_name=current.display_name,
