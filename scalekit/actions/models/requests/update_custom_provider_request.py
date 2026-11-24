@@ -67,7 +67,7 @@ class UpdateCustomProviderRequest(BaseModel):
             "keep the stored one. Changing it (ignoring a trailing slash) saves it and "
             "queues a tool collection run that regenerates every tool; if a run is "
             "already in progress the value is still saved but the call fails with 409 "
-            "RESOURCE_ALREADY_EXISTS, so call trigger_tool_collection once that run "
+            "RESOURCE_ALREADY_EXISTS, so call invoke_tool_collection once that run "
             "completes. Must be a valid HTTPS URL starting with a lower-case "
             "'https://' (at most 2048 characters). An empty "
             "string is accepted and treated like None: it is what Provider.proxy_url "

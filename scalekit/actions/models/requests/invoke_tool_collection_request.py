@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field, field_validator
 
 
-class TriggerToolCollectionRequest(BaseModel):
+class InvokeToolCollectionRequest(BaseModel):
     """Request model for queueing a new tool collection run on an OpenAPI-sourced connector."""
 
     provider_identifier: str = Field(

@@ -1132,7 +1132,7 @@ Errors derive from `AgentKitConnectionError` and carry `code`, `step`, `retryabl
 import time
 from scalekit.actions.types import (
     AuthField, AuthPattern, CreateCustomProviderRequest, GetToolCollectionRunRequest, ToolCollectionRunStatus,
-    TriggerToolCollectionRequest,
+    InvokeToolCollectionRequest,
 )
 from scalekit.common.exceptions import ScalekitConflictException, ScalekitNotFoundException
 
@@ -1155,17 +1155,17 @@ connector = providers.create_custom_provider(
 identifier = connector.identifier
 started = time.monotonic()
 deadline = started + 600
-triggered = False
+invoked = False
 while True:
     try:
         run = providers.get_tool_collection_run(GetToolCollectionRunRequest(provider_identifier=identifier))
     except ScalekitNotFoundException:
         run = None  # the first run is queued in the background and may not exist yet
-        if not triggered and time.monotonic() - started > 45:
+        if not invoked and time.monotonic() - started > 45:
             # The server gave up queueing it and does not say so: queue a run yourself, once.
-            triggered = True
+            invoked = True
             try:
-                providers.trigger_tool_collection(TriggerToolCollectionRequest(provider_identifier=identifier))
+                providers.invoke_tool_collection(InvokeToolCollectionRequest(provider_identifier=identifier))
             except ScalekitConflictException:
                 pass  # a run was queued in the meantime
     if run is not None and run.is_terminal:
@@ -1181,11 +1181,11 @@ for skipped in run.skipped_tools:
     print(skipped.method, skipped.path, "-", skipped.reason)
 ```
 
-The server does not report a failure to queue the first run, and gives up queueing it after 30 seconds, so the loop calls `trigger_tool_collection` once when `get_tool_collection_run` still answers 404 after 45 seconds. If the connector does not exist, that call raises `ScalekitNotFoundException` and ends the loop.
+The server does not report a failure to queue the first run, and gives up queueing it after 30 seconds, so the loop calls `invoke_tool_collection` once when `get_tool_collection_run` still answers 404 after 45 seconds. If the connector does not exist, that call raises `ScalekitNotFoundException` and ends the loop.
 
 **What a run does**
 
-A run fetches the spec, converts every operation it can into a tool, and records what it did in a `ToolCollectionRun`. One is queued when the connector is created, when its base URL or spec URL changes, and when you call `trigger_tool_collection`. A connector has at most one run queued or running; a call that would queue another raises `ScalekitConflictException`.
+A run fetches the spec, converts every operation it can into a tool, and records what it did in a `ToolCollectionRun`. One is queued when the connector is created, when its base URL or spec URL changes, and when you call `invoke_tool_collection`. A connector has at most one run queued or running; a call that would queue another raises `ScalekitConflictException`.
 
 - **Names.** `a-<connector>_<operation>`, for example `a-acmeapi_listpets`. `<connector>` is the connector's identifier before the colon, lowercased. `<operation>` is the operation's `operationId`, or `<method>_<path>` when the spec gives none, lowercased, with every run of characters other than letters, digits and `_` replaced by one `_`, leading and trailing `_` removed, and an `f_` prefix when it starts with a digit. A name that is already taken gets `_2`, `_3` and so on.
 - **Operations.** Only `GET`, `POST`, `PUT`, `PATCH` and `DELETE` operations become tools. One that cannot be converted is skipped and listed in `run.skipped_tools` with its reason, and the run still completes; a run that converts none fails and lists them. Reasons include a multipart, binary or XML request body, a path parameter the operation does not declare, no resolvable base URL, an operation that needs authentication the connector has no auth pattern for, and an HTTP method that is not converted. A `reason` is text for people, not a code to match on.
@@ -1198,10 +1198,10 @@ A run fetches the spec, converts every operation it can into a tool, and records
 | All fetched files together | 50 MB |
 | Distinct external files a spec may reference | 500 |
 | Fetching the spec URL | 20 seconds, up to 5 redirects |
-| Validating the spec when you create the connector, change its spec URL or call `trigger_tool_collection` | 2 minutes, including every file the spec references |
+| Validating the spec when you create the connector, change its spec URL or call `invoke_tool_collection` | 2 minutes, including every file the spec references |
 | One run | 3 minutes. A run that makes no progress for 30 minutes is marked `FAILED`. |
 
-The client does not wait those 2 minutes: it sends `create_custom_provider` and `update_custom_provider` with `openapi_spec_url`, and `trigger_tool_collection`, with its tool-call timeout of 60 seconds by default and does not retry a `DEADLINE_EXCEEDED`, so a spec that takes longer to validate fails on the client first with `ScalekitGatewayTimeoutException` (the server may still finish the work: before you repeat the call, look for the connector with `list_providers`, read it back, or check `get_tool_collection_run` for the latest run; a blind repeat of a create answers 409). Raise the timeout with `ScalekitClient(env_url, client_id, client_secret, tool_call_timeout_s=150)`; it also applies to every `client.tools` call.
+The client does not wait those 2 minutes: it sends `create_custom_provider` and `update_custom_provider` with `openapi_spec_url`, and `invoke_tool_collection`, with its tool-call timeout of 60 seconds by default and does not retry a `DEADLINE_EXCEEDED`, so a spec that takes longer to validate fails on the client first with `ScalekitGatewayTimeoutException` (the server may still finish the work: before you repeat the call, look for the connector with `list_providers`, read it back, or check `get_tool_collection_run` for the latest run; a blind repeat of a create answers 409). Raise the timeout with `ScalekitClient(env_url, client_id, client_secret, tool_call_timeout_s=150)`; it also applies to every `client.tools` call.
 
 A spec URL that fails validation raises `ScalekitBadRequestException` (`INVALID_ARGUMENT`, a message starting `openapi_spec_url failed validation:`) and nothing is stored. The reasons are: not a valid URL, the URL must use https, the URL points to a host that cannot be reached for security reasons, the URL could not be reached, the response could not be read, the response is not a valid OpenAPI/Swagger document, and the size limits above. `ScalekitInternalServerException` (`validating the spec url was interrupted — please retry`) means try again.
 
@@ -1237,7 +1237,7 @@ providers.update_custom_provider(
 )
 ```
 
-A change to the base URL is saved even when the call raises `ScalekitConflictException` because a run was already in progress: call `trigger_tool_collection` once that run completes. Where OpenAPI-sourced connectors are not enabled for the environment, a changed base URL raises `FEATURE_NOT_ENABLED` and nothing is saved. Changing `openapi_spec_url` is not enabled for every workspace (`FEATURE_NOT_ENABLED`). To pick up changes to the spec itself, call `trigger_tool_collection`.
+A change to the base URL is saved even when the call raises `ScalekitConflictException` because a run was already in progress: call `invoke_tool_collection` once that run completes. Where OpenAPI-sourced connectors are not enabled for the environment, a changed base URL raises `FEATURE_NOT_ENABLED` and nothing is saved. Changing `openapi_spec_url` is not enabled for every workspace (`FEATURE_NOT_ENABLED`). To pick up changes to the spec itself, call `invoke_tool_collection`.
 
 **Use the tools**
 
@@ -1261,11 +1261,11 @@ result, _ = scalekit_client.tools.execute_tool(
 
 | Exception | `error_code` | When |
 |-----------|--------------|------|
-| `ScalekitBadRequestException` | `INVALID_ARGUMENT` | Invalid request: a spec URL that fails validation, a locked field of an OpenAPI-sourced connector changed, `trigger_tool_collection` on a connector that is not OpenAPI-sourced, an invalid `run_id` |
+| `ScalekitBadRequestException` | `INVALID_ARGUMENT` | Invalid request: a spec URL that fails validation, a locked field of an OpenAPI-sourced connector changed, `invoke_tool_collection` on a connector that is not OpenAPI-sourced, an invalid `run_id` |
 | `ScalekitBadRequestException` | `FEATURE_NOT_ENABLED` | OpenAPI-sourced connectors, multiple-headers `API_KEY` connectors, or changing `openapi_spec_url` are not enabled |
 | `ScalekitBadRequestException` | `PROVIDER_HAS_EXISTING_CONNECTIONS` | `delete_custom_provider` on a connector that still has connections; nothing is deleted, so delete the connections first |
 | `ScalekitBadRequestException` | `INVALID_HEADER_CONFIG` | A multiple-headers `API_KEY` rule is broken, or the connector was switched between single-key and multiple-headers mode |
-| `ScalekitNotFoundException` | `NOT_FOUND` | `get_tool_collection_run` or `trigger_tool_collection` found no such connector, or no such run |
+| `ScalekitNotFoundException` | `NOT_FOUND` | `get_tool_collection_run` or `invoke_tool_collection` found no such connector, or no such run |
 | `ScalekitConflictException` | `RESOURCE_ALREADY_EXISTS` | An OpenAPI connector with that name exists, or a run is already queued or running (`delete_custom_provider` for an OpenAPI-sourced connector raises it then too, and deletes nothing) |
 | `ScalekitInternalServerException` | `INTERNAL_ERROR` | Validating the spec URL was interrupted, or the server failed |
 

@@ -215,7 +215,7 @@ class ProvidersClient:
         collection run that regenerates every tool. Where OpenAPI-sourced connectors are not
         enabled for the environment, it fails with 400 FEATURE_NOT_ENABLED and nothing is
         saved. If a run is already in progress, the value is still saved but the call fails
-        with 409 RESOURCE_ALREADY_EXISTS; call trigger_tool_collection once that run
+        with 409 RESOURCE_ALREADY_EXISTS; call invoke_tool_collection once that run
         completes. Changing ``openapi_spec_url`` to a different value needs a separate
         capability and fails with 400 FEATURE_NOT_ENABLED ('updating the OpenAPI spec URL of
         an existing connector is not enabled for this workspace') where it is off; where it
@@ -231,7 +231,7 @@ class ProvidersClient:
         RESOURCE_EXHAUSTED raises ScalekitTooManyRequestsException and is never retried. After
         a ScalekitServiceUnavailableException, read the connector back with list_providers. If
         its openapi_spec_url is the new value, wait for any active run to finish and call
-        trigger_tool_collection; otherwise send the update again. A
+        invoke_tool_collection; otherwise send the update again. A
         ScalekitGatewayTimeoutException is not retried either, and the server may have
         finished: check the same way before you repeat the call. An update without
         ``openapi_spec_url`` keeps the default retry (which retries UNAVAILABLE, such a 429
@@ -239,7 +239,7 @@ class ProvidersClient:
         (``proxy_url``) of an OpenAPI-sourced connector: that change queues a run too, and a
         repeat after a lost answer finds nothing to change and queues none. After such an
         update, check get_tool_collection_run(identifier, "latest") and call
-        trigger_tool_collection if no new run appeared (the SDK cannot tell an OpenAPI-sourced
+        invoke_tool_collection if no new run appeared (the SDK cannot tell an OpenAPI-sourced
         connector from an MCP one here, so the retry stays for both).
 
         :param identifier: Identifier of the custom provider to update. Required.
@@ -354,7 +354,7 @@ class ProvidersClient:
             DeleteProviderRequest(identifier=identifier),
         )
 
-    def trigger_tool_collection(self, provider_identifier: str):
+    def invoke_tool_collection(self, provider_identifier: str):
         """Queue a new tool collection run on an OpenAPI-sourced connector.
 
         The server re-fetches and validates the connector's current spec URL, queues an
@@ -381,8 +381,8 @@ class ProvidersClient:
         for create_custom_provider, the server fetches the spec while it answers, so the call
         uses the client's tool-call timeout.
         After a ScalekitServiceUnavailableException or a ScalekitGatewayTimeoutException,
-        check get_tool_collection_run(identifier, "latest") before you trigger again: the
-        first attempt may already have queued the run, and a second trigger while it is
+        check get_tool_collection_run(identifier, "latest") before you invoke again: the
+        first attempt may already have queued the run, and a second invocation while it is
         active answers 409.
 
         Errors surface as ScalekitServerException subclasses: ScalekitNotFoundException
@@ -403,6 +403,7 @@ class ProvidersClient:
                   response[1].code().name == 'OK' on success.
         :rtype: tuple
         """
+        # The RPC and its request message are still named TriggerToolCollection in the proto.
         return self.core_client.grpc_exec(
             self._stub.TriggerToolCollection.with_call,
             TriggerToolCollectionRequest(provider_identifier=_stripped(provider_identifier)),

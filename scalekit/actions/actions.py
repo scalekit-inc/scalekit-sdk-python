@@ -16,7 +16,7 @@ from scalekit.actions.types import ToolRequest,ExecuteToolResponse,MagicLinkResp
     McpConfig,McpConfigConnectionToolMapping,VerifyConnectedAccountUserResponse, \
     CreateCustomProviderRequest,UpdateCustomProviderRequest,ListProvidersRequest,DeleteCustomProviderRequest, \
     CreateCustomProviderResponse,UpdateCustomProviderResponse,ListProvidersResponse,DeleteCustomProviderResponse, \
-    TriggerToolCollectionRequest,GetToolCollectionRunRequest,ToolCollectionRun, \
+    InvokeToolCollectionRequest,GetToolCollectionRunRequest,ToolCollectionRun, \
     ListMcpConnectedAccountsResponse,CreateMcpSessionTokenResponse,McpConnectionAuthState
 from scalekit.actions.models.responses.create_connected_account_response import CreateConnectedAccountResponse
 from scalekit.actions.models.requests.create_connected_account_request import CreateConnectedAccountRequest
@@ -2201,20 +2201,20 @@ class ActionProviders:
             enabled for the environment (``FEATURE_NOT_ENABLED``, nothing is saved).
         :raises ScalekitConflictException: If a changed base URL or spec URL was saved but
             its tool collection run could not be queued because another run is in
-            progress (``RESOURCE_ALREADY_EXISTS``); call ``trigger_tool_collection``
+            progress (``RESOURCE_ALREADY_EXISTS``); call ``invoke_tool_collection``
             once that run completes.
         :raises ScalekitInternalServerException: If a changed base URL or spec URL was saved
             but its tool collection run could not be queued for another reason; call
-            ``trigger_tool_collection`` to retry.
+            ``invoke_tool_collection`` to retry.
         :raises ScalekitServiceUnavailableException: If the service is unavailable. With
             ``openapi_spec_url`` the call is not retried, because the first attempt may
             already have saved the new URL and a repeat would queue no run: read the
             connector with ``list_providers``; if it holds the new URL, call
-            ``trigger_tool_collection`` once any active run has finished, otherwise send the
+            ``invoke_tool_collection`` once any active run has finished, otherwise send the
             update again. An update without ``openapi_spec_url`` is retried as before, also one
             that changes the base URL (``proxy_url``) of an OpenAPI-sourced connector: after such
             an update check ``get_tool_collection_run`` (``latest``) and call
-            ``trigger_tool_collection`` if no new run appeared. A plain HTTP 429 from the edge
+            ``invoke_tool_collection`` if no new run appeared. A plain HTTP 429 from the edge
             (an answer without a gRPC status) reaches the client as ``UNAVAILABLE`` too: it
             raises this exception, is retried like any other ``UNAVAILABLE`` by an update
             without ``openapi_spec_url``, and is not retried with ``openapi_spec_url``, so check
@@ -2236,9 +2236,9 @@ class ActionProviders:
         )
         return UpdateCustomProviderResponse.from_proto(result_tuple[0])
 
-    def trigger_tool_collection(
+    def invoke_tool_collection(
         self,
-        request: TriggerToolCollectionRequest,
+        request: InvokeToolCollectionRequest,
     ) -> ToolCollectionRun:
         """Queue a new tool collection run on an OpenAPI-sourced connector.
 
@@ -2255,14 +2255,14 @@ class ActionProviders:
         Not retried automatically when the service is unavailable, because the first
         attempt may already have queued a run. After a ScalekitServiceUnavailableException
         or a ScalekitGatewayTimeoutException, check ``get_tool_collection_run`` (``latest``)
-        before you trigger again. A plain HTTP 429 from the edge (an answer without a gRPC
+        before you invoke again. A plain HTTP 429 from the edge (an answer without a gRPC
         status) reaches the client as ``UNAVAILABLE`` too, so it raises the same
         ScalekitServiceUnavailableException, is not retried either, and calls for the same
         check. A gRPC ``RESOURCE_EXHAUSTED`` raises ``ScalekitTooManyRequestsException``
         instead and is never retried.
 
         :param request: Request object containing the connector's provider_identifier.
-        :type request: TriggerToolCollectionRequest
+        :type request: InvokeToolCollectionRequest
 
         :returns: The queued run.
         :rtype: ToolCollectionRun
@@ -2275,7 +2275,7 @@ class ActionProviders:
             connector (``RESOURCE_ALREADY_EXISTS``). A connector has at most one active run;
             wait for it to finish and call again.
         """
-        result_tuple = self._providers_client.trigger_tool_collection(request.provider_identifier)
+        result_tuple = self._providers_client.invoke_tool_collection(request.provider_identifier)
         return ToolCollectionRun.from_proto(result_tuple[0])
 
     def get_tool_collection_run(

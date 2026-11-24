@@ -7496,7 +7496,7 @@ print(f'Magic Link: {response[0].link}')
 `client.actions.providers` creates and manages custom connectors. A connector gets its tools from one source, and you set exactly one of the two when you create it:
 
 - `proxy_url`: an MCP server. The tools are the ones the server offers, kept per connected account.
-- `openapi_spec_url`: an OpenAPI spec. The server converts the spec's operations into tools in an asynchronous tool collection run that it queues for you. Follow it with `get_tool_collection_run`; queue another with `trigger_tool_collection`.
+- `openapi_spec_url`: an OpenAPI spec. The server converts the spec's operations into tools in an asynchronous tool collection run that it queues for you. Follow it with `get_tool_collection_run`; queue another with `invoke_tool_collection`.
 
 Walkthrough: [AGENTKIT.md → Custom connectors](AGENTKIT.md#custom-connectors).
 
@@ -7518,7 +7518,7 @@ Set exactly one of `proxy_url` (an MCP server) and `openapi_spec_url` (an OpenAP
 
 For an OpenAPI-sourced connector the server fetches and validates the spec before it stores anything, answers, and then queues the first tool collection run in the background. The connector exists when the call returns but its tools do not until that run completes: follow it with `get_tool_collection_run`. A spec URL that cannot be fetched, or whose content is not a valid OpenAPI or Swagger document, raises `ScalekitBadRequestException` (400, `INVALID_ARGUMENT`, a message starting `openapi_spec_url failed validation`) and nothing is stored. Where OpenAPI-sourced connectors are not enabled for the environment the call raises `ScalekitBadRequestException` with `error_code` `FEATURE_NOT_ENABLED`, and a second OpenAPI connector with the same name in the environment raises `ScalekitConflictException` (`RESOURCE_ALREADY_EXISTS`).
 
-The server allows up to 2 minutes to validate a spec, including every file it references, but the client sends this call with `openapi_spec_url` (like `update_custom_provider` with `openapi_spec_url` and `trigger_tool_collection`) with its tool-call timeout of 60 seconds by default and does not retry a `DEADLINE_EXCEEDED`, so a spec that takes longer fails on the client first with `ScalekitGatewayTimeoutException` (the server may still finish the work: before you repeat the call, look for the connector with `list_providers`, read it back, or check `get_tool_collection_run` for the latest run; a blind repeat of a create answers 409). Raise the timeout with `ScalekitClient(env_url, client_id, client_secret, tool_call_timeout_s=150)`; it also applies to every `client.tools` call. With `openapi_spec_url` the call is also not retried on `UNAVAILABLE` (gRPC reports a plain HTTP 429 from the edge, an answer without a gRPC status, as `UNAVAILABLE` too, so it raises the same `ScalekitServiceUnavailableException` and is not retried either; a gRPC `RESOURCE_EXHAUSTED` raises `ScalekitTooManyRequestsException` and is never retried): the create is not idempotent, and a retry after a lost response would raise `ScalekitConflictException` for the connector the first attempt created, so, before creating it again, look for it with `list_providers` (`ListProvidersRequest(provider_type=ProviderType.CUSTOM)`, following `next_page_token`: the default request lists built-in providers only). An MCP-sourced create keeps the retry, which retries `UNAVAILABLE`, such a 429 included, with backoff.
+The server allows up to 2 minutes to validate a spec, including every file it references, but the client sends this call with `openapi_spec_url` (like `update_custom_provider` with `openapi_spec_url` and `invoke_tool_collection`) with its tool-call timeout of 60 seconds by default and does not retry a `DEADLINE_EXCEEDED`, so a spec that takes longer fails on the client first with `ScalekitGatewayTimeoutException` (the server may still finish the work: before you repeat the call, look for the connector with `list_providers`, read it back, or check `get_tool_collection_run` for the latest run; a blind repeat of a create answers 409). Raise the timeout with `ScalekitClient(env_url, client_id, client_secret, tool_call_timeout_s=150)`; it also applies to every `client.tools` call. With `openapi_spec_url` the call is also not retried on `UNAVAILABLE` (gRPC reports a plain HTTP 429 from the edge, an answer without a gRPC status, as `UNAVAILABLE` too, so it raises the same `ScalekitServiceUnavailableException` and is not retried either; a gRPC `RESOURCE_EXHAUSTED` raises `ScalekitTooManyRequestsException` and is never retried): the create is not idempotent, and a retry after a lost response would raise `ScalekitConflictException` for the connector the first attempt created, so, before creating it again, look for it with `list_providers` (`ListProvidersRequest(provider_type=ProviderType.CUSTOM)`, following `next_page_token`: the default request lists built-in providers only). An MCP-sourced create keeps the retry, which retries `UNAVAILABLE`, such a 429 included, with backoff.
 </dd>
 </dl>
 </dd>
@@ -7715,9 +7715,9 @@ Updates an existing custom provider. The server applies this as a PUT, not a par
 
 An OpenAPI-sourced connector (one created with `openapi_spec_url`) can only change `display_name`, `description`, `icon_src`, `metadata` and `proxy_url`, which is its base URL, and `openapi_spec_url` where your workspace has that capability enabled (see below); its tools and auth are managed by the ingestion pipeline. A request that changes anything else raises `ScalekitBadRequestException` (400, `INVALID_ARGUMENT`): `an OpenAPI-sourced connector can only update metadata, display_name, description, icon_src and proxy_url — its tools and auth are managed by the ingestion pipeline`. `auth_patterns` count as changed only when their content differs from the stored value, so send them back exactly as `list_providers` returned them, including `is_open_api`. The server compares them key for key after parsing, where `"hint": ""` and a missing hint, or `"fields": []` and `"fields": null`, are different values. So it may refuse a pattern you rebuilt when the stored one has empty strings or nulls. Sending back exactly what `list_providers` returned is always safe. The SDK does that for an `AuthPattern` it decoded, as long as you do not change it or its fields: pass `Provider.auth_patterns` through untouched rather than rebuilding them. That form survives `copy`, `deepcopy` and `pickle`, but not `model_dump()` or JSON, nor `to_dict()` (which always returns the normalised view) followed by `from_dict()` or a constructor, which rebuild the pattern in the normalised form.
 
-- A changed `proxy_url` (a trailing slash does not count) is saved and queues a tool collection run that regenerates every tool against the new base URL. Where OpenAPI-sourced connectors are not enabled for the environment, the call raises `ScalekitBadRequestException` (`FEATURE_NOT_ENABLED`) and nothing is saved. If a run is already in progress the value is still saved, but the call raises `ScalekitConflictException` (409, `RESOURCE_ALREADY_EXISTS`): call `trigger_tool_collection` once that run completes. If the run cannot be queued for another reason the value is saved too, and the call raises `ScalekitInternalServerException` (`... was saved, but failed to queue the tool collection run`): call `trigger_tool_collection` to retry.
+- A changed `proxy_url` (a trailing slash does not count) is saved and queues a tool collection run that regenerates every tool against the new base URL. Where OpenAPI-sourced connectors are not enabled for the environment, the call raises `ScalekitBadRequestException` (`FEATURE_NOT_ENABLED`) and nothing is saved. If a run is already in progress the value is still saved, but the call raises `ScalekitConflictException` (409, `RESOURCE_ALREADY_EXISTS`): call `invoke_tool_collection` once that run completes. If the run cannot be queued for another reason the value is saved too, and the call raises `ScalekitInternalServerException` (`... was saved, but failed to queue the tool collection run`): call `invoke_tool_collection` to retry.
 - A changed `openapi_spec_url` raises `ScalekitBadRequestException` with `error_code` `FEATURE_NOT_ENABLED` (`updating the OpenAPI spec URL of an existing connector is not enabled for this workspace`) unless that capability is on for your workspace. Where it is, the new URL is validated before anything is saved, and every tool is regenerated. Sending the stored value again does nothing. A connector that was not created from a spec cannot gain one (`ScalekitBadRequestException`, 400).
-- With `openapi_spec_url` the call is not retried on `UNAVAILABLE` (gRPC reports a plain HTTP 429 from the edge, an answer without a gRPC status, as `UNAVAILABLE` too, so it raises the same `ScalekitServiceUnavailableException` and is not retried either; a gRPC `RESOURCE_EXHAUSTED` raises `ScalekitTooManyRequestsException` and is never retried), because the first attempt may already have saved the new URL, and a repeat finds nothing to change: it queues no run and still succeeds. After a `ScalekitServiceUnavailableException`, read the connector back with `list_providers`. If its `openapi_spec_url` is the new value, wait for any active run to finish and call `trigger_tool_collection`; otherwise send the update again. A `ScalekitGatewayTimeoutException` is not retried either, and the server may have finished, so check the same way before you repeat the call. An update without `openapi_spec_url` keeps the retry (which retries `UNAVAILABLE`, such a 429 included, with backoff), also one that changes the base URL (`proxy_url`) of an OpenAPI-sourced connector: that change queues a run too, and a repeat after a lost answer finds nothing to change and queues none, so after such an update check `get_tool_collection_run(..., "latest")` and call `trigger_tool_collection` if no new run appeared.
+- With `openapi_spec_url` the call is not retried on `UNAVAILABLE` (gRPC reports a plain HTTP 429 from the edge, an answer without a gRPC status, as `UNAVAILABLE` too, so it raises the same `ScalekitServiceUnavailableException` and is not retried either; a gRPC `RESOURCE_EXHAUSTED` raises `ScalekitTooManyRequestsException` and is never retried), because the first attempt may already have saved the new URL, and a repeat finds nothing to change: it queues no run and still succeeds. After a `ScalekitServiceUnavailableException`, read the connector back with `list_providers`. If its `openapi_spec_url` is the new value, wait for any active run to finish and call `invoke_tool_collection`; otherwise send the update again. A `ScalekitGatewayTimeoutException` is not retried either, and the server may have finished, so check the same way before you repeat the call. An update without `openapi_spec_url` keeps the retry (which retries `UNAVAILABLE`, such a 429 included, with backoff), also one that changes the base URL (`proxy_url`) of an OpenAPI-sourced connector: that change queues a run too, and a repeat after a lost answer finds nothing to change and queues none, so after such an update check `get_tool_collection_run(..., "latest")` and call `invoke_tool_collection` if no new run appeared.
 </dd>
 </dl>
 </dd>
@@ -8031,7 +8031,7 @@ scalekit_client.actions.providers.delete_custom_provider(
 </dl>
 </details>
 
-<details><summary><code>client.actions.providers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">trigger_tool_collection</a>(request) -> ToolCollectionRun</code></summary>
+<details><summary><code>client.actions.providers.<a href="https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/scalekit/actions/actions.py">invoke_tool_collection</a>(request) -> ToolCollectionRun</code></summary>
 <dl>
 <dd>
 
@@ -8043,7 +8043,7 @@ scalekit_client.actions.providers.delete_custom_provider(
 <dl>
 <dd>
 
-Queues a new tool collection run on an OpenAPI-sourced connector and returns it at once with status `QUEUED`. The server first re-fetches and validates the connector's current spec URL, then regenerates the connector's tools in the background. A connector is also re-synced automatically when it is created and when its base URL or spec URL changes, so call this to pick up changes to the spec itself or to retry after a failed run. A run that finds the spec, base URL and auth patterns unchanged since the last completed run creates, updates and deletes nothing (a spec that references external files is always regenerated). If the first run fills in the base URL (only when the spec's server URL starts with `https://`) or the OAuth settings, the next run still updates every tool and the shortcut applies from the run after that; otherwise the shortcut already applies to the second run. Follow the run with `get_tool_collection_run`. It is not retried on `UNAVAILABLE`, because the first attempt may already have queued a run: after a `ScalekitServiceUnavailableException`, check `get_tool_collection_run(..., "latest")` before you trigger again. gRPC reports a plain HTTP 429 from the edge, an answer without a gRPC status, as `UNAVAILABLE` too, so it raises the same exception and is not retried either; a gRPC `RESOURCE_EXHAUSTED` raises `ScalekitTooManyRequestsException` and is never retried. It uses the client's tool-call timeout (`tool_call_timeout_s`, 60 seconds by default) while the server allows up to 2 minutes to validate the spec; see `create_custom_provider`.
+Queues a new tool collection run on an OpenAPI-sourced connector and returns it at once with status `QUEUED`. The server first re-fetches and validates the connector's current spec URL, then regenerates the connector's tools in the background. A connector is also re-synced automatically when it is created and when its base URL or spec URL changes, so call this to pick up changes to the spec itself or to retry after a failed run. A run that finds the spec, base URL and auth patterns unchanged since the last completed run creates, updates and deletes nothing (a spec that references external files is always regenerated). If the first run fills in the base URL (only when the spec's server URL starts with `https://`) or the OAuth settings, the next run still updates every tool and the shortcut applies from the run after that; otherwise the shortcut already applies to the second run. Follow the run with `get_tool_collection_run`. It is not retried on `UNAVAILABLE`, because the first attempt may already have queued a run: after a `ScalekitServiceUnavailableException`, check `get_tool_collection_run(..., "latest")` before you invoke again. gRPC reports a plain HTTP 429 from the edge, an answer without a gRPC status, as `UNAVAILABLE` too, so it raises the same exception and is not retried either; a gRPC `RESOURCE_EXHAUSTED` raises `ScalekitTooManyRequestsException` and is never retried. It uses the client's tool-call timeout (`tool_call_timeout_s`, 60 seconds by default) while the server allows up to 2 minutes to validate the spec; see `create_custom_provider`.
 
 A connector has at most one active (`QUEUED` or `PROCESSING`) run. Errors:
 
@@ -8064,10 +8064,10 @@ A connector has at most one active (`QUEUED` or `PROCESSING`) run. Errors:
 <dd>
 
 ```python
-from scalekit.actions.types import TriggerToolCollectionRequest
+from scalekit.actions.types import InvokeToolCollectionRequest
 
-run = scalekit_client.actions.providers.trigger_tool_collection(
-    TriggerToolCollectionRequest(provider_identifier="prv_abc123")
+run = scalekit_client.actions.providers.invoke_tool_collection(
+    InvokeToolCollectionRequest(provider_identifier="prv_abc123")
 )
 print(run.run_id, run.status)  # ToolCollectionRunStatus.QUEUED
 ```
@@ -8084,7 +8084,7 @@ print(run.run_id, run.status)  # ToolCollectionRunStatus.QUEUED
 <dl>
 <dd>
 
-**request:** `TriggerToolCollectionRequest` - Request object for queueing a tool collection run
+**request:** `InvokeToolCollectionRequest` - Request object for queueing a tool collection run
 - `provider_identifier: str` - Identifier of the OpenAPI-sourced connector, 1-255 characters once surrounding whitespace is removed. Obtained from `Provider.identifier`.
 
 </dd>
@@ -8114,7 +8114,7 @@ A `ToolCollectionRun` (see `get_tool_collection_run`) with status `QUEUED`.
 
 Reads one tool collection run of an OpenAPI-sourced connector. Pass `run_id="latest"` (the default, the same as an empty or blank string) for the connector's most recent run, for example the one `create_custom_provider` queued. Poll until `run.is_terminal`: the run is then `COMPLETED` or `FAILED` and does not change again. `latest` is looked up again on every call, so it moves on to a newer run if one is queued while you poll (by another caller, or by a base URL or spec URL change); to follow one run to its end, pass the `run_id` of the run you started or first read.
 
-The server queues the first run in the background after `create_custom_provider` has answered, and does not report a failure to queue it, so right after a create the call can answer 404 until the run exists. The server gives up queueing it after 30 seconds: if the 404 outlasts that, call `trigger_tool_collection`, as the example below does after 45 seconds.
+The server queues the first run in the background after `create_custom_provider` has answered, and does not report a failure to queue it, so right after a create the call can answer 404 until the run exists. The server gives up queueing it after 30 seconds: if the 404 outlasts that, call `invoke_tool_collection`, as the example below does after 45 seconds.
 
 Errors: `ScalekitNotFoundException` (404, `NOT_FOUND`) when the connector does not exist (`provider not found`), it has no run yet, or `run_id` names no run of this connector (`tool collection run not found`); `ScalekitBadRequestException` (400, `INVALID_ARGUMENT`: `invalid run_id`) when `run_id` is not a run ID.
 </dd>
@@ -8133,7 +8133,7 @@ Errors: `ScalekitNotFoundException` (404, `NOT_FOUND`) when the connector does n
 ```python
 import time
 
-from scalekit.actions.types import GetToolCollectionRunRequest, ToolCollectionRunStatus, TriggerToolCollectionRequest
+from scalekit.actions.types import GetToolCollectionRunRequest, ToolCollectionRunStatus, InvokeToolCollectionRequest
 from scalekit.common.exceptions import ScalekitConflictException, ScalekitNotFoundException
 
 providers = scalekit_client.actions.providers
@@ -8141,17 +8141,17 @@ identifier = "prv_abc123"  # run_id defaults to "latest"
 
 started = time.monotonic()
 deadline = started + 600
-triggered = False
+invoked = False
 while True:
     try:
         run = providers.get_tool_collection_run(GetToolCollectionRunRequest(provider_identifier=identifier))
     except ScalekitNotFoundException:
         run = None  # the first run is queued in the background and may not exist yet
-        if not triggered and time.monotonic() - started > 45:
+        if not invoked and time.monotonic() - started > 45:
             # The server gave up queueing it and does not say so: queue a run yourself, once.
-            triggered = True
+            invoked = True
             try:
-                providers.trigger_tool_collection(TriggerToolCollectionRequest(provider_identifier=identifier))
+                providers.invoke_tool_collection(InvokeToolCollectionRequest(provider_identifier=identifier))
             except ScalekitConflictException:
                 pass  # a run was queued in the meantime
     if run is not None and run.is_terminal:

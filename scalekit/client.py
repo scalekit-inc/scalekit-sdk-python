@@ -123,7 +123,7 @@ class ScalekitClient:
                                         create_custom_provider and
                                         update_custom_provider when
                                         openapi_spec_url is passed, and
-                                        trigger_tool_collection. It is also the
+                                        invoke_tool_collection. It is also the
                                         default timeout of the HTTP requests of
                                         ActionClient.upload_resumable. Defaults
                                         to 60.

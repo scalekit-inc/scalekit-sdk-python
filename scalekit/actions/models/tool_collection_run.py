@@ -3,7 +3,7 @@
 An OpenAPI-sourced custom connector gets its tools from a tool collection run: the
 server fetches the connector's spec, converts every operation it can into a tool,
 and records what it did. A run is queued when the connector is created, when its base
-URL or spec URL changes, and when you call ``trigger_tool_collection``. It works in the
+URL or spec URL changes, and when you call ``invoke_tool_collection``. It works in the
 background, so read its progress with ``get_tool_collection_run``.
 
 Conventions follow the other typed models: the model is frozen (fields cannot be
@@ -82,7 +82,7 @@ def _parse_skipped_tools(raw: str) -> Tuple[SkippedTool, ...]:
 class ToolCollectionRun(BaseModel):
     """One run of the tool collection pipeline of an OpenAPI-sourced connector.
 
-    Returned by ``trigger_tool_collection`` (a new run, ``QUEUED``) and
+    Returned by ``invoke_tool_collection`` (a new run, ``QUEUED``) and
     ``get_tool_collection_run``. ``is_terminal`` tells you when to stop polling.
     """
 

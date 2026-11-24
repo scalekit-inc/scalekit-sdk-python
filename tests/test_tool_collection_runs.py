@@ -13,7 +13,7 @@ from scalekit.actions.types import (
     SkippedTool,
     ToolCollectionRun,
     ToolCollectionRunStatus,
-    TriggerToolCollectionRequest,
+    InvokeToolCollectionRequest,
 )
 from scalekit.common.exceptions import (
     ScalekitBadRequestException,
@@ -71,11 +71,11 @@ class RunsTestCase(unittest.TestCase):
         self.core.grpc_exec.side_effect = grpc_exec
 
 
-class TriggerToolCollectionTest(RunsTestCase):
+class InvokeToolCollectionTest(RunsTestCase):
     def test_returns_the_queued_run(self):
         self._reply(_run())
-        run = self.client.providers.trigger_tool_collection(
-            TriggerToolCollectionRequest(provider_identifier=CONNECTOR)
+        run = self.client.providers.invoke_tool_collection(
+            InvokeToolCollectionRequest(provider_identifier=CONNECTOR)
         )
         self.assertEqual(self.calls[0][1].provider_identifier, CONNECTOR)
         self.assertEqual(run.run_id, "tcr_123")
@@ -88,7 +88,7 @@ class TriggerToolCollectionTest(RunsTestCase):
 
     def test_is_not_retried_and_uses_the_longer_deadline(self):
         self._reply(_run())
-        self.low.trigger_tool_collection(CONNECTOR)
+        self.low.invoke_tool_collection(CONNECTOR)
         kwargs = self.calls[0][2]
         self.assertFalse(kwargs["retry_on_unavailable"])
         self.assertIs(kwargs["timeout"], self.core.tool_call_timeout_s)
@@ -105,32 +105,32 @@ class TriggerToolCollectionTest(RunsTestCase):
                 "RESOURCE_ALREADY_EXISTS",
             ),
         )
-        request = TriggerToolCollectionRequest(provider_identifier=CONNECTOR)
+        request = InvokeToolCollectionRequest(provider_identifier=CONNECTOR)
         with self.assertRaises(ScalekitNotFoundException):
-            self.client.providers.trigger_tool_collection(request)
+            self.client.providers.invoke_tool_collection(request)
         with self.assertRaises(ScalekitBadRequestException) as not_openapi:
-            self.client.providers.trigger_tool_collection(request)
+            self.client.providers.invoke_tool_collection(request)
         self.assertIn("not sourced from an OpenAPI spec", not_openapi.exception.message)
         with self.assertRaises(ScalekitConflictException) as running:
-            self.client.providers.trigger_tool_collection(request)
+            self.client.providers.invoke_tool_collection(request)
         self.assertEqual(running.exception.error_code, "RESOURCE_ALREADY_EXISTS")
 
     def test_identifier_is_required_and_bounded(self):
         with self.assertRaises(ValidationError):
-            TriggerToolCollectionRequest(provider_identifier="")
+            InvokeToolCollectionRequest(provider_identifier="")
         with self.assertRaises(ValidationError):
-            TriggerToolCollectionRequest(provider_identifier="x" * 256)
-        TriggerToolCollectionRequest(provider_identifier="x" * 255)
+            InvokeToolCollectionRequest(provider_identifier="x" * 256)
+        InvokeToolCollectionRequest(provider_identifier="x" * 255)
 
     def test_a_padded_identifier_is_trimmed_and_a_blank_one_is_refused(self):
         self._reply(_run(status="QUEUED"), _run(status="QUEUED"))
-        self.client.providers.trigger_tool_collection(TriggerToolCollectionRequest(provider_identifier=f"  {CONNECTOR}\n"))
-        self.low.trigger_tool_collection(f" {CONNECTOR} ")  # the low-level client trims too
+        self.client.providers.invoke_tool_collection(InvokeToolCollectionRequest(provider_identifier=f"  {CONNECTOR}\n"))
+        self.low.invoke_tool_collection(f" {CONNECTOR} ")  # the low-level client trims too
         self.assertEqual([c[1].provider_identifier for c in self.calls], [CONNECTOR, CONNECTOR])
         for blank in ("", "   ", "\t\n"):
             with self.subTest(blank=blank):
                 with self.assertRaises(ValidationError):
-                    TriggerToolCollectionRequest(provider_identifier=blank)
+                    InvokeToolCollectionRequest(provider_identifier=blank)
 
 
 class GetToolCollectionRunTest(RunsTestCase):
