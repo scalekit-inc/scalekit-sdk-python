@@ -1,0 +1,8 @@
+kind: fixed
+body: |
+  The URL checks of `CreateCustomProviderRequest` and `UpdateCustomProviderRequest` now match the server's. `proxy_url` and `openapi_spec_url` were checked with `urlparse`, which accepts `HTTPS://api.example.com/x`, `Https://api.example.com/x`, a URL with a space or a tab in front of it, and a URL of any length. The server accepts only a value that starts with a lower-case `https://` (the check is case-sensitive and nothing is trimmed) and has at most 2048 characters, and it answers any other value with a 400 `INVALID_ARGUMENT` at once, which the SDK never retries. Such a value now raises a `ValidationError` when the request is built, before anything is sent. A host is still required (`https://` alone is refused), and a templated value such as `https://{{domain}}/mcp`, and the empty `proxy_url` or `openapi_spec_url` that `UpdateCustomProviderRequest` takes for `None`, work as before. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/REFERENCE.md#custom-providers)
+time: '2026-11-24T05:56:02.000000+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: SK-3097
+  Migration: ''

@@ -1,9 +1,9 @@
 from typing import Dict, List, Optional
-from urllib.parse import urlparse
 
 from pydantic import BaseModel, Field, model_validator, validator
 
 from scalekit.actions.models.custom_provider import AuthPattern
+from scalekit.actions.models.requests._https_url import check_https_url
 
 
 class CreateCustomProviderRequest(BaseModel):
@@ -40,7 +40,8 @@ class CreateCustomProviderRequest(BaseModel):
             "Scalekit sends proxied requests to. For an MCP connector this is the MCP "
             "server's URL (example: 'https://server.example.com/mcp'); for an API "
             "connector it is the API's base URL (example: 'https://api.example.com'). "
-            "Must be a valid HTTPS URL (at most 2048 characters). Required unless "
+            "Must be a valid HTTPS URL that starts with a lower-case 'https://' (at "
+            "most 2048 characters). Required unless "
             "openapi_spec_url is set, and not accepted together with it: an "
             "OpenAPI-sourced connector's base URL is filled in from the spec's server "
             "URL by the first tool collection run, only when that URL starts with "
@@ -53,7 +54,8 @@ class CreateCustomProviderRequest(BaseModel):
         description=(
             "URL of an OpenAPI spec (JSON or YAML; a Swagger 2.0 document is "
             "converted) to source the connector's tools from. Must be a valid HTTPS "
-            "URL (at most 2048 characters). Required unless proxy_url is set, and "
+            "URL that starts with a lower-case 'https://' (at most 2048 characters). "
+            "Required unless proxy_url is set, and "
             "not accepted together with it. The server fetches and validates the spec "
             "before it stores anything (default limit 5 MB, 50 MB together with the "
             "files it references), then generates the tools in an asynchronous tool "
@@ -113,21 +115,13 @@ class CreateCustomProviderRequest(BaseModel):
     def validate_proxy_url_https(cls, v):
         if v is None:
             return v
-        parsed = urlparse(v)
-        if parsed.scheme != "https" or not parsed.netloc:
-            raise ValueError("proxy_url must be a valid HTTPS URL (e.g. 'https://server.example.com/mcp')")
-        return v
+        return check_https_url("proxy_url", v, "https://server.example.com/mcp")
 
     @validator("openapi_spec_url")
     def validate_openapi_spec_url_https(cls, v):
         if v is None:
             return v
-        parsed = urlparse(v)
-        if parsed.scheme != "https" or not parsed.netloc:
-            raise ValueError(
-                "openapi_spec_url must be a valid HTTPS URL (e.g. 'https://api.example.com/openapi.json')"
-            )
-        return v
+        return check_https_url("openapi_spec_url", v, "https://api.example.com/openapi.json")
 
     @model_validator(mode="after")
     def validate_single_source(self):
