@@ -1131,8 +1131,8 @@ Errors derive from `AgentKitConnectionError` and carry `code`, `step`, `retryabl
 ```python
 import time
 from scalekit.actions.types import (
-    AuthField, AuthPattern, CreateCustomProviderRequest, GetToolCollectionRunRequest, ToolCollectionRunStatus,
-    InvokeToolCollectionRequest,
+    AuthField, AuthPattern, CreateCustomProviderRequest, GetToolCollectionRunRequest, InvokeToolCollectionRequest,
+    ToolCollectionRunStatus,
 )
 from scalekit.common.exceptions import ScalekitConflictException, ScalekitNotFoundException
 
@@ -1185,7 +1185,7 @@ The server does not report a failure to queue the first run, and gives up queuei
 
 **What a run does**
 
-A run fetches the spec, converts every operation it can into a tool, and records what it did in a `ToolCollectionRun`. One is queued when the connector is created, when its base URL or spec URL changes, and when you call `invoke_tool_collection`. A connector has at most one run queued or running; a call that would queue another raises `ScalekitConflictException`.
+A run fetches the spec, converts every operation it can into a tool, and records what it did in a `ToolCollectionRun`. One is queued when the connector is created, when its base URL or spec URL changes, and when you call `invoke_tool_collection`. A connector has at most one run queued or running; a call that would queue another raises `ScalekitConflictException`. The server's messages and its API reference call this operation `TriggerToolCollection`; it is the call `invoke_tool_collection` makes.
 
 - **Names.** `a-<connector>_<operation>`, for example `a-acmeapi_listpets`. `<connector>` is the connector's identifier before the colon, lowercased. `<operation>` is the operation's `operationId`, or `<method>_<path>` when the spec gives none, lowercased, with every run of characters other than letters, digits and `_` replaced by one `_`, leading and trailing `_` removed, and an `f_` prefix when it starts with a digit. A name that is already taken gets `_2`, `_3` and so on.
 - **Operations.** Only `GET`, `POST`, `PUT`, `PATCH` and `DELETE` operations become tools. One that cannot be converted is skipped and listed in `run.skipped_tools` with its reason, and the run still completes; a run that converts none fails and lists them. Reasons include a multipart, binary or XML request body, a path parameter the operation does not declare, no resolvable base URL, an operation that needs authentication the connector has no auth pattern for, and an HTTP method that is not converted. A `reason` is text for people, not a code to match on.

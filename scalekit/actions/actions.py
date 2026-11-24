@@ -2250,7 +2250,8 @@ class ActionProviders:
         auth patterns unchanged since the last completed run creates, updates and deletes
         nothing (a spec that references external files is always regenerated). The first run
         fills in the base URL, so the next run still updates every tool; the shortcut applies
-        from the run after that. Follow the run with ``get_tool_collection_run``.
+        from the run after that. Follow the run with ``get_tool_collection_run``. The server's
+        messages call this operation ``TriggerToolCollection``: it is the call this method makes.
 
         Not retried automatically when the service is unavailable, because the first
         attempt may already have queued a run. After a ScalekitServiceUnavailableException
