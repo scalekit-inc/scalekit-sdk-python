@@ -246,7 +246,8 @@ class CoreClient:
                                         control-plane calls: every ToolsClient
                                         call (list_tools, list_scoped_tools,
                                         list_available_tools, search_tools,
-                                        execute_tool) and, on
+                                        execute_tool),
+                                        ActionClient.delete_custom_tool, and, on
                                         ProvidersClient, create_custom_provider
                                         and update_custom_provider when
                                         openapi_spec_url is passed, and

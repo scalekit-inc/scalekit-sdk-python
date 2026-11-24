@@ -118,7 +118,8 @@ class ScalekitClient:
                                         call (list_tools, list_scoped_tools,
                                         list_available_tools, search_tools,
                                         execute_tool; also through
-                                        client.actions) and, on
+                                        client.actions),
+                                        ActionClient.delete_custom_tool, and, on
                                         client.actions.providers,
                                         create_custom_provider and
                                         update_custom_provider when
