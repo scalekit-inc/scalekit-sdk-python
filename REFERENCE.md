@@ -8002,7 +8002,7 @@ else:
 
 Permanently deletes a custom provider. The provider is removed from the Scalekit catalog and can no longer be used for new connections. It also removes the provider's discovered custom MCP tools. Deletion cannot be undone.
 
-- Remove the connected accounts first (`scalekit_client.actions.delete_connected_account`), then the connections (`scalekit_client.actions.delete_connection`), then the provider. A connector that still has connections is not deleted (`PROVIDER_HAS_EXISTING_CONNECTIONS`), and a connection that still has connected accounts cannot be deleted either.
+- Remove the connected accounts first (`scalekit_client.actions.delete_connected_account`), then the connections (`scalekit_client.actions.delete_connection`), then the provider. A connector that still has connections is not deleted (`PROVIDER_HAS_EXISTING_CONNECTIONS`), and a connection that still has connected accounts, or that a Virtual MCP server (an MCP configuration) uses, cannot be deleted either (`ConnectionInUseError`): delete the configuration with `scalekit_client.actions.delete_config`, or take the connection out of its `connection_tool_mappings` with `update_config`, first.
 - For a connector created from an OpenAPI spec: while a tool collection run of the connector is queued or processing, nothing is deleted. Poll that run with `scalekit_client.actions.get_tool_collection_run` (pass its ID as `run_id`) and retry once it has finished. The server fails a run that makes no progress after about 30 minutes. An MCP or plain REST connector has no run to wait for.
 </dd>
 </dl>

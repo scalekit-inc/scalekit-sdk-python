@@ -1310,7 +1310,7 @@ result, _ = scalekit_client.tools.execute_tool(
 |-----------|--------------|------|
 | `ScalekitBadRequestException` | `INVALID_ARGUMENT` | Invalid request: a spec URL that fails validation, a locked field of an OpenAPI-sourced connector changed, `invoke_tool_collection` on a connector that is not OpenAPI-sourced, an invalid `run_id` |
 | `ScalekitBadRequestException` | `FEATURE_NOT_ENABLED` | OpenAPI-sourced connectors, multiple-headers `API_KEY` connectors, or changing `openapi_spec_url` are not enabled |
-| `ScalekitBadRequestException` | `PROVIDER_HAS_EXISTING_CONNECTIONS` | `delete_custom_provider` on a connector that still has connections; nothing is deleted, so delete its connected accounts and then its connections (`delete_connection`) first |
+| `ScalekitBadRequestException` | `PROVIDER_HAS_EXISTING_CONNECTIONS` | `delete_custom_provider` on a connector that still has connections; nothing is deleted, so delete its connected accounts and then its connections (`delete_connection`, which also refuses while an MCP configuration uses the connection) first |
 | `ScalekitBadRequestException` | `INVALID_HEADER_CONFIG` | A multiple-headers `API_KEY` rule is broken, or the connector was switched between single-key and multiple-headers mode |
 | `ScalekitNotFoundException` | `NOT_FOUND` | `get_tool_collection_run` or `invoke_tool_collection` found no such connector, or no such run, or `delete_custom_tool` found no deletable tool of that name or id |
 | `ScalekitConflictException` | `RESOURCE_ALREADY_EXISTS` | An OpenAPI connector with that name exists, or a run is already queued or running (`delete_custom_tool`, and `delete_custom_provider` for an OpenAPI-sourced connector, raise it then too, and delete nothing) |
