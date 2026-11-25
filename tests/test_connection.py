@@ -178,6 +178,8 @@ class TestConnection(BaseTest):
             flags=Flags(is_app=True)
         )
         conn_id = create_response[0].connection.id
+        # Track for cleanup in tearDown (runs whether the test passes or fails).
+        self.app_conn_id = conn_id
 
         response = self.scalekit_client.connection.get_environment_connection(connection_id=conn_id)
         self.assertEqual(response[1].code().name, "OK")
@@ -194,6 +196,8 @@ class TestConnection(BaseTest):
             flags=Flags(is_app=True)
         )
         conn_id = create_response[0].connection.id
+        # Track for cleanup in tearDown (runs whether the test passes or fails).
+        self.app_conn_id = conn_id
         key_id = create_response[0].connection.key_id
         existing_oauth = create_response[0].connection.oauth_config
 
@@ -234,6 +238,8 @@ class TestConnection(BaseTest):
         self.assertEqual(create_response[1].code().name, "OK")
         conn = create_response[0].connection
         conn_id = conn.id
+        # Track for cleanup in tearDown (runs whether the test passes or fails).
+        self.app_conn_id = conn_id
         self.assertEqual(conn.type, ConnectionType.GOOGLE_DWD)
         self.assertEqual(conn.provider_key, "GOOGLEDWD")
         self.assertEqual(conn.key_id, key_id)
