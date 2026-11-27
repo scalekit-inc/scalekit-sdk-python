@@ -1,0 +1,26 @@
+kind: changed
+body: |
+  The docs now describe the connections of a custom connector through the AgentKit connection API. `client.actions.create_connection` takes the custom connector's identifier (`Provider.identifier`, the `NAME:environment-id` string, not `Provider.id`) as `provider`; for an MCP connector whose `proxy_url` is a template with a `{{domain}}` placeholder, `provider_domain` is the host name that replaces it. It is set when the connection is created, cannot be changed later and is never returned. `create_connection` takes no OAuth settings, so the token endpoint auth method is set afterwards with `client.actions.update_connection(oauth=OAuthSettings(token_endpoint_auth_method=...))`: `TokenEndpointAuthMethod.BASIC_AUTH` sends `client_id` and `client_secret` in an HTTP Basic header, `REQUEST_BODY` sends them as POST body parameters, `NONE` is for public (PKCE) clients: it sends no client secret on an MCP token refresh, and on the authorization_code exchange only when the connection has no client secret stored (a stored secret is still sent), while `OAUTH_M2M` client_credentials treats it like `BASIC_AUTH`, and `DEFAULT` lets Scalekit choose: it clears the stored value, and the authorization_code exchange then sends the credentials as POST body parameters, while an MCP token refresh and `OAUTH_M2M` client_credentials send them in a Basic header. Choose the value the provider's documentation requires for its token URL, and use `DEFAULT` only when you cannot find one. Set it only on a connection of a custom MCP or OpenAPI-sourced connector, because a wrong value makes new authorizations fail and, on an MCP or `OAUTH_M2M` connection, token refresh too, so those connected accounts have to authenticate again. `TokenEndpointAuthMethod` now documents what each value sends. [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/AGENTKIT.md#agentkit-connections)
+
+  ```python
+  from scalekit import ScalekitClient
+  from scalekit.actions.connections import AuthMode, OAuthSettings, TokenEndpointAuthMethod
+
+  scalekit_client = ScalekitClient(env_url, client_id, client_secret)
+
+  connection = scalekit_client.actions.create_connection(
+      provider="ACMEMCP:70219645518265104",  # the connector's identifier (Provider.identifier), not Provider.id
+      connection_name="acme-mcp",
+      auth_mode=AuthMode.USER,
+      provider_domain="mcp-eu.example.com",  # only for a templated MCP proxy_url: the host name that replaces {{domain}}
+  )
+  result = scalekit_client.actions.update_connection(
+      connection_name="acme-mcp",
+      oauth=OAuthSettings(token_endpoint_auth_method=TokenEndpointAuthMethod.REQUEST_BODY),
+  )
+  ```
+time: '2026-11-11T10:06:00+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: SK-3097
+  Migration: ''

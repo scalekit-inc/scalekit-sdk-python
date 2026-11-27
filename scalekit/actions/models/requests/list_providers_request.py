@@ -36,8 +36,9 @@ class ListProvidersRequest(BaseModel):
         None,
         min_length=1,
         description=(
-            "Optional. Filter to a specific provider by its identifier. "
-            "Pass None (default) to return all providers matching the other filters."
+            "Optional. Filter to one connector by its identifier: the NAME:environment-id string, such as "
+            "ACMEAPI:70219645518265104 (Provider.identifier, not Provider.id). "
+            "Pass None (default) to skip this filter."
         ),
     )
 

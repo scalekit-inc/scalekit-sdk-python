@@ -26,12 +26,25 @@ class AuthMode(str, Enum):
 
 
 class TokenEndpointAuthMethod(str, Enum):
-    """How Scalekit authenticates to the provider's token endpoint."""
+    """How Scalekit sends client credentials to the provider's token URL.
 
+    Set it with ``update_connection(oauth=OAuthSettings(token_endpoint_auth_method=...))``. Choose the
+    value the provider's documentation requires for its token URL, and use ``DEFAULT``, which lets
+    Scalekit choose, only when you cannot find a concrete one: a wrong value makes new authorizations
+    fail and, on an MCP or OAUTH_M2M connection, token refresh too, so those connected accounts have to
+    authenticate again. It applies to the authorization_code exchange, MCP token refresh and OAUTH_M2M
+    client_credentials; refreshing a token on a non-MCP OAuth connection always detects the method
+    itself. When the server reports no method for a connection, the connection you read back has
+    ``oauth.token_endpoint_auth_method`` ``None``.
+    """
+
+    # public (PKCE) clients: sends no client secret on an MCP token refresh, and on the
+    # authorization_code exchange only when the connection has no client secret stored (a stored
+    # secret is still sent); OAUTH_M2M client_credentials treats it like BASIC_AUTH
     NONE = "NONE"
-    BASIC_AUTH = "BASIC_AUTH"  # client_secret_basic
-    REQUEST_BODY = "REQUEST_BODY"  # client_secret_post
-    DEFAULT = "DEFAULT"  # clears the stored value and lets the platform pick
+    BASIC_AUTH = "BASIC_AUTH"  # client_id and client_secret in a Basic Authorization header (client_secret_basic)
+    REQUEST_BODY = "REQUEST_BODY"  # client_id and client_secret as POST body parameters (client_secret_post)
+    DEFAULT = "DEFAULT"  # clears the stored value, so Scalekit chooses: POST body parameters on the authorization_code exchange, a Basic header on an MCP token refresh and OAUTH_M2M client_credentials
 
 
 class _Input(BaseModel):
@@ -91,7 +104,7 @@ class ProviderConfigurations(_Input):
     to ``update_connection`` is refused by the server (``InvalidConfigurationError``).
     """
 
-    provider_domain: Optional[str] = None  # regional connectors only; never returned
+    provider_domain: Optional[str] = None  # MCP connectors whose URL has {{domain}}; create only; never returned
     slack_connection_type: Optional[str] = None  # "BOT" or "USER"
     googleads_developer_token: Optional[str] = None  # masked; cannot be cleared once set
     microsoft_tenant_id: Optional[str] = None

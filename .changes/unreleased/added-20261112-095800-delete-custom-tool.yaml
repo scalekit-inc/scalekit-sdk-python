@@ -1,0 +1,8 @@
+kind: added
+body: |
+  `client.actions.delete_custom_tool(tool_identifier)` deletes one API tool of a connector created from an OpenAPI spec and returns `None`. `tool_identifier` is the tool's name (`a-<connector>_<operation>`) or its id (`tol_<number>`); a value that starts with `tol_` (in any case) is always read as an id. The whitespace around the value is removed; nothing else is changed (the case is not folded). A tool collection run creates the tool again while its operation is still in the spec, unless the spec, base URL and auth patterns are unchanged since the last completed run, so `invoke_tool_collection` alone does not restore it, except for a spec that references external files (always regenerated) and for the run right after a first run that filled in the base URL or the OAuth settings; to keep it gone, remove its endpoint from the spec. It raises `ScalekitConflictException` and deletes nothing while a sync of the connector is queued or running, or when tools of more than one connector have that name (`TOOL_NAME_AMBIGUOUS`): then delete by id. A backend older than release v0.1.165.0 does not have the call and answers 501 (`ScalekitNotImplementedException`). [Reference](https://github.com/scalekit-inc/scalekit-sdk-python/blob/main/AGENTKIT.md#tool-discovery)
+time: '2026-11-12T09:58:00+00:00'
+custom:
+  Breaking: 'No'
+  Ticket: SK-3097
+  Migration: ''
